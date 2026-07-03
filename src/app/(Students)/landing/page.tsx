@@ -7,7 +7,7 @@ import {
   Field,
   GradCapIcon,
   BuildingIcon,
-  ChartIcon,
+  MatchIcon,
   ShieldIcon,
   CheckIcon,
   IdIcon,
@@ -35,13 +35,13 @@ function Nav() {
         </a>
         <nav className="vs-nav-links" style={s.navLinks}>
           {links.map((l) => (
-            <a key={l} href={`#${l.toLowerCase()}`} style={s.navLink}>
+            <a key={l} href={`#${l.toLowerCase()}`} className="vs-btn-nav" style={s.navLink}>
               {l}
             </a>
           ))}
         </nav>
         <div style={s.navButtons}>
-          <Link href="/login" style={s.applyBtn}>
+          <Link href="/login" className="vs-btn-primary" style={s.applyBtn}>
             Apply now
           </Link>
         </div>
@@ -55,25 +55,26 @@ function Hero() {
     <section id="top" style={s.heroSection}>
       <div className="vs-container vs-hero-grid" style={s.heroGrid}>
         <div>
-          <span style={s.badge}>✦ PRIVATE SCHOLARSHIP ASSOCIATION</span>
+          <span style={s.badge}>✦ CRDC PRIVATE SCHOLARSHIP PROGRAM</span>
           <h1 className="vs-headline" style={s.headline}>
             Funding deserving
             <br />
-            minds. <em style={s.headlineAccent}>Tracking</em> their
+            minds. <em style={s.headlineAccent}>Matching</em> them
             <br />
-            success.
+            to opportunity.
           </h1>
           <p style={s.heroSub}>
-            ViaScholar is a private scholarship program for Davao City
-            students. We pair financial assistance with predictive academic
-            tracking, so every grantee stays on course from application to
-            graduation.
+            ViaScholar is the private scholarship management system built for
+            Cawayan River Development Corporation (CRDC). A Gale-Shapley
+            matching algorithm pairs every eligible applicant with an open
+            slot fairly and consistently, then keeps each grantees records,
+            contracts, and disbursements on one dashboard through graduation.
           </p>
           <div style={s.heroActions}>
-            <Link href="/apply" style={s.primaryBtn}>
+            <Link href="/apply" className="vs-btn-primary" style={s.primaryBtn}>
               Start your application →
             </Link>
-            <a href="#qualifications" style={s.secondaryBtn}>
+            <a href="#qualifications" className="vs-btn-secondary" style={s.secondaryBtn}>
               See qualifications
             </a>
           </div>
@@ -86,7 +87,7 @@ function Hero() {
         <div className="vs-stat-row" style={s.statRow}>
           <Stat number="4 yrs" label="Full tenure support" />
           <Stat number="90%" label="Retention threshold" />
-          <Stat number="100%" label="Tracked digitally" />
+          <Stat number="100%" label="Algorithm-matched slots" />
         </div>
       </div>
     </section>
@@ -115,13 +116,23 @@ function DashboardCard() {
         <span style={s.dashLiveTag}>LIVE PREVIEW</span>
       </div>
 
+      <div style={s.dashMatchBox}>
+        <span style={s.dashMatchIconWrap}>
+          <CheckIcon />
+        </span>
+        <div>
+          <p style={s.dashMatchLabel}>Slot match status</p>
+          <p style={s.dashMatchValue}>Matched — Slot #14</p>
+        </div>
+      </div>
+
       <div style={s.dashGwaBox}>
-        <p style={s.dashGwaLabel}>Predicted next-term GWA</p>
+        <p style={s.dashGwaLabel}>Current GWA standing</p>
         <p style={s.dashGwaValue}>92.6%</p>
         <div style={s.dashProgressTrack}>
           <div style={s.dashProgressFill} />
         </div>
-        <p style={s.dashGwaCaption}>On track — above the 90% threshold</p>
+        <p style={s.dashGwaCaption}>Above the 90% retention threshold</p>
       </div>
 
       <DashRow label="Documents verified" value="3 of 3" />
@@ -155,13 +166,13 @@ interface AboutFeature {
 const ABOUT_FEATURES: AboutFeature[] = [
   {
     icon: <BuildingIcon />,
-    title: "Built by a private association",
-    text: "ViaScholar is operated as a private scholarship initiative for the relatives of partner-company employees, modeled on long-running programs like the Cawayan River Development Corporation grant.",
+    title: "Built for CRDC's scholarship program",
+    text: "ViaScholar was developed specifically for Cawayan River Development Corporation (CRDC) to administer its private scholarship grant for the relatives of partner-company employees, replacing manual, spreadsheet-based tracking.",
   },
   {
-    icon: <ChartIcon />,
-    title: "Predictive academic tracking",
-    text: "A Linear Regression engine analyzes each scholar's grade history and forecasts the next-term GWA, alerting coordinators before a student drops below the retention threshold.",
+    icon: <MatchIcon />,
+    title: "Fair, algorithm-driven matching",
+    text: "A Gale-Shapley matching algorithm pairs each eligible applicant with an available scholarship slot based on ranked preference and qualification, producing a stable allocation with no manual favoritism.",
   },
   {
     icon: <ShieldIcon />,
@@ -176,19 +187,19 @@ function About() {
       <div className="vs-container vs-grid-2" style={s.aboutGrid}>
         <div>
           <span className="vs-eyebrow">ABOUT VIASCHOLAR</span>
-          <h2 style={s.sectionHeading}>A grant program that watches over its scholars.</h2>
+          <h2 style={s.sectionHeading}>A grant program that allocates fairly and stays organized.</h2>
           <p style={s.aboutParagraph}>
-            Private scholarships traditionally rely on end-of-semester
-            reports — by the time a struggling student is identified, its
-            already too late. ViaScholar replaces that reactive cycle with
-            proactive monitoring, so coordinators and providers can
-            intervene in time.
+            Private scholarships traditionally rely on manual shortlisting —
+            slow, hard to audit, and easy to second-guess. ViaScholar
+            replaces that process with a stable-matching algorithm and a
+            single system of record, so coordinators and providers can trust
+            every allocation and every update.
           </p>
         </div>
 
         <div style={s.featureStack}>
           {ABOUT_FEATURES.map((f) => (
-            <div key={f.title} style={s.featureCard}>
+            <div key={f.title} className="vs-card-hover" style={s.featureCard}>
               <div style={s.featureIconBox}>{f.icon}</div>
               <div>
                 <h3 style={s.featureTitle}>{f.title}</h3>
@@ -222,13 +233,13 @@ function Qualifications() {
           <p style={s.qualParagraph}>
             We look for students with consistent academic discipline and a
             clear commitment to finishing their degree. Meeting every item
-            below makes you eligible for evaluation.
+            below makes you eligible for matching.
           </p>
         </div>
 
         <div style={s.checkList}>
           {QUALIFICATIONS.map((q) => (
-            <div key={q} style={s.checkRow}>
+            <div key={q} className="vs-card-hover" style={s.checkRow}>
               <span style={s.checkCircle}>
                 <CheckIcon />
               </span>
@@ -270,7 +281,7 @@ function Requirements() {
 
         <div className="vs-card-grid-3x2" style={s.reqGrid}>
           {REQUIREMENTS.map((r) => (
-            <div key={r.title} style={s.reqCard}>
+            <div key={r.title} className="vs-card-hover" style={s.reqCard}>
               <div style={s.reqIconBox}>{r.icon}</div>
               <h3 style={s.reqCardTitle}>{r.title}</h3>
               <p style={s.reqCardText}>{r.text}</p>
@@ -290,7 +301,7 @@ interface Review {
 
 const REVIEWS: Review[] = [
   { quote: "Before ViaScholar, I had to message our coordinator on Messenger every term. Now everything — grades, contracts, even the check schedule — is just there. It feels professional.", name: "Mariella S.", role: "BS Accountancy, 4th year" },
-  { quote: "The early-warning dashboard caught two scholars trending below 90% weeks before finals. We were able to reach out, and both ended up keeping their grants.", name: "Engr. Paolo R.", role: "HR Coordinator, partner company" },
+  { quote: "The matching system pairs our limited slots with the most qualified applicants automatically. What used to take weeks of manual shortlisting now takes minutes, and every allocation is easy to justify.", name: "Engr. Paolo R.", role: "HR Coordinator, partner company" },
   { quote: "Uploading documents used to feel risky over email. The OCR check told me my ITR was unreadable before I submitted — saved me from disqualification.", name: "Jonas L.", role: "BS Computer Science, 2nd year" },
 ];
 
@@ -311,7 +322,7 @@ function Reviews() {
 
         <div className="vs-card-3" style={s.reviewGrid}>
           {REVIEWS.map((r) => (
-            <div key={r.name} style={s.reviewCard}>
+            <div key={r.name} className="vs-card-hover" style={s.reviewCard}>
               <span style={s.quoteIcon}>&#8220;&#8220;</span>
               <p style={s.reviewQuote}>{r.quote}</p>
               <div style={s.reviewDivider} />
@@ -333,9 +344,10 @@ interface FaqItem {
 const FAQS: FaqItem[] = [
   { q: "Who is eligible to apply for a ViaScholar grant?", a: "Applicants must be Filipino citizens studying in Davao City, immediate relatives of an employee of a partner private company (or formally endorsed by one), and currently enrolled in an accredited college or university with at least a 90% General Weighted Average." },
   { q: "When is the application deadline?", a: "Applications for the current academic year close on August 15. Late submissions are only accepted on a case-by-case basis for returning scholars." },
+  { q: "How are scholarship slots assigned to applicants?", a: "ViaScholar uses a Gale-Shapley matching algorithm to pair eligible applicants with available slots based on qualification ranking and program capacity. This produces a stable, optimal allocation — no applicant and open slot would both prefer each other over their assigned match." },
   { q: "What documents do I need to upload?", a: "You'll need a valid government ID, proof of relationship, your latest grade report, an income statement, a letter of intent, and a certificate of enrollment." },
   { q: "How long does the evaluation take?", a: "Most applications are reviewed within 2 to 3 weeks of submission, provided all required documents pass the initial OCR verification." },
-  { q: "What happens if my grades fall below 90%?", a: "Coordinators receive an early alert from the predictive tracking system and reach out before any disbursement is affected, giving the scholar a chance to recover." },
+  { q: "What happens if my grades fall below 90%?", a: "Coordinators review each scholar's submitted grade report every semester and reach out as soon as a report falls below the threshold, giving the scholar a chance to recover before the next disbursement." },
   { q: "Can I apply if I'm already receiving another scholarship?", a: "Yes, as long as the combined support does not exceed your total cost of education and is disclosed during application." },
 ];
 
@@ -353,7 +365,7 @@ function FAQ() {
           {FAQS.map((item, i) => {
             const isOpen = openIndex === i;
             return (
-              <div key={item.q} style={{ ...s.faqItem, borderBottom: i === FAQS.length - 1 ? "none" : "1px solid #E4DCC8" }}>
+              <div key={item.q} className="vs-faq-row" style={{ ...s.faqItem, borderBottom: i === FAQS.length - 1 ? "none" : "1px solid #E4DCC8" }}>
                 <button onClick={() => setOpenIndex(isOpen ? -1 : i)} style={s.faqQuestionRow} aria-expanded={isOpen}>
                   <span style={s.faqQuestion}>{item.q}</span>
                   <span style={s.faqToggle}>{isOpen ? "\u00D7" : "+"}</span>
@@ -378,7 +390,7 @@ function FinalCTA() {
             <h2 style={s.finalHeading}>Apply for a ViaScholar grant today.</h2>
           </div>
           <div style={s.finalActionCol}>
-            <Link href="/apply" style={s.finalBtn}>
+            <Link href="/apply" className="vs-btn-primary" style={s.finalBtn}>
               Start application →
             </Link>
             <Link href="/login" style={s.finalLink}>
@@ -461,7 +473,7 @@ function ContactFormCard() {
           <Field label="Message" required>
             <textarea style={{ ...s.input, height: 110, resize: "vertical" }} required />
           </Field>
-          <button type="submit" style={s.contactSubmitBtn}>
+          <button type="submit" className="vs-btn-primary" style={s.contactSubmitBtn}>
             Send message
           </button>
         </form>

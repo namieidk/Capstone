@@ -225,6 +225,7 @@ export const s: Record<string, CSSProperties> = {
 
   topbar: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, padding: "28px 40px", borderBottom: `1px solid ${LINE}` },
   mobileToggle: { display: "none", marginRight: 8 },
+  floatingMobileToggle: { display: "none", position: "fixed", top: 18, left: 18, zIndex: 90, width: 42, height: 42, borderRadius: 11, background: WHITE, border: `1px solid ${LINE}`, alignItems: "center", justifyContent: "center", boxShadow: "0 8px 20px -10px rgba(20,33,58,0.25)" },
   topbarGreeting: { fontSize: "1.5rem", fontWeight: 700, color: NAVY, marginBottom: 4 },
   topbarSub: { fontSize: "0.9rem", color: "#7a7a74" },
   topbarRight: { display: "flex", alignItems: "center", gap: 16 },

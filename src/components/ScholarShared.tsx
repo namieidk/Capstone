@@ -1,5 +1,3 @@
-
-
 import React, { CSSProperties, ReactNode } from "react";
 
 export function GlobalStyles() {
@@ -124,7 +122,7 @@ export interface GradeTerm {
 export const GRADE_HISTORY: GradeTerm[] = [
   { term: "2nd Sem, 2024–2025", gwa: 91.8, status: "passed", note: "All subjects passed, above threshold." },
   { term: "1st Sem, 2025–2026", gwa: 92.1, status: "passed", note: "Improved from previous term." },
-  { term: "Mid-year, 2025–2026", gwa: 92.6, status: "pending", note: "Predicted — official report due Jul 10." },
+  { term: "Mid-year, 2025–2026", gwa: 92.6, status: "pending", note: "Current standing — official report due Jul 10." },
 ];
 
 export const PREDICTED_GWA = 92.6;
@@ -134,6 +132,26 @@ export const GRADE_DOCUMENTS = [
   { label: "Grades / Transcript of Records", file: "TOR_2026_Q2.pdf", size: "1.2 MB", status: "verified" as const },
   { label: "Latest report card / Form 138", file: "form138_midyear.png", size: "640 KB", status: "verified" as const },
   { label: "Mid-year grade report", file: "not yet submitted", size: "—", status: "pending" as const },
+];
+
+// ---------- Submissions (Statement of Account + Grade reports) ----------
+
+export interface Submission {
+  id: string;
+  term: string;
+  type: "Statement of Account" | "Grade Report";
+  file: string;
+  size: string;
+  submittedDate: string;
+  status: "verified" | "pending" | "rejected";
+}
+
+export const SUBMISSION_HISTORY: Submission[] = [
+  { id: "5", term: "Mid-year, 2025–2026", type: "Statement of Account", file: "SOA_midyear2026.pdf", size: "480 KB", submittedDate: "Jun 28, 2026", status: "pending" },
+  { id: "4", term: "1st Sem, 2025–2026", type: "Grade Report", file: "grades_1stsem_2025.pdf", size: "1.1 MB", submittedDate: "Jan 20, 2026", status: "verified" },
+  { id: "3", term: "1st Sem, 2025–2026", type: "Statement of Account", file: "SOA_1stsem_2025.pdf", size: "410 KB", submittedDate: "Jan 20, 2026", status: "verified" },
+  { id: "2", term: "2nd Sem, 2024–2025", type: "Grade Report", file: "grades_2ndsem_2024.pdf", size: "980 KB", submittedDate: "Jun 15, 2025", status: "verified" },
+  { id: "1", term: "2nd Sem, 2024–2025", type: "Statement of Account", file: "SOA_2ndsem_2024.pdf", size: "365 KB", submittedDate: "Jun 15, 2025", status: "verified" },
 ];
 
 // ---------- Messages ----------
@@ -451,6 +469,7 @@ export const s: Record<string, CSSProperties> = {
 
   topbar: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, padding: "28px 40px", borderBottom: `1px solid ${LINE}` },
   mobileToggle: { display: "none", marginRight: 8 },
+  floatingMobileToggle: { display: "none", position: "fixed", top: 18, left: 18, zIndex: 90, width: 42, height: 42, borderRadius: 11, background: WHITE, border: `1px solid ${LINE}`, alignItems: "center", justifyContent: "center", boxShadow: "0 8px 20px -10px rgba(20,33,58,0.25)" },
   topbarGreeting: { fontSize: "1.5rem", fontWeight: 700, color: NAVY, marginBottom: 4 },
   topbarSub: { fontSize: "0.9rem", color: "#7a7a74" },
   topbarRight: { display: "flex", alignItems: "center", gap: 16 },
@@ -468,6 +487,7 @@ export const s: Record<string, CSSProperties> = {
   statCardCaption: { fontSize: "0.82rem", color: "#6b6b66" },
 
   contentGrid: { display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 22 },
+  dashboardTwoCol: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 22, marginBottom: 22 },
 
   feedCard: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 18, padding: "26px 28px" },
   cardHeaderRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 },
@@ -515,6 +535,17 @@ export const s: Record<string, CSSProperties> = {
   gradeTerm: { fontSize: "0.96rem", fontWeight: 700, color: NAVY, marginBottom: 2 },
   gradeNote: { fontSize: "0.82rem", color: "#8a8a84" },
   gradeValue: { fontFamily: "'Fraunces', serif", fontSize: "1.4rem", fontWeight: 700, color: NAVY, flexShrink: 0 },
+
+  uploadSectionGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 },
+  uploadBox: { display: "flex", alignItems: "center", gap: 14, border: `1.5px dashed ${LINE}`, borderRadius: 12, padding: "16px 18px", background: "#FAF7EF", cursor: "pointer" },
+  uploadIconBox: { width: 38, height: 38, borderRadius: 10, background: AMBER_BG, color: NAVY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  uploadTextCol: { flexGrow: 1, display: "flex", flexDirection: "column", gap: 2, minWidth: 0 },
+  uploadMainText: { fontSize: "0.92rem", color: "#2B2B28", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
+  uploadHintText: { fontSize: "0.78rem", color: "#8a8a84" },
+  browseBtn: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 999, padding: "9px 16px", fontSize: "0.82rem", fontWeight: 600, color: NAVY, flexShrink: 0 },
+  submissionRow: { display: "flex", alignItems: "center", gap: 16, background: WHITE, border: `1px solid ${LINE}`, borderRadius: 14, padding: "16px 20px" },
+  submissionMeta: { fontSize: "0.78rem", color: "#9a9a94", marginTop: 2 },
+  sentBanner: { display: "flex", alignItems: "center", gap: 10, background: AMBER_BG, border: "1px solid #E3CB94", borderRadius: 12, padding: "14px 18px", fontSize: "0.92rem", color: "#3a3a36", fontWeight: 600, marginTop: 14 },
 
   // MESSAGES PAGE
   messagesShell: { display: "grid", gridTemplateColumns: "320px 1fr", gap: 0, background: WHITE, border: `1px solid ${LINE}`, borderRadius: 18, overflow: "hidden", height: 600 },

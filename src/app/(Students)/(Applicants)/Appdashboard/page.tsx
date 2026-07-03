@@ -69,7 +69,7 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="vd-stat-row" style={s.statRow}>
-        <StatCard label="Predicted GWA" value="92.6%" caption="On track — above the 90% threshold" progress={88} />
+        <StatCard label="Current GWA" value="92.6%" caption="Above the 90% retention threshold" progress={88} />
         <InfoCard label="Documents verified" value="3 of 3" caption="All requirements complete" tone="good" />
         <InfoCard label="Next disbursement" value="Jul 15" caption="Allowance for Q3" tone="neutral" />
       </div>

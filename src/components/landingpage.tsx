@@ -25,6 +25,20 @@ export function GlobalStyles() {
       .vs-container { max-width: 1180px; margin: 0 auto; padding: 0 32px; }
       .vs-eyebrow { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #C9943D; }
 
+      /* --- interactive polish --- */
+      .vs-btn-primary, .vs-btn-secondary, .vs-btn-nav {
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+      }
+      .vs-btn-primary:hover { background: #1C2D4D; transform: translateY(-1px); box-shadow: 0 12px 24px -12px rgba(20,33,58,0.45); }
+      .vs-btn-secondary:hover { border-color: #C9943D; color: #14213A; transform: translateY(-1px); }
+      .vs-btn-nav:hover { color: #14213A; }
+
+      .vs-card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
+      .vs-card-hover:hover { transform: translateY(-3px); box-shadow: 0 22px 44px -26px rgba(20,33,58,0.28); border-color: #D8C9A0; }
+
+      .vs-faq-row { transition: background-color 0.15s ease; }
+      .vs-faq-row:hover { background: #FBF8F0; }
+
       @media (max-width: 960px) {
         .vs-hero-grid, .vs-grid-2 { grid-template-columns: 1fr !important; }
         .vs-nav-links { display: none !important; }
@@ -107,6 +121,17 @@ export function ChartIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#14213A" strokeWidth="2">
       <path d="M3 3v18h18M7 14l4-4 3 3 5-6" />
+    </svg>
+  );
+}
+// Represents the Gale-Shapley matching engine: two sides being paired.
+export function MatchIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#14213A" strokeWidth="2">
+      <circle cx="6" cy="7" r="2.4" />
+      <circle cx="6" cy="17" r="2.4" />
+      <circle cx="18" cy="12" r="2.4" />
+      <path d="M8.2 8.1 15.8 11M8.2 15.9 15.8 13" />
     </svg>
   );
 }
@@ -262,6 +287,10 @@ export const s: Record<string, CSSProperties> = {
   dashHeaderRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 },
   dashLabel: { fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.06em", color: "#7a7a74" },
   dashLiveTag: { background: "#F3E6C8", color: "#8a6a1f", fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.04em", padding: "5px 11px", borderRadius: 999 },
+  dashMatchBox: { display: "flex", alignItems: "center", gap: 14, background: "#F4F0E6", borderRadius: 16, padding: "16px 18px", marginBottom: 14 },
+  dashMatchIconWrap: { width: 34, height: 34, borderRadius: "50%", background: NAVY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  dashMatchLabel: { fontSize: "0.82rem", color: "#5a5a55", marginBottom: 3 },
+  dashMatchValue: { fontSize: "1.02rem", fontWeight: 700, color: NAVY },
   dashGwaBox: { background: "#F4F0E6", borderRadius: 16, padding: "20px 22px", marginBottom: 14 },
   dashGwaLabel: { fontSize: "0.88rem", color: "#5a5a55", marginBottom: 8 },
   dashGwaValue: { fontFamily: "'Fraunces', serif", fontSize: "2.3rem", fontWeight: 700, color: NAVY, marginBottom: 14 },
