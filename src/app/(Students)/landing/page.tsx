@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   GlobalStyles,
   Field,
-  GradCapIcon,
   BuildingIcon,
   MatchIcon,
   ShieldIcon,
@@ -28,8 +27,18 @@ function Nav() {
     <header style={s.navHeader}>
       <div className="vs-container" style={s.navInner}>
         <a href="#top" style={s.navLogo}>
-          <span style={s.navLogoMark}>
-            <GradCapIcon />
+          <span style={{ ...s.navLogoMark, overflow: "hidden", background: "#F8F4EA" }}>
+            <img
+              src="/logo.png"
+              alt="ViaScholar logo"
+              style={{
+                width: "120%",
+                height: "120%",
+                objectFit: "contain",
+                display: "block",
+                transform: "scale(2.8)",
+              }}
+            />
           </span>
           ViaScholar
         </a>
