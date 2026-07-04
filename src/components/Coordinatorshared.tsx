@@ -1,5 +1,3 @@
-
-
 import React, { CSSProperties, ReactNode } from "react";
 
 // ============================================================
@@ -96,6 +94,7 @@ export function DownloadIcon() { return (<svg width="14" height="14" viewBox="0 
 export function TrendUpIcon() { return (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 17l6-6 4 4 8-8" /><path d="M17 7h4v4" /></svg>); }
 export function TrendDownIcon() { return (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 7l6 6 4-4 8 8" /><path d="M17 17h4v-4" /></svg>); }
 export function PaymentsIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="6" width="20" height="13" rx="2.2" /><path d="M2 10.5h20" /><circle cx="7" cy="15" r="1.2" fill="currentColor" stroke="none" /></svg>); }
+export function ClockIcon() { return (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg>); }
 export function ToggleIcon({ on }: { on: boolean }) {
   return (
     <span style={{ width: 42, height: 24, borderRadius: 999, background: on ? AMBER : LINE, display: "inline-flex", alignItems: "center", padding: 3 }}>
@@ -130,6 +129,19 @@ export interface ScheduledInterview {
   time: string;
 }
 
+export interface GradeRecord {
+  term: string;
+  gwa: number;
+  status: "Passed" | "Failed" | "Incomplete";
+}
+
+export interface HistoryPaymentRecord {
+  term: string;
+  amount: number;
+  date: string;
+  status: "Paid" | "Pending" | "On hold";
+}
+
 export interface ActiveScholar {
   id: number;
   name: string;
@@ -140,6 +152,13 @@ export interface ActiveScholar {
   docs: string;
   disbursement: string;
   health: "good" | "warn" | "bad";
+  currentPayment: {
+    term: string;
+    amount: number;
+    status: "Paid" | "Pending" | "On hold";
+  };
+  gradeHistory: GradeRecord[];
+  paymentHistory: HistoryPaymentRecord[];
 }
 
 export interface PaymentRecord {
@@ -163,6 +182,8 @@ export interface ArchivedScholar {
   exited: string;
   status: "Graduated" | "Terminated" | "Withdrawn";
   note: string;
+  gradeHistory: GradeRecord[];
+  paymentHistory: HistoryPaymentRecord[];
 }
 
 export interface Message {
@@ -269,16 +290,89 @@ export const ACTIVITY_FEED = [
 ];
 
 export const ACTIVE_SCHOLARS: ActiveScholar[] = [
-  { id: 1, name: "Mariella S.", initials: "MS", course: "BS Accountancy, 4th year", gwa: 94.2, trend: "up", docs: "3/3", disbursement: "On schedule", health: "good" },
-  { id: 2, name: "Patricia Lim", initials: "PL", course: "BS Accountancy, 3rd year", gwa: 93.4, trend: "down", docs: "3/3", disbursement: "On schedule", health: "good" },
-  { id: 3, name: "Jonas L.", initials: "JL", course: "BS Computer Science, 2nd year", gwa: 90.1, trend: "down", docs: "2/3", disbursement: "Pending document", health: "warn" },
-  { id: 4, name: "Donna Mae Fayloga", initials: "DF", course: "BS Information Technology, 3rd year", gwa: 92.6, trend: "up", docs: "3/3", disbursement: "On schedule", health: "good" },
-  { id: 5, name: "Carlo Bautista", initials: "CB", course: "BS Civil Engineering, 3rd year", gwa: 88.9, trend: "down", docs: "1/3", disbursement: "On hold", health: "bad" },
+  {
+    id: 1, name: "Mariella S.", initials: "MS", course: "BS Accountancy, 4th year",
+    gwa: 94.2, trend: "up", docs: "3/3", disbursement: "On schedule", health: "good",
+    currentPayment: { term: "Q3 2026", amount: 8000, status: "Paid" },
+    gradeHistory: [
+      { term: "S.Y. 2025-2026, 1st Sem", gwa: 93.8, status: "Passed" },
+      { term: "S.Y. 2024-2025, 2nd Sem", gwa: 93.1, status: "Passed" },
+      { term: "S.Y. 2024-2025, 1st Sem", gwa: 92.9, status: "Passed" },
+    ],
+    paymentHistory: [
+      { term: "Q2 2026", amount: 8000, date: "Apr 15, 2026", status: "Paid" },
+      { term: "Q1 2026", amount: 8000, date: "Jan 15, 2026", status: "Paid" },
+      { term: "Q4 2025", amount: 8000, date: "Oct 15, 2025", status: "Paid" },
+    ],
+  },
+  {
+    id: 2, name: "Patricia Lim", initials: "PL", course: "BS Accountancy, 3rd year",
+    gwa: 93.4, trend: "down", docs: "3/3", disbursement: "On schedule", health: "good",
+    currentPayment: { term: "Q3 2026", amount: 8000, status: "Paid" },
+    gradeHistory: [
+      { term: "S.Y. 2025-2026, 1st Sem", gwa: 94.0, status: "Passed" },
+      { term: "S.Y. 2024-2025, 2nd Sem", gwa: 93.7, status: "Passed" },
+    ],
+    paymentHistory: [
+      { term: "Q2 2026", amount: 8000, date: "Apr 15, 2026", status: "Paid" },
+      { term: "Q1 2026", amount: 8000, date: "Jan 15, 2026", status: "Paid" },
+    ],
+  },
+  {
+    id: 3, name: "Jonas L.", initials: "JL", course: "BS Computer Science, 2nd year",
+    gwa: 90.1, trend: "down", docs: "2/3", disbursement: "Pending document", health: "warn",
+    currentPayment: { term: "Q3 2026", amount: 8000, status: "Pending" },
+    gradeHistory: [
+      { term: "S.Y. 2025-2026, 1st Sem", gwa: 90.9, status: "Passed" },
+      { term: "S.Y. 2024-2025, 2nd Sem", gwa: 91.5, status: "Passed" },
+    ],
+    paymentHistory: [
+      { term: "Q2 2026", amount: 8000, date: "Apr 15, 2026", status: "Paid" },
+      { term: "Q1 2026", amount: 8000, date: "Jan 15, 2026", status: "Paid" },
+    ],
+  },
+  {
+    id: 4, name: "Donna Mae Fayloga", initials: "DF", course: "BS Information Technology, 3rd year",
+    gwa: 92.6, trend: "up", docs: "3/3", disbursement: "On schedule", health: "good",
+    currentPayment: { term: "Q3 2026", amount: 8000, status: "Paid" },
+    gradeHistory: [
+      { term: "S.Y. 2025-2026, 1st Sem", gwa: 91.4, status: "Passed" },
+      { term: "S.Y. 2024-2025, 2nd Sem", gwa: 90.8, status: "Passed" },
+      { term: "S.Y. 2024-2025, 1st Sem", gwa: 90.2, status: "Passed" },
+    ],
+    paymentHistory: [
+      { term: "Q2 2026", amount: 8000, date: "Apr 15, 2026", status: "Paid" },
+      { term: "Q1 2026", amount: 8000, date: "Jan 15, 2026", status: "Paid" },
+      { term: "Q4 2025", amount: 8000, date: "Oct 15, 2025", status: "Paid" },
+    ],
+  },
+  {
+    id: 5, name: "Carlo Bautista", initials: "CB", course: "BS Civil Engineering, 3rd year",
+    gwa: 88.9, trend: "down", docs: "1/3", disbursement: "On hold", health: "bad",
+    currentPayment: { term: "Q3 2026", amount: 8000, status: "On hold" },
+    gradeHistory: [
+      { term: "S.Y. 2025-2026, 1st Sem", gwa: 89.6, status: "Passed" },
+      { term: "S.Y. 2024-2025, 2nd Sem", gwa: 87.3, status: "Incomplete" },
+      { term: "S.Y. 2024-2025, 1st Sem", gwa: 90.0, status: "Passed" },
+    ],
+    paymentHistory: [
+      { term: "Q2 2026", amount: 8000, date: "Apr 15, 2026", status: "Paid" },
+      { term: "Q1 2026", amount: 8000, date: "Jan 15, 2026", status: "Paid" },
+      { term: "Q4 2025", amount: 8000, date: "Oct 15, 2025", status: "Paid" },
+    ],
+  },
 ];
 
-export const PAYMENT_STATUS_COLORS: Record<PaymentRecord["status"], { bg: string; text: string }> = {
+export const GRADE_STATUS_COLORS: Record<GradeRecord["status"], { bg: string; text: string }> = {
+  Passed: { bg: GOOD_BG, text: GOOD },
+  Incomplete: { bg: WARN_BG, text: WARN },
+  Failed: { bg: BAD_BG, text: BAD },
+};
+
+export const PAYMENT_STATUS_COLORS: Record<PaymentRecord["status"] | HistoryPaymentRecord["status"], { bg: string; text: string }> = {
   Paid: { bg: GOOD_BG, text: GOOD },
   Scheduled: { bg: AMBER_BG, text: "#6b5220" },
+  Pending: { bg: WARN_BG, text: WARN },
   "On hold": { bg: BAD_BG, text: BAD },
 };
 
@@ -291,12 +385,91 @@ export const PAYMENT_RECORDS: PaymentRecord[] = [
 ];
 
 export const ARCHIVED_SCHOLARS: ArchivedScholar[] = [
-  { id: 1, name: "Therese Aguilar", initials: "TA", course: "BS Accountancy", track: "Academic", joined: "Jun 2022", exited: "May 2026", status: "Graduated", note: "Completed degree with honors. Eligible for alumni mentorship program." },
-  { id: 2, name: "Marco Villanueva", initials: "MV", course: "BS Civil Engineering", track: "Academic", joined: "Aug 2023", exited: "Feb 2026", status: "Terminated", note: "Failed to maintain minimum GWA for two consecutive semesters." },
-  { id: 3, name: "Kristine Ong", initials: "KO", course: "BS Nursing", track: "Financial Need", joined: "Jul 2021", exited: "Apr 2026", status: "Graduated", note: "Completed degree. Now employed at Davao Medical Center." },
-  { id: 4, name: "Allan Mercado", initials: "AM", course: "BS Information Technology", track: "Returning Scholar", joined: "Jan 2024", exited: "Mar 2026", status: "Withdrawn", note: "Voluntarily withdrew due to transfer to another university." },
-  { id: 5, name: "Grace Tolentino", initials: "GT", course: "BS Education", track: "Academic", joined: "Jun 2022", exited: "Jan 2026", status: "Terminated", note: "Found to have submitted falsified income documents." },
-  { id: 6, name: "Paolo Diaz", initials: "PD", course: "BS Computer Science", track: "Academic", joined: "Jul 2020", exited: "Jun 2025", status: "Graduated", note: "Completed degree, cum laude. Sponsored thesis on scholarship matching algorithms." },
+  {
+    id: 1, name: "Therese Aguilar", initials: "TA", course: "BS Accountancy", track: "Academic",
+    joined: "Jun 2022", exited: "May 2026", status: "Graduated",
+    note: "Completed degree with honors. Eligible for alumni mentorship program.",
+    gradeHistory: [
+      { term: "S.Y. 2025-2026, 2nd Sem", gwa: 95.1, status: "Passed" },
+      { term: "S.Y. 2025-2026, 1st Sem", gwa: 94.6, status: "Passed" },
+      { term: "S.Y. 2024-2025, 2nd Sem", gwa: 94.0, status: "Passed" },
+    ],
+    paymentHistory: [
+      { term: "Q4 2025", amount: 8000, date: "Oct 15, 2025", status: "Paid" },
+      { term: "Q3 2025", amount: 8000, date: "Jul 15, 2025", status: "Paid" },
+      { term: "Q2 2025", amount: 8000, date: "Apr 15, 2025", status: "Paid" },
+    ],
+  },
+  {
+    id: 2, name: "Marco Villanueva", initials: "MV", course: "BS Civil Engineering", track: "Academic",
+    joined: "Aug 2023", exited: "Feb 2026", status: "Terminated",
+    note: "Failed to maintain minimum GWA for two consecutive semesters.",
+    gradeHistory: [
+      { term: "S.Y. 2025-2026, 1st Sem", gwa: 82.4, status: "Failed" },
+      { term: "S.Y. 2024-2025, 2nd Sem", gwa: 83.9, status: "Failed" },
+      { term: "S.Y. 2024-2025, 1st Sem", gwa: 87.0, status: "Passed" },
+    ],
+    paymentHistory: [
+      { term: "Q4 2025", amount: 8000, date: "Oct 15, 2025", status: "Paid" },
+      { term: "Q3 2025", amount: 8000, date: "Jul 15, 2025", status: "On hold" },
+    ],
+  },
+  {
+    id: 3, name: "Kristine Ong", initials: "KO", course: "BS Nursing", track: "Financial Need",
+    joined: "Jul 2021", exited: "Apr 2026", status: "Graduated",
+    note: "Completed degree. Now employed at Davao Medical Center.",
+    gradeHistory: [
+      { term: "S.Y. 2025-2026, 2nd Sem", gwa: 91.7, status: "Passed" },
+      { term: "S.Y. 2025-2026, 1st Sem", gwa: 90.9, status: "Passed" },
+      { term: "S.Y. 2024-2025, 2nd Sem", gwa: 89.8, status: "Passed" },
+    ],
+    paymentHistory: [
+      { term: "Q4 2025", amount: 8000, date: "Oct 15, 2025", status: "Paid" },
+      { term: "Q3 2025", amount: 8000, date: "Jul 15, 2025", status: "Paid" },
+      { term: "Q2 2025", amount: 8000, date: "Apr 15, 2025", status: "Paid" },
+    ],
+  },
+  {
+    id: 4, name: "Allan Mercado", initials: "AM", course: "BS Information Technology", track: "Returning Scholar",
+    joined: "Jan 2024", exited: "Mar 2026", status: "Withdrawn",
+    note: "Voluntarily withdrew due to transfer to another university.",
+    gradeHistory: [
+      { term: "S.Y. 2025-2026, 1st Sem", gwa: 88.3, status: "Passed" },
+      { term: "S.Y. 2024-2025, 2nd Sem", gwa: 87.9, status: "Passed" },
+    ],
+    paymentHistory: [
+      { term: "Q3 2025", amount: 8000, date: "Jul 15, 2025", status: "Paid" },
+      { term: "Q2 2025", amount: 8000, date: "Apr 15, 2025", status: "Paid" },
+    ],
+  },
+  {
+    id: 5, name: "Grace Tolentino", initials: "GT", course: "BS Education", track: "Academic",
+    joined: "Jun 2022", exited: "Jan 2026", status: "Terminated",
+    note: "Found to have submitted falsified income documents.",
+    gradeHistory: [
+      { term: "S.Y. 2025-2026, 1st Sem", gwa: 90.2, status: "Passed" },
+      { term: "S.Y. 2024-2025, 2nd Sem", gwa: 89.5, status: "Passed" },
+    ],
+    paymentHistory: [
+      { term: "Q4 2025", amount: 8000, date: "Oct 15, 2025", status: "On hold" },
+      { term: "Q3 2025", amount: 8000, date: "Jul 15, 2025", status: "Paid" },
+    ],
+  },
+  {
+    id: 6, name: "Paolo Diaz", initials: "PD", course: "BS Computer Science", track: "Academic",
+    joined: "Jul 2020", exited: "Jun 2025", status: "Graduated",
+    note: "Completed degree, cum laude. Sponsored thesis on scholarship matching algorithms.",
+    gradeHistory: [
+      { term: "S.Y. 2024-2025, 2nd Sem", gwa: 96.4, status: "Passed" },
+      { term: "S.Y. 2024-2025, 1st Sem", gwa: 96.0, status: "Passed" },
+      { term: "S.Y. 2023-2024, 2nd Sem", gwa: 95.2, status: "Passed" },
+    ],
+    paymentHistory: [
+      { term: "Q1 2025", amount: 8000, date: "Jan 15, 2025", status: "Paid" },
+      { term: "Q4 2024", amount: 8000, date: "Oct 15, 2024", status: "Paid" },
+      { term: "Q3 2024", amount: 8000, date: "Jul 15, 2024", status: "Paid" },
+    ],
+  },
 ];
 
 export const ARCHIVE_STATUS_STYLE: Record<ArchivedScholar["status"], { bg: string; text: string }> = {
@@ -449,11 +622,11 @@ export function DrawerInfoRow({ label, value }: DrawerInfoRowProps) {
 
 export const s: Record<string, CSSProperties> = {
   // SIDEBAR
-  sidebar: { width: 252, flexShrink: 0, background: WHITE, borderRight: `1px solid ${LINE}`, display: "flex", flexDirection: "column", padding: "26px 18px", height: "100vh", position: "sticky", top: 0 },
+  sidebar: { width: 252, flexShrink: 0, background: WHITE, borderRight: `1px solid ${LINE}`, display: "flex", flexDirection: "column", padding: "26px 18px", height: "100vh", position: "sticky", top: 0, overflowY: "auto" },
   sidebarLogo: { display: "flex", alignItems: "center", gap: 10, padding: "0 8px", marginBottom: 32 },
   sidebarLogoMark: { width: 32, height: 32, borderRadius: 9, background: NAVY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   sidebarLogoText: { fontFamily: "'Fraunces', serif", fontSize: "1.15rem", fontWeight: 700, color: NAVY },
-  sidebarNav: { display: "flex", flexDirection: "column", gap: 4, flexGrow: 1, overflowY: "auto" },
+  sidebarNav: { display: "flex", flexDirection: "column", gap: 4, flexGrow: 1 },
   sidebarNavItem: { display: "flex", alignItems: "center", gap: 13, padding: "12px 14px", borderRadius: 11, fontSize: "0.95rem", fontWeight: 600, width: "100%", textAlign: "left" },
   sidebarNavIcon: { display: "flex", flexShrink: 0 },
   sidebarNavLabel: { flexGrow: 1 },
@@ -527,7 +700,7 @@ export const s: Record<string, CSSProperties> = {
   tdName: { fontSize: "0.92rem", fontWeight: 700, color: NAVY },
   tdSub: { fontSize: "0.78rem", color: "#9a9a94" },
   stageTag: { fontSize: "0.76rem", fontWeight: 700, padding: "6px 13px", borderRadius: 999, whiteSpace: "nowrap" },
-  tableActionBtn: { background: TINT, color: NAVY, fontWeight: 600, fontSize: "0.82rem", padding: "7px 14px", borderRadius: 999 },
+  tableActionBtn: { display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", background: TINT, color: NAVY, fontWeight: 600, fontSize: "0.82rem", padding: "7px 14px", borderRadius: 999, width: "100%" },
   gwaTrendCell: { display: "inline-flex", alignItems: "center", gap: 6 },
 
   drawerOverlay: { position: "fixed", inset: 0, background: "rgba(20,33,58,0.35)", display: "flex", justifyContent: "flex-end", zIndex: 200 },
@@ -555,7 +728,7 @@ export const s: Record<string, CSSProperties> = {
   input: { width: "100%", background: "#FAF7EF", border: `1px solid ${LINE}`, borderRadius: 10, padding: "12px 15px", fontSize: "0.94rem", color: "#2B2B28", fontFamily: "'Inter', sans-serif" },
   select: { width: "100%", background: "#FAF7EF", border: `1px solid ${LINE}`, borderRadius: 10, padding: "12px 15px", fontSize: "0.94rem", color: "#2B2B28", fontFamily: "'Inter', sans-serif" },
   continueBtn: { background: NAVY, color: WHITE, borderRadius: 999, padding: "14px 26px", fontWeight: 600, fontSize: "0.95rem" },
-  continueBtnSmall: { display: "flex", alignItems: "center", gap: 8, background: NAVY, color: WHITE, borderRadius: 999, padding: "10px 18px", fontWeight: 600, fontSize: "0.88rem", flexShrink: 0 },
+  continueBtnSmall: { display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: NAVY, color: WHITE, borderRadius: 999, padding: "10px 18px", fontWeight: 600, fontSize: "0.88rem", flexShrink: 0 },
   backBtn: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 999, padding: "12px 22px", fontWeight: 600, fontSize: "0.9rem", color: NAVY },
   reviewEditLink: { background: "none", color: AMBER, fontWeight: 700, fontSize: "0.86rem" },
   tabRow: { display: "flex", gap: 24, borderBottom: `1px solid ${LINE}`, marginBottom: 24 },
@@ -570,6 +743,7 @@ export const s: Record<string, CSSProperties> = {
   meetingTitle: { fontSize: "0.98rem", fontWeight: 700, color: NAVY, marginBottom: 3 },
   meetingMeta: { fontSize: "0.84rem", color: "#7a7a74" },
   meetingStatusTag: { fontSize: "0.76rem", fontWeight: 700, padding: "6px 13px", borderRadius: 999, whiteSpace: "nowrap" },
+  joinMeetingBtn: { display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: AMBER, color: WHITE, borderRadius: 999, padding: "9px 16px", fontWeight: 600, fontSize: "0.86rem", flexShrink: 0, whiteSpace: "nowrap" },
 
   messagesShell: { display: "grid", gridTemplateColumns: "320px 1fr", gap: 0, background: WHITE, border: `1px solid ${LINE}`, borderRadius: 18, overflow: "hidden", height: 600 },
   convoListCol: { borderRight: `1px solid ${LINE}`, overflowY: "auto" },
@@ -620,6 +794,22 @@ export const s: Record<string, CSSProperties> = {
   appNoteCard: { display: "flex", gap: 14, alignItems: "flex-start", background: "#F2ECDC", border: "1px solid #E3CB94", borderRadius: 14, padding: "18px 20px", marginBottom: 20 },
   appNoteIcon: { color: AMBER, display: "flex", flexShrink: 0, marginTop: 2 },
   appNoteText: { fontSize: "0.92rem", color: "#3a3a36", lineHeight: 1.6 },
+
+  drawerCurrentPayCard: { display: "flex", justifyContent: "space-between", alignItems: "center", background: WHITE, border: `1px solid ${LINE}`, borderRadius: 14, padding: "16px 18px", marginBottom: 26 },
+  drawerCurrentPayLeft: { display: "flex", flexDirection: "column", gap: 3 },
+  drawerCurrentPayTerm: { fontSize: "0.78rem", color: "#9a9a94" },
+  drawerCurrentPayAmount: { fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Fraunces', serif" },
+  drawerHistoryBtnRow: { display: "flex", marginBottom: 22 },
+  drawerHistoryBtn: { display: "flex", alignItems: "center", gap: 8, background: TINT, color: NAVY, fontWeight: 600, fontSize: "0.86rem", padding: "10px 16px", borderRadius: 999 },
+  historySection: { marginBottom: 24 },
+  historyList: { display: "flex", flexDirection: "column", gap: 10 },
+  historyRow: { display: "flex", justifyContent: "space-between", alignItems: "center", background: WHITE, border: `1px solid ${LINE}`, borderRadius: 12, padding: "13px 16px" },
+  historyRowLeft: { display: "flex", flexDirection: "column", gap: 3 },
+  historyRowTerm: { fontSize: "0.88rem", fontWeight: 700, color: NAVY },
+  historyRowSub: { fontSize: "0.76rem", color: "#9a9a94" },
+  historyRowRight: { display: "flex", alignItems: "center", gap: 10 },
+  historyRowValue: { fontSize: "0.9rem", fontWeight: 700, color: NAVY },
+  backToOverviewBtn: { display: "flex", alignItems: "center", gap: 8, color: AMBER, fontWeight: 600, fontSize: "0.86rem", marginBottom: 20 },
 
   barChartRow: { display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 14, height: 160, padding: "10px 4px 0" },
   barChartCol: { display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flexGrow: 1, height: "100%" },

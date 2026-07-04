@@ -39,12 +39,10 @@ export default function GrantorDashboardPage() {
         {DASHBOARD_STATS.map((p) => (
           <div key={p.label} style={s.pipelineCard}>
             <div style={s.pipelineTopRow}>
-              <div>
-                <p style={s.pipelineLabel}>{p.label}</p>
-                <span style={{ ...s.pipelineTag, background: TONE_MAP[p.tone].bg, color: TONE_MAP[p.tone].text }}>this term</span>
-              </div>
-              <p style={s.pipelineValue}>{p.value}</p>
+              <p style={s.pipelineLabel}>{p.label}</p>
+              <span style={{ ...s.pipelineTag, background: TONE_MAP[p.tone].bg, color: TONE_MAP[p.tone].text }}>this term</span>
             </div>
+            <p style={s.pipelineValue}>{p.value}</p>
             <div style={s.pipelineKpiRow}>
               <span style={{ color: p.kpiDirection === "up" ? GOOD : BAD, display: "flex", alignItems: "center", gap: 4 }}>
                 {p.kpiDirection === "up" ? <TrendUpIcon /> : <TrendDownIcon />}

@@ -3,6 +3,7 @@
 import React, { useState, FormEvent } from "react";
 import {
   InterviewIcon,
+  ArrowRightIcon,
   TabButton,
   Field,
   APPLICANTS,
@@ -39,6 +40,11 @@ export default function MeetingPage() {
     setPickerFor(null);
   };
 
+  const joinMeeting = (iv: ScheduledInterview) => {
+    // Hook up to your actual video call link / room here.
+    console.log("Joining meeting with", iv.name);
+  };
+
   return (
     <div style={s.pageContentTop}>
       <div style={s.tabRow}>
@@ -68,6 +74,9 @@ export default function MeetingPage() {
                   <p style={s.meetingMeta}>{iv.time} · Scholarship interview</p>
                 </div>
                 <span style={{ ...s.meetingStatusTag, background: AMBER_BG, color: "#6b5220" }}>Confirmed</span>
+                <button onClick={() => joinMeeting(iv)} style={s.joinMeetingBtn}>
+                  Join <ArrowRightIcon />
+                </button>
               </div>
             ))}
         </div>

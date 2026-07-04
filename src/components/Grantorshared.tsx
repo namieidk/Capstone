@@ -94,6 +94,7 @@ export function TrendUpIcon() { return (<svg width="14" height="14" viewBox="0 0
 export function TrendDownIcon() { return (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 7l6 6 4-4 8 8" /><path d="M17 17h4v-4" /></svg>); }
 export function PaymentsIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="6" width="20" height="13" rx="2.2" /><path d="M2 10.5h20" /><circle cx="7" cy="15" r="1.2" fill="currentColor" stroke="none" /></svg>); }
 export function BuildingIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 11h.01M15 11h.01M9 15h.01M15 15h.01" /></svg>); }
+export function ClockIcon() { return (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg>); }
 export function ToggleIcon({ on }: { on: boolean }) {
   return (
     <span style={{ width: 42, height: 24, borderRadius: 999, background: on ? AMBER : LINE, display: "inline-flex", alignItems: "center", padding: 3 }}>
@@ -106,6 +107,19 @@ export function ToggleIcon({ on }: { on: boolean }) {
 // DATA TYPES
 // ============================================================
 
+export interface GradeRecord {
+  term: string;
+  gwa: number;
+  status: "Passed" | "Failed" | "Incomplete";
+}
+
+export interface PaymentRecord {
+  term: string;
+  amount: number;
+  date: string;
+  status: "Paid" | "Pending" | "On hold";
+}
+
 export interface FundedScholar {
   id: number;
   name: string;
@@ -116,6 +130,13 @@ export interface FundedScholar {
   docs: string;
   disbursement: string;
   health: "good" | "warn" | "bad";
+  currentPayment: {
+    term: string;
+    amount: number;
+    status: "Paid" | "Pending" | "On hold";
+  };
+  gradeHistory: GradeRecord[];
+  paymentHistory: PaymentRecord[];
 }
 
 export interface PaymentRequest {
@@ -153,6 +174,7 @@ export interface ScheduledMeeting {
   time: string;
   with: string;
   status: string;
+  link?: string;
 }
 
 // ============================================================
@@ -217,11 +239,77 @@ export const UPCOMING_MEETINGS: ScheduledMeeting[] = [
 ];
 
 export const FUNDED_SCHOLARS: FundedScholar[] = [
-  { id: 1, name: "Donna Mae Fayloga", initials: "DF", course: "BS Information Technology, 3rd year", gwa: 92.6, trend: "up", docs: "3/3", disbursement: "On schedule", health: "good" },
-  { id: 2, name: "Jonas L.", initials: "JL", course: "BS Computer Science, 2nd year", gwa: 90.1, trend: "down", docs: "2/3", disbursement: "Pending document", health: "warn" },
-  { id: 3, name: "Carlo Bautista", initials: "CB", course: "BS Civil Engineering, 3rd year", gwa: 88.9, trend: "down", docs: "1/3", disbursement: "On hold", health: "bad" },
-  { id: 4, name: "Mariella S.", initials: "MS", course: "BS Accountancy, 4th year", gwa: 94.2, trend: "up", docs: "3/3", disbursement: "On schedule", health: "good" },
-  { id: 5, name: "Patricia Lim", initials: "PL", course: "BS Accountancy, 3rd year", gwa: 93.4, trend: "down", docs: "3/3", disbursement: "On schedule", health: "good" },
+  {
+    id: 1, name: "Donna Mae Fayloga", initials: "DF", course: "BS Information Technology, 3rd year",
+    gwa: 92.6, trend: "up", docs: "3/3", disbursement: "On schedule", health: "good",
+    currentPayment: { term: "Q3 2026", amount: 8000, status: "Paid" },
+    gradeHistory: [
+      { term: "S.Y. 2025-2026, 1st Sem", gwa: 91.4, status: "Passed" },
+      { term: "S.Y. 2024-2025, 2nd Sem", gwa: 90.8, status: "Passed" },
+      { term: "S.Y. 2024-2025, 1st Sem", gwa: 90.2, status: "Passed" },
+    ],
+    paymentHistory: [
+      { term: "Q2 2026", amount: 8000, date: "Apr 15, 2026", status: "Paid" },
+      { term: "Q1 2026", amount: 8000, date: "Jan 15, 2026", status: "Paid" },
+      { term: "Q4 2025", amount: 8000, date: "Oct 15, 2025", status: "Paid" },
+    ],
+  },
+  {
+    id: 2, name: "Jonas L.", initials: "JL", course: "BS Computer Science, 2nd year",
+    gwa: 90.1, trend: "down", docs: "2/3", disbursement: "Pending document", health: "warn",
+    currentPayment: { term: "Q3 2026", amount: 8000, status: "Pending" },
+    gradeHistory: [
+      { term: "S.Y. 2025-2026, 1st Sem", gwa: 90.9, status: "Passed" },
+      { term: "S.Y. 2024-2025, 2nd Sem", gwa: 91.5, status: "Passed" },
+    ],
+    paymentHistory: [
+      { term: "Q2 2026", amount: 8000, date: "Apr 15, 2026", status: "Paid" },
+      { term: "Q1 2026", amount: 8000, date: "Jan 15, 2026", status: "Paid" },
+    ],
+  },
+  {
+    id: 3, name: "Carlo Bautista", initials: "CB", course: "BS Civil Engineering, 3rd year",
+    gwa: 88.9, trend: "down", docs: "1/3", disbursement: "On hold", health: "bad",
+    currentPayment: { term: "Q3 2026", amount: 8000, status: "On hold" },
+    gradeHistory: [
+      { term: "S.Y. 2025-2026, 1st Sem", gwa: 89.6, status: "Passed" },
+      { term: "S.Y. 2024-2025, 2nd Sem", gwa: 87.3, status: "Incomplete" },
+      { term: "S.Y. 2024-2025, 1st Sem", gwa: 90.0, status: "Passed" },
+    ],
+    paymentHistory: [
+      { term: "Q2 2026", amount: 8000, date: "Apr 15, 2026", status: "Paid" },
+      { term: "Q1 2026", amount: 8000, date: "Jan 15, 2026", status: "Paid" },
+      { term: "Q4 2025", amount: 8000, date: "Oct 15, 2025", status: "Paid" },
+    ],
+  },
+  {
+    id: 4, name: "Mariella S.", initials: "MS", course: "BS Accountancy, 4th year",
+    gwa: 94.2, trend: "up", docs: "3/3", disbursement: "On schedule", health: "good",
+    currentPayment: { term: "Q3 2026", amount: 8000, status: "Paid" },
+    gradeHistory: [
+      { term: "S.Y. 2025-2026, 1st Sem", gwa: 93.8, status: "Passed" },
+      { term: "S.Y. 2024-2025, 2nd Sem", gwa: 93.1, status: "Passed" },
+      { term: "S.Y. 2024-2025, 1st Sem", gwa: 92.9, status: "Passed" },
+    ],
+    paymentHistory: [
+      { term: "Q2 2026", amount: 8000, date: "Apr 15, 2026", status: "Paid" },
+      { term: "Q1 2026", amount: 8000, date: "Jan 15, 2026", status: "Paid" },
+      { term: "Q4 2025", amount: 8000, date: "Oct 15, 2025", status: "Paid" },
+    ],
+  },
+  {
+    id: 5, name: "Patricia Lim", initials: "PL", course: "BS Accountancy, 3rd year",
+    gwa: 93.4, trend: "down", docs: "3/3", disbursement: "On schedule", health: "good",
+    currentPayment: { term: "Q3 2026", amount: 8000, status: "Paid" },
+    gradeHistory: [
+      { term: "S.Y. 2025-2026, 1st Sem", gwa: 94.0, status: "Passed" },
+      { term: "S.Y. 2024-2025, 2nd Sem", gwa: 93.7, status: "Passed" },
+    ],
+    paymentHistory: [
+      { term: "Q2 2026", amount: 8000, date: "Apr 15, 2026", status: "Paid" },
+      { term: "Q1 2026", amount: 8000, date: "Jan 15, 2026", status: "Paid" },
+    ],
+  },
 ];
 
 export const HEALTH_TAG: Record<FundedScholar["health"], { bg: string; text: string; label: string }> = {
@@ -230,10 +318,18 @@ export const HEALTH_TAG: Record<FundedScholar["health"], { bg: string; text: str
   bad: { bg: BAD_BG, text: BAD, label: "At risk" },
 };
 
-export const PAYMENT_STATUS_COLORS: Record<PaymentRequest["status"], { bg: string; text: string }> = {
+export const PAYMENT_STATUS_COLORS: Record<PaymentRequest["status"] | PaymentRecord["status"], { bg: string; text: string }> = {
   Approved: { bg: GOOD_BG, text: GOOD },
   "Pending approval": { bg: WARN_BG, text: WARN },
   "On hold": { bg: BAD_BG, text: BAD },
+  Paid: { bg: GOOD_BG, text: GOOD },
+  Pending: { bg: WARN_BG, text: WARN },
+};
+
+export const GRADE_STATUS_COLORS: Record<GradeRecord["status"], { bg: string; text: string }> = {
+  Passed: { bg: GOOD_BG, text: GOOD },
+  Incomplete: { bg: WARN_BG, text: WARN },
+  Failed: { bg: BAD_BG, text: BAD },
 };
 
 export const PAYMENT_REQUESTS: PaymentRequest[] = [
@@ -359,10 +455,10 @@ export const s: Record<string, CSSProperties> = {
 
   statRow: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 18, margin: "28px 0" },
   pipelineCard: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 16, padding: "20px 22px" },
-  pipelineTopRow: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 14 },
-  pipelineLabel: { fontSize: "0.84rem", color: "#7a7a74", marginBottom: 8 },
-  pipelineValue: { fontFamily: "'Fraunces', serif", fontSize: "2.1rem", fontWeight: 700, color: NAVY, lineHeight: 1 },
-  pipelineTag: { fontSize: "0.72rem", fontWeight: 700, padding: "4px 10px", borderRadius: 999 },
+  pipelineTopRow: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 12 },
+  pipelineLabel: { fontSize: "0.84rem", color: "#7a7a74" },
+  pipelineValue: { fontFamily: "'Fraunces', serif", fontSize: "2.1rem", fontWeight: 700, color: NAVY, lineHeight: 1, marginBottom: 14 },
+  pipelineTag: { fontSize: "0.68rem", fontWeight: 700, padding: "5px 12px", borderRadius: 999, whiteSpace: "nowrap", flexShrink: 0, lineHeight: 1.4, display: "inline-block" },
   pipelineKpiRow: { display: "flex", alignItems: "center", gap: 8, borderTop: `1px solid ${LINE}`, paddingTop: 12, fontSize: "0.82rem", fontWeight: 700 },
   pipelineKpiLabel: { color: "#9a9a94", fontWeight: 500 },
 
@@ -404,12 +500,12 @@ export const s: Record<string, CSSProperties> = {
   gwaTrendCell: { display: "inline-flex", alignItems: "center", gap: 6 },
 
   drawerOverlay: { position: "fixed", inset: 0, background: "rgba(20,33,58,0.35)", display: "flex", justifyContent: "flex-end", zIndex: 200 },
-  drawerPanel: { width: 440, maxWidth: "92vw", background: WHITE, height: "100%", overflowY: "auto", padding: "32px 30px", boxShadow: "-20px 0 60px -20px rgba(0,0,0,0.2)" },
-  drawerHeader: { display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 26 },
+  drawerPanel: { width: 460, maxWidth: "92vw", background: WHITE, height: "100%", overflowY: "auto", padding: "32px 30px", boxShadow: "-20px 0 60px -20px rgba(0,0,0,0.2)" },
+  drawerHeader: { display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 22 },
   drawerName: { fontSize: "1.3rem", fontWeight: 700, color: NAVY, marginBottom: 3 },
   drawerMeta: { fontSize: "0.84rem", color: "#8a8a84" },
   drawerCloseBtn: { color: "#9a9a94", flexShrink: 0 },
-  drawerInfoGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, background: TINT, borderRadius: 14, padding: "18px 20px", marginBottom: 26 },
+  drawerInfoGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, background: TINT, borderRadius: 14, padding: "18px 20px", marginBottom: 22 },
   drawerInfoLabel: { fontSize: "0.74rem", color: "#9a9a94", marginBottom: 3 },
   drawerInfoValue: { fontSize: "0.94rem", fontWeight: 700, color: NAVY },
   drawerSectionLabel: { fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#9a9a94", marginBottom: 12 },
@@ -422,13 +518,13 @@ export const s: Record<string, CSSProperties> = {
   modalCard: { background: WHITE, borderRadius: 18, padding: "30px 32px", width: 460, maxWidth: "90vw", alignSelf: "center", margin: "auto" },
   modalActionsRow: { display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 10 },
 
-  fieldWrap: { marginBottom: 18 },
+  fieldWrap: { marginBottom: 14 },
   fieldLabel: { display: "block", fontSize: "0.9rem", fontWeight: 600, color: NAVY, marginBottom: 8 },
   fieldRow2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 },
   input: { width: "100%", background: "#FAF7EF", border: `1px solid ${LINE}`, borderRadius: 10, padding: "12px 15px", fontSize: "0.94rem", color: "#2B2B28", fontFamily: "'Inter', sans-serif" },
   select: { width: "100%", background: "#FAF7EF", border: `1px solid ${LINE}`, borderRadius: 10, padding: "12px 15px", fontSize: "0.94rem", color: "#2B2B28", fontFamily: "'Inter', sans-serif" },
   continueBtn: { background: NAVY, color: WHITE, borderRadius: 999, padding: "14px 26px", fontWeight: 600, fontSize: "0.95rem" },
-  continueBtnSmall: { display: "flex", alignItems: "center", gap: 8, background: NAVY, color: WHITE, borderRadius: 999, padding: "10px 18px", fontWeight: 600, fontSize: "0.88rem", flexShrink: 0 },
+  continueBtnSmall: { display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: NAVY, color: WHITE, borderRadius: 999, padding: "10px 18px", fontWeight: 600, fontSize: "0.88rem", flexShrink: 0 },
   backBtn: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 999, padding: "12px 22px", fontWeight: 600, fontSize: "0.9rem", color: NAVY },
   reviewEditLink: { background: "none", color: AMBER, fontWeight: 700, fontSize: "0.86rem" },
   tabRow: { display: "flex", gap: 24, borderBottom: `1px solid ${LINE}`, marginBottom: 24 },
@@ -493,4 +589,41 @@ export const s: Record<string, CSSProperties> = {
   appNoteCard: { display: "flex", gap: 14, alignItems: "flex-start", background: "#F2ECDC", border: "1px solid #E3CB94", borderRadius: 14, padding: "18px 20px", marginBottom: 20 },
   appNoteIcon: { color: AMBER, display: "flex", flexShrink: 0, marginTop: 2 },
   appNoteText: { fontSize: "0.92rem", color: "#3a3a36", lineHeight: 1.6 },
+
+  drawerCurrentPayCard: { display: "flex", justifyContent: "space-between", alignItems: "center", background: WHITE, border: `1px solid ${LINE}`, borderRadius: 14, padding: "16px 18px", marginBottom: 26 },
+  drawerCurrentPayLeft: { display: "flex", flexDirection: "column", gap: 3 },
+  drawerCurrentPayTerm: { fontSize: "0.78rem", color: "#9a9a94" },
+  drawerCurrentPayAmount: { fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Fraunces', serif" },
+  drawerHistoryBtnRow: { display: "flex", marginBottom: 22 },
+  drawerHistoryBtn: { display: "flex", alignItems: "center", gap: 8, background: TINT, color: NAVY, fontWeight: 600, fontSize: "0.86rem", padding: "10px 16px", borderRadius: 999 },
+  historySection: { marginBottom: 24 },
+  historyList: { display: "flex", flexDirection: "column", gap: 10 },
+  historyRow: { display: "flex", justifyContent: "space-between", alignItems: "center", background: WHITE, border: `1px solid ${LINE}`, borderRadius: 12, padding: "13px 16px" },
+  historyRowLeft: { display: "flex", flexDirection: "column", gap: 3 },
+  historyRowTerm: { fontSize: "0.88rem", fontWeight: 700, color: NAVY },
+  historyRowSub: { fontSize: "0.76rem", color: "#9a9a94" },
+  historyRowRight: { display: "flex", alignItems: "center", gap: 10 },
+  historyRowValue: { fontSize: "0.9rem", fontWeight: 700, color: NAVY },
+  backToOverviewBtn: { display: "flex", alignItems: "center", gap: 8, color: AMBER, fontWeight: 600, fontSize: "0.86rem", marginBottom: 20 },
+
+  choiceGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 20 },
+  choiceCard: { border: `1.5px solid ${LINE}`, borderRadius: 14, padding: "22px 18px", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10, textAlign: "left", width: "100%" },
+  choiceIconBox: { width: 40, height: 40, borderRadius: 10, background: TINT, color: NAVY, display: "flex", alignItems: "center", justifyContent: "center" },
+  choiceCardTitle: { fontSize: "0.98rem", fontWeight: 700, color: NAVY },
+  choiceCardDesc: { fontSize: "0.82rem", color: "#8a8a84", lineHeight: 1.5 },
+
+  calendarWrap: { border: `1px solid ${LINE}`, borderRadius: 14, padding: "13px 15px", marginBottom: 14 },
+  calendarHeaderRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
+  calendarMonthLabel: { fontSize: "0.9rem", fontWeight: 700, color: NAVY },
+  calendarNavBtn: { width: 26, height: 26, borderRadius: "50%", background: TINT, color: NAVY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  calendarWeekRow: { display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 4 },
+  calendarWeekday: { fontSize: "0.66rem", fontWeight: 700, color: "#9a9a94", textAlign: "center", textTransform: "uppercase" },
+  calendarDayGrid: { display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 3 },
+  calendarDayBtn: { aspectRatio: "1", borderRadius: 8, fontSize: "0.78rem", fontWeight: 600, color: "#3a3a36", display: "flex", alignItems: "center", justifyContent: "center", width: "100%" },
+  calendarDayBtnEmpty: { aspectRatio: "1" },
+
+  liveMeetingCard: { background: GOOD_BG, border: "1px solid #cfe0b8", borderRadius: 14, padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12, marginTop: 20 },
+  liveMeetingLinkRow: { display: "flex", alignItems: "center", gap: 10, background: WHITE, border: `1px solid ${LINE}`, borderRadius: 10, padding: "9px 14px" },
+  liveMeetingLinkText: { flexGrow: 1, fontSize: "0.86rem", color: "#2B2B28", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
+  copyBtn: { background: TINT, color: NAVY, fontWeight: 600, fontSize: "0.8rem", padding: "7px 12px", borderRadius: 999, flexShrink: 0 },
 };

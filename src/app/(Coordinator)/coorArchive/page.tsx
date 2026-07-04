@@ -8,6 +8,8 @@ import {
   DrawerInfoRow,
   ARCHIVED_SCHOLARS,
   ARCHIVE_STATUS_STYLE,
+  PAYMENT_STATUS_COLORS,
+  GRADE_STATUS_COLORS,
   ArchivedScholar,
   NAVY,
   WHITE,
@@ -112,6 +114,57 @@ export default function ArchivePage() {
                 <ArchiveIcon />
               </span>
               <p style={s.appNoteText}>{selected.note}</p>
+            </div>
+
+            <div style={s.historySection}>
+              <p style={s.drawerSectionLabel}>Grade history</p>
+              <div style={s.historyList}>
+                {selected.gradeHistory.map((g, i) => (
+                  <div key={i} style={s.historyRow}>
+                    <div style={s.historyRowLeft}>
+                      <span style={s.historyRowTerm}>{g.term}</span>
+                      <span style={s.historyRowSub}>GWA {g.gwa}%</span>
+                    </div>
+                    <div style={s.historyRowRight}>
+                      <span
+                        style={{
+                          ...s.stageTag,
+                          background: GRADE_STATUS_COLORS[g.status].bg,
+                          color: GRADE_STATUS_COLORS[g.status].text,
+                        }}
+                      >
+                        {g.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={s.historySection}>
+              <p style={s.drawerSectionLabel}>Payment history</p>
+              <div style={s.historyList}>
+                {selected.paymentHistory.map((p, i) => (
+                  <div key={i} style={s.historyRow}>
+                    <div style={s.historyRowLeft}>
+                      <span style={s.historyRowTerm}>{p.term}</span>
+                      <span style={s.historyRowSub}>{p.date}</span>
+                    </div>
+                    <div style={s.historyRowRight}>
+                      <span style={s.historyRowValue}>₱{p.amount.toLocaleString()}</span>
+                      <span
+                        style={{
+                          ...s.stageTag,
+                          background: PAYMENT_STATUS_COLORS[p.status].bg,
+                          color: PAYMENT_STATUS_COLORS[p.status].text,
+                        }}
+                      >
+                        {p.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div style={s.drawerStageActions}>

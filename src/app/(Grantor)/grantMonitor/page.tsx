@@ -5,19 +5,36 @@ import {
   XCircleIcon,
   MonitorIcon,
   MailIcon,
+  ClockIcon,
+  ArrowRightIcon,
   TrendUpIcon,
   TrendDownIcon,
   DrawerInfoRow,
   FUNDED_SCHOLARS,
   HEALTH_TAG,
+  PAYMENT_STATUS_COLORS,
+  GRADE_STATUS_COLORS,
   FundedScholar,
   GOOD,
   BAD,
   s,
 } from "@/components/Grantorshared";
 
+type DrawerView = "overview" | "history";
+
 export default function GrantorMonitorPage() {
   const [selected, setSelected] = useState<FundedScholar | null>(null);
+  const [view, setView] = useState<DrawerView>("overview");
+
+  function openScholar(sch: FundedScholar) {
+    setSelected(sch);
+    setView("overview");
+  }
+
+  function closeDrawer() {
+    setSelected(null);
+    setView("overview");
+  }
 
   return (
     <div style={s.pageContentTop}>
@@ -67,7 +84,7 @@ export default function GrantorMonitorPage() {
                   </span>
                 </td>
                 <td style={s.td}>
-                  <button onClick={() => setSelected(sch)} style={s.tableActionBtn}>
+                  <button onClick={() => openScholar(sch)} style={s.tableActionBtn}>
                     View
                   </button>
                 </td>
@@ -78,7 +95,7 @@ export default function GrantorMonitorPage() {
       </div>
 
       {selected && (
-        <div style={s.drawerOverlay} onClick={() => setSelected(null)}>
+        <div style={s.drawerOverlay} onClick={closeDrawer}>
           <div style={s.drawerPanel} onClick={(e) => e.stopPropagation()}>
             <div style={s.drawerHeader}>
               <span style={s.profileAvatar}>{selected.initials}</span>
@@ -86,35 +103,122 @@ export default function GrantorMonitorPage() {
                 <h3 style={s.drawerName}>{selected.name}</h3>
                 <p style={s.drawerMeta}>{selected.course}</p>
               </div>
-              <button onClick={() => setSelected(null)} style={s.drawerCloseBtn}>
+              <button onClick={closeDrawer} style={s.drawerCloseBtn}>
                 <XCircleIcon />
               </button>
             </div>
 
-            <div style={s.drawerInfoGrid}>
-              <DrawerInfoRow label="Predicted GWA" value={`${selected.gwa}%`} />
-              <DrawerInfoRow label="Trend" value={selected.trend === "up" ? "Improving" : "Declining"} />
-              <DrawerInfoRow label="Documents" value={selected.docs} />
-              <DrawerInfoRow label="Disbursement" value={selected.disbursement} />
-            </div>
+            {view === "overview" ? (
+              <>
+                <p style={s.drawerSectionLabel}>Current standing</p>
+                <div style={s.drawerInfoGrid}>
+                  <DrawerInfoRow label="Current GWA" value={`${selected.gwa}%`} />
+                  <DrawerInfoRow label="Trend" value={selected.trend === "up" ? "Improving" : "Declining"} />
+                  <DrawerInfoRow label="Documents" value={selected.docs} />
+                  <DrawerInfoRow label="Disbursement" value={selected.disbursement} />
+                </div>
 
-            <p style={s.drawerSectionLabel}>Status</p>
-            <div style={s.appNoteCard}>
-              <span style={s.appNoteIcon}>
-                <MonitorIcon />
-              </span>
-              <p style={s.appNoteText}>
-                {selected.health === "good" && "This scholar is meeting all retention requirements. No action needed."}
-                {selected.health === "warn" && "Missing a required document. Consider following up with the coordinator."}
-                {selected.health === "bad" && "GWA trending down and documents incomplete. Disbursement is on hold pending review."}
-              </p>
-            </div>
+                <p style={s.drawerSectionLabel}>This semesters payment</p>
+                <div style={s.drawerCurrentPayCard}>
+                  <div style={s.drawerCurrentPayLeft}>
+                    <span style={s.drawerCurrentPayTerm}>{selected.currentPayment.term}</span>
+                    <span style={s.drawerCurrentPayAmount}>
+                      ₱{selected.currentPayment.amount.toLocaleString()}
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      ...s.stageTag,
+                      background: PAYMENT_STATUS_COLORS[selected.currentPayment.status].bg,
+                      color: PAYMENT_STATUS_COLORS[selected.currentPayment.status].text,
+                    }}
+                  >
+                    {selected.currentPayment.status}
+                  </span>
+                </div>
 
-            <div style={s.drawerStageActions}>
-              <button style={s.continueBtnSmall}>
-                <MailIcon small /> Message coordinator
-              </button>
-            </div>
+                <div style={s.drawerHistoryBtnRow}>
+                  <button onClick={() => setView("history")} style={s.drawerHistoryBtn}>
+                    <ClockIcon /> View full history <ArrowRightIcon />
+                  </button>
+                </div>
+
+                <p style={s.drawerSectionLabel}>Status</p>
+                <div style={s.appNoteCard}>
+                  <span style={s.appNoteIcon}>
+                    <MonitorIcon />
+                  </span>
+                  <p style={s.appNoteText}>
+                    {selected.health === "good" && "This scholar is meeting all retention requirements. No action needed."}
+                    {selected.health === "warn" && "Missing a required document. Consider following up with the coordinator."}
+                    {selected.health === "bad" && "GWA trending down and documents incomplete. Disbursement is on hold pending review."}
+                  </p>
+                </div>
+
+                <div style={s.drawerStageActions}>
+                  <button style={s.continueBtnSmall}>
+                    <MailIcon small /> Message coordinator
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <button onClick={() => setView("overview")} style={s.backToOverviewBtn}>
+                  ← Back to overview
+                </button>
+
+                <div style={s.historySection}>
+                  <p style={s.drawerSectionLabel}>Grade history</p>
+                  <div style={s.historyList}>
+                    {selected.gradeHistory.map((g, i) => (
+                      <div key={i} style={s.historyRow}>
+                        <div style={s.historyRowLeft}>
+                          <span style={s.historyRowTerm}>{g.term}</span>
+                          <span style={s.historyRowSub}>GWA {g.gwa}%</span>
+                        </div>
+                        <div style={s.historyRowRight}>
+                          <span
+                            style={{
+                              ...s.stageTag,
+                              background: GRADE_STATUS_COLORS[g.status].bg,
+                              color: GRADE_STATUS_COLORS[g.status].text,
+                            }}
+                          >
+                            {g.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={s.historySection}>
+                  <p style={s.drawerSectionLabel}>Payment history</p>
+                  <div style={s.historyList}>
+                    {selected.paymentHistory.map((p, i) => (
+                      <div key={i} style={s.historyRow}>
+                        <div style={s.historyRowLeft}>
+                          <span style={s.historyRowTerm}>{p.term}</span>
+                          <span style={s.historyRowSub}>{p.date}</span>
+                        </div>
+                        <div style={s.historyRowRight}>
+                          <span style={s.historyRowValue}>₱{p.amount.toLocaleString()}</span>
+                          <span
+                            style={{
+                              ...s.stageTag,
+                              background: PAYMENT_STATUS_COLORS[p.status].bg,
+                              color: PAYMENT_STATUS_COLORS[p.status].text,
+                            }}
+                          >
+                            {p.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

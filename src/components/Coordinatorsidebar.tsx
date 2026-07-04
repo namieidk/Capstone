@@ -2,9 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-  GradCapIcon,
   LogoutIcon,
   MenuIcon,
   SearchIcon,
@@ -26,9 +26,14 @@ export function CoordinatorSidebar({ mobileOpen }: CoordinatorSidebarProps) {
   return (
     <aside className={`vc-sidebar ${mobileOpen ? "is-open" : ""}`} style={s.sidebar}>
       <div style={s.sidebarLogo}>
-        <span style={s.sidebarLogoMark}>
-          <GradCapIcon />
-        </span>
+        <div style={{ width: 34, height: 34, position: "relative", flexShrink: 0, overflow: "visible" }}>
+          <Image
+            src="/logo.png"
+            alt="ViaScholar logo"
+            fill
+            style={{ objectFit: "contain", transform: "scale(3)" }}
+          />
+        </div>
         <span style={s.sidebarLogoText}>ViaScholar</span>
       </div>
 
