@@ -6,7 +6,7 @@ import {
   TRACK_BREAKDOWN,
   COORDINATOR_PERFORMANCE,
   s,
-} from "@/components/AdminShared";
+} from "@/components/Adminshared";
 
 export default function AdminReportsPage() {
   const maxMonthly = Math.max(...MONTHLY_APPLICATIONS.map((m) => m.count));

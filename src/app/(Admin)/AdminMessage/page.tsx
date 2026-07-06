@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { SendIcon, CONVERSATIONS, AMBER_BG, s } from "@/components/AdminShared";
+import { SendIcon, CONVERSATIONS, AMBER_BG, s } from "@/components/Adminshared";
 
 export default function AdminMessagePage() {
   const [activeId, setActiveId] = useState(CONVERSATIONS[0].id);

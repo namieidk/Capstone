@@ -62,22 +62,24 @@ function Nav() {
 function Hero() {
   return (
     <section id="top" style={s.heroSection}>
-      <div className="vs-container vs-hero-grid" style={s.heroGrid}>
+      <div className="vs-container vs-hero-grid" style={{ ...s.heroGrid, alignItems: "center" }}>
         <div>
           <span style={s.badge}>✦ CRDC PRIVATE SCHOLARSHIP PROGRAM</span>
           <h1 className="vs-headline" style={s.headline}>
             Funding deserving
             <br />
-            minds. <em style={s.headlineAccent}>Matching</em> them
+            minds. <em style={s.headlineAccent}>Tracked</em> with  clarity.
             <br />
-            to opportunity.
+           
           </h1>
           <p style={s.heroSub}>
             ViaScholar is the private scholarship management system built for
-            Cawayan River Development Corporation (CRDC). A Gale-Shapley
-            matching algorithm pairs every eligible applicant with an open
-            slot fairly and consistently, then keeps each grantees records,
-            contracts, and disbursements on one dashboard through graduation.
+            Cawayan River Development Corporation (CRDC). Descriptive
+            analytics dashboards summarize every applicants eligibility and
+            every scholars academic standing in real time, giving
+            coordinators clear, evidence-based context for every decision —
+            then keep each grantees records, contracts, and disbursements
+            on one dashboard through graduation.
           </p>
           <div style={s.heroActions}>
             <Link href="/apply" className="vs-btn-primary" style={s.primaryBtn}>
@@ -96,7 +98,7 @@ function Hero() {
         <div className="vs-stat-row" style={s.statRow}>
           <Stat number="4 yrs" label="Full tenure support" />
           <Stat number="90%" label="Retention threshold" />
-          <Stat number="100%" label="Algorithm-matched slots" />
+          <Stat number="Real-time" label="Analytics dashboards" />
         </div>
       </div>
     </section>
@@ -119,49 +121,18 @@ function Stat({ number, label }: StatProps) {
 
 function DashboardCard() {
   return (
-    <div style={s.dashCard}>
-      <div style={s.dashHeaderRow}>
-        <span style={s.dashLabel}>SCHOLAR DASHBOARD</span>
-        <span style={s.dashLiveTag}>LIVE PREVIEW</span>
-      </div>
-
-      <div style={s.dashMatchBox}>
-        <span style={s.dashMatchIconWrap}>
-          <CheckIcon />
-        </span>
-        <div>
-          <p style={s.dashMatchLabel}>Slot match status</p>
-          <p style={s.dashMatchValue}>Matched — Slot #14</p>
-        </div>
-      </div>
-
-      <div style={s.dashGwaBox}>
-        <p style={s.dashGwaLabel}>Current GWA standing</p>
-        <p style={s.dashGwaValue}>92.6%</p>
-        <div style={s.dashProgressTrack}>
-          <div style={s.dashProgressFill} />
-        </div>
-        <p style={s.dashGwaCaption}>Above the 90% retention threshold</p>
-      </div>
-
-      <DashRow label="Documents verified" value="3 of 3" />
-      <DashRow label="Contract signed" value="Yes" />
-      <DashRow label="Next disbursement" value="Jul 15" last />
-    </div>
-  );
-}
-
-interface DashRowProps {
-  label: string;
-  value: string;
-  last?: boolean;
-}
-
-function DashRow({ label, value, last }: DashRowProps) {
-  return (
-    <div style={{ ...s.dashRow, marginBottom: last ? 0 : 12 }}>
-      <span style={s.dashRowLabel}>{label}</span>
-      <span style={s.dashRowValue}>{value}</span>
+    <div style={{ ...s.dashCard, padding: 0, overflow: "hidden", minHeight: 420, width: "100%" }}>
+      <img
+        src="/landing.jpg"
+        alt="ViaScholar dashboard preview"
+        style={{
+          width: "100%",
+          height: "100%",
+          minHeight: 420,
+          objectFit: "cover",
+          display: "block",
+        }}
+      />
     </div>
   );
 }
@@ -180,12 +151,12 @@ const ABOUT_FEATURES: AboutFeature[] = [
   },
   {
     icon: <MatchIcon />,
-    title: "Fair, algorithm-driven matching",
-    text: "A Gale-Shapley matching algorithm pairs each eligible applicant with an available scholarship slot based on ranked preference and qualification, producing a stable allocation with no manual favoritism.",
+    title: "Data-driven insight, not guesswork",
+    text: "Descriptive analytics dashboards summarize applicant eligibility, academic standing, and program trends in real time, giving coordinators clear, evidence-based context to support every decision.",
   },
   {
     icon: <ShieldIcon />,
-    title: "Centralized, auditable workflow",
+    title: "Auditable workflow",
     text: "Submissions, HR verification, contract signing, and check disbursements live in one secure portal — no more lost Messenger threads or unstructured email attachments.",
   },
 ];
@@ -196,13 +167,13 @@ function About() {
       <div className="vs-container vs-grid-2" style={s.aboutGrid}>
         <div>
           <span className="vs-eyebrow">ABOUT VIASCHOLAR</span>
-          <h2 style={s.sectionHeading}>A grant program that allocates fairly and stays organized.</h2>
+          <h2 style={s.sectionHeading}>A grant program that stays organized and easy to audit.</h2>
           <p style={s.aboutParagraph}>
             Private scholarships traditionally rely on manual shortlisting —
             slow, hard to audit, and easy to second-guess. ViaScholar
-            replaces that process with a stable-matching algorithm and a
+            replaces that process with real-time descriptive analytics and a
             single system of record, so coordinators and providers can trust
-            every allocation and every update.
+            every decision and every update.
           </p>
         </div>
 
@@ -228,8 +199,6 @@ const QUALIFICATIONS: string[] = [
   "Incoming or current college student enrolled in an accredited HEI",
   "Maintain a minimum 90% General Weighted Average (GWA) every semester",
   "No failing grades, incomplete marks, or dropped subjects",
-  "Combined household income below the program's annual ceiling",
-  "Willing to sign the four-year scholarship contract and return-service clause",
 ];
 
 function Qualifications() {
@@ -242,7 +211,7 @@ function Qualifications() {
           <p style={s.qualParagraph}>
             We look for students with consistent academic discipline and a
             clear commitment to finishing their degree. Meeting every item
-            below makes you eligible for matching.
+            below makes you eligible for review.
           </p>
         </div>
 
@@ -271,9 +240,6 @@ const REQUIREMENTS: Requirement[] = [
   { icon: <IdIcon />, title: "Valid government ID", text: "A clear photo or scan of any current government-issued ID belonging to the applicant." },
   { icon: <PersonCheckIcon />, title: "Proof of relationship", text: "Birth certificate or affidavit linking the applicant to the endorsing employee." },
   { icon: <DocIcon />, title: "Latest grade report", text: "Official transcript or report card from the most recent completed semester." },
-  { icon: <ReceiptIcon />, title: "Income statement", text: "Latest BIR Form 2316, ITR, or a notarized affidavit of no income for both parents." },
-  { icon: <LetterIcon />, title: "Letter of intent", text: "A one-page letter addressed to the scholarship coordinator stating your goals." },
-  { icon: <DocIcon />, title: "Certificate of enrollment", text: "Issued by your school registrar, confirming your program and year level." },
 ];
 
 function Requirements() {
@@ -310,7 +276,7 @@ interface Review {
 
 const REVIEWS: Review[] = [
   { quote: "Before ViaScholar, I had to message our coordinator on Messenger every term. Now everything — grades, contracts, even the check schedule — is just there. It feels professional.", name: "Mariella S.", role: "BS Accountancy, 4th year" },
-  { quote: "The matching system pairs our limited slots with the most qualified applicants automatically. What used to take weeks of manual shortlisting now takes minutes, and every allocation is easy to justify.", name: "Engr. Paolo R.", role: "HR Coordinator, partner company" },
+  { quote: "The dashboard's analytics give us a clear picture of every applicant's eligibility and academic standing at a glance. What used to take weeks of manual review now takes minutes, and every decision is backed by clear data.", name: "Engr. Paolo R.", role: "HR Coordinator, partner company" },
   { quote: "Uploading documents used to feel risky over email. The OCR check told me my ITR was unreadable before I submitted — saved me from disqualification.", name: "Jonas L.", role: "BS Computer Science, 2nd year" },
 ];
 
@@ -353,7 +319,7 @@ interface FaqItem {
 const FAQS: FaqItem[] = [
   { q: "Who is eligible to apply for a ViaScholar grant?", a: "Applicants must be Filipino citizens studying in Davao City, immediate relatives of an employee of a partner private company (or formally endorsed by one), and currently enrolled in an accredited college or university with at least a 90% General Weighted Average." },
   { q: "When is the application deadline?", a: "Applications for the current academic year close on August 15. Late submissions are only accepted on a case-by-case basis for returning scholars." },
-  { q: "How are scholarship slots assigned to applicants?", a: "ViaScholar uses a Gale-Shapley matching algorithm to pair eligible applicants with available slots based on qualification ranking and program capacity. This produces a stable, optimal allocation — no applicant and open slot would both prefer each other over their assigned match." },
+  { q: "How are scholarship slots assigned to applicants?", a: "Coordinators review each applicant's eligibility, academic standing, and document verification status through ViaScholar's descriptive analytics dashboard, which summarizes this data alongside available slot capacity to support a fair, well-informed decision." },
   { q: "What documents do I need to upload?", a: "You'll need a valid government ID, proof of relationship, your latest grade report, an income statement, a letter of intent, and a certificate of enrollment." },
   { q: "How long does the evaluation take?", a: "Most applications are reviewed within 2 to 3 weeks of submission, provided all required documents pass the initial OCR verification." },
   { q: "What happens if my grades fall below 90%?", a: "Coordinators review each scholar's submitted grade report every semester and reach out as soon as a report falls below the threshold, giving the scholar a chance to recover before the next disbursement." },
@@ -425,7 +391,7 @@ function Contact() {
           </p>
 
           <div style={s.contactInfoList}>
-            <ContactInfoRow icon={<MailIcon />} label="Email" value="hello@viascholar.org" />
+            <ContactInfoRow icon={<MailIcon />} label="Email" value="gdacaac.plf@gmail.com" />
             <ContactInfoRow icon={<PhoneIcon />} label="Phone" value="(082) 555 0142" />
             <ContactInfoRow icon={<PinIcon />} label="Office" value="2F Matina Pavilion Bldg, Davao City" />
             <ContactInfoRow icon={<ClockIcon />} label="Hours" value="Mon – Fri, 9:00 AM – 5:00 PM" />
@@ -496,7 +462,7 @@ function Footer() {
     <footer style={s.footer}>
       <div className="vs-container" style={s.footerInner}>
         <p style={s.footerText}>© 2026 ViaScholar. All rights reserved.</p>
-        <p style={s.footerText}>hello@viascholar.org · (082) 555 0142 · Davao City</p>
+        <p style={s.footerText}>gdacaac.plf@gmail.com · (082) 555 0142 · Davao City</p>
       </div>
     </footer>
   );

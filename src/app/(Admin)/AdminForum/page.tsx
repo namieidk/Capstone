@@ -9,7 +9,7 @@ import {
   ADMIN,
   AMBER,
   s,
-} from "@/components/AdminShared";
+} from "@/components/Adminshared";
 
 export default function AdminForumPage() {
   const [posts, setPosts] = useState(FORUM_POSTS);

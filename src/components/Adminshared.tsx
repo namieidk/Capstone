@@ -1,4 +1,4 @@
-"use client";
+
 
 import React, { CSSProperties, ReactNode } from "react";
 
@@ -251,31 +251,31 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { key: "dashboard", label: "Dashboard", icon: <HomeIcon />, href: "/adminDashboard" },
-  { key: "monitor", label: "Monitor", icon: <MonitorIcon />, href: "/adminMonitor" },
-  { key: "archive", label: "Archive", icon: <ArchiveIcon />, href: "/adminArchive" },
-  { key: "employee", label: "Employee", icon: <BriefcaseIcon />, href: "/adminEmployee" },
-  { key: "meeting", label: "Meeting", icon: <CalendarIcon />, href: "/adminMeeting", badge: 2 },
-  { key: "forum", label: "Forum", icon: <ForumIcon />, href: "/adminForum", badge: 5 },
-  { key: "payments", label: "Payments", icon: <PaymentsIcon />, href: "/adminPayments", badge: 3 },
-  { key: "reports", label: "Overall reports", icon: <ReportsIcon />, href: "/adminReports" },
-  { key: "message", label: "Message", icon: <MailIcon />, href: "/adminMessage", badge: 4 },
-  { key: "settings", label: "Settings", icon: <SettingsIcon />, href: "/adminSettings" },
-  { key: "profile", label: "Profile", icon: <ProfileIcon />, href: "/adminProfile" },
+  { key: "dashboard", label: "Dashboard", icon: <HomeIcon />, href: "/AdminDashboard" },
+  { key: "monitor", label: "Monitor", icon: <MonitorIcon />, href: "/Adminmonitor" },
+  { key: "archive", label: "Archive", icon: <ArchiveIcon />, href: "/AdminArchive" },
+  { key: "employee", label: "Employee", icon: <BriefcaseIcon />, href: "/AdminEmployee" },
+  { key: "meeting", label: "Meeting", icon: <CalendarIcon />, href: "/AdminMeeting", badge: 2 },
+  { key: "forum", label: "Forum", icon: <ForumIcon />, href: "/AdminForum", badge: 5 },
+  { key: "payments", label: "Payments", icon: <PaymentsIcon />, href: "/AdminPayment", badge: 3 },
+  { key: "reports", label: "Overall reports", icon: <ReportsIcon />, href: "/AdminReports" },
+  { key: "message", label: "Message", icon: <MailIcon />, href: "/AdminMessage", badge: 4 },
+  { key: "settings", label: "Settings", icon: <SettingsIcon />, href: "/AdminSettings" },
+  { key: "profile", label: "Profile", icon: <ProfileIcon />, href: "/AdminProfile" },
 ];
 
 export const TITLES: Record<string, [string, string]> = {
-  "/adminDashboard": ["Good morning, Atty. Castillo.", "Here's the org-wide snapshot for today."],
-  "/adminMonitor": ["Monitor", "Active scholars across all coordinators and their current standing."],
-  "/adminArchive": ["Archive", "Scholars who are no longer active, across all coordinators."],
-  "/adminEmployee": ["Employee", "Coordinators, HR staff, and partner-company employees on file."],
-  "/adminMeeting": ["Meeting", "Book a meeting or check what's scheduled for you."],
-  "/adminForum": ["Forum", "Monitor scholar discussions and post announcements."],
-  "/adminPayments": ["Payments", "Org-wide scholar disbursements across every coordinator."],
-  "/adminReports": ["Overall reports", "Pipeline performance and analytics across the organization."],
-  "/adminMessage": ["Messages", "Conversations with coordinators and partner companies."],
-  "/adminSettings": ["Settings", "System-wide preferences, security, and access control."],
-  "/adminProfile": ["Profile", "Your administrator profile and activity."],
+  "/AdminDashboard": ["Good morning, Atty. Castillo.", "Here's the org-wide snapshot for today."],
+  "/Adminmonitor": ["Monitor", "Active scholars across all coordinators and their current standing."],
+  "/AdminArchive": ["Archive", "Scholars who are no longer active, across all coordinators."],
+  "/AdminEmployee": ["Employee", "Coordinators, HR staff, and partner-company employees on file."],
+  "/AdminMeeting": ["Meeting", "Book a meeting or check what's scheduled for you."],
+  "/AdminForum": ["Forum", "Monitor scholar discussions and post announcements."],
+  "/AdminPayments": ["Payments", "Org-wide scholar disbursements across every coordinator."],
+  "/AdminReports": ["Overall reports", "Pipeline performance and analytics across the organization."],
+  "/AdminMessage": ["Messages", "Conversations with coordinators and partner companies."],
+  "/AdminSettings": ["Settings", "System-wide preferences, security, and access control."],
+  "/AdminProfile": ["Profile", "Your administrator profile and activity."],
 };
 
 export const SCHOLARS_DIRECTORY: ScholarRecord[] = [

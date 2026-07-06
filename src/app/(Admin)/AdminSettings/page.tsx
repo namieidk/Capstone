@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, ReactNode } from "react";
-import { ToggleIcon, NAVY, BAD, s } from "@/components/AdminShared";
+import { ToggleIcon, NAVY, BAD, s } from "@/components/Adminshared";
 
 interface SettingsSectionProps {
   title: string;

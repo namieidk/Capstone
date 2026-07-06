@@ -14,7 +14,7 @@ import {
   AMBER_BG,
   NAVY,
   s,
-} from "@/components/AdminShared";
+} from "@/components/Adminshared";
 
 interface AdminSidebarProps {
   mobileOpen: boolean;

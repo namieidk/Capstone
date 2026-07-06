@@ -8,7 +8,7 @@ import {
   EMPLOYEES,
   SCHOLARS_DIRECTORY,
   s,
-} from "@/components/AdminShared";
+} from "@/components/Adminshared";
 
 export default function AdminProfilePage() {
   const [bio, setBio] = useState(ADMIN.bio);

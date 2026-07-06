@@ -8,7 +8,7 @@ import {
   PAYMENT_STATUS_COLORS,
   AdminPaymentRecord,
   s,
-} from "@/components/AdminShared";
+} from "@/components/Adminshared";
 
 export default function AdminPaymentsPage() {
   const [records, setRecords] = useState<AdminPaymentRecord[]>(ADMIN_PAYMENT_RECORDS);

@@ -12,7 +12,7 @@ import {
   AMBER_BG,
   LINE,
   s,
-} from "@/components/AdminShared";
+} from "@/components/Adminshared";
 
 interface MeetingFormState {
   title: string;

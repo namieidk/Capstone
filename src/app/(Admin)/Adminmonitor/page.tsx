@@ -14,7 +14,7 @@ import {
   GOOD,
   BAD,
   s,
-} from "@/components/AdminShared";
+} from "@/components/Adminshared";
 
 export default function AdminMonitorPage() {
   const [selected, setSelected] = useState<MonitorScholar | null>(null);

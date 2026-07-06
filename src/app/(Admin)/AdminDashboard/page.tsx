@@ -18,7 +18,7 @@ import {
   AMBER,
   LINE,
   s,
-} from "@/components/AdminShared";
+} from "@/components/Adminshared";
 
 export default function AdminDashboardPage() {
   const router = useRouter();

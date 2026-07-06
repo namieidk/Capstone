@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { usePathname } from "next/navigation";
-import { GlobalStyles, TITLES, s } from "@/components/AdminShared";
+import { GlobalStyles, TITLES, s } from "@/components/Adminshared";
 import { AdminSidebar, AdminTopBar } from "@/components/Adminsidebar";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

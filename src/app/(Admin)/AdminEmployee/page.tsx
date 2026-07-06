@@ -20,7 +20,7 @@ import {
   WHITE,
   LINE,
   s,
-} from "@/components/AdminShared";
+} from "@/components/Adminshared";
 
 const EMPLOYEE_FILTERS: ("All" | EmployeeRecord["type"])[] = ["All", "Coordinator", "Partner Employee"];
 
