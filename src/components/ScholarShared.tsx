@@ -76,6 +76,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { key: "dashboard", label: "Home", icon: <HomeIcon />, href: "/scholardashboard" },
   { key: "grade", label: "Grades", icon: <GradeIcon />, href: "/ScholarGrade" },
+  { key: "reports", label: "Reports", icon: <ReportsIcon />, href: "/scholarReports" },
   { key: "message", label: "Messages", icon: <MailIcon />, href: "/scholarMessage" },
   { key: "meeting", label: "Meetings", icon: <CalendarIcon />, href: "/scholarMeeting" },
   { key: "forum", label: "Forum", icon: <ForumIcon />, href: "/SchoForum" },
@@ -318,6 +319,47 @@ export const PAYMENT_SUMMARY = {
   nextDate: "Jul 15, 2026",
 };
 
+// ============================================================
+// REPORT DATA
+// ============================================================
+
+export const SCHOLAR_FUND_TOTAL = 1_000_000;
+export const SCHOLAR_FUND_ALLOCATED = 998_000;
+export const SCHOLAR_FUND_NON_ALLOCATED = SCHOLAR_FUND_TOTAL - SCHOLAR_FUND_ALLOCATED; // 2,000
+
+export interface ScholarDisbursementMonth {
+  month: string;
+  amount: number;
+}
+
+export const SCHOLAR_DISBURSEMENT_MONTHLY: ScholarDisbursementMonth[] = [
+  { month: "Jan", amount: 8000 },
+  { month: "Feb", amount: 8000 },
+  { month: "Mar", amount: 8000 },
+  { month: "Apr", amount: 8000 },
+  { month: "May", amount: 8000 },
+  { month: "Jun", amount: 8000 },
+  { month: "Jul", amount: 0 },
+];
+
+// Scholar's own entitlement (annual stipend of ₱32,000)
+export const SCHOLAR_ANNUAL_STIPEND = 32_000;
+export const SCHOLAR_DISBURSED_TO_DATE = 24_000;
+export const SCHOLAR_REMAINING_STIPEND = SCHOLAR_ANNUAL_STIPEND - SCHOLAR_DISBURSED_TO_DATE;
+
+export interface ScholarReportKpi {
+  label: string;
+  value: string;
+  sub: string;
+}
+
+export const SCHOLAR_REPORT_KPIS: ScholarReportKpi[] = [
+  { label: "Annual stipend", value: "₱32,000", sub: "FY 2026 entitlement" },
+  { label: "Disbursed to date", value: "₱24,000", sub: "6 of 8 payments released" },
+  { label: "Remaining balance", value: "₱8,000", sub: "Due Q3 · Jul 15, 2026" },
+  { label: "Fund total budget", value: "₱1,000,000", sub: "₱998,000 allocated · ₱2,000 unallocated" },
+];
+
 // ---------- Profile ----------
 
 export interface ProfileDocument {
@@ -407,6 +449,9 @@ export function ImageIcon() {
 }
 export function DownloadIcon() {
   return (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v12M7 11l5 5 5-5M5 21h14" /></svg>);
+}
+export function ReportsIcon() {
+  return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M8 17v-5M12 17V9M16 17v-3" /></svg>);
 }
 export function VideoIcon() {
   return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="6" width="14" height="12" rx="2" /><path d="M16 10l6-4v12l-6-4" /></svg>);
