@@ -33,6 +33,9 @@ export function GlobalStyles() {
       .vg ::-webkit-scrollbar-thumb { background: #E4DCC8; border-radius: 8px; }
 
       .vg-app-shell { display: flex; min-height: 100vh; }
+      .vg-main { height: 100vh; overflow-y: auto; scroll-snap-type: y mandatory; }
+      .vg-snap-section { scroll-snap-align: start; scroll-snap-stop: always; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 40px; box-sizing: border-box; }
+      .vg-snap-section-table { scroll-snap-align: start; scroll-snap-stop: always; min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-start; padding: 40px; box-sizing: border-box; overflow: visible; }
 
       @media (max-width: 980px) {
         .vg-content-grid { grid-template-columns: 1fr !important; }

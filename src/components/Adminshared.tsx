@@ -1,10 +1,25 @@
-
-
 import React, { CSSProperties, ReactNode } from "react";
 
 // ============================================================
 // GLOBAL STYLES
 // ============================================================
+//
+// NOTE ON THE LAYOUT FIX
+// -----------------------
+// The old .va-main / .va-snap-section rules used `height: 100vh` +
+// `scroll-snap-type: y mandatory` + `min-height: 100vh` with
+// `justify-content: center`. That combination is what was cutting
+// cards, panels, and tables off at the bottom: every "page" was
+// forced into exactly one viewport tall, snapped, and vertically
+// centered, so anything taller than the window got clipped instead
+// of scrolled to.
+//
+// The fix below removes the forced viewport-height sections and the
+// scroll-snapping entirely. The page now scrolls the normal way
+// (natural document flow), the sidebar stays pinned with
+// `position: sticky`, and every content area gets generous bottom
+// padding so the last card or table always ends with visible
+// rounded corners instead of running into the edge of the window.
 
 export function GlobalStyles() {
   return (
@@ -17,15 +32,40 @@ export function GlobalStyles() {
         color: #2B2B28;
         font-family: 'Inter', -apple-system, sans-serif;
         -webkit-font-smoothing: antialiased;
+        line-height: 1.45;
       }
-      .va h1, .va h2, .va h3 { font-family: 'Fraunces', Georgia, serif; color: #14213A; }
+      .va h1, .va h2, .va h3 { font-family: 'Fraunces', Georgia, serif; color: #1A1A1A; }
       .va a { color: inherit; text-decoration: none; }
       .va button { font-family: 'Inter', sans-serif; cursor: pointer; border: none; background: none; }
       .va table { border-collapse: collapse; width: 100%; }
       .va ::-webkit-scrollbar { width: 8px; height: 8px; }
       .va ::-webkit-scrollbar-thumb { background: #E4DCC8; border-radius: 8px; }
 
-      .va-app-shell { display: flex; min-height: 100vh; }
+      .va button:focus-visible,
+      .va a:focus-visible,
+      .va input:focus-visible,
+      .va select:focus-visible,
+      .va textarea:focus-visible {
+        outline: 2px solid #C9943D;
+        outline-offset: 2px;
+        border-radius: 6px;
+      }
+
+      /* ---- Layout: natural scrolling, no viewport clipping ---- */
+      .va-app-shell { display: flex; min-height: 100vh; align-items: flex-start; }
+      .va-main { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; }
+      .va-snap-section,
+      .va-snap-section-table { padding: 0; }
+
+      /* ---- Subtle, consistent interaction states ---- */
+      .va table tbody tr { transition: background-color 0.12s ease; }
+      .va table tbody tr:hover { background-color: #FAF7EF; }
+
+      .va-card-interactive { transition: box-shadow 0.15s ease, transform 0.15s ease; cursor: pointer; }
+      .va-card-interactive:hover { box-shadow: 0 10px 28px rgba(20, 33, 58, 0.10); transform: translateY(-2px); }
+
+      .va-nav-item { transition: background-color 0.12s ease, color 0.12s ease; }
+      .va-nav-item:hover { background-color: #F4F0E6; }
 
       @media (max-width: 980px) {
         .va-content-grid { grid-template-columns: 1fr !important; }
@@ -53,8 +93,14 @@ export function GlobalStyles() {
 // ============================================================
 // DESIGN TOKENS
 // ============================================================
+//
+// NAVY was previously a dark blue (#14213A). It's swapped to a warm
+// near-black so nothing on the page reads as "blue" anymore — every
+// heading, table row name, button, and avatar label that pulls this
+// token updates automatically since they all reference NAVY rather
+// than a hardcoded color.
 
-export const NAVY = "#14213A";
+export const NAVY = "#1A1A1A";
 export const CREAM = "#F8F4EA";
 export const AMBER = "#C9943D";
 export const AMBER_BG = "#F3E6C8";
@@ -68,6 +114,12 @@ export const WARN = "#a17a1f";
 export const WARN_BG = "#F3E6C8";
 export const BAD = "#8a3a2e";
 export const BAD_BG = "#F6E4DF";
+
+// Soft, low-opacity elevation — used on every card/panel/table so they
+// lift gently off the cream background without looking heavy.
+export const SHADOW_SM = "0 4px 16px rgba(20, 33, 58, 0.06)";
+export const SHADOW_MD = "0 8px 24px rgba(20, 33, 58, 0.09)";
+export const BORDER_SUBTLE = "1px solid rgba(20, 33, 58, 0.07)";
 
 // ============================================================
 // ICONS
@@ -103,8 +155,8 @@ export function TrashIcon() { return (<svg width="15" height="15" viewBox="0 0 2
 export function PaymentsIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="6" width="20" height="13" rx="2.2" /><path d="M2 10.5h20" /><circle cx="7" cy="15" r="1.2" fill="currentColor" stroke="none" /></svg>); }
 export function ToggleIcon({ on }: { on: boolean }) {
   return (
-    <span style={{ width: 42, height: 24, borderRadius: 999, background: on ? AMBER : LINE, display: "inline-flex", alignItems: "center", padding: 3 }}>
-      <span style={{ width: 18, height: 18, borderRadius: "50%", background: "white", transform: on ? "translateX(18px)" : "translateX(0)", transition: "transform 0.15s" }} />
+    <span style={{ width: 42, height: 24, borderRadius: 999, background: on ? AMBER : LINE, display: "inline-flex", alignItems: "center", padding: 3, transition: "background-color 0.15s ease" }}>
+      <span style={{ width: 18, height: 18, borderRadius: "50%", background: "white", transform: on ? "translateX(18px)" : "translateX(0)", transition: "transform 0.15s ease" }} />
     </span>
   );
 }
@@ -238,7 +290,7 @@ export const ADMIN = {
   title: "Main Administrator, ViaScholar",
   email: "ramon.castillo@viascholar.org",
   bio: "Overseeing ViaScholar's scholarship operations across all coordinators and partner companies in Davao City since 2019. Final approval on policy, budget, and staffing.",
-  bannerGradient: "linear-gradient(120deg, #1B3A34 0%, #14213A 100%)",
+  bannerGradient: "linear-gradient(120deg, #2B2B28 0%, #1A1A1A 100%)",
   avatarColor: AMBER_BG,
 };
 
@@ -535,14 +587,20 @@ export function DrawerInfoRow({ label, value }: DrawerInfoRowProps) {
 // ============================================================
 // STYLES
 // ============================================================
+//
+// Every card/panel below now carries SHADOW_SM (or SHADOW_MD for
+// elevated surfaces like drawers), a softened border, 16–18px radius,
+// and consistent 8px-based spacing. mainContent and topbar use
+// clamp() so padding scales smoothly across breakpoints without
+// needing extra utility classes wired into page components.
 
 export const s: Record<string, CSSProperties> = {
-  sidebar: { width: 252, flexShrink: 0, background: WHITE, borderRight: `1px solid ${LINE}`, display: "flex", flexDirection: "column", padding: "26px 18px", height: "100vh", position: "sticky", top: 0, overflowY: "auto" },
-  sidebarLogo: { display: "flex", alignItems: "center", gap: 10, padding: "0 8px", marginBottom: 28 },
+  sidebar: { width: 252, flexShrink: 0, background: WHITE, borderRight: `1px solid ${LINE}`, display: "flex", flexDirection: "column", padding: "32px 18px", height: "100vh", position: "sticky", top: 0, overflowY: "auto" },
+  sidebarLogo: { display: "flex", alignItems: "center", gap: 10, padding: "0 8px", marginBottom: 32 },
   sidebarLogoMark: { width: 32, height: 32, borderRadius: 9, background: NAVY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   sidebarLogoText: { fontFamily: "'Fraunces', serif", fontSize: "1.15rem", fontWeight: 700, color: NAVY },
-  sidebarNav: { display: "flex", flexDirection: "column", gap: 3, flexGrow: 1 },
-  sidebarNavItem: { display: "flex", alignItems: "center", gap: 12, padding: "11px 13px", borderRadius: 11, fontSize: "0.92rem", fontWeight: 600, width: "100%", textAlign: "left" },
+  sidebarNav: { display: "flex", flexDirection: "column", gap: 4, flexGrow: 1 },
+  sidebarNavItem: { display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderRadius: 12, fontSize: "0.92rem", fontWeight: 600, width: "100%", textAlign: "left" },
   sidebarNavIcon: { display: "flex", flexShrink: 0 },
   sidebarNavLabel: { flexGrow: 1 },
   sidebarBadge: { background: AMBER, color: WHITE, fontSize: "0.7rem", fontWeight: 700, borderRadius: 999, minWidth: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px" },
@@ -553,12 +611,12 @@ export const s: Record<string, CSSProperties> = {
   sidebarUserRole: { fontSize: "0.76rem", color: "#8a8a84" },
   sidebarLogoutBtn: { color: "#9a9a94", display: "flex", flexShrink: 0, padding: 6 },
 
-  main: { flexGrow: 1, minWidth: 0 },
-  mainContent: { padding: "0 40px 48px" },
+  main: { flexGrow: 1, minWidth: 0, minHeight: "100vh", display: "flex", flexDirection: "column" as const },
+  mainContent: { padding: "0 clamp(20px, 4vw, 40px) 96px", flexGrow: 1 },
 
-  topbar: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, padding: "28px 40px", borderBottom: `1px solid ${LINE}` },
+  topbar: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, padding: "clamp(20px, 3vw, 28px) clamp(20px, 4vw, 40px)", borderBottom: `1px solid ${LINE}` },
   mobileToggle: { display: "none", marginRight: 8 },
-  topbarGreeting: { fontSize: "1.5rem", fontWeight: 700, color: NAVY, marginBottom: 4 },
+  topbarGreeting: { fontSize: "clamp(1.3rem, 1.4vw + 1rem, 1.5rem)", fontWeight: 700, color: NAVY, marginBottom: 4 },
   topbarSub: { fontSize: "0.9rem", color: "#7a7a74" },
   topbarRight: { display: "flex", alignItems: "center", gap: 16 },
   searchBox: { display: "flex", alignItems: "center", gap: 10, background: TINT, border: `1px solid ${LINE}`, borderRadius: 999, padding: "9px 16px", width: 220 },
@@ -566,34 +624,34 @@ export const s: Record<string, CSSProperties> = {
   bellBtn: { position: "relative", width: 40, height: 40, borderRadius: "50%", background: TINT, display: "flex", alignItems: "center", justifyContent: "center" },
   bellDot: { position: "absolute", top: 9, right: 10, width: 8, height: 8, borderRadius: "50%", background: AMBER, border: `2px solid ${TINT}` },
 
-  pageWrap: { maxWidth: 900 },
+  pageWrap: { maxWidth: 960 },
   pageHeaderRow: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 20, flexWrap: "wrap", marginBottom: 4 },
   pageHeading: { fontSize: "1.8rem", fontWeight: 700, color: NAVY, marginBottom: 6 },
   pageSub: { fontSize: "0.96rem", color: "#7a7a74", marginBottom: 24 },
   subSectionLabel: { fontSize: "0.82rem", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: "#9a9a94", margin: "8px 0 -4px" },
 
   statRow: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 18, margin: "28px 0" },
-  pipelineCard: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 16, padding: "20px 22px" },
+  pipelineCard: { background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, padding: "22px 24px", boxShadow: SHADOW_SM, display: "flex", flexDirection: "column", justifyContent: "space-between" },
   pipelineTopRow: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 14 },
-  pipelineLabel: { fontSize: "0.84rem", color: "#7a7a74", marginBottom: 8 },
-  pipelineValue: { fontFamily: "'Fraunces', serif", fontSize: "2.1rem", fontWeight: 700, color: NAVY, lineHeight: 1 },
+  pipelineLabel: { fontSize: "0.84rem", color: "#7a7a74", marginBottom: 8, fontWeight: 500 },
+  pipelineValue: { fontFamily: "'Fraunces', serif", fontSize: "2.15rem", fontWeight: 700, color: NAVY, lineHeight: 1 },
   pipelineTag: { fontSize: "0.72rem", fontWeight: 700, padding: "4px 10px", borderRadius: 999 },
-  pipelineKpiRow: { display: "flex", alignItems: "center", gap: 8, borderTop: `1px solid ${LINE}`, paddingTop: 12, fontSize: "0.82rem", fontWeight: 700 },
+  pipelineKpiRow: { display: "flex", alignItems: "center", gap: 8, borderTop: `1px solid ${LINE}`, paddingTop: 12, marginTop: 4, fontSize: "0.82rem", fontWeight: 700 },
   pipelineKpiLabel: { color: "#9a9a94", fontWeight: 500 },
 
-  contentGrid: { display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 22 },
-  feedCard: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 18, padding: "26px 28px" },
+  contentGrid: { display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 24 },
+  feedCard: { background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, padding: "26px 28px", boxShadow: SHADOW_SM },
   cardHeaderRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 },
   cardHeading: { fontSize: "1.25rem", fontWeight: 700, color: NAVY },
   viewAllBtn: { display: "flex", alignItems: "center", gap: 6, fontSize: "0.86rem", fontWeight: 600, color: AMBER },
   feedList: { display: "flex", flexDirection: "column" },
-  feedRow: { display: "flex", gap: 14, padding: "16px 0" },
+  feedRow: { display: "flex", gap: 14, padding: "16px 0", borderBottom: `1px solid ${TINT}` },
   feedIconBox: { width: 36, height: 36, borderRadius: 10, background: TINT, color: NAVY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   feedTextCol: { flexGrow: 1 },
   feedText: { fontSize: "0.92rem", color: "#2B2B28", lineHeight: 1.5, marginBottom: 4 },
   feedTime: { fontSize: "0.78rem", color: "#9a9a94" },
 
-  upcomingCard: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 18, padding: "26px 28px" },
+  upcomingCard: { background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, padding: "26px 28px", boxShadow: SHADOW_SM },
   upcomingList: { display: "flex", flexDirection: "column", gap: 16, marginBottom: 26 },
   upcomingRow: { display: "flex", gap: 12, alignItems: "flex-start" },
   upcomingDot: { width: 9, height: 9, borderRadius: "50%", marginTop: 6, flexShrink: 0 },
@@ -608,10 +666,10 @@ export const s: Record<string, CSSProperties> = {
   filterChip: { border: "1px solid", borderRadius: 999, padding: "8px 16px", fontSize: "0.86rem", fontWeight: 600 },
   filterChipCount: { opacity: 0.65, fontWeight: 500 },
 
-  tableWrap: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 18, padding: "8px 8px", marginBottom: 8 },
-  th: { textAlign: "left", fontSize: "0.78rem", fontWeight: 700, color: "#9a9a94", textTransform: "uppercase", letterSpacing: "0.04em", padding: "14px 18px", borderBottom: `1px solid ${LINE}` },
-  tr: { borderBottom: `1px solid ${LINE}` },
-  td: { padding: "16px 18px", fontSize: "0.9rem", color: "#2B2B28" },
+  tableWrap: { background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, padding: "10px 12px", marginBottom: 8, boxShadow: SHADOW_SM },
+  th: { textAlign: "left", fontSize: "0.76rem", fontWeight: 700, color: "#8a8a84", textTransform: "uppercase", letterSpacing: "0.04em", padding: "16px 20px", background: TINT, borderRadius: 10 },
+  tr: { borderBottom: `1px solid ${TINT}` },
+  td: { padding: "18px 20px", fontSize: "0.9rem", color: "#2B2B28", verticalAlign: "middle" },
   tdNameRow: { display: "flex", alignItems: "center", gap: 12 },
   tdName: { fontSize: "0.92rem", fontWeight: 700, color: NAVY },
   tdSub: { fontSize: "0.78rem", color: "#9a9a94" },
@@ -636,7 +694,7 @@ export const s: Record<string, CSSProperties> = {
   drawerStageActions: { display: "flex", flexDirection: "column", gap: 10 },
   rejectBtn: { display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: BAD_BG, color: BAD, fontWeight: 600, fontSize: "0.88rem", padding: "12px 20px", borderRadius: 999, textAlign: "center" },
 
-  modalCard: { background: WHITE, borderRadius: 18, padding: "30px 32px", width: 460, maxWidth: "90vw", alignSelf: "center", margin: "auto" },
+  modalCard: { background: WHITE, borderRadius: 18, padding: "30px 32px", width: 460, maxWidth: "90vw", alignSelf: "center", margin: "auto", boxShadow: SHADOW_MD },
   modalActionsRow: { display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 10 },
 
   fieldWrap: { marginBottom: 18 },
@@ -652,7 +710,7 @@ export const s: Record<string, CSSProperties> = {
   tabButton: { padding: "10px 2px 14px", fontWeight: 600, fontSize: "0.94rem", borderBottom: "2.5px solid transparent" },
 
   meetingList: { display: "flex", flexDirection: "column", gap: 12 },
-  meetingCard: { display: "flex", alignItems: "center", gap: 16, background: WHITE, border: `1px solid ${LINE}`, borderRadius: 16, padding: "16px 20px" },
+  meetingCard: { display: "flex", alignItems: "center", gap: 16, background: WHITE, border: BORDER_SUBTLE, borderRadius: 16, padding: "16px 20px", boxShadow: SHADOW_SM },
   meetingDateBox: { display: "flex", flexDirection: "column", alignItems: "center", background: TINT, borderRadius: 12, padding: "10px 14px", minWidth: 64, flexShrink: 0 },
   meetingDateMonth: { fontSize: "0.72rem", fontWeight: 700, color: AMBER, textTransform: "uppercase" },
   meetingDateDay: { fontSize: "1.2rem", fontWeight: 700, color: NAVY },
@@ -660,14 +718,14 @@ export const s: Record<string, CSSProperties> = {
   meetingTitle: { fontSize: "0.98rem", fontWeight: 700, color: NAVY, marginBottom: 3 },
   meetingMeta: { fontSize: "0.84rem", color: "#7a7a74" },
   meetingStatusTag: { fontSize: "0.76rem", fontWeight: 700, padding: "6px 13px", borderRadius: 999, whiteSpace: "nowrap" },
-  meetingForm: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 18, padding: "28px 30px", maxWidth: 520 },
+  meetingForm: { background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, padding: "28px 30px", maxWidth: 520, boxShadow: SHADOW_SM },
 
-  composerCard: { display: "flex", gap: 14, background: WHITE, border: `1px solid ${LINE}`, borderRadius: 16, padding: "20px 22px", marginBottom: 24 },
+  composerCard: { display: "flex", gap: 14, background: WHITE, border: BORDER_SUBTLE, borderRadius: 16, padding: "20px 22px", marginBottom: 24, boxShadow: SHADOW_SM },
   composerInput: { width: "100%", background: "none", border: "none", fontSize: "0.94rem", fontFamily: "'Inter', sans-serif", resize: "none", minHeight: 50, outline: "none" },
   composerActionsRow: { display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1px solid ${LINE}`, paddingTop: 12, marginTop: 8 },
   composerHint: { fontSize: "0.8rem", color: "#9a9a94" },
   forumFeed: { display: "flex", flexDirection: "column", gap: 16 },
-  forumPostCard: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 16, padding: "20px 22px" },
+  forumPostCard: { background: WHITE, border: BORDER_SUBTLE, borderRadius: 16, padding: "20px 22px", boxShadow: SHADOW_SM },
   forumPostHeader: { display: "flex", gap: 12, alignItems: "center", marginBottom: 14 },
   forumPostAuthor: { fontSize: "0.94rem", fontWeight: 700, color: NAVY },
   forumPostMeta: { fontSize: "0.78rem", color: "#9a9a94" },
@@ -676,7 +734,7 @@ export const s: Record<string, CSSProperties> = {
   forumActionBtn: { display: "flex", alignItems: "center", gap: 7, fontSize: "0.86rem", fontWeight: 600, color: "#7a7a74" },
   forumModerateBtn: { color: "#c0817a", flexShrink: 0 },
 
-  messagesShell: { display: "grid", gridTemplateColumns: "320px 1fr", gap: 0, background: WHITE, border: `1px solid ${LINE}`, borderRadius: 18, overflow: "hidden", height: 600 },
+  messagesShell: { display: "grid", gridTemplateColumns: "320px 1fr", gap: 0, background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, overflow: "hidden", height: 600, boxShadow: SHADOW_SM },
   convoListCol: { borderRight: `1px solid ${LINE}`, overflowY: "auto" },
   convoListItem: { display: "flex", gap: 12, alignItems: "flex-start", width: "100%", padding: "16px 18px", textAlign: "left", position: "relative" },
   convoAvatar: { width: 40, height: 40, borderRadius: "50%", background: AMBER_BG, color: "#6b5220", fontWeight: 700, fontSize: "0.84rem", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
@@ -698,7 +756,7 @@ export const s: Record<string, CSSProperties> = {
   convoInput: { flexGrow: 1, background: "#FAF7EF", border: `1px solid ${LINE}`, borderRadius: 999, padding: "12px 18px", fontSize: "0.9rem" },
   convoSendBtn: { width: 42, height: 42, borderRadius: "50%", background: NAVY, color: WHITE, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
 
-  settingsSection: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 16, padding: "24px 26px", marginBottom: 18 },
+  settingsSection: { background: WHITE, border: BORDER_SUBTLE, borderRadius: 16, padding: "24px 26px", marginBottom: 18, boxShadow: SHADOW_SM },
   settingsSectionTitle: { fontSize: "1.1rem", fontWeight: 700, marginBottom: 16 },
   settingsRowList: { display: "flex", flexDirection: "column", gap: 18 },
   settingsRow: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 20 },
@@ -716,7 +774,7 @@ export const s: Record<string, CSSProperties> = {
   profileHeaderInfo: { flexGrow: 1, paddingBottom: 6 },
   profileName: { fontSize: "1.5rem", fontWeight: 700, color: NAVY, marginBottom: 2 },
   profileMeta: { fontSize: "0.9rem", color: "#7a7a74" },
-  profileBioCard: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 16, padding: "20px 22px", marginBottom: 24 },
+  profileBioCard: { background: WHITE, border: BORDER_SUBTLE, borderRadius: 16, padding: "20px 22px", marginBottom: 24, boxShadow: SHADOW_SM },
   profileBioHeader: { display: "flex", justifyContent: "space-between", marginBottom: 10 },
   profileBioLabel: { fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#9a9a94" },
   profileBioText: { fontSize: "0.94rem", color: "#2B2B28", lineHeight: 1.6 },

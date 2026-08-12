@@ -1,133 +1,346 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
 import {
-  ArrowRightIcon,
-  BriefcaseIcon,
-  MonitorIcon,
-  TrendUpIcon,
-  TrendDownIcon,
-  ORG_KPIS,
-  PIPELINE_COUNTS,
-  ADMIN_ACTIVITY_FEED,
-  UPCOMING_FOR_ADMIN,
-  TONE_MAP,
-  GOOD,
-  BAD,
+  Layers,
+  Contact,
+  ChevronDown,
+  FileCheck2,
+  Building2,
+  UserCheck,
+  Globe2,
+  Plus,
+  LucideIcon,
+} from "lucide-react";
+import {
+  NAVY,
+  CREAM,
   AMBER,
+  WHITE,
+  GRAY,
   LINE,
-  s,
+  TINT,
+  GOOD,
+  WARN,
+  BAD,
+  SHADOW_SM,
+  BORDER_SUBTLE,
 } from "@/components/Adminshared";
 
-export default function AdminDashboardPage() {
-  const router = useRouter();
+/* ------------------------------------------------------------------ */
+/* Mock data — swap for your real ORG_KPIS / PIPELINE_COUNTS /        */
+/* ADMIN_ACTIVITY_FEED / UPCOMING_FOR_ADMIN once wired to your API.   */
+/* ------------------------------------------------------------------ */
+
+interface QuickAction {
+  label: string;
+  icon: LucideIcon;
+}
+
+const QUICK_ACTIONS: QuickAction[] = [
+  { label: "Review New\nApplications", icon: FileCheck2 },
+  { label: "Assign to\nCoordinator", icon: Building2 },
+  { label: "Approve\nSame Batch", icon: UserCheck },
+  { label: "Transfer to\nPartner School", icon: Globe2 },
+];
+
+const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const APPROVED = [18, 40, 28, 50, 46, 38, 62];
+const SUBMITTED = [62, 78, 46, 58, 66, 60, 74];
+
+interface PipelineItem {
+  label: string;
+  value: number;
+  icon: LucideIcon;
+}
+
+const PIPELINE: PipelineItem[] = [
+  { label: "New applications", value: 21, icon: FileCheck2 },
+  { label: "Under review", value: 14, icon: Layers },
+  { label: "Interview stage", value: 9, icon: Contact },
+];
+
+type ActivityTone = "good" | "warn" | "bad";
+
+interface ActivityItem {
+  name: string;
+  detail: string;
+  value: string;
+  tone: ActivityTone;
+}
+
+const ACTIVITY: ActivityItem[] = [
+  { name: "Carlo Bautista", detail: "24-Dec-2025 12:33 PM", value: "Flagged", tone: "bad" },
+  { name: "Reign P.", detail: "24-Dec-2025 09:54 AM", value: "Accepted", tone: "good" },
+  { name: "Grace Tolentino", detail: "02-Dec-2025 05:15 PM", value: "Terminated", tone: "warn" },
+];
+
+/* ------------------------------------------------------------------ */
+
+type Point = [number, number];
+
+function smoothPath(values: number[], w: number, h: number, pad: number = 4): { d: string; pts: Point[] } {
+  const max = 100;
+  const stepX = w / (values.length - 1);
+  const pts: Point[] = values.map((v, i) => [i * stepX, h - pad - (v / max) * (h - pad * 2)]);
+  let d = `M ${pts[0][0]},${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [x0, y0] = pts[i];
+    const [x1, y1] = pts[i + 1];
+    const mx = (x0 + x1) / 2;
+    d += ` C ${mx},${y0} ${mx},${y1} ${x1},${y1}`;
+  }
+  return { d, pts };
+}
+
+export default function AdminDashboard() {
+  const nav = (label: string): void => console.log(`navigate → ${label}`);
+  const W = 760, H = 220;
+  const approvedLine = smoothPath(APPROVED, W, H);
+  const submittedLine = smoothPath(SUBMITTED, W, H);
+  const areaPath = `${approvedLine.d} L ${W},${H} L 0,${H} Z`;
+
+  const renewalPct = 91;
+  const r = 34, c = 2 * Math.PI * r;
 
   return (
-    <div>
-      <div className="va-stat-row" style={s.statRow}>
-        {ORG_KPIS.map((k) => (
-          <div key={k.label} style={s.pipelineCard}>
-            <div style={s.pipelineTopRow}>
-              <p style={s.pipelineLabel}>{k.label}</p>
-              <p style={s.pipelineValue}>{k.value}</p>
-            </div>
-            <div style={s.pipelineKpiRow}>
-              <span style={{ color: k.kpiDirection === "up" ? GOOD : BAD, display: "flex", alignItems: "center", gap: 4 }}>
-                {k.kpiDirection === "up" ? <TrendUpIcon /> : <TrendDownIcon />}
-                {k.kpi}
-              </span>
-              <span style={s.pipelineKpiLabel}>vs last month</span>
-            </div>
-          </div>
-        ))}
-      </div>
+    <div
+      style={{
+        fontFamily: "'Inter', -apple-system, sans-serif",
+        background: CREAM,
+        color: "#2B2B28",
+        minHeight: "100vh",
+        width: "100%",
+        padding: "24px 28px",
+        boxSizing: "border-box",
+      }}
+    >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&display=swap');
+        .tile { transition: box-shadow 0.15s ease, transform 0.15s ease; cursor: pointer; }
+        .tile:hover { box-shadow: 0 10px 28px rgba(20,33,58,0.10); transform: translateY(-2px); }
+        .row:hover { background-color: ${TINT}; }
+        .row { transition: background-color 0.12s ease; }
+        .iconring { transition: background-color 0.2s ease, border-color 0.2s ease; }
+        .tile:hover .iconring { background: ${AMBER}; border-color: ${AMBER}; }
+        .tile:hover .iconring svg { color: ${WHITE} !important; }
+        .cta:hover { gap: 8px !important; color: ${NAVY} !important; }
+        .cta { transition: gap 0.2s ease, color 0.2s ease; }
+        .addcard:hover { background-color: ${TINT}; }
+      `}</style>
 
-      <p style={s.subSectionLabel}>Applicant pipeline (all coordinators)</p>
-      <div className="va-stat-row" style={s.statRow}>
-        {PIPELINE_COUNTS.map((p) => (
-          <div key={p.label} style={s.pipelineCard}>
-            <div style={s.pipelineTopRow}>
+      {/* Main */}
+      <main style={{ width: "100%" }}>
+        {/* Quick action tiles */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 16 }}>
+          {QUICK_ACTIONS.map((qa) => {
+            const Icon = qa.icon;
+            return (
+              <div
+                key={qa.label}
+                className="tile"
+                onClick={() => nav(qa.label)}
+                style={{
+                  background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM,
+                  padding: "20px 18px", display: "flex", alignItems: "center", justifyContent: "space-between",
+                }}
+              >
+                <p style={{ fontSize: 13.5, fontWeight: 600, margin: 0, whiteSpace: "pre-line", lineHeight: 1.35, color: NAVY }}>
+                  {qa.label}
+                </p>
+                <span
+                  className="iconring"
+                  style={{
+                    width: 46, height: 46, borderRadius: "50%", border: `1.5px solid ${AMBER}`,
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  }}
+                >
+                  <Icon size={19} color={AMBER} />
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Chart + Pipeline row */}
+        <div style={{ display: "grid", gridTemplateColumns: "2.6fr 1fr", gap: 16, marginBottom: 16 }}>
+          {/* Chart card */}
+          <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 24px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
               <div>
-                <p style={s.pipelineLabel}>{p.label}</p>
-                <span style={{ ...s.pipelineTag, background: TONE_MAP[p.tone].bg, color: TONE_MAP[p.tone].text }}>applicants</span>
+                <p style={{ margin: "0 0 6px", fontSize: 14.5, color: "#7a7a74", fontWeight: 600 }}>Approved scholars</p>
+                <p style={{ margin: 0, fontSize: 36, fontWeight: 700, color: NAVY, fontFamily: "'Fraunces', serif" }}>87</p>
               </div>
-              <p style={s.pipelineValue}>{p.value}</p>
+              <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+                <Legend color={AMBER} label="Approved" />
+                <Legend color={GRAY} label="Submitted" dashed />
+                <button
+                  style={{
+                    display: "flex", alignItems: "center", gap: 6, background: TINT,
+                    border: `1px solid ${LINE}`, borderRadius: 8, padding: "8px 13px",
+                    color: NAVY, fontSize: 13, cursor: "pointer",
+                  }}
+                >
+                  Week <ChevronDown size={14} />
+                </button>
+              </div>
             </div>
-            <div style={s.pipelineKpiRow}>
-              <span style={{ color: p.kpiDirection === "up" ? GOOD : BAD, display: "flex", alignItems: "center", gap: 4 }}>
-                {p.kpiDirection === "up" ? <TrendUpIcon /> : <TrendDownIcon />}
-                {p.kpi}
-              </span>
-              <span style={s.pipelineKpiLabel}>vs last month</span>
+
+            <svg viewBox={`0 0 ${W} 260`} width="100%" height={260} style={{ display: "block", marginTop: 12 }}>
+              <defs>
+                <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={AMBER} stopOpacity={0.35} />
+                  <stop offset="100%" stopColor={AMBER} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              {[0, 1, 2, 3].map((i) => (
+                <line key={i} x1="0" x2={W} y1={(260 / 4) * i + 6} y2={(260 / 4) * i + 6} stroke={LINE} strokeWidth="1" />
+              ))}
+              <path d={areaPath} fill="url(#areaFill)" />
+              <path d={submittedLine.d} fill="none" stroke={GRAY} strokeWidth="2" strokeDasharray="5 5" />
+              <path d={approvedLine.d} fill="none" stroke={AMBER} strokeWidth="2.5" />
+              {approvedLine.pts.map(([x, y]: Point, i: number) => (
+                <circle key={i} cx={x} cy={y} r={i === 3 ? 5 : 3} fill={i === 3 ? WHITE : AMBER} stroke={AMBER} strokeWidth="2" />
+              ))}
+            </svg>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
+              {WEEK_DAYS.map((d) => (
+                <span key={d} style={{ fontSize: 12.5, color: "#9a9a94" }}>{d}</span>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
 
-      <div className="va-content-grid" style={s.contentGrid}>
-        <section style={s.feedCard}>
-          <div style={s.cardHeaderRow}>
-            <h2 style={s.cardHeading}>Recent activity</h2>
-            <button onClick={() => router.push("/adminReports")} style={s.viewAllBtn}>
-              View reports <ArrowRightIcon />
-            </button>
+          {/* Pipeline / bills-style list */}
+          <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 22px", display: "flex", flexDirection: "column" }}>
+            <p style={{ margin: "0 0 18px", fontSize: 16, fontWeight: 700, color: NAVY, fontFamily: "'Fraunces', serif" }}>
+              Pipeline
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16, flex: 1 }}>
+              {PIPELINE.map((p) => {
+                const Icon = p.icon;
+                return (
+                  <div
+                    key={p.label}
+                    style={{
+                      display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
+                      background: TINT, borderRadius: 14, padding: "20px 18px", flex: 1,
+                    }}
+                  >
+                    <p style={{ margin: 0, fontSize: 14.5, fontWeight: 600, color: NAVY, flex: 1 }}>{p.label}</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
+                      <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: AMBER, fontFamily: "'Fraunces', serif", textAlign: "right" }}>{p.value}</p>
+                      <Icon size={22} color={AMBER} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-          <div style={s.feedList}>
-            {ADMIN_ACTIVITY_FEED.map((item, i) => (
-              <div key={i} style={{ ...s.feedRow, borderBottom: i === ADMIN_ACTIVITY_FEED.length - 1 ? "none" : `1px solid ${LINE}` }}>
-                <span style={s.feedIconBox}>{item.icon}</span>
-                <div style={s.feedTextCol}>
-                  <p style={s.feedText}>{item.text}</p>
-                  <p style={s.feedTime}>{item.time}</p>
+        </div>
+
+        {/* Activity + featured scholar card */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          {/* Recent activity */}
+          <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "20px 22px" }}>
+            <p style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 700, color: NAVY, fontFamily: "'Fraunces', serif" }}>
+              Recent activity
+            </p>
+            {ACTIVITY.map((a, i) => {
+              const toneColor = a.tone === "good" ? GOOD : a.tone === "warn" ? WARN : BAD;
+              return (
+                <div
+                  key={i}
+                  className="row"
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
+                    padding: "12px 8px", borderRadius: 10,
+                    borderBottom: i === ACTIVITY.length - 1 ? "none" : `1px solid ${TINT}`,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span style={{ width: 10, height: 10, borderRadius: "50%", background: toneColor, flexShrink: 0 }} />
+                    <div>
+                      <p style={{ margin: "0 0 2px", fontSize: 13.5, fontWeight: 600, color: NAVY }}>{a.name}</p>
+                      <p style={{ margin: 0, fontSize: 11.5, color: "#9a9a94" }}>{a.detail}</p>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: toneColor }}>{a.value}</span>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section style={s.upcomingCard}>
-          <div style={s.cardHeaderRow}>
-            <h2 style={s.cardHeading}>Upcoming</h2>
-            <button onClick={() => router.push("/adminMeeting")} style={s.viewAllBtn}>
-              Manage <ArrowRightIcon />
-            </button>
-          </div>
-          <div style={s.upcomingList}>
-            {UPCOMING_FOR_ADMIN.map((item, i) => (
-              <div key={i} style={s.upcomingRow}>
-                <span style={{ ...s.upcomingDot, background: item.urgent ? AMBER : "#C9C2A8" }} />
-                <div>
-                  <p style={s.upcomingLabel}>{item.label}</p>
-                  <p style={s.upcomingDetail}>{item.detail}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          <div style={s.quickLinksWrap}>
-            <p style={s.quickLinksHeading}>Quick actions</p>
-            <button onClick={() => router.push("/adminEmployee")} style={s.quickLinkBtn}>
-              <span style={s.quickLinkIcon}>
-                <BriefcaseIcon />
-              </span>
-              <span>Manage employees</span>
-              <span style={{ marginLeft: "auto", color: "#9a9a94" }}>
-                <ArrowRightIcon />
-              </span>
-            </button>
-            <button onClick={() => router.push("/adminMonitor")} style={s.quickLinkBtn}>
-              <span style={s.quickLinkIcon}>
-                <MonitorIcon />
-              </span>
-              <span>Check scholar standing</span>
-              <span style={{ marginLeft: "auto", color: "#9a9a94" }}>
-                <ArrowRightIcon />
-              </span>
-            </button>
+          {/* Featured scholar card + renewal donut */}
+          <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: 16 }}>
+            <div
+              style={{
+                background: WHITE, border: BORDER_SUBTLE, boxShadow: SHADOW_SM, borderRadius: 18,
+                padding: "22px 22px", color: NAVY, display: "flex", flexDirection: "column", justifyContent: "space-between",
+              }}
+            >
+              <div>
+                <p style={{ margin: "0 0 18px", fontSize: 15.5, fontWeight: 700, fontFamily: "'Fraunces', serif", color: NAVY }}>
+                  Atty. Ramon Castillo
+                </p>
+                <p style={{ margin: "0 0 4px", fontSize: 11.5, color: "#9a9a94", fontWeight: 600 }}>Scholarship fund</p>
+                <p style={{ margin: 0, fontSize: 24, fontWeight: 700, fontFamily: "'Fraunces', serif", color: NAVY }}>₱6.4M</p>
+              </div>
+              <div>
+                <p style={{ margin: "0 0 4px", fontSize: 13, letterSpacing: "0.05em", fontWeight: 700, color: "#6b5220" }}>
+                  BATCH 14 · CRDC
+                </p>
+                <p style={{ margin: 0, fontSize: 11, color: "#9a9a94" }}>Term 2025–2026</p>
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM,
+                padding: "18px 16px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between",
+              }}
+            >
+              <svg width="90" height="90" viewBox="0 0 90 90">
+                <circle cx="45" cy="45" r={r} fill="none" stroke={TINT} strokeWidth="9" />
+                <circle
+                  cx="45" cy="45" r={r} fill="none" stroke={AMBER} strokeWidth="9" strokeLinecap="round"
+                  strokeDasharray={c} strokeDashoffset={c - (renewalPct / 100) * c}
+                  transform="rotate(-90 45 45)"
+                />
+                <text x="45" y="50" textAnchor="middle" fontSize="17" fontWeight="700" fill={NAVY}>
+                  {renewalPct}%
+                </text>
+              </svg>
+              <p style={{ margin: "10px 0 0", fontSize: 12, color: "#9a9a94", textAlign: "center" }}>Renewal rate</p>
+              <button
+                className="addcard"
+                onClick={() => nav("adminReports")}
+                style={{
+                  marginTop: 12, width: "100%", background: TINT, border: `1px solid ${LINE}`,
+                  borderRadius: 9, padding: "9px 0", color: NAVY, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                }}
+              >
+                <Plus size={13} /> View report
+              </button>
+            </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+interface LegendProps {
+  color: string;
+  label: string;
+  dashed?: boolean;
+}
+
+function Legend({ color, label, dashed }: LegendProps) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <span style={{ width: 14, height: dashed ? 2 : 8, borderRadius: dashed ? 0 : "50%", background: color }} />
+      <span style={{ fontSize: 12, color: "#7a7a74" }}>{label}</span>
     </div>
   );
 }

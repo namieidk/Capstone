@@ -19,6 +19,9 @@ export function GlobalStyles() {
       .vd ::-webkit-scrollbar-thumb { background: #E4DCC8; border-radius: 8px; }
 
       .vd-app-shell { display: flex; min-height: 100vh; }
+      .vd-main { height: 100vh; overflow-y: auto; scroll-snap-type: y mandatory; }
+      .vd-snap-section { scroll-snap-align: start; scroll-snap-stop: always; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 40px; box-sizing: border-box; }
+      .vd-snap-section-table { scroll-snap-align: start; scroll-snap-stop: always; min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-start; padding: 40px; box-sizing: border-box; overflow: visible; }
 
       @media (max-width: 980px) {
         .vd-content-grid { grid-template-columns: 1fr !important; }
@@ -509,8 +512,8 @@ export const s: Record<string, CSSProperties> = {
   sidebarUserRole: { fontSize: "0.76rem", color: "#8a8a84" },
   sidebarLogoutBtn: { color: "#9a9a94", display: "flex", flexShrink: 0, padding: 6 },
 
-  main: { flexGrow: 1, minWidth: 0 },
-  mainContent: { padding: "0 40px 48px" },
+  main: { flexGrow: 1, minWidth: 0, minHeight: "100vh", display: "flex", flexDirection: "column" as const },
+  mainContent: { padding: "0 40px 48px", flexGrow: 1 },
 
   topbar: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, padding: "28px 40px", borderBottom: `1px solid ${LINE}` },
   mobileToggle: { display: "none", marginRight: 8 },
