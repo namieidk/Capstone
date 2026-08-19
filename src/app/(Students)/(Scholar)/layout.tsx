@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { usePathname } from "next/navigation";
 import { GlobalStyles, MenuIcon, s } from "@/components/ScholarShared";
-import { ScholarSidebar, ScholarTopBar } from "@/components/scholarsidebar";
+import { ScholarSidebar, ScholarTopBar } from "@/components/Sidebar";
 
 // The topbar (greeting, search, bell) only renders on the dashboard home route.
 // Every other scholar page renders without it.

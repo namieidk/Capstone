@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { usePathname } from "next/navigation";
 import { GlobalStyles, MenuIcon, s } from "../../../components/StudentShared";
-import { Sidebar, TopBar } from "../../../components/StudentSidebar";
+import { Sidebar, TopBar } from "../../../components/Sidebar";
 
 // Routes that should render without the top navbar.
 const NO_TOPBAR_ROUTES = ["/applicationss", "/applicantsettings", "/Profile"];
@@ -20,7 +20,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="vd">
       <GlobalStyles />
       <div className="vd-app-shell">
-        <Sidebar mobileOpen={mobileOpen} />
+        <Sidebar mobileOpen={mobileOpen} role="student" />
 
         <main className="vd-main" style={s.main}>
           {hideTopbar ? (
@@ -33,7 +33,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <MenuIcon />
             </button>
           ) : (
-            <TopBar onMenuClick={() => setMobileOpen((v) => !v)} />
+            <TopBar onMenuClick={() => setMobileOpen((v) => !v)} role="student" />
           )}
           <div style={{ ...s.mainContent, paddingTop: hideTopbar ? 40 : 0 }}>{children}</div>
         </main>

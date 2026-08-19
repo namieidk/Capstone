@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { usePathname } from "next/navigation";
 import { GlobalStyles, TITLES, s } from "@/components/Coordinatorshared";
-import { CoordinatorSidebar, CoordinatorTopBar } from "@/components/Coordinatorsidebar";
+import { CoordinatorSidebar, CoordinatorTopBar } from "@/components/Sidebar";
 
 export default function CoordinatorLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);

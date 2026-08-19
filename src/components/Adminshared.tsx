@@ -28,7 +28,7 @@ export function GlobalStyles() {
 
       .va * { margin: 0; padding: 0; box-sizing: border-box; }
       .va {
-        background: #F8F4EA;
+        background: #FFFFFF;
         color: #2B2B28;
         font-family: 'Inter', -apple-system, sans-serif;
         -webkit-font-smoothing: antialiased;
@@ -39,14 +39,14 @@ export function GlobalStyles() {
       .va button { font-family: 'Inter', sans-serif; cursor: pointer; border: none; background: none; }
       .va table { border-collapse: collapse; width: 100%; }
       .va ::-webkit-scrollbar { width: 8px; height: 8px; }
-      .va ::-webkit-scrollbar-thumb { background: #E4DCC8; border-radius: 8px; }
+      .va ::-webkit-scrollbar-thumb { background: #DFE4EA; border-radius: 8px; }
 
       .va button:focus-visible,
       .va a:focus-visible,
       .va input:focus-visible,
       .va select:focus-visible,
       .va textarea:focus-visible {
-        outline: 2px solid #C9943D;
+        outline: 2px solid #F1B71E;
         outline-offset: 2px;
         border-radius: 6px;
       }
@@ -59,13 +59,13 @@ export function GlobalStyles() {
 
       /* ---- Subtle, consistent interaction states ---- */
       .va table tbody tr { transition: background-color 0.12s ease; }
-      .va table tbody tr:hover { background-color: #FAF7EF; }
+      .va table tbody tr:hover { background-color: #F7F9FB; }
 
       .va-card-interactive { transition: box-shadow 0.15s ease, transform 0.15s ease; cursor: pointer; }
       .va-card-interactive:hover { box-shadow: 0 10px 28px rgba(20, 33, 58, 0.10); transform: translateY(-2px); }
 
       .va-nav-item { transition: background-color 0.12s ease, color 0.12s ease; }
-      .va-nav-item:hover { background-color: #F4F0E6; }
+      .va-nav-item:hover { background-color: #EEF1F5; }
 
       @media (max-width: 980px) {
         .va-content-grid { grid-template-columns: 1fr !important; }
@@ -94,32 +94,38 @@ export function GlobalStyles() {
 // DESIGN TOKENS
 // ============================================================
 //
-// NAVY was previously a dark blue (#14213A). It's swapped to a warm
-// near-black so nothing on the page reads as "blue" anymore — every
-// heading, table row name, button, and avatar label that pulls this
-// token updates automatically since they all reference NAVY rather
-// than a hardcoded color.
+// Three-color brand palette: deep navy, forest green, and warm gold.
+// NAVY carries headings, primary text, and structural elements. GREEN
+// is the "positive / success" accent (on-track scholars, approvals,
+// growth). AMBER is the single warm highlight — CTAs, active states,
+// key numbers — used sparingly so it still reads as an accent rather
+// than a background color. Everything else (CREAM, WHITE, GRAY, LINE,
+// TINT) is neutral scaffolding that lets the three brand colors stand
+// out instead of competing with each other.
 
-export const NAVY = "#1A1A1A";
-export const CREAM = "#F8F4EA";
-export const AMBER = "#C9943D";
-export const AMBER_BG = "#F3E6C8";
+export const NAVY = "#1E3A5F";
+export const CREAM = "#FFFFFF";
+export const AMBER = "#F1B71E";
+export const AMBER_BG = "#FCEEC4";
 export const WHITE = "#FFFFFF";
 export const GRAY = "#6B6B66";
-export const LINE = "#E4DCC8";
-export const TINT = "#F4F0E6";
-export const GOOD = "#6b8a3e";
-export const GOOD_BG = "#E9F0DC";
-export const WARN = "#a17a1f";
-export const WARN_BG = "#F3E6C8";
+export const LINE = "#DFE4EA";
+export const TINT = "#EEF1F5";
+export const GREEN = "#1E7B4D";
+export const GREEN_BG = "#DDEEE3";
+export const GOOD = "#1E7B4D";
+export const GOOD_BG = "#DDEEE3";
+export const WARN = "#8A6410";
+export const WARN_BG = "#FCEEC4";
 export const BAD = "#8a3a2e";
 export const BAD_BG = "#F6E4DF";
 
 // Soft, low-opacity elevation — used on every card/panel/table so they
-// lift gently off the cream background without looking heavy.
-export const SHADOW_SM = "0 4px 16px rgba(20, 33, 58, 0.06)";
-export const SHADOW_MD = "0 8px 24px rgba(20, 33, 58, 0.09)";
-export const BORDER_SUBTLE = "1px solid rgba(20, 33, 58, 0.07)";
+// lift gently off the cream background without looking heavy. Tuned
+// to the new navy so shadows read as cool rather than warm/black.
+export const SHADOW_SM = "0 4px 18px rgba(30, 58, 95, 0.09)";
+export const SHADOW_MD = "0 10px 28px rgba(30, 58, 95, 0.13)";
+export const BORDER_SUBTLE = "1px solid rgba(30, 58, 95, 0.10)";
 
 // ============================================================
 // ICONS
@@ -290,7 +296,7 @@ export const ADMIN = {
   title: "Main Administrator, ViaScholar",
   email: "ramon.castillo@viascholar.org",
   bio: "Overseeing ViaScholar's scholarship operations across all coordinators and partner companies in Davao City since 2019. Final approval on policy, budget, and staffing.",
-  bannerGradient: "linear-gradient(120deg, #2B2B28 0%, #1A1A1A 100%)",
+  bannerGradient: "linear-gradient(120deg, #14283F 0%, #1E3A5F 100%)",
   avatarColor: AMBER_BG,
 };
 
@@ -382,7 +388,7 @@ export const PIPELINE_COUNTS: PipelineCount[] = [
 export const TONE_MAP: Record<PipelineCount["tone"], { bg: string; text: string }> = {
   neutral: { bg: TINT, text: "#6b6b66" },
   warn: { bg: WARN_BG, text: WARN },
-  amber: { bg: AMBER_BG, text: "#6b5220" },
+  amber: { bg: AMBER_BG, text: "#7A5C0A" },
   good: { bg: GOOD_BG, text: GOOD },
 };
 
@@ -458,7 +464,7 @@ export const STAGE_FUNNEL = [
 export const TRACK_BREAKDOWN = [
   { track: "Academic", count: 41, color: NAVY },
   { track: "Financial Need", count: 28, color: AMBER },
-  { track: "Returning Scholar", count: 18, color: "#4A6B63" },
+  { track: "Returning Scholar", count: 18, color: "#4F9873" },
 ];
 
 export const COORDINATOR_PERFORMANCE = [
@@ -521,7 +527,7 @@ export const CONVERSATIONS: Conversation[] = [
 
 export const PAYMENT_STATUS_COLORS: Record<AdminPaymentRecord["status"], { bg: string; text: string }> = {
   Paid: { bg: GOOD_BG, text: GOOD },
-  Scheduled: { bg: AMBER_BG, text: "#6b5220" },
+  Scheduled: { bg: AMBER_BG, text: "#7A5C0A" },
   "On hold": { bg: BAD_BG, text: BAD },
 };
 
@@ -605,7 +611,7 @@ export const s: Record<string, CSSProperties> = {
   sidebarNavLabel: { flexGrow: 1 },
   sidebarBadge: { background: AMBER, color: WHITE, fontSize: "0.7rem", fontWeight: 700, borderRadius: 999, minWidth: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px" },
   sidebarUserCard: { display: "flex", alignItems: "center", gap: 10, borderTop: `1px solid ${LINE}`, paddingTop: 18, marginTop: 12 },
-  sidebarAvatar: { width: 38, height: 38, borderRadius: "50%", background: AMBER_BG, color: "#6b5220", fontWeight: 700, fontSize: "0.85rem", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  sidebarAvatar: { width: 38, height: 38, borderRadius: "50%", background: AMBER_BG, color: "#7A5C0A", fontWeight: 700, fontSize: "0.85rem", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   sidebarUserInfo: { flexGrow: 1, minWidth: 0 },
   sidebarUserName: { fontSize: "0.82rem", fontWeight: 700, color: NAVY, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
   sidebarUserRole: { fontSize: "0.76rem", color: "#8a8a84" },
@@ -675,7 +681,7 @@ export const s: Record<string, CSSProperties> = {
   tdSub: { fontSize: "0.78rem", color: "#9a9a94" },
   stageTag: { fontSize: "0.76rem", fontWeight: 700, padding: "6px 13px", borderRadius: 999, whiteSpace: "nowrap" },
   tableActionBtn: { background: TINT, color: NAVY, fontWeight: 600, fontSize: "0.82rem", padding: "7px 14px", borderRadius: 999 },
-  gwaTrendCell: { display: "inline-flex", alignItems: "center", gap: 6 },
+  gwaTrendCell: { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", textAlign: "center" },
 
   drawerOverlay: { position: "fixed", inset: 0, background: "rgba(20,33,58,0.35)", display: "flex", justifyContent: "flex-end", zIndex: 200 },
   drawerPanel: { width: 440, maxWidth: "92vw", background: WHITE, height: "100%", overflowY: "auto", padding: "32px 30px", boxShadow: "-20px 0 60px -20px rgba(0,0,0,0.2)" },
@@ -700,8 +706,8 @@ export const s: Record<string, CSSProperties> = {
   fieldWrap: { marginBottom: 18 },
   fieldLabel: { display: "block", fontSize: "0.9rem", fontWeight: 600, color: NAVY, marginBottom: 8 },
   fieldRow2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 },
-  input: { width: "100%", background: "#FAF7EF", border: `1px solid ${LINE}`, borderRadius: 10, padding: "12px 15px", fontSize: "0.94rem", color: "#2B2B28", fontFamily: "'Inter', sans-serif" },
-  select: { width: "100%", background: "#FAF7EF", border: `1px solid ${LINE}`, borderRadius: 10, padding: "12px 15px", fontSize: "0.94rem", color: "#2B2B28", fontFamily: "'Inter', sans-serif" },
+  input: { width: "100%", background: "#F7F9FB", border: `1px solid ${LINE}`, borderRadius: 10, padding: "12px 15px", fontSize: "0.94rem", color: "#2B2B28", fontFamily: "'Inter', sans-serif" },
+  select: { width: "100%", background: "#F7F9FB", border: `1px solid ${LINE}`, borderRadius: 10, padding: "12px 15px", fontSize: "0.94rem", color: "#2B2B28", fontFamily: "'Inter', sans-serif" },
   continueBtn: { background: NAVY, color: WHITE, borderRadius: 999, padding: "14px 26px", fontWeight: 600, fontSize: "0.95rem" },
   continueBtnSmall: { display: "flex", alignItems: "center", gap: 8, background: NAVY, color: WHITE, borderRadius: 999, padding: "10px 18px", fontWeight: 600, fontSize: "0.88rem", flexShrink: 0 },
   backBtn: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 999, padding: "12px 22px", fontWeight: 600, fontSize: "0.9rem", color: NAVY },
@@ -737,7 +743,7 @@ export const s: Record<string, CSSProperties> = {
   messagesShell: { display: "grid", gridTemplateColumns: "320px 1fr", gap: 0, background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, overflow: "hidden", height: 600, boxShadow: SHADOW_SM },
   convoListCol: { borderRight: `1px solid ${LINE}`, overflowY: "auto" },
   convoListItem: { display: "flex", gap: 12, alignItems: "flex-start", width: "100%", padding: "16px 18px", textAlign: "left", position: "relative" },
-  convoAvatar: { width: 40, height: 40, borderRadius: "50%", background: AMBER_BG, color: "#6b5220", fontWeight: 700, fontSize: "0.84rem", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  convoAvatar: { width: 40, height: 40, borderRadius: "50%", background: AMBER_BG, color: "#7A5C0A", fontWeight: 700, fontSize: "0.84rem", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   convoListTextCol: { flexGrow: 1, minWidth: 0 },
   convoListTopRow: { display: "flex", justifyContent: "space-between", marginBottom: 3 },
   convoListName: { fontSize: "0.9rem", fontWeight: 700, color: NAVY },
@@ -753,7 +759,7 @@ export const s: Record<string, CSSProperties> = {
   bubbleTheirs: { background: TINT, color: "#2B2B28", borderRadius: "14px 14px 14px 4px", padding: "11px 16px", fontSize: "0.9rem", maxWidth: 360, lineHeight: 1.5 },
   bubbleTime: { fontSize: "0.7rem", color: "#9a9a94", marginTop: 4 },
   convoComposer: { display: "flex", gap: 10, padding: "16px 22px", borderTop: `1px solid ${LINE}` },
-  convoInput: { flexGrow: 1, background: "#FAF7EF", border: `1px solid ${LINE}`, borderRadius: 999, padding: "12px 18px", fontSize: "0.9rem" },
+  convoInput: { flexGrow: 1, background: "#F7F9FB", border: `1px solid ${LINE}`, borderRadius: 999, padding: "12px 18px", fontSize: "0.9rem" },
   convoSendBtn: { width: 42, height: 42, borderRadius: "50%", background: NAVY, color: WHITE, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
 
   settingsSection: { background: WHITE, border: BORDER_SUBTLE, borderRadius: 16, padding: "24px 26px", marginBottom: 18, boxShadow: SHADOW_SM },
@@ -769,7 +775,7 @@ export const s: Record<string, CSSProperties> = {
   profileBannerEditBtn: { position: "absolute", bottom: 14, right: 16, display: "flex", alignItems: "center", gap: 7, background: "rgba(0,0,0,0.35)", color: WHITE, fontSize: "0.82rem", fontWeight: 600, padding: "8px 14px", borderRadius: 999, backdropFilter: "blur(4px)" },
   profileHeaderRow: { display: "flex", alignItems: "flex-end", gap: 18, padding: "0 8px", marginTop: -36, marginBottom: 20 },
   profileAvatarWrap: { position: "relative", flexShrink: 0 },
-  profileAvatar: { width: 88, height: 88, borderRadius: "50%", border: `4px solid ${WHITE}`, color: "#6b5220", fontFamily: "'Fraunces', serif", fontWeight: 700, fontSize: "1.8rem", display: "flex", alignItems: "center", justifyContent: "center", background: AMBER_BG },
+  profileAvatar: { width: 88, height: 88, borderRadius: "50%", border: `4px solid ${WHITE}`, color: "#7A5C0A", fontFamily: "'Fraunces', serif", fontWeight: 700, fontSize: "1.8rem", display: "flex", alignItems: "center", justifyContent: "center", background: AMBER_BG },
   profileAvatarEditBtn: { position: "absolute", bottom: 2, right: 2, width: 28, height: 28, borderRadius: "50%", background: NAVY, display: "flex", alignItems: "center", justifyContent: "center", border: `2px solid ${WHITE}` },
   profileHeaderInfo: { flexGrow: 1, paddingBottom: 6 },
   profileName: { fontSize: "1.5rem", fontWeight: 700, color: NAVY, marginBottom: 2 },
@@ -779,7 +785,7 @@ export const s: Record<string, CSSProperties> = {
   profileBioLabel: { fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#9a9a94" },
   profileBioText: { fontSize: "0.94rem", color: "#2B2B28", lineHeight: 1.6 },
 
-  appNoteCard: { display: "flex", gap: 14, alignItems: "flex-start", background: "#F2ECDC", border: "1px solid #E3CB94", borderRadius: 14, padding: "18px 20px", marginBottom: 20 },
+  appNoteCard: { display: "flex", gap: 14, alignItems: "flex-start", background: "#FCEEC4", border: "1px solid #F1B71E", borderRadius: 14, padding: "18px 20px", marginBottom: 20 },
   appNoteIcon: { color: AMBER, display: "flex", flexShrink: 0, marginTop: 2 },
   appNoteText: { fontSize: "0.92rem", color: "#3a3a36", lineHeight: 1.6 },
 

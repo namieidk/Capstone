@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { usePathname } from "next/navigation";
 import { GlobalStyles, TITLES, s } from "@/components/Grantorshared";
-import { GrantorSidebar, GrantorTopBar } from "@/components/Grantorsidebar";
+import { GrantorSidebar, GrantorTopBar } from "@/components/Sidebar";
 
 export default function GrantorLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);

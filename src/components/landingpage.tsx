@@ -13,31 +13,31 @@ export function GlobalStyles() {
 
       .vs * { margin: 0; padding: 0; box-sizing: border-box; }
       .vs {
-        background: #F8F4EA;
-        color: #2B2B28;
+        background: #FFFFFF;
+        color: #23281F;
         font-family: 'Inter', -apple-system, sans-serif;
         -webkit-font-smoothing: antialiased;
       }
-      .vs h1, .vs h2, .vs h3 { font-family: 'Fraunces', Georgia, serif; color: #14213A; }
+      .vs h1, .vs h2, .vs h3 { font-family: 'Fraunces', Georgia, serif; color: #1E3A5F; }
       .vs a { color: inherit; text-decoration: none; }
       .vs button { font-family: 'Inter', sans-serif; cursor: pointer; border: none; }
 
       .vs-container { max-width: 1180px; margin: 0 auto; padding: 0 32px; }
-      .vs-eyebrow { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #C9943D; }
+      .vs-eyebrow { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #1E7B4D; }
 
       /* --- interactive polish --- */
       .vs-btn-primary, .vs-btn-secondary, .vs-btn-nav {
         transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
       }
-      .vs-btn-primary:hover { background: #1C2D4D; transform: translateY(-1px); box-shadow: 0 12px 24px -12px rgba(20,33,58,0.45); }
-      .vs-btn-secondary:hover { border-color: #C9943D; color: #14213A; transform: translateY(-1px); }
-      .vs-btn-nav:hover { color: #14213A; }
+      .vs-btn-primary:hover { background: #16304F; transform: translateY(-1px); box-shadow: 0 12px 24px -12px rgba(30,58,95,0.45); }
+      .vs-btn-secondary:hover { border-color: #1E7B4D; color: #1E7B4D; transform: translateY(-1px); }
+      .vs-btn-nav:hover { color: #1E3A5F; }
 
       .vs-card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
-      .vs-card-hover:hover { transform: translateY(-3px); box-shadow: 0 22px 44px -26px rgba(20,33,58,0.28); border-color: #D8C9A0; }
+      .vs-card-hover:hover { transform: translateY(-3px); box-shadow: 0 22px 44px -26px rgba(30,58,95,0.28); border-color: #C9D6CD; }
 
       .vs-faq-row { transition: background-color 0.15s ease; }
-      .vs-faq-row:hover { background: #FBF8F0; }
+      .vs-faq-row:hover { background: #F6F9F7; }
 
       @media (max-width: 960px) {
         .vs-hero-grid, .vs-grid-2 { grid-template-columns: 1fr !important; }
@@ -60,15 +60,25 @@ export function GlobalStyles() {
 // ============================================================
 // DESIGN TOKENS
 // ============================================================
+// Brand palette: Navy (primary / actions), Green (secondary / success,
+// "live" states, links), Amber (highlight / attention, ratings, draft
+// states). Backgrounds are white with cool, barely-there tints of the
+// brand colors instead of the old cream/tan neutrals.
 
-export const NAVY = "#14213A";
-export const CREAM = "#F8F4EA";
-export const AMBER = "#C9943D";
+export const NAVY = "#1E3A5F";        // primary — nav, headings, buttons
+export const NAVY_DARK = "#16304F";   // primary hover
+export const GREEN = "#1E7B4D";       // secondary — success, live, links
+export const GREEN_TINT = "#E7F3EC";  // light green fill (badges, icon boxes)
+export const AMBER = "#F1B71E";       // highlight — ratings, progress, draft
+export const AMBER_TINT = "#FDF1D9";  // light amber fill (badges, banners)
 export const WHITE = "#FFFFFF";
-export const GRAY = "#6B6B66";
-export const LINE = "#E4DCC8";
-export const DARK = "#0F1A2E";
-export const DARKCARD = "#1A2740";
+export const BG = "#FFFFFF";          // page background
+export const SECTION_BG = "#F5F8F6";  // alternating section background (cool, near-neutral)
+export const SOFT_FILL = "#F3F7F5";   // soft card/row fill inside white sections
+export const GRAY = "#68716C";        // body copy on light backgrounds
+export const LINE = "#DEE6E1";        // borders/dividers
+export const DARK = "#0F2036";        // dark section background (reviews)
+export const DARKCARD = "#1B3350";    // card background inside dark sections
 
 // ============================================================
 // SHARED FORM FIELD HELPER
@@ -112,14 +122,14 @@ export function LoginIcon() {
 }
 export function BuildingIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#14213A" strokeWidth="2">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E3A5F" strokeWidth="2">
       <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 11h.01M15 11h.01M9 15h.01M15 15h.01" />
     </svg>
   );
 }
 export function ChartIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#14213A" strokeWidth="2">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E3A5F" strokeWidth="2">
       <path d="M3 3v18h18M7 14l4-4 3 3 5-6" />
     </svg>
   );
@@ -127,7 +137,7 @@ export function ChartIcon() {
 // Represents the Gale-Shapley matching engine: two sides being paired.
 export function MatchIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#14213A" strokeWidth="2">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E3A5F" strokeWidth="2">
       <circle cx="6" cy="7" r="2.4" />
       <circle cx="6" cy="17" r="2.4" />
       <circle cx="18" cy="12" r="2.4" />
@@ -137,7 +147,7 @@ export function MatchIcon() {
 }
 export function ShieldIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#14213A" strokeWidth="2">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E3A5F" strokeWidth="2">
       <path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3z" />
       <path d="M9 12l2 2 4-4" />
     </svg>
@@ -224,7 +234,7 @@ export function ClockIcon() {
 }
 export function CheckCircleIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9943D" strokeWidth="2">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E7B4D" strokeWidth="2">
       <circle cx="12" cy="12" r="9" />
       <path d="M8.5 12.5l2.2 2.2 5-5.4" />
     </svg>
@@ -232,7 +242,7 @@ export function CheckCircleIcon() {
 }
 export function CheckBigIcon() {
   return (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#14213A" strokeWidth="2.4">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1E7B4D" strokeWidth="2.4">
       <circle cx="12" cy="12" r="9" />
       <path d="M8 12.5l2.5 2.5L16 9" />
     </svg>
@@ -259,7 +269,7 @@ export function UploadIcon() {
 
 export const s: Record<string, CSSProperties> = {
   // NAV
-  navHeader: { position: "sticky", top: 0, zIndex: 50, background: "rgba(248,244,234,0.95)", backdropFilter: "blur(8px)", borderBottom: `1px solid ${LINE}` },
+  navHeader: { position: "sticky", top: 0, zIndex: 50, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(8px)", borderBottom: `1px solid ${LINE}` },
   navInner: { display: "flex", alignItems: "center", justifyContent: "space-between", height: 84 },
   navLogo: { display: "flex", alignItems: "center", gap: 10, fontFamily: "'Fraunces', serif", fontSize: "1.25rem", fontWeight: 700, color: NAVY },
   navLogoMark: { width: 34, height: 34, borderRadius: 9, background: NAVY, display: "flex", alignItems: "center", justifyContent: "center" },
@@ -272,9 +282,9 @@ export const s: Record<string, CSSProperties> = {
   // HERO
   heroSection: { padding: "60px 0 0" },
   heroGrid: { display: "grid", gridTemplateColumns: "1.1fr 0.9fr", gap: 56, alignItems: "start", marginBottom: 56 },
-  badge: { display: "inline-block", border: `1px solid ${LINE}`, borderRadius: 999, padding: "8px 16px", fontSize: "0.78rem", fontWeight: 600, letterSpacing: "0.06em", color: "#5a5a55", marginBottom: 28, background: "rgba(255,255,255,0.5)" },
+  badge: { display: "inline-block", border: `1px solid ${LINE}`, borderRadius: 999, padding: "8px 16px", fontSize: "0.78rem", fontWeight: 600, letterSpacing: "0.06em", color: "#5a5a55", marginBottom: 28, background: SOFT_FILL },
   headline: { fontSize: "clamp(2.4rem, 4.6vw, 4rem)", fontWeight: 700, lineHeight: 1.08, color: NAVY, marginBottom: 26 },
-  headlineAccent: { color: AMBER, fontStyle: "italic" },
+  headlineAccent: { color: GREEN, fontStyle: "italic" },
   heroSub: { fontSize: "1.1rem", lineHeight: 1.7, color: "#55554f", maxWidth: 480, marginBottom: 32 },
   heroActions: { display: "flex", gap: 14, flexWrap: "wrap" },
   primaryBtn: { background: NAVY, color: WHITE, borderRadius: 999, padding: "16px 28px", fontWeight: 600, fontSize: "0.96rem" },
@@ -283,21 +293,21 @@ export const s: Record<string, CSSProperties> = {
   statNumber: { fontFamily: "'Fraunces', serif", fontSize: "2rem", fontWeight: 700, color: NAVY, marginBottom: 4 },
   statLabel: { fontSize: "0.92rem", color: GRAY },
 
-  dashCard: { background: WHITE, borderRadius: 22, padding: "26px 26px 22px", boxShadow: "0 20px 50px -20px rgba(20,33,58,0.25)" },
+  dashCard: { background: WHITE, borderRadius: 22, padding: "26px 26px 22px", boxShadow: "0 20px 50px -20px rgba(30,58,95,0.25)" },
   dashHeaderRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 },
   dashLabel: { fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.06em", color: "#7a7a74" },
-  dashLiveTag: { background: "#F3E6C8", color: "#8a6a1f", fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.04em", padding: "5px 11px", borderRadius: 999 },
-  dashMatchBox: { display: "flex", alignItems: "center", gap: 14, background: "#F4F0E6", borderRadius: 16, padding: "16px 18px", marginBottom: 14 },
+  dashLiveTag: { background: GREEN_TINT, color: "#155C39", fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.04em", padding: "5px 11px", borderRadius: 999 },
+  dashMatchBox: { display: "flex", alignItems: "center", gap: 14, background: SOFT_FILL, borderRadius: 16, padding: "16px 18px", marginBottom: 14 },
   dashMatchIconWrap: { width: 34, height: 34, borderRadius: "50%", background: NAVY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   dashMatchLabel: { fontSize: "0.82rem", color: "#5a5a55", marginBottom: 3 },
   dashMatchValue: { fontSize: "1.02rem", fontWeight: 700, color: NAVY },
-  dashGwaBox: { background: "#F4F0E6", borderRadius: 16, padding: "20px 22px", marginBottom: 14 },
+  dashGwaBox: { background: SOFT_FILL, borderRadius: 16, padding: "20px 22px", marginBottom: 14 },
   dashGwaLabel: { fontSize: "0.88rem", color: "#5a5a55", marginBottom: 8 },
   dashGwaValue: { fontFamily: "'Fraunces', serif", fontSize: "2.3rem", fontWeight: 700, color: NAVY, marginBottom: 14 },
-  dashProgressTrack: { height: 7, background: "#E4DCC8", borderRadius: 999, overflow: "hidden", marginBottom: 12 },
+  dashProgressTrack: { height: 7, background: LINE, borderRadius: 999, overflow: "hidden", marginBottom: 12 },
   dashProgressFill: { height: "100%", width: "88%", background: AMBER, borderRadius: 999 },
   dashGwaCaption: { fontSize: "0.82rem", color: "#6b6b66" },
-  dashRow: { display: "flex", justifyContent: "space-between", alignItems: "center", background: "#F4F0E6", borderRadius: 12, padding: "14px 18px" },
+  dashRow: { display: "flex", justifyContent: "space-between", alignItems: "center", background: SOFT_FILL, borderRadius: 12, padding: "14px 18px" },
   dashRowLabel: { fontSize: "0.9rem", color: "#48484a" },
   dashRowValue: { fontSize: "0.92rem", fontWeight: 700, color: NAVY },
 
@@ -310,18 +320,18 @@ export const s: Record<string, CSSProperties> = {
   aboutParagraph: { fontSize: "1.02rem", lineHeight: 1.75, color: "#48484a", maxWidth: 460 },
   featureStack: { display: "flex", flexDirection: "column", gap: 18 },
   featureCard: { display: "flex", gap: 18, background: WHITE, borderRadius: 18, padding: 26, border: `1px solid ${LINE}` },
-  featureIconBox: { width: 44, height: 44, flexShrink: 0, borderRadius: 12, background: "#F3E6C8", display: "flex", alignItems: "center", justifyContent: "center" },
+  featureIconBox: { width: 44, height: 44, flexShrink: 0, borderRadius: 12, background: GREEN_TINT, display: "flex", alignItems: "center", justifyContent: "center" },
   featureTitle: { fontSize: "1.15rem", fontWeight: 700, color: NAVY, marginBottom: 8 },
   featureText: { fontSize: "0.94rem", lineHeight: 1.6, color: "#55554f" },
 
   // QUALIFICATIONS
-  qualSection: { padding: "70px 0", background: "#F2ECDC" },
+  qualSection: { padding: "70px 0", background: SECTION_BG },
   qualGrid: { display: "grid", gridTemplateColumns: "0.85fr 1.15fr", gap: 56 },
   qualParagraph: { fontSize: "1.02rem", lineHeight: 1.75, color: "#48484a", maxWidth: 440 },
   checkList: { display: "flex", flexDirection: "column", gap: 14 },
   checkRow: { display: "flex", alignItems: "center", gap: 16, background: WHITE, borderRadius: 14, padding: "20px 22px" },
   checkCircle: { width: 26, height: 26, borderRadius: "50%", background: NAVY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  checkText: { fontSize: "0.98rem", color: "#2B2B28", lineHeight: 1.4 },
+  checkText: { fontSize: "0.98rem", color: "#23281F", lineHeight: 1.4 },
 
   // REQUIREMENTS
   reqSection: { padding: "70px 0" },
@@ -360,15 +370,15 @@ export const s: Record<string, CSSProperties> = {
 
   // FINAL CTA
   finalSection: { padding: "0 0 76px" },
-  finalCard: { background: "linear-gradient(120deg, #F2ECDC 0%, #EBDFC2 100%)", borderRadius: 26, padding: "56px 48px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 32 },
-  eyebrowOnTan: { fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#a17a1f" },
+  finalCard: { background: "linear-gradient(120deg, #EAF5EE 0%, #FDF1D9 100%)", borderRadius: 26, padding: "56px 48px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 32 },
+  eyebrowOnTan: { fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#155C39" },
   finalHeading: { fontSize: "2.5rem", fontWeight: 700, color: NAVY, lineHeight: 1.15, marginTop: 14, maxWidth: 480 },
   finalActionCol: { display: "flex", flexDirection: "column", alignItems: "center", gap: 12 },
   finalBtn: { background: NAVY, color: WHITE, borderRadius: 999, padding: "16px 30px", fontWeight: 600, fontSize: "0.96rem", whiteSpace: "nowrap" },
   finalLink: { fontSize: "0.88rem", color: "#6b6b66", textDecoration: "underline" },
 
   // CONTACT
-  contactSection: { padding: "76px 0", background: "#F2ECDC", borderTop: `1px solid ${LINE}` },
+  contactSection: { padding: "76px 0", background: SECTION_BG, borderTop: `1px solid ${LINE}` },
   contactGrid: { display: "grid", gridTemplateColumns: "0.9fr 1.1fr", gap: 56, alignItems: "start" },
   contactParagraph: { fontSize: "1.02rem", lineHeight: 1.75, color: "#48484a", maxWidth: 440, marginBottom: 32 },
   contactInfoList: { display: "flex", flexDirection: "column", gap: 18 },
@@ -381,7 +391,7 @@ export const s: Record<string, CSSProperties> = {
   contactFormSub: { fontSize: "0.92rem", color: "#6b6b66", marginBottom: 24 },
   contactForm: { display: "flex", flexDirection: "column" },
   contactSubmitBtn: { background: NAVY, color: WHITE, borderRadius: 999, padding: "14px 26px", fontWeight: 600, fontSize: "0.94rem", marginTop: 8, alignSelf: "flex-start" },
-  contactSentBanner: { background: "#F3E6C8", color: "#6b5220", borderRadius: 12, padding: "18px 20px", fontSize: "0.95rem", fontWeight: 600 },
+  contactSentBanner: { background: GREEN_TINT, color: "#155C39", borderRadius: 12, padding: "18px 20px", fontSize: "0.95rem", fontWeight: 600 },
 
   // FOOTER
   footer: { borderTop: `1px solid ${LINE}`, padding: "26px 0" },
@@ -391,20 +401,20 @@ export const s: Record<string, CSSProperties> = {
   // SHARED FIELD
   fieldWrap: { marginBottom: 22 },
   fieldLabel: { display: "block", fontSize: "0.94rem", fontWeight: 600, color: NAVY, marginBottom: 9 },
-  fieldRequiredStar: { color: AMBER },
+  fieldRequiredStar: { color: GREEN },
   fieldRow2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 22 },
-  input: { width: "100%", background: "#FAF7EF", border: `1px solid ${LINE}`, borderRadius: 10, padding: "13px 16px", fontSize: "0.96rem", color: "#2B2B28", fontFamily: "'Inter', sans-serif" },
-  select: { width: "100%", background: "#FAF7EF", border: `1px solid ${LINE}`, borderRadius: 10, padding: "13px 16px", fontSize: "0.96rem", color: "#2B2B28", fontFamily: "'Inter', sans-serif" },
+  input: { width: "100%", background: SOFT_FILL, border: `1px solid ${LINE}`, borderRadius: 10, padding: "13px 16px", fontSize: "0.96rem", color: "#23281F", fontFamily: "'Inter', sans-serif" },
+  select: { width: "100%", background: SOFT_FILL, border: `1px solid ${LINE}`, borderRadius: 10, padding: "13px 16px", fontSize: "0.96rem", color: "#23281F", fontFamily: "'Inter', sans-serif" },
 
   // APPLICATION FLOW
-  applyHeader: { borderBottom: `1px solid ${LINE}`, background: "#F8F4EA" },
+  applyHeader: { borderBottom: `1px solid ${LINE}`, background: BG },
   applyHeaderInner: { display: "flex", alignItems: "center", justifyContent: "space-between", height: 84 },
   backHomeBtn: { display: "flex", alignItems: "center", gap: 8, background: "none", fontSize: "0.96rem", color: "#48484a", fontWeight: 500 },
   applyPageWrap: { padding: "64px 0 100px", maxWidth: 980 },
   applyHeading: { fontSize: "2.8rem", fontWeight: 700, color: NAVY, margin: "18px 0 20px", lineHeight: 1.1 },
   applySubtext: { fontSize: "1.05rem", lineHeight: 1.7, color: "#55554f", maxWidth: 640, marginBottom: 32 },
 
-  draftBanner: { display: "flex", alignItems: "center", gap: 12, background: "#F3E6C8", border: "1px solid #E3CB94", borderRadius: 14, padding: "18px 22px", fontSize: "0.96rem", color: "#3a3a36", marginBottom: 36 },
+  draftBanner: { display: "flex", alignItems: "center", gap: 12, background: AMBER_TINT, border: "1px solid #F5DE9E", borderRadius: 14, padding: "18px 22px", fontSize: "0.96rem", color: "#3a3a36", marginBottom: 36 },
   draftBannerIcon: { display: "flex", flexShrink: 0 },
   draftBannerLink: { background: "none", textDecoration: "underline", fontWeight: 700, color: "#3a3a36", fontSize: "0.96rem", padding: 0 },
 
@@ -414,7 +424,7 @@ export const s: Record<string, CSSProperties> = {
   stepPillTitle: { display: "block", fontSize: "1.02rem", fontWeight: 700, color: NAVY, fontFamily: "'Fraunces', serif" },
   stepPillSubtitle: { display: "block", fontSize: "0.86rem", color: "#7a7a74", marginTop: 2 },
 
-  applyFormCard: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 22, padding: "40px 44px", boxShadow: "0 24px 60px -30px rgba(20,33,58,0.15)" },
+  applyFormCard: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 22, padding: "40px 44px", boxShadow: "0 24px 60px -30px rgba(30,58,95,0.15)" },
   stepCardHeading: { fontSize: "1.7rem", fontWeight: 700, color: NAVY, marginBottom: 8 },
   stepCardSub: { fontSize: "0.98rem", color: "#6b6b66", marginBottom: 28 },
   stepDivider: { height: 1, background: LINE, margin: "12px 0 28px" },
@@ -422,24 +432,24 @@ export const s: Record<string, CSSProperties> = {
   continueBtn: { background: NAVY, color: WHITE, borderRadius: 999, padding: "15px 26px", fontWeight: 600, fontSize: "0.96rem" },
   backBtn: { display: "flex", alignItems: "center", gap: 8, background: WHITE, border: `1px solid ${LINE}`, borderRadius: 999, padding: "15px 24px", fontWeight: 600, fontSize: "0.96rem", color: NAVY },
 
-  uploadBox: { display: "flex", alignItems: "center", gap: 14, border: `1.5px dashed ${LINE}`, borderRadius: 12, padding: "16px 18px", background: "#FAF7EF", cursor: "pointer" },
-  uploadIconBox: { width: 38, height: 38, borderRadius: 10, background: "#F3E6C8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  uploadBox: { display: "flex", alignItems: "center", gap: 14, border: `1.5px dashed ${LINE}`, borderRadius: 12, padding: "16px 18px", background: SOFT_FILL, cursor: "pointer" },
+  uploadIconBox: { width: 38, height: 38, borderRadius: 10, background: AMBER_TINT, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   uploadTextCol: { flexGrow: 1, display: "flex", flexDirection: "column", gap: 2, minWidth: 0 },
-  uploadMainText: { fontSize: "0.94rem", color: "#2B2B28", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
+  uploadMainText: { fontSize: "0.94rem", color: "#23281F", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
   uploadHintText: { fontSize: "0.82rem", color: "#7a7a74" },
   browseBtn: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 999, padding: "9px 18px", fontSize: "0.88rem", fontWeight: 600, color: NAVY, flexShrink: 0 },
 
-  reviewBlock: { border: `1px solid ${LINE}`, borderRadius: 16, padding: "22px 26px", marginBottom: 22, background: "#FAF7EF" },
+  reviewBlock: { border: `1px solid ${LINE}`, borderRadius: 16, padding: "22px 26px", marginBottom: 22, background: SOFT_FILL },
   reviewBlockHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },
   reviewBlockTitle: { fontSize: "1.2rem", fontWeight: 700, color: NAVY },
-  reviewEditLink: { background: "none", color: AMBER, fontWeight: 700, fontSize: "0.9rem" },
+  reviewEditLink: { background: "none", color: GREEN, fontWeight: 700, fontSize: "0.9rem" },
   reviewRowList: { display: "flex", flexDirection: "column", gap: 12 },
   reviewRow: { display: "flex", justifyContent: "space-between", gap: 20 },
   reviewRowLabel: { fontSize: "0.92rem", color: "#7a7a74", flexShrink: 0 },
   reviewRowValue: { fontSize: "0.96rem", fontWeight: 600, color: NAVY, textAlign: "right" },
 
   submittedCard: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 22, padding: "56px 48px", textAlign: "center", maxWidth: 560, margin: "0 auto" },
-  submittedIconWrap: { width: 64, height: 64, borderRadius: "50%", background: "#F3E6C8", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" },
+  submittedIconWrap: { width: 64, height: 64, borderRadius: "50%", background: GREEN_TINT, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" },
   submittedHeading: { fontSize: "1.9rem", fontWeight: 700, color: NAVY, marginBottom: 14 },
   submittedText: { fontSize: "1rem", lineHeight: 1.7, color: "#55554f", marginBottom: 28 },
 };

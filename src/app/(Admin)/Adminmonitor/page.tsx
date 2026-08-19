@@ -17,6 +17,7 @@ import {
   WARN,
   BAD,
   AMBER,
+  AMBER_BG,
   NAVY,
   WHITE,
   TINT,
@@ -43,6 +44,8 @@ export default function AdminMonitorPage() {
   const [selected, setSelected] = useState<MonitorScholar | null>(null);
   const [coordinatorFilter, setCoordinatorFilter] = useState("All coordinators");
   const [healthFilter, setHealthFilter] = useState<"all" | ScholarHealth>("all");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   const filtered = useMemo(
     () =>
@@ -53,6 +56,10 @@ export default function AdminMonitorPage() {
       }),
     [coordinatorFilter, healthFilter]
   );
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const counts = useMemo(
     () => ({
@@ -82,26 +89,45 @@ export default function AdminMonitorPage() {
 
   return (
     <div>
-      {/* ---------------- Compact filters, right-aligned ---------------- */}
+      {/* ---------------- Pill-style filters, right-aligned ---------------- */}
       <style>{`
-        .filter-select:focus { border-color: ${AMBER} !important; }
-        .filter-select:hover { border-color: #C9C2A8; }
+        .filter-pill { transition: border-color 0.15s ease, background 0.15s ease; }
+        .filter-pill:hover { border-color: rgba(30, 58, 95, 0.35); }
+        .filter-pill select { color-scheme: light; }
+        .filter-select:focus { outline: none; }
+        .filter-select option { color: ${NAVY}; background: ${WHITE}; }
       `}</style>
-      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 16, marginTop: 36, marginBottom: 28 }}>
-        <CompactFilter select>
-          <select className="filter-select" value={coordinatorFilter} onChange={(e) => setCoordinatorFilter(e.target.value)} style={compactSelectStyle}>
+      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginTop: 36, marginBottom: 28 }}>
+        <PillFilter>
+          <select
+            className="filter-select"
+            value={coordinatorFilter}
+            onChange={(e) => {
+              setCoordinatorFilter(e.target.value);
+              setPage(1);
+            }}
+            style={pillSelectStyle}
+          >
             {COORDINATOR_NAMES.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
-        </CompactFilter>
-        <CompactFilter select>
-          <select className="filter-select" value={healthFilter} onChange={(e) => setHealthFilter(e.target.value as "all" | ScholarHealth)} style={compactSelectStyle}>
+        </PillFilter>
+        <PillFilter>
+          <select
+            className="filter-select"
+            value={healthFilter}
+            onChange={(e) => {
+              setHealthFilter(e.target.value as "all" | ScholarHealth);
+              setPage(1);
+            }}
+            style={pillSelectStyle}
+          >
             {HEALTH_OPTIONS.map((h) => (
               <option key={h.value} value={h.value}>{h.label}</option>
             ))}
           </select>
-        </CompactFilter>
+        </PillFilter>
       </div>
 
       {/* ---------------- Spotlight row ---------------- */}
@@ -119,7 +145,7 @@ export default function AdminMonitorPage() {
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", marginTop: 18 }}>
             <div
               style={{
-                width: 76, height: 76, borderRadius: "50%", background: "#F3E6C8", color: "#6b5220",
+                width: 76, height: 76, borderRadius: "50%", background: AMBER_BG, color: "#7A5C0A",
                 fontFamily: "'Fraunces', serif", fontWeight: 700, fontSize: "1.5rem",
                 display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
               }}
@@ -214,14 +240,18 @@ export default function AdminMonitorPage() {
       <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 22px 8px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
           <p style={{ fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Fraunces', serif" }}>Scholar details</p>
-          <span style={{ fontSize: "0.8rem", color: "#9a9a94" }}>{filtered.length} shown</span>
+          <span style={{ fontSize: "0.8rem", color: "#9a9a94" }}>
+            {filtered.length === 0
+              ? "0 shown"
+              : `${(currentPage - 1) * PAGE_SIZE + 1}-${Math.min(currentPage * PAGE_SIZE, filtered.length)} of ${filtered.length}`}
+          </span>
         </div>
 
         <div className="va-table-scroll" style={{ width: "100%", overflowX: "auto" }}>
-          <table>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ borderBottom: `1px solid ${LINE}` }}>
-                <th style={{ ...s.th, background: "none", padding: "14px 14px 14px 8px", textAlign: "left" }}>Scholar</th>
+                <th style={{ ...s.th, background: "none", padding: "14px 14px", textAlign: "center" }}>Scholar</th>
                 <th style={{ ...s.th, background: "none", textAlign: "center" }}>Coordinator</th>
                 <th style={{ ...s.th, background: "none", textAlign: "center" }}>GWA</th>
                 <th style={{ ...s.th, background: "none", textAlign: "center" }}>Documents</th>
@@ -231,33 +261,33 @@ export default function AdminMonitorPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((sch, i) => (
+              {paginated.map((sch, i) => (
                 <tr
                   key={sch.id}
                   onClick={() => setSelected(sch)}
-                  style={{ borderBottom: i === filtered.length - 1 ? "none" : `1px solid ${TINT}`, cursor: "pointer", verticalAlign: "middle" }}
+                  style={{ borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`, cursor: "pointer", verticalAlign: "middle" }}
                 >
-                  <td style={{ ...s.td, padding: "16px 14px 16px 8px" }}>
-                    <div style={{ display: "inline-flex", alignItems: "center", gap: 12, textAlign: "left" }}>
-                      <span style={s.convoAvatar}>{sch.initials}</span>
-                      <div>
-                        <p style={s.tdName}>{sch.name}</p>
-                        <p style={s.tdSub}>{sch.course}</p>
-                      </div>
-                    </div>
+                  <td style={{ ...s.td, padding: "16px 14px", textAlign: "center" }}>
+                    <p style={s.tdName}>{sch.name}</p>
+                    <p style={s.tdSub}>{sch.course}</p>
                   </td>
                   <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{sch.coordinator}</td>
                   <td style={{ ...s.td, textAlign: "center" }}>
-                    <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                      <span style={{ ...s.gwaTrendCell, fontWeight: 700, color: NAVY }}>
-                        {sch.gwa}%{" "}
-                        {sch.trend === "up" ? (
-                          <span style={{ color: GOOD }}><TrendUpIcon /></span>
-                        ) : (
-                          <span style={{ color: BAD }}><TrendDownIcon /></span>
-                        )}
-                      </span>
-                    </div>
+                    <span
+                      style={{
+                        ...s.gwaTrendCell,
+                        fontWeight: 700,
+                        color: NAVY,
+                        gap: 4,
+                      }}
+                    >
+                      <span>{sch.gwa}%</span>
+                      {sch.trend === "up" ? (
+                        <span style={{ color: GOOD, display: "inline-flex" }}><TrendUpIcon /></span>
+                      ) : (
+                        <span style={{ color: BAD, display: "inline-flex" }}><TrendDownIcon /></span>
+                      )}
+                    </span>
                   </td>
                   <td style={{ ...s.td, textAlign: "center" }}>
                     <span style={{ fontWeight: 600, color: sch.docs !== "3/3" ? WARN : "#4a4a45" }}>{sch.docs}</span>
@@ -310,6 +340,48 @@ export default function AdminMonitorPage() {
           <p style={{ textAlign: "center", padding: "40px 0", color: "#9a9a94", fontSize: "0.9rem" }}>
             No scholars match this filter.
           </p>
+        )}
+
+        {filtered.length > 0 && (
+          <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}>
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              style={{
+                width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
+                color: currentPage === 1 ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: currentPage === 1 ? "default" : "pointer",
+              }}
+              aria-label="Previous page"
+            >
+              <ChevronLeftIcon />
+            </button>
+            {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
+              <button
+                key={num}
+                onClick={() => setPage(num)}
+                style={{
+                  width: 32, height: 32, borderRadius: 8, border: `1px solid ${num === currentPage ? NAVY : LINE}`,
+                  background: num === currentPage ? NAVY : WHITE, color: num === currentPage ? WHITE : "#55554f",
+                  fontSize: "0.82rem", fontWeight: 600, cursor: "pointer",
+                }}
+              >
+                {num}
+              </button>
+            ))}
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              style={{
+                width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
+                color: currentPage === totalPages ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: currentPage === totalPages ? "default" : "pointer",
+              }}
+              aria-label="Next page"
+            >
+              <ChevronRightIcon />
+            </button>
+          </div>
         )}
       </div>
 
@@ -365,31 +437,55 @@ export default function AdminMonitorPage() {
   );
 }
 
-const compactSelectStyle: React.CSSProperties = {
-  border: `1.5px solid ${LINE}`, borderRadius: 9, padding: "8px 30px 8px 12px", fontSize: "0.82rem",
-  color: NAVY, width: 168, background: WHITE, outline: "none", fontFamily: "'Inter', sans-serif",
-  appearance: "none", WebkitAppearance: "none", MozAppearance: "none", cursor: "pointer",
-  transition: "border-color 0.15s ease", fontWeight: 500,
+/* ---------------- Pill filter (rounded badge style, like "Graduated 3") ---------------- */
+
+const pillSelectStyle: React.CSSProperties = {
+  border: "none",
+  borderRadius: 999,
+  padding: "8px 28px 8px 14px",
+  fontSize: "0.8rem",
+  color: WHITE,
+  width: 168,
+  height: 38,
+  background: "transparent",
+  outline: "none",
+  fontFamily: "'Inter', sans-serif",
+  appearance: "none",
+  WebkitAppearance: "none",
+  MozAppearance: "none",
+  cursor: "pointer",
+  fontWeight: 500,
+  textAlign: "center",
+  textAlignLast: "center",
 };
 
 function ChevronIcon() {
   return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={AMBER} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={WHITE} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
       <path d="M6 9l6 6 6-6" />
     </svg>
   );
 }
 
-function CompactFilter({ children, select }: { children: React.ReactNode; select?: boolean }) {
-  return select ? (
-    <div style={{ position: "relative" }}>
+function PillFilter({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="filter-pill"
+      style={{
+        position: "relative",
+        display: "inline-flex",
+        alignItems: "center",
+        background: "#1E3A5F",
+        border: "1.5px solid #1E3A5F",
+        borderRadius: 999,
+        boxShadow: SHADOW_SM,
+      }}
+    >
       {children}
-      <span style={{ position: "absolute", right: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+      <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
         <ChevronIcon />
       </span>
     </div>
-  ) : (
-    <>{children}</>
   );
 }
 
@@ -398,6 +494,22 @@ function EyeIcon() {
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
       <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function ChevronLeftIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 18l-6-6 6-6" />
+    </svg>
+  );
+}
+
+function ChevronRightIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 18l6-6-6-6" />
     </svg>
   );
 }

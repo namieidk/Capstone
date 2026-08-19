@@ -16,6 +16,8 @@ import {
   NAVY,
   CREAM,
   AMBER,
+  GREEN,
+  GREEN_BG,
   WHITE,
   GRAY,
   LINE,
@@ -118,23 +120,28 @@ export default function AdminDashboard() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&display=swap');
         .tile { transition: box-shadow 0.15s ease, transform 0.15s ease; cursor: pointer; }
-        .tile:hover { box-shadow: 0 10px 28px rgba(20,33,58,0.10); transform: translateY(-2px); }
+        .tile:hover { box-shadow: 0 10px 28px rgba(30,58,95,0.12); transform: translateY(-2px); }
         .row:hover { background-color: ${TINT}; }
         .row { transition: background-color 0.12s ease; }
         .iconring { transition: background-color 0.2s ease, border-color 0.2s ease; }
-        .tile:hover .iconring { background: ${AMBER}; border-color: ${AMBER}; }
+        .tile:hover .iconring { background: var(--ring-color); border-color: var(--ring-color); }
         .tile:hover .iconring svg { color: ${WHITE} !important; }
         .cta:hover { gap: 8px !important; color: ${NAVY} !important; }
         .cta { transition: gap 0.2s ease, color 0.2s ease; }
-        .addcard:hover { background-color: ${TINT}; }
+        .addcard { transition: background-color 0.15s ease; }
+        .addcard:hover { background-color: ${GREEN} !important; color: ${WHITE} !important; }
+        .weekBtn { transition: background-color 0.15s ease; }
+        .weekBtn:hover { background-color: #16304F !important; }
       `}</style>
 
       {/* Main */}
       <main style={{ width: "100%" }}>
-        {/* Quick action tiles */}
+        {/* Quick action tiles — alternates amber / green so the two
+            accent colors both show up at the very top of the page */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 16 }}>
-          {QUICK_ACTIONS.map((qa) => {
+          {QUICK_ACTIONS.map((qa, i) => {
             const Icon = qa.icon;
+            const ringColor = i % 2 === 0 ? AMBER : GREEN;
             return (
               <div
                 key={qa.label}
@@ -143,7 +150,8 @@ export default function AdminDashboard() {
                 style={{
                   background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM,
                   padding: "20px 18px", display: "flex", alignItems: "center", justifyContent: "space-between",
-                }}
+                  ["--ring-color" as string]: ringColor,
+                } as React.CSSProperties}
               >
                 <p style={{ fontSize: 13.5, fontWeight: 600, margin: 0, whiteSpace: "pre-line", lineHeight: 1.35, color: NAVY }}>
                   {qa.label}
@@ -151,11 +159,12 @@ export default function AdminDashboard() {
                 <span
                   className="iconring"
                   style={{
-                    width: 46, height: 46, borderRadius: "50%", border: `1.5px solid ${AMBER}`,
+                    width: 46, height: 46, borderRadius: "50%", border: `1.5px solid ${ringColor}`,
                     display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    color: ringColor,
                   }}
                 >
-                  <Icon size={19} color={AMBER} />
+                  <Icon size={19} />
                 </span>
               </div>
             );
@@ -173,12 +182,13 @@ export default function AdminDashboard() {
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
                 <Legend color={AMBER} label="Approved" />
-                <Legend color={GRAY} label="Submitted" dashed />
+                <Legend color={GREEN} label="Submitted" dashed />
                 <button
+                  className="weekBtn"
                   style={{
-                    display: "flex", alignItems: "center", gap: 6, background: TINT,
-                    border: `1px solid ${LINE}`, borderRadius: 8, padding: "8px 13px",
-                    color: NAVY, fontSize: 13, cursor: "pointer",
+                    display: "flex", alignItems: "center", gap: 6, background: NAVY,
+                    border: `1px solid ${NAVY}`, borderRadius: 8, padding: "8px 13px",
+                    color: WHITE, fontSize: 13, fontWeight: 600, cursor: "pointer",
                   }}
                 >
                   Week <ChevronDown size={14} />
@@ -197,7 +207,7 @@ export default function AdminDashboard() {
                 <line key={i} x1="0" x2={W} y1={(260 / 4) * i + 6} y2={(260 / 4) * i + 6} stroke={LINE} strokeWidth="1" />
               ))}
               <path d={areaPath} fill="url(#areaFill)" />
-              <path d={submittedLine.d} fill="none" stroke={GRAY} strokeWidth="2" strokeDasharray="5 5" />
+              <path d={submittedLine.d} fill="none" stroke={GREEN} strokeWidth="2" strokeDasharray="5 5" />
               <path d={approvedLine.d} fill="none" stroke={AMBER} strokeWidth="2.5" />
               {approvedLine.pts.map(([x, y]: Point, i: number) => (
                 <circle key={i} cx={x} cy={y} r={i === 3 ? 5 : 3} fill={i === 3 ? WHITE : AMBER} stroke={AMBER} strokeWidth="2" />
@@ -286,7 +296,7 @@ export default function AdminDashboard() {
                 <p style={{ margin: 0, fontSize: 24, fontWeight: 700, fontFamily: "'Fraunces', serif", color: NAVY }}>₱6.4M</p>
               </div>
               <div>
-                <p style={{ margin: "0 0 4px", fontSize: 13, letterSpacing: "0.05em", fontWeight: 700, color: "#6b5220" }}>
+                <p style={{ margin: "0 0 4px", fontSize: 13, letterSpacing: "0.05em", fontWeight: 700, color: "#7A5C0A" }}>
                   BATCH 14 · CRDC
                 </p>
                 <p style={{ margin: 0, fontSize: 11, color: "#9a9a94" }}>Term 2025–2026</p>
@@ -302,7 +312,7 @@ export default function AdminDashboard() {
               <svg width="90" height="90" viewBox="0 0 90 90">
                 <circle cx="45" cy="45" r={r} fill="none" stroke={TINT} strokeWidth="9" />
                 <circle
-                  cx="45" cy="45" r={r} fill="none" stroke={AMBER} strokeWidth="9" strokeLinecap="round"
+                  cx="45" cy="45" r={r} fill="none" stroke={GREEN} strokeWidth="9" strokeLinecap="round"
                   strokeDasharray={c} strokeDashoffset={c - (renewalPct / 100) * c}
                   transform="rotate(-90 45 45)"
                 />
@@ -315,8 +325,8 @@ export default function AdminDashboard() {
                 className="addcard"
                 onClick={() => nav("adminReports")}
                 style={{
-                  marginTop: 12, width: "100%", background: TINT, border: `1px solid ${LINE}`,
-                  borderRadius: 9, padding: "9px 0", color: NAVY, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                  marginTop: 12, width: "100%", background: GREEN_BG, border: `1px solid ${GREEN}`,
+                  borderRadius: 9, padding: "9px 0", color: GREEN, fontSize: 12, fontWeight: 700, cursor: "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
                 }}
               >
