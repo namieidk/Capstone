@@ -3,18 +3,17 @@ import React, { CSSProperties, ReactNode } from "react";
 export function GlobalStyles() {
   return (
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&display=swap');
-
       .vd * { margin: 0; padding: 0; box-sizing: border-box; }
       .vd {
         background: #F8F4EA;
         color: #2B2B28;
         font-family: 'Inter', -apple-system, sans-serif;
+        font-weight: 400;
         -webkit-font-smoothing: antialiased;
       }
-      .vd h1, .vd h2, .vd h3 { font-family: 'Fraunces', Georgia, serif; color: #14213A; }
+      .vd h1, .vd h2, .vd h3 { font-family: 'Inter', -apple-system, sans-serif; font-weight: 700; color: #14213A; }
       .vd a { color: inherit; text-decoration: none; }
-      .vd button { font-family: 'Inter', sans-serif; cursor: pointer; border: none; background: none; }
+      .vd button { font-family: 'Inter', sans-serif; font-weight: 500; cursor: pointer; border: none; background: none; }
       .vd ::-webkit-scrollbar { width: 8px; height: 8px; }
       .vd ::-webkit-scrollbar-thumb { background: #E4DCC8; border-radius: 8px; }
 
@@ -499,7 +498,7 @@ export const s: Record<string, CSSProperties> = {
   sidebar: { width: 252, flexShrink: 0, background: WHITE, borderRight: `1px solid ${LINE}`, display: "flex", flexDirection: "column", padding: "26px 18px", height: "100vh", position: "sticky", top: 0 },
   sidebarLogo: { display: "flex", alignItems: "center", gap: 10, padding: "0 8px", marginBottom: 32 },
   sidebarLogoMark: { width: 32, height: 32, borderRadius: 9, background: NAVY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  sidebarLogoText: { fontFamily: "'Fraunces', serif", fontSize: "1.15rem", fontWeight: 700, color: NAVY },
+  sidebarLogoText: { fontFamily: "'Inter', sans-serif", fontSize: "1.15rem", fontWeight: 700, color: NAVY },
   sidebarNav: { display: "flex", flexDirection: "column", gap: 4, flexGrow: 1 },
   sidebarNavItem: { display: "flex", alignItems: "center", gap: 13, padding: "12px 14px", borderRadius: 11, fontSize: "0.95rem", fontWeight: 600, width: "100%", textAlign: "left" },
   sidebarNavIcon: { display: "flex", flexShrink: 0 },
@@ -529,7 +528,7 @@ export const s: Record<string, CSSProperties> = {
   statRow: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, margin: "32px 0 28px" },
   statCard: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 18, padding: "22px 24px", display: "flex", flexDirection: "column", minHeight: 150 },
   statCardLabel: { fontSize: "0.86rem", color: "#7a7a74", marginBottom: 8 },
-  statCardValue: { fontFamily: "'Fraunces', serif", fontSize: "2rem", fontWeight: 700, color: NAVY, marginBottom: 12 },
+  statCardValue: { fontFamily: "'Inter', sans-serif", fontSize: "2rem", fontWeight: 700, color: NAVY, marginBottom: 12 },
   statProgressTrack: { height: 7, background: LINE, borderRadius: 999, overflow: "hidden", marginBottom: 12 },
   statProgressFill: { height: "100%", background: AMBER, borderRadius: 999 },
   statCardCaption: { fontSize: "0.82rem", color: "#6b6b66" },
@@ -582,7 +581,7 @@ export const s: Record<string, CSSProperties> = {
   gradeTermCol: { flexGrow: 1, minWidth: 0 },
   gradeTerm: { fontSize: "0.96rem", fontWeight: 700, color: NAVY, marginBottom: 2 },
   gradeNote: { fontSize: "0.82rem", color: "#8a8a84" },
-  gradeValue: { fontFamily: "'Fraunces', serif", fontSize: "1.4rem", fontWeight: 700, color: NAVY, flexShrink: 0 },
+  gradeValue: { fontFamily: "'Inter', sans-serif", fontSize: "1.4rem", fontWeight: 700, color: NAVY, flexShrink: 0 },
 
   uploadSectionGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 },
   uploadBox: { display: "flex", alignItems: "center", gap: 14, border: `1.5px dashed ${LINE}`, borderRadius: 12, padding: "16px 18px", background: "#FAF7EF", cursor: "pointer" },
@@ -652,7 +651,7 @@ export const s: Record<string, CSSProperties> = {
   paymentInfoCol: { flexGrow: 1, minWidth: 0 },
   paymentTerm: { fontSize: "0.96rem", fontWeight: 700, color: NAVY, marginBottom: 2 },
   paymentMeta: { fontSize: "0.82rem", color: "#8a8a84" },
-  paymentAmount: { fontFamily: "'Fraunces', serif", fontSize: "1.15rem", fontWeight: 700, color: NAVY, flexShrink: 0 },
+  paymentAmount: { fontFamily: "'Inter', sans-serif", fontSize: "1.15rem", fontWeight: 700, color: NAVY, flexShrink: 0 },
 
   // SETTINGS PAGE
   settingsSection: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 16, padding: "24px 26px", marginBottom: 18 },
@@ -669,7 +668,7 @@ export const s: Record<string, CSSProperties> = {
   profileBannerEditBtn: { position: "absolute", bottom: 14, right: 16, display: "flex", alignItems: "center", gap: 7, background: "rgba(0,0,0,0.35)", color: WHITE, fontSize: "0.82rem", fontWeight: 600, padding: "8px 14px", borderRadius: 999, backdropFilter: "blur(4px)" },
   profileHeaderRow: { display: "flex", alignItems: "flex-end", gap: 18, padding: "0 8px", marginTop: -36, marginBottom: 20 },
   profileAvatarWrap: { position: "relative", flexShrink: 0 },
-  profileAvatar: { width: 88, height: 88, borderRadius: "50%", border: `4px solid ${WHITE}`, color: "#6b5220", fontFamily: "'Fraunces', serif", fontWeight: 700, fontSize: "1.8rem", display: "flex", alignItems: "center", justifyContent: "center" },
+  profileAvatar: { width: 88, height: 88, borderRadius: "50%", border: `4px solid ${WHITE}`, color: "#6b5220", fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: "1.8rem", display: "flex", alignItems: "center", justifyContent: "center" },
   profileAvatarEditBtn: { position: "absolute", bottom: 2, right: 2, width: 28, height: 28, borderRadius: "50%", background: NAVY, display: "flex", alignItems: "center", justifyContent: "center", border: `2px solid ${WHITE}` },
   profileHeaderInfo: { flexGrow: 1, paddingBottom: 6 },
   profileName: { fontSize: "1.5rem", fontWeight: 700, color: NAVY, marginBottom: 2 },

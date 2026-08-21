@@ -9,9 +9,7 @@ import React, { CSSProperties, ReactNode } from "react";
 export function GlobalStyles() {
   return (
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&display=swap');
-
-      .vl * { margin: 0; padding: 0; box-sizing: border-box; }
+            .vl * { margin: 0; padding: 0; box-sizing: border-box; }
       .vl {
         background: #F8F4EA;
         color: #2B2B28;
@@ -19,7 +17,7 @@ export function GlobalStyles() {
         -webkit-font-smoothing: antialiased;
         min-height: 100vh;
       }
-      .vl h1, .vl h2, .vl h3 { font-family: 'Fraunces', Georgia, serif; color: #14213A; }
+      .vl h1, .vl h2, .vl h3 { font-family: 'Inter', sans-serif; color: #14213A; }
       .vl a { color: inherit; text-decoration: none; }
       .vl button { font-family: 'Inter', sans-serif; cursor: pointer; border: none; background: none; }
       .vl input { font-family: 'Inter', sans-serif; }
@@ -308,7 +306,7 @@ export const ls: Record<string, CSSProperties> = {
   },
   brandTop: { display: "flex", alignItems: "center", gap: 10, position: "relative", zIndex: 1 },
   brandLogoMark: { width: 34, height: 34, borderRadius: 9, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  brandLogoText: { fontFamily: "'Fraunces', serif", fontSize: "1.2rem", fontWeight: 700, color: WHITE },
+  brandLogoText: { fontFamily: "'Inter', sans-serif", fontSize: "1.2rem", fontWeight: 700, color: WHITE },
 
   brandMid: { position: "relative", zIndex: 1, maxWidth: 440 },
   brandEyebrow: { fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: AMBER_LIGHT, marginBottom: 18, display: "block" },
@@ -317,7 +315,7 @@ export const ls: Record<string, CSSProperties> = {
 
   brandStatRow: { position: "relative", zIndex: 1, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 },
   brandStatCard: { background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14, padding: "16px 16px" },
-  brandStatValue: { fontFamily: "'Fraunces', serif", fontSize: "1.5rem", fontWeight: 700, color: WHITE, marginBottom: 4 },
+  brandStatValue: { fontFamily: "'Inter', sans-serif", fontSize: "1.5rem", fontWeight: 700, color: WHITE, marginBottom: 4 },
   brandStatLabel: { fontSize: "0.78rem", color: "rgba(255,255,255,0.6)", lineHeight: 1.4 },
 
   formSide: { display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 24px" },

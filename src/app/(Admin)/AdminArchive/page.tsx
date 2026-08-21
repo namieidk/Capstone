@@ -72,7 +72,7 @@ export default function AdminArchivePage() {
       {/* ---------------- Table card, same shell/header/th/td treatment as Monitor ---------------- */}
       <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 22px 8px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <p style={{ fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Fraunces', serif" }}>Archived scholars</p>
+          <p style={{ fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif" }}>Archived scholars</p>
           <span style={{ fontSize: "0.8rem", color: "#9a9a94" }}>
             {filtered.length === 0
               ? "0 shown"

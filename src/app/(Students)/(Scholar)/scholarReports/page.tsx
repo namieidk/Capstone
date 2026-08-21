@@ -94,7 +94,7 @@ export default function ScholarReportsPage() {
         {SCHOLAR_REPORT_KPIS.map((k) => (
           <div key={k.label} style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius: 16, padding: "18px 20px" }}>
             <p style={{ fontSize: "0.82rem", color: "#7a7a74", marginBottom: 6 }}>{k.label}</p>
-            <p style={{ fontFamily: "'Fraunces', serif", fontSize: "1.5rem", fontWeight: 700, color: NAVY, lineHeight: 1, marginBottom: 8 }}>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.5rem", fontWeight: 700, color: NAVY, lineHeight: 1, marginBottom: 8 }}>
               {k.value}
             </p>
             <p style={{ fontSize: "0.76rem", color: "#9a9a94" }}>{k.sub}</p>
@@ -132,14 +132,14 @@ export default function ScholarReportsPage() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 28 }}>
             <div style={{ background: AMBER_BG, borderRadius: 14, padding: "18px 20px" }}>
               <p style={{ fontSize: "0.78rem", color: "#7a5012", marginBottom: 6 }}>Disbursed</p>
-              <p style={{ fontFamily: "'Fraunces', serif", fontSize: "1.6rem", fontWeight: 700, color: "#5a3a0a", lineHeight: 1, marginBottom: 4 }}>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.6rem", fontWeight: 700, color: "#5a3a0a", lineHeight: 1, marginBottom: 4 }}>
                 {fmt(SCHOLAR_DISBURSED_TO_DATE)}
               </p>
               <p style={{ fontSize: "0.78rem", color: "#7a5012" }}>of {fmt(SCHOLAR_ANNUAL_STIPEND)} annual</p>
             </div>
             <div style={{ background: TINT, borderRadius: 14, padding: "18px 20px" }}>
               <p style={{ fontSize: "0.78rem", color: "#7a7a74", marginBottom: 6 }}>Remaining</p>
-              <p style={{ fontFamily: "'Fraunces', serif", fontSize: "1.6rem", fontWeight: 700, color: NAVY, lineHeight: 1, marginBottom: 4 }}>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.6rem", fontWeight: 700, color: NAVY, lineHeight: 1, marginBottom: 4 }}>
                 {fmt(SCHOLAR_REMAINING_STIPEND)}
               </p>
               <p style={{ fontSize: "0.78rem", color: "#9a9a94" }}>next release: Jul 15, 2026</p>
@@ -181,19 +181,19 @@ export default function ScholarReportsPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: GOOD_BG, borderRadius: 12, padding: "12px 16px" }}>
               <p style={{ fontSize: "0.84rem", color: GOOD, fontWeight: 600 }}>Total budget</p>
-              <p style={{ fontFamily: "'Fraunces', serif", fontSize: "1.1rem", fontWeight: 700, color: "#2a4a1a" }}>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.1rem", fontWeight: 700, color: "#2a4a1a" }}>
                 {fmt(SCHOLAR_FUND_TOTAL)}
               </p>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: TINT, borderRadius: 12, padding: "12px 16px" }}>
               <p style={{ fontSize: "0.84rem", color: "#7a7a74", fontWeight: 600 }}>Allocated</p>
-              <p style={{ fontFamily: "'Fraunces', serif", fontSize: "1.1rem", fontWeight: 700, color: NAVY }}>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.1rem", fontWeight: 700, color: NAVY }}>
                 {fmt(SCHOLAR_FUND_ALLOCATED)}
               </p>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: TINT, borderRadius: 12, padding: "12px 16px" }}>
               <p style={{ fontSize: "0.84rem", color: "#7a7a74", fontWeight: 600 }}>Non-allocated</p>
-              <p style={{ fontFamily: "'Fraunces', serif", fontSize: "1.1rem", fontWeight: 700, color: NAVY }}>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.1rem", fontWeight: 700, color: NAVY }}>
                 {fmt(SCHOLAR_FUND_NON_ALLOCATED)}
               </p>
             </div>

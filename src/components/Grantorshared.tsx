@@ -16,18 +16,17 @@ export * from "./Grantorshared.data";
 export function GlobalStyles() {
   return (
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&display=swap');
-
       .vg * { margin: 0; padding: 0; box-sizing: border-box; }
       .vg {
         background: #F8F4EA;
         color: #2B2B28;
         font-family: 'Inter', -apple-system, sans-serif;
+        font-weight: 400;
         -webkit-font-smoothing: antialiased;
       }
-      .vg h1, .vg h2, .vg h3 { font-family: 'Fraunces', Georgia, serif; color: #14213A; }
+      .vg h1, .vg h2, .vg h3 { font-family: 'Inter', -apple-system, sans-serif; font-weight: 700; color: #14213A; }
       .vg a { color: inherit; text-decoration: none; }
-      .vg button { font-family: 'Inter', sans-serif; cursor: pointer; border: none; background: none; }
+      .vg button { font-family: 'Inter', sans-serif; font-weight: 500; cursor: pointer; border: none; background: none; }
       .vg table { border-collapse: collapse; width: 100%; }
       .vg ::-webkit-scrollbar { width: 8px; height: 8px; }
       .vg ::-webkit-scrollbar-thumb { background: #E4DCC8; border-radius: 8px; }

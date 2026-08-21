@@ -83,28 +83,28 @@ export default function AdminPaymentsPage() {
       >
         <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, padding: "26px 28px", boxShadow: SHADOW_SM }}>
           <p style={{ fontSize: "0.84rem", color: "#7a7a74", marginBottom: 12, fontWeight: 500 }}>Disbursed this term</p>
-          <p style={{ fontFamily: "'Fraunces', serif", fontSize: "2.15rem", fontWeight: 700, color: NAVY, lineHeight: 1 }}>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "2.15rem", fontWeight: 700, color: NAVY, lineHeight: 1 }}>
             ₱{totalDisbursed.toLocaleString()}
           </p>
         </div>
         <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, padding: "26px 28px", boxShadow: SHADOW_SM }}>
           <p style={{ fontSize: "0.84rem", color: "#7a7a74", marginBottom: 12, fontWeight: 500 }}>Scheduled</p>
-          <p style={{ fontFamily: "'Fraunces', serif", fontSize: "2.15rem", fontWeight: 700, color: NAVY, lineHeight: 1 }}>{scheduledCount}</p>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "2.15rem", fontWeight: 700, color: NAVY, lineHeight: 1 }}>{scheduledCount}</p>
         </div>
         <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, padding: "26px 28px", boxShadow: SHADOW_SM }}>
           <p style={{ fontSize: "0.84rem", color: "#7a7a74", marginBottom: 12, fontWeight: 500 }}>On hold</p>
-          <p style={{ fontFamily: "'Fraunces', serif", fontSize: "2.15rem", fontWeight: 700, color: NAVY, lineHeight: 1 }}>{onHoldCount}</p>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "2.15rem", fontWeight: 700, color: NAVY, lineHeight: 1 }}>{onHoldCount}</p>
         </div>
         <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, padding: "26px 28px", boxShadow: SHADOW_SM }}>
           <p style={{ fontSize: "0.84rem", color: "#7a7a74", marginBottom: 12, fontWeight: 500 }}>Next batch date</p>
-          <p style={{ fontFamily: "'Fraunces', serif", fontSize: "1.5rem", fontWeight: 700, color: NAVY, lineHeight: 1.2 }}>Jul 15, 2026</p>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.5rem", fontWeight: 700, color: NAVY, lineHeight: 1.2 }}>Jul 15, 2026</p>
         </div>
       </div>
 
       {/* ---------------- Table card, same shell/header/th/td treatment as Archive ---------------- */}
       <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 22px 8px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <p style={{ fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Fraunces', serif" }}>Payment records</p>
+          <p style={{ fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif" }}>Payment records</p>
           <span style={{ fontSize: "0.8rem", color: "#9a9a94" }}>
             {filtered.length === 0
               ? "0 shown"

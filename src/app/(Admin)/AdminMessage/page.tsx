@@ -39,7 +39,18 @@ export default function AdminMessagePage() {
   };
 
   return (
-    <div style={{ maxWidth: 1180, margin: "0 auto", padding: "40px 4px 60px" }}>
+    <div
+      style={{
+        maxWidth: 1180,
+        margin: "0 auto",
+        padding: "12px 4px 12px",
+        height: "calc(100vh - 106px)",
+        display: "flex",
+        flexDirection: "column",
+        minHeight: 0,
+        overflow: "hidden",
+      }}
+    >
       <div
         className="va-messages-shell"
         style={{
@@ -50,14 +61,15 @@ export default function AdminMessagePage() {
           border: BORDER_SUBTLE,
           borderRadius: 22,
           overflow: "hidden",
-          height: 640,
+          flexGrow: 1,
+          minHeight: 0,
           boxShadow: SHADOW_SM,
         }}
       >
         {/* ================= LEFT: conversation list ================= */}
         <div style={{ borderRight: `1px solid ${LINE}`, display: "flex", flexDirection: "column", minHeight: 0 }}>
           <div style={{ padding: "22px 20px 16px" }}>
-            <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: "1.3rem", fontWeight: 700, color: NAVY, marginBottom: 16 }}>
+            <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.3rem", fontWeight: 700, color: NAVY, marginBottom: 16 }}>
               Messages
             </h2>
             <div
@@ -80,7 +92,7 @@ export default function AdminMessagePage() {
             </div>
           </div>
 
-          <div style={{ flexGrow: 1, overflowY: "auto", padding: "0 12px 12px" }}>
+          <div style={{ flexGrow: 1, overflowY: "auto", padding: "0 12px 12px", minHeight: 0 }}>
             {filtered.map((c) => {
               const isActive = c.id === activeId;
               return (
@@ -180,6 +192,7 @@ export default function AdminMessagePage() {
               justifyContent: "space-between",
               padding: "18px 26px",
               borderBottom: `1px solid ${LINE}`,
+              flexShrink: 0,
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -219,8 +232,19 @@ export default function AdminMessagePage() {
             </span>
           </div>
 
-          {/* messages */}
-          <div style={{ flexGrow: 1, overflowY: "auto", padding: "24px 26px", display: "flex", flexDirection: "column", gap: 16, background: "#FBFCFD" }}>
+          {/* messages — this is the ONLY part that should scroll */}
+          <div
+            style={{
+              flexGrow: 1,
+              overflowY: "auto",
+              minHeight: 0,
+              padding: "24px 26px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
+              background: "#FBFCFD",
+            }}
+          >
             {active.messages.map((m, i) => (
               <div key={i} style={{ display: "flex", justifyContent: m.from === "me" ? "flex-end" : "flex-start" }}>
                 <div style={{ maxWidth: "72%" }}>
@@ -245,7 +269,7 @@ export default function AdminMessagePage() {
           </div>
 
           {/* composer */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "18px 22px", borderTop: `1px solid ${LINE}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "18px 22px", borderTop: `1px solid ${LINE}`, flexShrink: 0 }}>
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}

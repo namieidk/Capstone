@@ -24,19 +24,18 @@ import React, { CSSProperties, ReactNode } from "react";
 export function GlobalStyles() {
   return (
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&display=swap');
-
       .va * { margin: 0; padding: 0; box-sizing: border-box; }
       .va {
         background: #FFFFFF;
         color: #2B2B28;
         font-family: 'Inter', -apple-system, sans-serif;
+        font-weight: 400;
         -webkit-font-smoothing: antialiased;
         line-height: 1.45;
       }
-      .va h1, .va h2, .va h3 { font-family: 'Fraunces', Georgia, serif; color: #1A1A1A; }
+      .va h1, .va h2, .va h3 { font-family: 'Inter', -apple-system, sans-serif; font-weight: 700; color: #1A1A1A; }
       .va a { color: inherit; text-decoration: none; }
-      .va button { font-family: 'Inter', sans-serif; cursor: pointer; border: none; background: none; }
+      .va button { font-family: 'Inter', sans-serif; font-weight: 500; cursor: pointer; border: none; background: none; }
       .va table { border-collapse: collapse; width: 100%; }
       .va ::-webkit-scrollbar { width: 8px; height: 8px; }
       .va ::-webkit-scrollbar-thumb { background: #DFE4EA; border-radius: 8px; }
@@ -604,7 +603,7 @@ export const s: Record<string, CSSProperties> = {
   sidebar: { width: 252, flexShrink: 0, background: WHITE, borderRight: `1px solid ${LINE}`, display: "flex", flexDirection: "column", padding: "32px 18px", height: "100vh", position: "sticky", top: 0, overflowY: "auto" },
   sidebarLogo: { display: "flex", alignItems: "center", gap: 10, padding: "0 8px", marginBottom: 32 },
   sidebarLogoMark: { width: 32, height: 32, borderRadius: 9, background: NAVY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  sidebarLogoText: { fontFamily: "'Fraunces', serif", fontSize: "1.15rem", fontWeight: 700, color: NAVY },
+  sidebarLogoText: { fontFamily: "'Inter', sans-serif", fontSize: "1.15rem", fontWeight: 700, color: NAVY },
   sidebarNav: { display: "flex", flexDirection: "column", gap: 4, flexGrow: 1 },
   sidebarNavItem: { display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderRadius: 12, fontSize: "0.92rem", fontWeight: 600, width: "100%", textAlign: "left" },
   sidebarNavIcon: { display: "flex", flexShrink: 0 },
@@ -640,7 +639,7 @@ export const s: Record<string, CSSProperties> = {
   pipelineCard: { background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, padding: "22px 24px", boxShadow: SHADOW_SM, display: "flex", flexDirection: "column", justifyContent: "space-between" },
   pipelineTopRow: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 14 },
   pipelineLabel: { fontSize: "0.84rem", color: "#7a7a74", marginBottom: 8, fontWeight: 500 },
-  pipelineValue: { fontFamily: "'Fraunces', serif", fontSize: "2.15rem", fontWeight: 700, color: NAVY, lineHeight: 1 },
+  pipelineValue: { fontFamily: "'Inter', sans-serif", fontSize: "2.15rem", fontWeight: 700, color: NAVY, lineHeight: 1 },
   pipelineTag: { fontSize: "0.72rem", fontWeight: 700, padding: "4px 10px", borderRadius: 999 },
   pipelineKpiRow: { display: "flex", alignItems: "center", gap: 8, borderTop: `1px solid ${LINE}`, paddingTop: 12, marginTop: 4, fontSize: "0.82rem", fontWeight: 700 },
   pipelineKpiLabel: { color: "#9a9a94", fontWeight: 500 },
@@ -775,7 +774,7 @@ export const s: Record<string, CSSProperties> = {
   profileBannerEditBtn: { position: "absolute", bottom: 14, right: 16, display: "flex", alignItems: "center", gap: 7, background: "rgba(0,0,0,0.35)", color: WHITE, fontSize: "0.82rem", fontWeight: 600, padding: "8px 14px", borderRadius: 999, backdropFilter: "blur(4px)" },
   profileHeaderRow: { display: "flex", alignItems: "flex-end", gap: 18, padding: "0 8px", marginTop: -36, marginBottom: 20 },
   profileAvatarWrap: { position: "relative", flexShrink: 0 },
-  profileAvatar: { width: 88, height: 88, borderRadius: "50%", border: `4px solid ${WHITE}`, color: "#7A5C0A", fontFamily: "'Fraunces', serif", fontWeight: 700, fontSize: "1.8rem", display: "flex", alignItems: "center", justifyContent: "center", background: AMBER_BG },
+  profileAvatar: { width: 88, height: 88, borderRadius: "50%", border: `4px solid ${WHITE}`, color: "#7A5C0A", fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: "1.8rem", display: "flex", alignItems: "center", justifyContent: "center", background: AMBER_BG },
   profileAvatarEditBtn: { position: "absolute", bottom: 2, right: 2, width: 28, height: 28, borderRadius: "50%", background: NAVY, display: "flex", alignItems: "center", justifyContent: "center", border: `2px solid ${WHITE}` },
   profileHeaderInfo: { flexGrow: 1, paddingBottom: 6 },
   profileName: { fontSize: "1.5rem", fontWeight: 700, color: NAVY, marginBottom: 2 },

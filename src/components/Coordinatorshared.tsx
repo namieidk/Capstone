@@ -7,21 +7,20 @@ import React, { CSSProperties, ReactNode } from "react";
 export function GlobalStyles() {
   return (
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&display=swap');
-
       .vc * { margin: 0; padding: 0; box-sizing: border-box; }
       .vc {
-        background: #F8F4EA;
+        background: #FFFFFF;
         color: #2B2B28;
         font-family: 'Inter', -apple-system, sans-serif;
+        font-weight: 400;
         -webkit-font-smoothing: antialiased;
       }
-      .vc h1, .vc h2, .vc h3 { font-family: 'Fraunces', Georgia, serif; color: #14213A; }
+      .vc h1, .vc h2, .vc h3 { font-family: 'Inter', -apple-system, sans-serif; font-weight: 700; color: #14213A; }
       .vc a { color: inherit; text-decoration: none; }
-      .vc button { font-family: 'Inter', sans-serif; cursor: pointer; border: none; background: none; }
+      .vc button { font-family: 'Inter', sans-serif; font-weight: 500; cursor: pointer; border: none; background: none; }
       .vc table { border-collapse: collapse; width: 100%; }
       .vc ::-webkit-scrollbar { width: 8px; height: 8px; }
-      .vc ::-webkit-scrollbar-thumb { background: #E4DCC8; border-radius: 8px; }
+      .vc ::-webkit-scrollbar-thumb { background: #DFE4EA; border-radius: 8px; }
 
       .vc-app-shell { display: flex; min-height: 100vh; }
       .vc-main { height: 100vh; overflow-y: auto; scroll-snap-type: y mandatory; }
@@ -54,21 +53,29 @@ export function GlobalStyles() {
 // ============================================================
 // DESIGN TOKENS
 // ============================================================
+// Matched to Adminshared's palette: deep navy + warm gold accent,
+// with green standing in as the "good/positive" tone.
 
-export const NAVY = "#14213A";
-export const CREAM = "#F8F4EA";
-export const AMBER = "#C9943D";
-export const AMBER_BG = "#F3E6C8";
+export const NAVY = "#1E3A5F";
+export const CREAM = "#FFFFFF";
+export const AMBER = "#F1B71E";
+export const AMBER_BG = "#FCEEC4";
 export const WHITE = "#FFFFFF";
 export const GRAY = "#6B6B66";
-export const LINE = "#E4DCC8";
-export const TINT = "#F4F0E6";
-export const GOOD = "#6b8a3e";
-export const GOOD_BG = "#E9F0DC";
-export const WARN = "#a17a1f";
-export const WARN_BG = "#F3E6C8";
+export const LINE = "#DFE4EA";
+export const TINT = "#EEF1F5";
+export const GREEN = "#1E7B4D";
+export const GREEN_BG = "#DDEEE3";
+export const GOOD = "#1E7B4D";
+export const GOOD_BG = "#DDEEE3";
+export const WARN = "#8A6410";
+export const WARN_BG = "#FCEEC4";
 export const BAD = "#8a3a2e";
 export const BAD_BG = "#F6E4DF";
+
+export const SHADOW_SM = "0 4px 18px rgba(30, 58, 95, 0.09)";
+export const SHADOW_MD = "0 10px 28px rgba(30, 58, 95, 0.13)";
+export const BORDER_SUBTLE = "1px solid rgba(30, 58, 95, 0.10)";
 
 // ============================================================
 // ICONS
@@ -77,6 +84,7 @@ export const BAD_BG = "#F6E4DF";
 export function HomeIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /></svg>); }
 export function PeopleIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="8" r="3.2" /><path d="M3 19c0-3.2 2.7-5.6 6-5.6s6 2.4 6 5.6" /><circle cx="17" cy="8.5" r="2.6" /><path d="M21 19c0-2.6-1.7-4.7-4-5.3" /></svg>); }
 export function InterviewIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /><circle cx="12" cy="15" r="2" /></svg>); }
+export function CalendarIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></svg>); }
 export function MonitorIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18" /><path d="M7 14l4-4 3 3 5-6" /></svg>); }
 export function ReportsIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M8 16v-4M12 16V8M16 16v-7" /></svg>); }
 export function ArchiveIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="5" rx="1.5" /><path d="M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9" /><path d="M10 13h4" /></svg>); }
@@ -216,8 +224,8 @@ export const COORDINATOR = {
   title: "HR Coordinator, Partner Company",
   email: "paolo.reyes@viascholar.org",
   bio: "Coordinating ViaScholar's Academic and Financial Need tracks for Davao City partner companies since 2022. Focused on keeping the review pipeline fast and fair.",
-  bannerGradient: "linear-gradient(120deg, #1B3A34 0%, #14213A 100%)",
-  avatarColor: "#F3E6C8",
+  bannerGradient: "linear-gradient(120deg, #14283F 0%, #1E3A5F 100%)",
+  avatarColor: AMBER_BG,
 };
 
 export interface NavItem {
@@ -259,7 +267,7 @@ export const APPLICANTS: Applicant[] = [
 export const STAGE_COLORS: Record<Stage, { bg: string; text: string }> = {
   Submitted: { bg: TINT, text: "#6b6b66" },
   "Under review": { bg: WARN_BG, text: WARN },
-  Interview: { bg: AMBER_BG, text: "#6b5220" },
+  Interview: { bg: AMBER_BG, text: "#7A5C0A" },
   Accepted: { bg: GOOD_BG, text: GOOD },
   Rejected: { bg: BAD_BG, text: BAD },
 };
@@ -374,7 +382,7 @@ export const GRADE_STATUS_COLORS: Record<GradeRecord["status"], { bg: string; te
 
 export const PAYMENT_STATUS_COLORS: Record<PaymentRecord["status"] | HistoryPaymentRecord["status"], { bg: string; text: string }> = {
   Paid: { bg: GOOD_BG, text: GOOD },
-  Scheduled: { bg: AMBER_BG, text: "#6b5220" },
+  Scheduled: { bg: AMBER_BG, text: "#7A5C0A" },
   Pending: { bg: WARN_BG, text: WARN },
   "On hold": { bg: BAD_BG, text: BAD },
 };
@@ -491,7 +499,7 @@ export const REPORT_KPIS = [
 export const TRACK_BREAKDOWN = [
   { track: "Academic", count: APPLICANTS.filter((a) => a.track === "Academic").length, color: NAVY },
   { track: "Financial Need", count: APPLICANTS.filter((a) => a.track === "Financial Need").length, color: AMBER },
-  { track: "Returning Scholar", count: APPLICANTS.filter((a) => a.track === "Returning Scholar").length, color: "#4A6B63" },
+  { track: "Returning Scholar", count: APPLICANTS.filter((a) => a.track === "Returning Scholar").length, color: "#4F9873" },
 ];
 
 export const MONTHLY_APPLICATIONS = [
@@ -547,7 +555,7 @@ export const CONVERSATIONS: Conversation[] = [
 export const TONE_MAP: Record<PipelineCount["tone"], { bg: string; text: string }> = {
   neutral: { bg: TINT, text: "#6b6b66" },
   warn: { bg: WARN_BG, text: WARN },
-  amber: { bg: AMBER_BG, text: "#6b5220" },
+  amber: { bg: AMBER_BG, text: "#7A5C0A" },
   good: { bg: GOOD_BG, text: GOOD },
 };
 
@@ -628,14 +636,14 @@ export const s: Record<string, CSSProperties> = {
   sidebar: { width: 252, flexShrink: 0, background: WHITE, borderRight: `1px solid ${LINE}`, display: "flex", flexDirection: "column", padding: "26px 18px", height: "100vh", position: "sticky", top: 0, overflowY: "auto" },
   sidebarLogo: { display: "flex", alignItems: "center", gap: 10, padding: "0 8px", marginBottom: 32 },
   sidebarLogoMark: { width: 32, height: 32, borderRadius: 9, background: NAVY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  sidebarLogoText: { fontFamily: "'Fraunces', serif", fontSize: "1.15rem", fontWeight: 700, color: NAVY },
+  sidebarLogoText: { fontFamily: "'Inter', sans-serif", fontSize: "1.15rem", fontWeight: 700, color: NAVY },
   sidebarNav: { display: "flex", flexDirection: "column", gap: 4, flexGrow: 1 },
   sidebarNavItem: { display: "flex", alignItems: "center", gap: 13, padding: "12px 14px", borderRadius: 11, fontSize: "0.95rem", fontWeight: 600, width: "100%", textAlign: "left" },
   sidebarNavIcon: { display: "flex", flexShrink: 0 },
   sidebarNavLabel: { flexGrow: 1 },
   sidebarBadge: { background: AMBER, color: WHITE, fontSize: "0.7rem", fontWeight: 700, borderRadius: 999, minWidth: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px" },
   sidebarUserCard: { display: "flex", alignItems: "center", gap: 10, borderTop: `1px solid ${LINE}`, paddingTop: 18, marginTop: 12 },
-  sidebarAvatar: { width: 38, height: 38, borderRadius: "50%", background: AMBER_BG, color: "#6b5220", fontWeight: 700, fontSize: "0.85rem", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  sidebarAvatar: { width: 38, height: 38, borderRadius: "50%", background: AMBER_BG, color: "#7A5C0A", fontWeight: 700, fontSize: "0.85rem", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   sidebarUserInfo: { flexGrow: 1, minWidth: 0 },
   sidebarUserName: { fontSize: "0.85rem", fontWeight: 700, color: NAVY, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
   sidebarUserRole: { fontSize: "0.76rem", color: "#8a8a84" },
@@ -664,7 +672,7 @@ export const s: Record<string, CSSProperties> = {
   pipelineCard: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 16, padding: "20px 22px" },
   pipelineTopRow: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 14 },
   pipelineLabel: { fontSize: "0.84rem", color: "#7a7a74", marginBottom: 8 },
-  pipelineValue: { fontFamily: "'Fraunces', serif", fontSize: "2.1rem", fontWeight: 700, color: NAVY, lineHeight: 1 },
+  pipelineValue: { fontFamily: "'Inter', sans-serif", fontSize: "2.1rem", fontWeight: 700, color: NAVY, lineHeight: 1 },
   pipelineTag: { fontSize: "0.72rem", fontWeight: 700, padding: "4px 10px", borderRadius: 999 },
   pipelineKpiRow: { display: "flex", alignItems: "center", gap: 8, borderTop: `1px solid ${LINE}`, paddingTop: 12, fontSize: "0.82rem", fontWeight: 700 },
   pipelineKpiLabel: { color: "#9a9a94", fontWeight: 500 },
@@ -751,7 +759,7 @@ export const s: Record<string, CSSProperties> = {
   messagesShell: { display: "grid", gridTemplateColumns: "320px 1fr", gap: 0, background: WHITE, border: `1px solid ${LINE}`, borderRadius: 18, overflow: "hidden", height: 600 },
   convoListCol: { borderRight: `1px solid ${LINE}`, overflowY: "auto" },
   convoListItem: { display: "flex", gap: 12, alignItems: "flex-start", width: "100%", padding: "16px 18px", textAlign: "left", position: "relative" },
-  convoAvatar: { width: 40, height: 40, borderRadius: "50%", background: AMBER_BG, color: "#6b5220", fontWeight: 700, fontSize: "0.84rem", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  convoAvatar: { width: 40, height: 40, borderRadius: "50%", background: AMBER_BG, color: "#7A5C0A", fontWeight: 700, fontSize: "0.84rem", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   convoListTextCol: { flexGrow: 1, minWidth: 0 },
   convoListTopRow: { display: "flex", justifyContent: "space-between", marginBottom: 3 },
   convoListName: { fontSize: "0.9rem", fontWeight: 700, color: NAVY },
@@ -783,7 +791,7 @@ export const s: Record<string, CSSProperties> = {
   profileBannerEditBtn: { position: "absolute", bottom: 14, right: 16, display: "flex", alignItems: "center", gap: 7, background: "rgba(0,0,0,0.35)", color: WHITE, fontSize: "0.82rem", fontWeight: 600, padding: "8px 14px", borderRadius: 999, backdropFilter: "blur(4px)" },
   profileHeaderRow: { display: "flex", alignItems: "flex-end", gap: 18, padding: "0 8px", marginTop: -36, marginBottom: 20 },
   profileAvatarWrap: { position: "relative", flexShrink: 0 },
-  profileAvatar: { width: 88, height: 88, borderRadius: "50%", border: `4px solid ${WHITE}`, color: "#6b5220", fontFamily: "'Fraunces', serif", fontWeight: 700, fontSize: "1.8rem", display: "flex", alignItems: "center", justifyContent: "center", background: AMBER_BG },
+  profileAvatar: { width: 88, height: 88, borderRadius: "50%", border: `4px solid ${WHITE}`, color: "#7A5C0A", fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: "1.8rem", display: "flex", alignItems: "center", justifyContent: "center", background: AMBER_BG },
   profileAvatarEditBtn: { position: "absolute", bottom: 2, right: 2, width: 28, height: 28, borderRadius: "50%", background: NAVY, display: "flex", alignItems: "center", justifyContent: "center", border: `2px solid ${WHITE}` },
   profileHeaderInfo: { flexGrow: 1, paddingBottom: 6 },
   profileName: { fontSize: "1.5rem", fontWeight: 700, color: NAVY, marginBottom: 2 },
@@ -794,14 +802,14 @@ export const s: Record<string, CSSProperties> = {
   profileBioText: { fontSize: "0.94rem", color: "#2B2B28", lineHeight: 1.6 },
   profileDocDownload: { width: 34, height: 34, borderRadius: 9, background: TINT, color: NAVY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
 
-  appNoteCard: { display: "flex", gap: 14, alignItems: "flex-start", background: "#F2ECDC", border: "1px solid #E3CB94", borderRadius: 14, padding: "18px 20px", marginBottom: 20 },
+  appNoteCard: { display: "flex", gap: 14, alignItems: "flex-start", background: "#FCEEC4", border: "1px solid #F1B71E", borderRadius: 14, padding: "18px 20px", marginBottom: 20 },
   appNoteIcon: { color: AMBER, display: "flex", flexShrink: 0, marginTop: 2 },
   appNoteText: { fontSize: "0.92rem", color: "#3a3a36", lineHeight: 1.6 },
 
   drawerCurrentPayCard: { display: "flex", justifyContent: "space-between", alignItems: "center", background: WHITE, border: `1px solid ${LINE}`, borderRadius: 14, padding: "16px 18px", marginBottom: 26 },
   drawerCurrentPayLeft: { display: "flex", flexDirection: "column", gap: 3 },
   drawerCurrentPayTerm: { fontSize: "0.78rem", color: "#9a9a94" },
-  drawerCurrentPayAmount: { fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Fraunces', serif" },
+  drawerCurrentPayAmount: { fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif" },
   drawerHistoryBtnRow: { display: "flex", marginBottom: 22 },
   drawerHistoryBtn: { display: "flex", alignItems: "center", gap: 8, background: TINT, color: NAVY, fontWeight: 600, fontSize: "0.86rem", padding: "10px 16px", borderRadius: 999 },
   historySection: { marginBottom: 24 },

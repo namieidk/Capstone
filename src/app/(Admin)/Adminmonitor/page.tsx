@@ -146,7 +146,7 @@ export default function AdminMonitorPage() {
             <div
               style={{
                 width: 76, height: 76, borderRadius: "50%", background: AMBER_BG, color: "#7A5C0A",
-                fontFamily: "'Fraunces', serif", fontWeight: 700, fontSize: "1.5rem",
+                fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: "1.5rem",
                 display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
               }}
             >
@@ -184,7 +184,7 @@ export default function AdminMonitorPage() {
               cx="60" cy="60" r={R} fill="none" stroke={BAD} strokeWidth="13" strokeLinecap="round"
               strokeDasharray={`${badLen} ${CIRC - badLen}`} strokeDashoffset={-(goodLen + warnLen)} transform="rotate(-90 60 60)"
             />
-            <text x="60" y="66" textAnchor="middle" fontSize="26" fontWeight="700" fill={NAVY} fontFamily="'Fraunces', serif">
+            <text x="60" y="66" textAnchor="middle" fontSize="26" fontWeight="700" fill={NAVY} fontFamily="'Inter', serif">
               {total}
             </text>
           </svg>
@@ -239,7 +239,7 @@ export default function AdminMonitorPage() {
       {/* ---------------- Scholar details table ---------------- */}
       <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 22px 8px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <p style={{ fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Fraunces', serif" }}>Scholar details</p>
+          <p style={{ fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif" }}>Scholar details</p>
           <span style={{ fontSize: "0.8rem", color: "#9a9a94" }}>
             {filtered.length === 0
               ? "0 shown"

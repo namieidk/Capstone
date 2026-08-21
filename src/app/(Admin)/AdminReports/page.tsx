@@ -75,9 +75,9 @@ export default function AdminReportsPage() {
   const sparkArea = `M0,${sparkH} L${sparkPts.join(" L")} L${sparkW},${sparkH} Z`;
 
   return (
-    <div style={{ maxWidth: 1180, margin: "0 auto", padding: "40px 4px 60px" }}>
+    <div style={{ maxWidth: 1180, margin: "0 auto", padding: "44px 4px 70px" }}>
       {/* ---- Page header row with export actions ---- */}
-      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 12, marginBottom: 28 }}>
+      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 12, marginBottom: 32 }}>
         <button
           style={{
             display: "flex",
@@ -117,13 +117,13 @@ export default function AdminReportsPage() {
         style={{
           display: "grid",
           gridTemplateColumns: "1.3fr 1fr 1fr",
-          gap: 24,
-          marginBottom: 24,
+          gap: 28,
+          marginBottom: 28,
         }}
         className="va-content-grid"
       >
         {/* ---- Track breakdown: circular rings ---- */}
-        <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "28px 24px", boxShadow: SHADOW_SM }}>
+        <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "30px 26px", boxShadow: SHADOW_SM }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
             <div>
               <p style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#9a9a94" }}>Statistics</p>
@@ -142,7 +142,7 @@ export default function AdminReportsPage() {
           style={{
             background: `linear-gradient(135deg, ${NAVY} 0%, #2E4F7A 100%)`,
             borderRadius: 20,
-            padding: "28px 24px",
+            padding: "30px 26px",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
@@ -166,14 +166,14 @@ export default function AdminReportsPage() {
               5 months
             </span>
           </div>
-          <p style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: "2.4rem", fontWeight: 700, color: WHITE, margin: "18px 0 6px" }}>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "2.4rem", fontWeight: 700, color: WHITE, margin: "18px 0 6px" }}>
             {totalApplicants}
           </p>
           <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.7)" }}>Across Feb – Jun 2026</p>
         </div>
 
         {/* ---- Projection sparkline ---- */}
-        <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "28px 24px", boxShadow: SHADOW_SM }}>
+        <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "30px 26px", boxShadow: SHADOW_SM }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
             <div>
               <p style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#9a9a94" }}>Projection</p>
@@ -196,7 +196,7 @@ export default function AdminReportsPage() {
               {momChange}%
             </span>
           </div>
-          <p style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: "1.7rem", fontWeight: 700, color: NAVY, marginBottom: 10 }}>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.7rem", fontWeight: 700, color: NAVY, marginBottom: 10 }}>
             {lastMonth.count}
           </p>
           <svg width="100%" height={sparkH} viewBox={`0 0 ${sparkW} ${sparkH}`} preserveAspectRatio="none">
@@ -212,15 +212,15 @@ export default function AdminReportsPage() {
         </div>
       </div>
 
-      <div className="va-content-grid" style={{ display: "grid", gridTemplateColumns: "1.55fr 1fr", gap: 24 }}>
+      <div className="va-content-grid" style={{ display: "grid", gridTemplateColumns: "1.55fr 1fr", gap: 28 }}>
         {/* ---- LEFT column ---- */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           {/* Applications over time */}
-          <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "28px 28px", boxShadow: SHADOW_SM }}>
-            <p style={{ fontSize: "1.05rem", fontWeight: 700, color: NAVY, fontFamily: "'Fraunces', Georgia, serif", marginBottom: 20 }}>
+          <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "30px 30px", boxShadow: SHADOW_SM }}>
+            <p style={{ fontSize: "1.05rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif", marginBottom: 22 }}>
               Applications over time
             </p>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 14, height: 140 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 14, height: 150 }}>
               {MONTHLY_APPLICATIONS.map((m) => (
                 <div key={m.month} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flexGrow: 1, height: "100%" }}>
                   <span style={{ fontSize: "0.76rem", fontWeight: 700, color: NAVY }}>{m.count}</span>
@@ -242,11 +242,11 @@ export default function AdminReportsPage() {
           </div>
 
           {/* Pipeline funnel */}
-          <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "28px 28px", boxShadow: SHADOW_SM }}>
-            <p style={{ fontSize: "1.05rem", fontWeight: 700, color: NAVY, fontFamily: "'Fraunces', Georgia, serif", marginBottom: 20 }}>
+          <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "30px 30px", boxShadow: SHADOW_SM }}>
+            <p style={{ fontSize: "1.05rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif", marginBottom: 22 }}>
               Pipeline funnel
             </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
               {STAGE_FUNNEL.map((f) => (
                 <div key={f.stage} style={{ display: "flex", alignItems: "center", gap: 14 }}>
                   <span style={{ fontSize: "0.84rem", color: "#5a5a54", width: 100, flexShrink: 0, fontWeight: 500 }}>{f.stage}</span>
@@ -268,8 +268,8 @@ export default function AdminReportsPage() {
         </div>
 
         {/* ---- RIGHT column: coordinator performance list ---- */}
-        <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "28px 24px", boxShadow: SHADOW_SM }}>
-          <p style={{ fontSize: "1.05rem", fontWeight: 700, color: NAVY, fontFamily: "'Fraunces', Georgia, serif", marginBottom: 18 }}>
+        <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "30px 26px", boxShadow: SHADOW_SM }}>
+          <p style={{ fontSize: "1.05rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif", marginBottom: 20 }}>
             Coordinator performance
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

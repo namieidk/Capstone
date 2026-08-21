@@ -72,7 +72,7 @@ export default function AdminEmployeePage() {
       {/* ---------------- Employee table, card-wrapped like Admin Monitor ---------------- */}
       <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 22px 8px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <p style={{ fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Fraunces', serif" }}>Employee details</p>
+          <p style={{ fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif" }}>Employee details</p>
           <span style={{ fontSize: "0.8rem", color: "#9a9a94" }}>
             {filtered.length === 0
               ? "0 shown"
@@ -110,7 +110,26 @@ export default function AdminEmployeePage() {
                     </span>
                   </td>
                   <td style={{ ...s.td, textAlign: "center" }}>
-                    <span style={{ ...s.stageTag, background: emp.status === "Active" ? GOOD_BG : WARN_BG, color: emp.status === "Active" ? GOOD : WARN }}>
+                    <span
+                      style={{
+                        ...s.stageTag,
+                        background: emp.status === "Active" ? GOOD_BG : WARN_BG,
+                        color: emp.status === "Active" ? GOOD : WARN,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: "50%",
+                          background: "currentColor",
+                          display: "inline-block",
+                          flexShrink: 0,
+                        }}
+                      />
                       {emp.status}
                     </span>
                   </td>

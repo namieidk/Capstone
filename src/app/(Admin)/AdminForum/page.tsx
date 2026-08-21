@@ -172,7 +172,7 @@ export default function AdminForumPage() {
                 {/* title row */}
                 <h3
                   style={{
-                    fontFamily: "'Fraunces', Georgia, serif",
+                    fontFamily: "'Inter', sans-serif",
                     fontSize: "1.08rem",
                     fontWeight: 700,
                     color: NAVY,
@@ -429,7 +429,7 @@ export default function AdminForumPage() {
         {selectedPost && (
           <div style={{ position: "sticky", top: 24 }}>
             <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius: 18, padding: "22px 20px", boxShadow: SHADOW_SM }}>
-              <p style={{ fontSize: "1.02rem", fontWeight: 700, color: NAVY, fontFamily: "'Fraunces', Georgia, serif", marginBottom: 2 }}>
+              <p style={{ fontSize: "1.02rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>
                 {selectedPost.role}
               </p>
               <p style={{ fontSize: "0.72rem", color: "#9a9a94", marginBottom: 20 }}>Thread: {deriveTitle(selectedPost.text)}</p>
@@ -446,7 +446,7 @@ export default function AdminForumPage() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontFamily: "'Fraunces', Georgia, serif",
+                    fontFamily: "'Inter', sans-serif",
                     fontWeight: 700,
                     fontSize: "1.5rem",
                     marginBottom: 12,

@@ -163,14 +163,14 @@ export default function GrantReportsPage() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 30 }}>
             <div style={{ background: GOOD_BG, borderRadius: 14, padding: "18px 20px" }}>
               <p style={{ fontSize: "0.78rem", color: "#4a6b2a", marginBottom: 6 }}>Allocated</p>
-              <p style={{ fontFamily: "'Fraunces', serif", fontSize: "1.6rem", fontWeight: 700, color: "#2a4a1a", lineHeight: 1, marginBottom: 4 }}>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.6rem", fontWeight: 700, color: "#2a4a1a", lineHeight: 1, marginBottom: 4 }}>
                 {fmt(GRANT_ALLOCATED)}
               </p>
               <p style={{ fontSize: "0.78rem", color: "#4a6b2a" }}>{allocatedPct.toFixed(1)}% of total</p>
             </div>
             <div style={{ background: TINT, borderRadius: 14, padding: "18px 20px" }}>
               <p style={{ fontSize: "0.78rem", color: "#7a7a74", marginBottom: 6 }}>Non-allocated</p>
-              <p style={{ fontFamily: "'Fraunces', serif", fontSize: "1.6rem", fontWeight: 700, color: NAVY, lineHeight: 1, marginBottom: 4 }}>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.6rem", fontWeight: 700, color: NAVY, lineHeight: 1, marginBottom: 4 }}>
                 {fmt(GRANT_NON_ALLOCATED)}
               </p>
               <p style={{ fontSize: "0.78rem", color: "#9a9a94" }}>available balance</p>

@@ -33,7 +33,7 @@ function SettingsSection({ title, children, danger }: SettingsSectionProps) {
     >
       <h3
         style={{
-          fontFamily: "'Fraunces', Georgia, serif",
+          fontFamily: "'Inter', sans-serif",
           fontSize: "1.2rem",
           fontWeight: 700,
           color: danger ? BAD : NAVY,

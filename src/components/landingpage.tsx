@@ -9,18 +9,17 @@ import React, { CSSProperties, ReactNode } from "react";
 export function GlobalStyles() {
   return (
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&display=swap');
-
       .vs * { margin: 0; padding: 0; box-sizing: border-box; }
       .vs {
-        background: #FFFFFF;
-        color: #23281F;
+        background: #F9FAFC;
+        color: #1E3A5F;
         font-family: 'Inter', -apple-system, sans-serif;
+        font-weight: 400;
         -webkit-font-smoothing: antialiased;
       }
-      .vs h1, .vs h2, .vs h3 { font-family: 'Fraunces', Georgia, serif; color: #1E3A5F; }
+      .vs h1, .vs h2, .vs h3 { font-family: 'Inter', -apple-system, sans-serif; font-weight: 700; color: #1E3A5F; }
       .vs a { color: inherit; text-decoration: none; }
-      .vs button { font-family: 'Inter', sans-serif; cursor: pointer; border: none; }
+      .vs button { font-family: 'Inter', sans-serif; font-weight: 500; cursor: pointer; border: none; }
 
       .vs-container { max-width: 1180px; margin: 0 auto; padding: 0 32px; }
       .vs-eyebrow { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #1E7B4D; }
@@ -271,7 +270,7 @@ export const s: Record<string, CSSProperties> = {
   // NAV
   navHeader: { position: "sticky", top: 0, zIndex: 50, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(8px)", borderBottom: `1px solid ${LINE}` },
   navInner: { display: "flex", alignItems: "center", justifyContent: "space-between", height: 84 },
-  navLogo: { display: "flex", alignItems: "center", gap: 10, fontFamily: "'Fraunces', serif", fontSize: "1.25rem", fontWeight: 700, color: NAVY },
+  navLogo: { display: "flex", alignItems: "center", gap: 10, fontFamily: "'Inter', sans-serif", fontSize: "1.25rem", fontWeight: 700, color: NAVY },
   navLogoMark: { width: 34, height: 34, borderRadius: 9, background: NAVY, display: "flex", alignItems: "center", justifyContent: "center" },
   navLinks: { display: "flex", gap: 30 },
   navLink: { fontSize: "0.95rem", fontWeight: 500, color: "#48484a" },
@@ -290,7 +289,7 @@ export const s: Record<string, CSSProperties> = {
   primaryBtn: { background: NAVY, color: WHITE, borderRadius: 999, padding: "16px 28px", fontWeight: 600, fontSize: "0.96rem" },
   secondaryBtn: { background: WHITE, color: NAVY, borderRadius: 999, padding: "16px 28px", fontWeight: 600, fontSize: "0.96rem", border: `1px solid ${LINE}` },
   statRow: { display: "flex", justifyContent: "space-between", gap: 40, paddingTop: 28, paddingBottom: 56, borderTop: `1px solid ${LINE}`, maxWidth: 620 },
-  statNumber: { fontFamily: "'Fraunces', serif", fontSize: "2rem", fontWeight: 700, color: NAVY, marginBottom: 4 },
+  statNumber: { fontFamily: "'Inter', sans-serif", fontSize: "2rem", fontWeight: 700, color: NAVY, marginBottom: 4 },
   statLabel: { fontSize: "0.92rem", color: GRAY },
 
   dashCard: { background: WHITE, borderRadius: 22, padding: "26px 26px 22px", boxShadow: "0 20px 50px -20px rgba(30,58,95,0.25)" },
@@ -303,7 +302,7 @@ export const s: Record<string, CSSProperties> = {
   dashMatchValue: { fontSize: "1.02rem", fontWeight: 700, color: NAVY },
   dashGwaBox: { background: SOFT_FILL, borderRadius: 16, padding: "20px 22px", marginBottom: 14 },
   dashGwaLabel: { fontSize: "0.88rem", color: "#5a5a55", marginBottom: 8 },
-  dashGwaValue: { fontFamily: "'Fraunces', serif", fontSize: "2.3rem", fontWeight: 700, color: NAVY, marginBottom: 14 },
+  dashGwaValue: { fontFamily: "'Inter', sans-serif", fontSize: "2.3rem", fontWeight: 700, color: NAVY, marginBottom: 14 },
   dashProgressTrack: { height: 7, background: LINE, borderRadius: 999, overflow: "hidden", marginBottom: 12 },
   dashProgressFill: { height: "100%", width: "88%", background: AMBER, borderRadius: 999 },
   dashGwaCaption: { fontSize: "0.82rem", color: "#6b6b66" },
@@ -352,7 +351,7 @@ export const s: Record<string, CSSProperties> = {
   ratingText: { fontSize: "0.92rem", color: "#c8c8c2" },
   reviewGrid: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 },
   reviewCard: { background: DARKCARD, border: "1px solid rgba(255,255,255,0.08)", borderRadius: 18, padding: "28px 26px" },
-  quoteIcon: { color: AMBER, fontSize: "1.6rem", fontFamily: "'Fraunces', serif", display: "block", marginBottom: 14 },
+  quoteIcon: { color: AMBER, fontSize: "1.6rem", fontFamily: "'Inter', sans-serif", display: "block", marginBottom: 14 },
   reviewQuote: { fontSize: "0.96rem", lineHeight: 1.7, color: "#e6e6e2", marginBottom: 24 },
   reviewDivider: { height: 1, background: "rgba(255,255,255,0.12)", marginBottom: 16 },
   reviewName: { fontSize: "0.96rem", fontWeight: 700, color: WHITE, marginBottom: 2 },
@@ -364,7 +363,7 @@ export const s: Record<string, CSSProperties> = {
   faqList: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 20, overflow: "hidden" },
   faqItem: { padding: "28px 32px" },
   faqQuestionRow: { display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", background: "none", textAlign: "left" },
-  faqQuestion: { fontSize: "1.18rem", fontWeight: 700, color: NAVY, fontFamily: "'Fraunces', serif" },
+  faqQuestion: { fontSize: "1.18rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif" },
   faqToggle: { width: 32, height: 32, borderRadius: "50%", border: `1px solid ${LINE}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.1rem", color: NAVY, flexShrink: 0, marginLeft: 20 },
   faqAnswer: { fontSize: "0.98rem", lineHeight: 1.7, color: "#48484a", marginTop: 16, maxWidth: 760 },
 
@@ -421,7 +420,7 @@ export const s: Record<string, CSSProperties> = {
   stepPillsRow: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 32 },
   stepPill: { display: "flex", alignItems: "flex-start", gap: 14, border: "1.5px solid", borderRadius: 14, padding: "18px 18px", textAlign: "left" },
   stepPillNumber: { width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.92rem", fontWeight: 700, flexShrink: 0 },
-  stepPillTitle: { display: "block", fontSize: "1.02rem", fontWeight: 700, color: NAVY, fontFamily: "'Fraunces', serif" },
+  stepPillTitle: { display: "block", fontSize: "1.02rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif" },
   stepPillSubtitle: { display: "block", fontSize: "0.86rem", color: "#7a7a74", marginTop: 2 },
 
   applyFormCard: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 22, padding: "40px 44px", boxShadow: "0 24px 60px -30px rgba(30,58,95,0.15)" },
