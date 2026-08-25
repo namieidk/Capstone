@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, FormEvent } from "react";
+import React, { useState, FormEvent, useRef, useEffect, useCallback } from "react";
 import {
   PeopleIcon,
   XCircleIcon,
@@ -15,190 +15,283 @@ import {
   WARN,
   WARN_BG,
   AMBER_BG,
+  AMBER,
   TINT,
   NAVY,
   WHITE,
   LINE,
   BORDER_SUBTLE,
   SHADOW_SM,
+  MenuIcon,
+  BellIcon,
+  SearchIcon,
   s,
 } from "@/components/Adminshared";
+import { useSidebar } from "@/components/SidebarContext";
 
 const EMPLOYEE_FILTERS: ("All" | EmployeeRecord["type"])[] = ["All", "Coordinator", "Partner Employee"];
 
+const ROW_HEIGHT = 62;       // approx rendered height of one table row
+const HEADER_ROW_HEIGHT = 48; // thead height
+const LABEL_ROW_HEIGHT = 28;  // "X of Y shown" line
+const PAGINATION_HEIGHT = 66; // pagination controls row
+const CARD_PADDING = 30;      // top+bottom padding of the card
+const MIN_PAGE_SIZE = 3;
+
 export default function AdminEmployeePage() {
+  const { toggleMobile } = useSidebar();
   const [filter, setFilter] = useState<"All" | EmployeeRecord["type"]>("All");
   const [selected, setSelected] = useState<EmployeeRecord | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
-  const PAGE_SIZE = 10;
+  const [pageSize, setPageSize] = useState(MIN_PAGE_SIZE);
 
-  const filtered = filter === "All" ? EMPLOYEES : EMPLOYEES.filter((e) => e.type === filter);
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const cardRef = useRef<HTMLDivElement | null>(null);
+
+  // Measure the table card's actual rendered height and derive how many
+  // full rows fit alongside the header row, label row, and pagination bar —
+  // so nothing inside the card ever needs to scroll. Extra rows roll onto
+  // the next pagination page instead.
+  const recalcPageSize = useCallback(() => {
+    const card = cardRef.current;
+    if (!card) return;
+    const cardHeight = card.getBoundingClientRect().height;
+    const reserved = HEADER_ROW_HEIGHT + LABEL_ROW_HEIGHT + PAGINATION_HEIGHT + CARD_PADDING;
+    const rows = Math.floor((cardHeight - reserved) / ROW_HEIGHT);
+    setPageSize(Math.max(MIN_PAGE_SIZE, rows));
+  }, []);
+
+  useEffect(() => {
+    recalcPageSize();
+    const card = cardRef.current;
+    if (!card) return;
+    const observer = new ResizeObserver(() => recalcPageSize());
+    observer.observe(card);
+    window.addEventListener("resize", recalcPageSize);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", recalcPageSize);
+    };
+  }, [recalcPageSize]);
+
+  const filtered = EMPLOYEES.filter((e) => {
+    const matchesType = filter === "All" || e.type === filter;
+    const matchesSearch = searchQuery.trim() === "" || e.name.toLowerCase().includes(searchQuery.trim().toLowerCase());
+    return matchesType && matchesSearch;
+  });
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
-  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
-    <div>
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <style>{`
         .filter-pill { transition: border-color 0.15s ease, background 0.15s ease; }
         .filter-pill:hover { border-color: rgba(30, 58, 95, 0.35); }
         .filter-select:focus { outline: none; }
         .filter-select option { color: ${NAVY}; background: ${WHITE}; }
+
+        /* ---- Responsive table: collapse columns instead of scrolling horizontally ---- */
+        .emp-table { table-layout: fixed; width: 100%; }
+        @media (max-width: 980px) {
+          .emp-col-dept { display: none !important; }
+        }
+        @media (max-width: 760px) {
+          .emp-col-type { display: none !important; }
+        }
+        @media (max-width: 640px) {
+          .emp-table td, .emp-table th { padding-left: 8px !important; padding-right: 8px !important; font-size: 0.8rem !important; }
+          .emp-topbar-actions { flex-wrap: wrap; }
+        }
       `}</style>
 
-      {/* ---------------- Controls row: filter dropdown + Add employee, right-aligned ---------------- */}
-      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginTop: 20, marginBottom: 20 }}>
-        <PillFilter>
-          <select
-            className="filter-select"
-            value={filter}
-            onChange={(e) => {
-              setFilter(e.target.value as "All" | EmployeeRecord["type"]);
-              setPage(1);
-            }}
-            style={pillSelectStyle}
-          >
-            {EMPLOYEE_FILTERS.map((f) => (
-              <option key={f} value={f}>{f}</option>
-            ))}
-          </select>
-        </PillFilter>
-        <button onClick={() => setShowAddModal(true)} style={s.continueBtnSmall}>
-          <PeopleIcon /> Add employee
+      {/* ---------------- Page-level navbar (search + filter pill + Add employee) ---------------- */}
+      <header style={s.topbar}>
+        <button className="va-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+          <MenuIcon />
         </button>
-      </div>
-
-      {/* ---------------- Employee table, card-wrapped like Admin Monitor ---------------- */}
-      <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 22px 8px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <p style={{ fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif" }}>Employee details</p>
-          <span style={{ fontSize: "0.8rem", color: "#9a9a94" }}>
-            {filtered.length === 0
-              ? "0 shown"
-              : `${(currentPage - 1) * PAGE_SIZE + 1}-${Math.min(currentPage * PAGE_SIZE, filtered.length)} of ${filtered.length}`}
-          </span>
+        <div>
+          <h1 style={s.topbarGreeting}>Employee</h1>
+          <p style={s.topbarSub}>Coordinators, HR staff, and partner-company employees on file.</p>
         </div>
+        <div className="emp-topbar-actions" style={{ ...s.topbarRight, gap: 10 }}>
+          <PillFilter>
+            <select
+              className="filter-select"
+              value={filter}
+              onChange={(e) => {
+                setFilter(e.target.value as "All" | EmployeeRecord["type"]);
+                setPage(1);
+              }}
+              style={pillSelectStyle}
+            >
+              {EMPLOYEE_FILTERS.map((f) => (
+                <option key={f} value={f}>{f}</option>
+              ))}
+            </select>
+          </PillFilter>
+          <div className="va-topbar-search" style={s.searchBox}>
+            <SearchIcon />
+            <input
+              type="text"
+              placeholder="Search employees..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1);
+              }}
+              style={s.searchInput}
+            />
+          </div>
+          <button onClick={() => setShowAddModal(true)} style={{ ...s.continueBtnSmall, whiteSpace: "nowrap" }}>
+            <PeopleIcon /> Add employee
+          </button>
+          <button style={s.bellBtn}>
+            <BellIcon />
+            <span style={{ ...s.bellDot, background: AMBER }} />
+          </button>
+        </div>
+      </header>
 
-        <div className="va-table-scroll" style={{ width: "100%", overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ borderBottom: `1px solid ${LINE}` }}>
-                <th style={{ ...s.th, background: "none", padding: "14px 14px", textAlign: "center" }}>Employee</th>
-                <th style={{ ...s.th, background: "none", textAlign: "center" }}>Role</th>
-                <th style={{ ...s.th, background: "none", textAlign: "center" }}>Department / Company</th>
-                <th style={{ ...s.th, background: "none", textAlign: "center" }}>Type</th>
-                <th style={{ ...s.th, background: "none", textAlign: "center" }}>Status</th>
-                <th style={{ ...s.th, background: "none", textAlign: "center" }}>View</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginated.map((emp, i) => (
-                <tr
-                  key={emp.id}
-                  style={{ borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`, verticalAlign: "middle" }}
-                >
-                  <td style={{ ...s.td, padding: "16px 14px", textAlign: "center" }}>
-                    <p style={s.tdName}>{emp.name}</p>
-                    <p style={s.tdSub}>{emp.email}</p>
-                  </td>
-                  <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{emp.role}</td>
-                  <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{emp.department}</td>
-                  <td style={{ ...s.td, textAlign: "center" }}>
-                    <span style={{ ...s.stageTag, background: emp.type === "Coordinator" ? AMBER_BG : TINT, color: emp.type === "Coordinator" ? "#6b5220" : "#55554f" }}>
-                      {emp.type}
-                    </span>
-                  </td>
-                  <td style={{ ...s.td, textAlign: "center" }}>
-                    <span
-                      style={{
-                        ...s.stageTag,
-                        background: emp.status === "Active" ? GOOD_BG : WARN_BG,
-                        color: emp.status === "Active" ? GOOD : WARN,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                      }}
-                    >
+      {/* flexGrow + minHeight:0 + overflow:hidden — this area never scrolls */}
+      <div style={{ ...s.mainContent, padding: s.mainContent.padding, flexGrow: 1, minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <div
+          ref={cardRef}
+          style={{
+            background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM,
+            padding: "22px 22px 16px", marginTop: 20, flexGrow: 1, minHeight: 0,
+            display: "flex", flexDirection: "column", overflow: "hidden",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 6, flexShrink: 0 }}>
+            <span style={{ fontSize: "0.8rem", color: "#9a9a94" }}>
+              {filtered.length === 0
+                ? "0 shown"
+                : `${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, filtered.length)} of ${filtered.length}`}
+            </span>
+          </div>
+
+          <div style={{ width: "100%", overflow: "hidden", flexGrow: 1, minHeight: 0 }}>
+            <table className="emp-table" style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${LINE}` }}>
+                  <th style={{ ...s.th, background: "none", padding: "14px 14px", textAlign: "center" }}>Employee</th>
+                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>Role</th>
+                  <th className="emp-col-dept" style={{ ...s.th, background: "none", textAlign: "center" }}>Department / Company</th>
+                  <th className="emp-col-type" style={{ ...s.th, background: "none", textAlign: "center" }}>Type</th>
+                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>Status</th>
+                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>View</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.map((emp, i) => (
+                  <tr
+                    key={emp.id}
+                    style={{ borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`, verticalAlign: "middle" }}
+                  >
+                    <td style={{ ...s.td, padding: "16px 14px", textAlign: "center" }}>
+                      <p style={s.tdName}>{emp.name}</p>
+                      <p style={s.tdSub}>{emp.email}</p>
+                    </td>
+                    <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{emp.role}</td>
+                    <td className="emp-col-dept" style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{emp.department}</td>
+                    <td className="emp-col-type" style={{ ...s.td, textAlign: "center" }}>
+                      <span style={{ ...s.stageTag, background: emp.type === "Coordinator" ? AMBER_BG : TINT, color: emp.type === "Coordinator" ? "#6b5220" : "#55554f" }}>
+                        {emp.type}
+                      </span>
+                    </td>
+                    <td style={{ ...s.td, textAlign: "center" }}>
                       <span
                         style={{
-                          width: 6,
-                          height: 6,
-                          borderRadius: "50%",
-                          background: "currentColor",
-                          display: "inline-block",
-                          flexShrink: 0,
+                          ...s.stageTag,
+                          background: emp.status === "Active" ? GOOD_BG : WARN_BG,
+                          color: emp.status === "Active" ? GOOD : WARN,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
                         }}
-                      />
-                      {emp.status}
-                    </span>
-                  </td>
-                  <td style={{ ...s.td, textAlign: "center" }}>
-                    <button
-                      onClick={() => setSelected(emp)}
-                      aria-label="View employee"
-                      style={{
-                        width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${LINE}`,
-                        display: "inline-flex", alignItems: "center", justifyContent: "center",
-                        background: WHITE, color: "#7a7a74", cursor: "pointer",
-                      }}
-                    >
-                      <EyeIcon />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {filtered.length === 0 && (
-          <p style={{ textAlign: "center", padding: "40px 0", color: "#9a9a94", fontSize: "0.9rem" }}>
-            No employees match this filter.
-          </p>
-        )}
-
-        {filtered.length > 0 && (
-          <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}>
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              style={{
-                width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
-                color: currentPage === 1 ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: currentPage === 1 ? "default" : "pointer",
-              }}
-              aria-label="Previous page"
-            >
-              <ChevronLeftIcon />
-            </button>
-            {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
-              <button
-                key={num}
-                onClick={() => setPage(num)}
-                style={{
-                  width: 32, height: 32, borderRadius: 8, border: `1px solid ${num === currentPage ? NAVY : LINE}`,
-                  background: num === currentPage ? NAVY : WHITE, color: num === currentPage ? WHITE : "#55554f",
-                  fontSize: "0.82rem", fontWeight: 600, cursor: "pointer",
-                }}
-              >
-                {num}
-              </button>
-            ))}
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              style={{
-                width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
-                color: currentPage === totalPages ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: currentPage === totalPages ? "default" : "pointer",
-              }}
-              aria-label="Next page"
-            >
-              <ChevronRightIcon />
-            </button>
+                      >
+                        <span
+                          style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: "50%",
+                            background: "currentColor",
+                            display: "inline-block",
+                            flexShrink: 0,
+                          }}
+                        />
+                        {emp.status}
+                      </span>
+                    </td>
+                    <td style={{ ...s.td, textAlign: "center" }}>
+                      <button
+                        onClick={() => setSelected(emp)}
+                        aria-label="View employee"
+                        style={{
+                          width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${LINE}`,
+                          display: "inline-flex", alignItems: "center", justifyContent: "center",
+                          background: WHITE, color: "#7a7a74", cursor: "pointer",
+                        }}
+                      >
+                        <EyeIcon />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
+
+          {filtered.length === 0 && (
+            <p style={{ textAlign: "center", padding: "40px 0", color: "#9a9a94", fontSize: "0.9rem" }}>
+              No employees match this filter.
+            </p>
+          )}
+
+          {filtered.length > 0 && (
+            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, paddingTop: 14, flexShrink: 0 }}>
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                style={{
+                  width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
+                  color: currentPage === 1 ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: currentPage === 1 ? "default" : "pointer",
+                }}
+                aria-label="Previous page"
+              >
+                <ChevronLeftIcon />
+              </button>
+              {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
+                <button
+                  key={num}
+                  onClick={() => setPage(num)}
+                  style={{
+                    width: 32, height: 32, borderRadius: 8, border: `1px solid ${num === currentPage ? NAVY : LINE}`,
+                    background: num === currentPage ? NAVY : WHITE, color: num === currentPage ? WHITE : "#55554f",
+                    fontSize: "0.82rem", fontWeight: 600, cursor: "pointer",
+                  }}
+                >
+                  {num}
+                </button>
+              ))}
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                style={{
+                  width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
+                  color: currentPage === totalPages ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: currentPage === totalPages ? "default" : "pointer",
+                }}
+                aria-label="Next page"
+              >
+                <ChevronRightIcon />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {selected && (

@@ -24,8 +24,12 @@ import {
   LINE,
   BORDER_SUBTLE,
   SHADOW_SM,
+  MenuIcon,
+  BellIcon,
+  SearchIcon,
   s,
 } from "@/components/Adminshared";
+import { useSidebar } from "@/components/SidebarContext";
 
 /* ------------------------------------------------------------------ */
 /* Derived summaries — computed from your existing MONITOR_SCHOLARS /  */
@@ -41,9 +45,11 @@ const HEALTH_OPTIONS: Array<{ value: "all" | ScholarHealth; label: string }> = [
 ];
 
 export default function AdminMonitorPage() {
+  const { toggleMobile } = useSidebar();
   const [selected, setSelected] = useState<MonitorScholar | null>(null);
   const [coordinatorFilter, setCoordinatorFilter] = useState("All coordinators");
   const [healthFilter, setHealthFilter] = useState<"all" | ScholarHealth>("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
 
@@ -52,9 +58,10 @@ export default function AdminMonitorPage() {
       MONITOR_SCHOLARS.filter((sch) => {
         const matchesCoordinator = coordinatorFilter === "All coordinators" || sch.coordinator === coordinatorFilter;
         const matchesHealth = healthFilter === "all" || sch.health === healthFilter;
-        return matchesCoordinator && matchesHealth;
+        const matchesSearch = searchQuery.trim() === "" || sch.name.toLowerCase().includes(searchQuery.trim().toLowerCase());
+        return matchesCoordinator && matchesHealth && matchesSearch;
       }),
-    [coordinatorFilter, healthFilter]
+    [coordinatorFilter, healthFilter, searchQuery]
   );
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -89,7 +96,6 @@ export default function AdminMonitorPage() {
 
   return (
     <div>
-      {/* ---------------- Pill-style filters, right-aligned ---------------- */}
       <style>{`
         .filter-pill { transition: border-color 0.15s ease, background 0.15s ease; }
         .filter-pill:hover { border-color: rgba(30, 58, 95, 0.35); }
@@ -97,292 +103,322 @@ export default function AdminMonitorPage() {
         .filter-select:focus { outline: none; }
         .filter-select option { color: ${NAVY}; background: ${WHITE}; }
       `}</style>
-      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginTop: 36, marginBottom: 28 }}>
-        <PillFilter>
-          <select
-            className="filter-select"
-            value={coordinatorFilter}
-            onChange={(e) => {
-              setCoordinatorFilter(e.target.value);
-              setPage(1);
-            }}
-            style={pillSelectStyle}
-          >
-            {COORDINATOR_NAMES.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </PillFilter>
-        <PillFilter>
-          <select
-            className="filter-select"
-            value={healthFilter}
-            onChange={(e) => {
-              setHealthFilter(e.target.value as "all" | ScholarHealth);
-              setPage(1);
-            }}
-            style={pillSelectStyle}
-          >
-            {HEALTH_OPTIONS.map((h) => (
-              <option key={h.value} value={h.value}>{h.label}</option>
-            ))}
-          </select>
-        </PillFilter>
-      </div>
 
-      {/* ---------------- Spotlight row ---------------- */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.6fr", gap: 18, marginBottom: 20 }}>
-        {/* Coordinator spotlight */}
-        <div style={{ position: "relative", background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 20px", overflow: "hidden" }}>
-          <div
-            style={{
-              position: "absolute", top: 0, right: 0, width: 0, height: 0,
-              borderStyle: "solid", borderWidth: "0 34px 34px 0", borderColor: `transparent ${AMBER} transparent transparent`,
-            }}
-          />
-          <span style={{ position: "absolute", top: 5, right: 5, fontSize: 12, color: WHITE }}>★</span>
-          <p style={s.subSectionLabel}>Top coordinator</p>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", marginTop: 18 }}>
+      {/* ---------------- Page-level navbar (search + filter pills) ---------------- */}
+      <header style={s.topbar}>
+        <button className="va-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+          <MenuIcon />
+        </button>
+        <div>
+          <h1 style={s.topbarGreeting}>Monitor</h1>
+          <p style={s.topbarSub}>Active scholars across all coordinators and their current standing.</p>
+        </div>
+        <div style={{ ...s.topbarRight, gap: 10 }}>
+          <PillFilter>
+            <select
+              className="filter-select"
+              value={coordinatorFilter}
+              onChange={(e) => {
+                setCoordinatorFilter(e.target.value);
+                setPage(1);
+              }}
+              style={pillSelectStyle}
+            >
+              {COORDINATOR_NAMES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </PillFilter>
+          <PillFilter>
+            <select
+              className="filter-select"
+              value={healthFilter}
+              onChange={(e) => {
+                setHealthFilter(e.target.value as "all" | ScholarHealth);
+                setPage(1);
+              }}
+              style={pillSelectStyle}
+            >
+              {HEALTH_OPTIONS.map((h) => (
+                <option key={h.value} value={h.value}>{h.label}</option>
+              ))}
+            </select>
+          </PillFilter>
+          <div className="va-topbar-search" style={s.searchBox}>
+            <SearchIcon />
+            <input
+              type="text"
+              placeholder="Search scholars..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1);
+              }}
+              style={s.searchInput}
+            />
+          </div>
+          <button style={s.bellBtn}>
+            <BellIcon />
+            <span style={{ ...s.bellDot, background: AMBER }} />
+          </button>
+        </div>
+      </header>
+
+      <div style={{ ...s.mainContent, padding: s.mainContent.padding }}>
+        {/* ---------------- Spotlight row ---------------- */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1.6fr", gap: 18, marginTop: 20, marginBottom: 20 }}>
+          {/* Coordinator spotlight */}
+          <div style={{ position: "relative", background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 20px", overflow: "hidden" }}>
             <div
               style={{
-                width: 76, height: 76, borderRadius: "50%", background: AMBER_BG, color: "#7A5C0A",
-                fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: "1.5rem",
-                display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
+                position: "absolute", top: 0, right: 0, width: 0, height: 0,
+                borderStyle: "solid", borderWidth: "0 34px 34px 0", borderColor: `transparent ${AMBER} transparent transparent`,
               }}
-            >
-              {topCoordinatorInitials}
-            </div>
-            <p style={{ fontSize: "0.98rem", fontWeight: 700, color: NAVY, marginBottom: 2 }}>{topCoordinator.name}</p>
-            <p style={{ fontSize: "0.8rem", color: "#8a8a84", marginBottom: 14 }}>Scholarship Coordinator</p>
-            <div style={{ display: "flex", gap: 18, borderTop: `1px solid ${LINE}`, paddingTop: 12, width: "100%", justifyContent: "center" }}>
-              <div>
-                <p style={{ fontSize: "1.1rem", fontWeight: 700, color: NAVY }}>{topCoordinator.reviewed}</p>
-                <p style={{ fontSize: "0.72rem", color: "#9a9a94" }}>Reviewed</p>
-              </div>
-              <div>
-                <p style={{ fontSize: "1.1rem", fontWeight: 700, color: GOOD }}>{topCoordinator.accepted}</p>
-                <p style={{ fontSize: "0.72rem", color: "#9a9a94" }}>Accepted</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Scholar status donut */}
-        <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 20px", display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <p style={{ ...s.subSectionLabel, alignSelf: "flex-start" }}>Scholar status</p>
-          <svg width="150" height="150" viewBox="0 0 120 120" style={{ marginTop: 8 }}>
-            <circle cx="60" cy="60" r={R} fill="none" stroke={TINT} strokeWidth="13" />
-            <circle
-              cx="60" cy="60" r={R} fill="none" stroke={GOOD} strokeWidth="13" strokeLinecap="round"
-              strokeDasharray={`${goodLen} ${CIRC - goodLen}`} strokeDashoffset={0} transform="rotate(-90 60 60)"
             />
-            <circle
-              cx="60" cy="60" r={R} fill="none" stroke={WARN} strokeWidth="13" strokeLinecap="round"
-              strokeDasharray={`${warnLen} ${CIRC - warnLen}`} strokeDashoffset={-goodLen} transform="rotate(-90 60 60)"
-            />
-            <circle
-              cx="60" cy="60" r={R} fill="none" stroke={BAD} strokeWidth="13" strokeLinecap="round"
-              strokeDasharray={`${badLen} ${CIRC - badLen}`} strokeDashoffset={-(goodLen + warnLen)} transform="rotate(-90 60 60)"
-            />
-            <text x="60" y="66" textAnchor="middle" fontSize="26" fontWeight="700" fill={NAVY} fontFamily="'Inter', serif">
-              {total}
-            </text>
-          </svg>
-          <div style={{ display: "flex", gap: 16, marginTop: 10, flexWrap: "wrap", justifyContent: "center" }}>
-            <LegendDot color={GOOD} label={`On track (${counts.good})`} />
-            <LegendDot color={WARN} label={`Needs attn. (${counts.warn})`} />
-            <LegendDot color={BAD} label={`At risk (${counts.bad})`} />
-          </div>
-        </div>
-
-        {/* Coordinator performance bars */}
-        <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 22px", display: "flex", flexDirection: "column", height: "100%" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <p style={s.subSectionLabel}>Coordinator performance</p>
-            <span style={{ fontSize: "0.76rem", color: "#9a9a94" }}>applications reviewed</span>
-          </div>
-          <div style={{ ...s.barChartRow, marginTop: "auto", borderBottom: `2px solid ${LINE}`, paddingBottom: 0 }}>
-            {COORDINATOR_PERFORMANCE.map((c) => {
-              const fillPct = (c.reviewed / maxReviewed) * 100;
-              return (
-                <div key={c.name} style={s.barChartCol}>
-                  <div style={{ ...s.barChartTrack, position: "relative" }}>
-                    <p
-                      style={{
-                        ...s.barChartValue,
-                        position: "absolute",
-                        left: "50%",
-                        bottom: `calc(${fillPct}% + 6px)`,
-                        transform: "translateX(-50%)",
-                        margin: 0,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {c.reviewed}
-                    </p>
-                    <div style={{ ...s.barChartFill, height: `${fillPct}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 14, padding: "8px 4px 0" }}>
-            {COORDINATOR_PERFORMANCE.map((c) => (
-              <p key={c.name} style={{ ...s.barChartLabel, flex: 1, textAlign: "center", lineHeight: 1.3 }}>
-                {c.name.replace("Engr. ", "").split(" ")[0]}
-              </p>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ---------------- Scholar details table ---------------- */}
-      <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 22px 8px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <p style={{ fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif" }}>Scholar details</p>
-          <span style={{ fontSize: "0.8rem", color: "#9a9a94" }}>
-            {filtered.length === 0
-              ? "0 shown"
-              : `${(currentPage - 1) * PAGE_SIZE + 1}-${Math.min(currentPage * PAGE_SIZE, filtered.length)} of ${filtered.length}`}
-          </span>
-        </div>
-
-        <div className="va-table-scroll" style={{ width: "100%", overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ borderBottom: `1px solid ${LINE}` }}>
-                <th style={{ ...s.th, background: "none", padding: "14px 14px", textAlign: "center" }}>Scholar</th>
-                <th style={{ ...s.th, background: "none", textAlign: "center" }}>Coordinator</th>
-                <th style={{ ...s.th, background: "none", textAlign: "center" }}>GWA</th>
-                <th style={{ ...s.th, background: "none", textAlign: "center" }}>Documents</th>
-                <th style={{ ...s.th, background: "none", textAlign: "center" }}>Disbursement</th>
-                <th style={{ ...s.th, background: "none", textAlign: "center" }}>Status</th>
-                <th style={{ ...s.th, background: "none", textAlign: "center" }}>View</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginated.map((sch, i) => (
-                <tr
-                  key={sch.id}
-                  onClick={() => setSelected(sch)}
-                  style={{ borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`, cursor: "pointer", verticalAlign: "middle" }}
-                >
-                  <td style={{ ...s.td, padding: "16px 14px", textAlign: "center" }}>
-                    <p style={s.tdName}>{sch.name}</p>
-                    <p style={s.tdSub}>{sch.course}</p>
-                  </td>
-                  <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{sch.coordinator}</td>
-                  <td style={{ ...s.td, textAlign: "center" }}>
-                    <span
-                      style={{
-                        ...s.gwaTrendCell,
-                        fontWeight: 700,
-                        color: NAVY,
-                        gap: 4,
-                      }}
-                    >
-                      <span>{sch.gwa}%</span>
-                      {sch.trend === "up" ? (
-                        <span style={{ color: GOOD, display: "inline-flex" }}><TrendUpIcon /></span>
-                      ) : (
-                        <span style={{ color: BAD, display: "inline-flex" }}><TrendDownIcon /></span>
-                      )}
-                    </span>
-                  </td>
-                  <td style={{ ...s.td, textAlign: "center" }}>
-                    <span style={{ fontWeight: 600, color: sch.docs !== "3/3" ? WARN : "#4a4a45" }}>{sch.docs}</span>
-                  </td>
-                  <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{sch.disbursement}</td>
-                  <td style={{ ...s.td, textAlign: "center" }}>
-                    <span
-                      style={{
-                        ...s.stageTag,
-                        background: HEALTH_TAG[sch.health].bg,
-                        color: HEALTH_TAG[sch.health].text,
-                        fontWeight: 600,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: 6,
-                          height: 6,
-                          borderRadius: "50%",
-                          background: HEALTH_TAG[sch.health].text,
-                          flexShrink: 0,
-                        }}
-                      />
-                      {HEALTH_TAG[sch.health].label}
-                    </span>
-                  </td>
-                  <td style={{ ...s.td, textAlign: "center" }}>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setSelected(sch); }}
-                      aria-label="View scholar"
-                      style={{
-                        width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${LINE}`,
-                        display: "inline-flex", alignItems: "center", justifyContent: "center",
-                        background: WHITE, color: "#7a7a74", cursor: "pointer",
-                      }}
-                    >
-                      <EyeIcon />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {filtered.length === 0 && (
-          <p style={{ textAlign: "center", padding: "40px 0", color: "#9a9a94", fontSize: "0.9rem" }}>
-            No scholars match this filter.
-          </p>
-        )}
-
-        {filtered.length > 0 && (
-          <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}>
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              style={{
-                width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
-                color: currentPage === 1 ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: currentPage === 1 ? "default" : "pointer",
-              }}
-              aria-label="Previous page"
-            >
-              <ChevronLeftIcon />
-            </button>
-            {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
-              <button
-                key={num}
-                onClick={() => setPage(num)}
+            <span style={{ position: "absolute", top: 5, right: 5, fontSize: 12, color: WHITE }}>★</span>
+            <p style={s.subSectionLabel}>Top coordinator</p>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", marginTop: 18 }}>
+              <div
                 style={{
-                  width: 32, height: 32, borderRadius: 8, border: `1px solid ${num === currentPage ? NAVY : LINE}`,
-                  background: num === currentPage ? NAVY : WHITE, color: num === currentPage ? WHITE : "#55554f",
-                  fontSize: "0.82rem", fontWeight: 600, cursor: "pointer",
+                  width: 76, height: 76, borderRadius: "50%", background: AMBER_BG, color: "#7A5C0A",
+                  fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: "1.5rem",
+                  display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
                 }}
               >
-                {num}
-              </button>
-            ))}
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              style={{
-                width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
-                color: currentPage === totalPages ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: currentPage === totalPages ? "default" : "pointer",
-              }}
-              aria-label="Next page"
-            >
-              <ChevronRightIcon />
-            </button>
+                {topCoordinatorInitials}
+              </div>
+              <p style={{ fontSize: "0.98rem", fontWeight: 700, color: NAVY, marginBottom: 2 }}>{topCoordinator.name}</p>
+              <p style={{ fontSize: "0.8rem", color: "#8a8a84", marginBottom: 14 }}>Scholarship Coordinator</p>
+              <div style={{ display: "flex", gap: 18, borderTop: `1px solid ${LINE}`, paddingTop: 12, width: "100%", justifyContent: "center" }}>
+                <div>
+                  <p style={{ fontSize: "1.1rem", fontWeight: 700, color: NAVY }}>{topCoordinator.reviewed}</p>
+                  <p style={{ fontSize: "0.72rem", color: "#9a9a94" }}>Reviewed</p>
+                </div>
+                <div>
+                  <p style={{ fontSize: "1.1rem", fontWeight: 700, color: GOOD }}>{topCoordinator.accepted}</p>
+                  <p style={{ fontSize: "0.72rem", color: "#9a9a94" }}>Accepted</p>
+                </div>
+              </div>
+            </div>
           </div>
-        )}
+
+          {/* Scholar status donut */}
+          <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 20px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <p style={{ ...s.subSectionLabel, alignSelf: "flex-start" }}>Scholar status</p>
+            <svg width="150" height="150" viewBox="0 0 120 120" style={{ marginTop: 8 }}>
+              <circle cx="60" cy="60" r={R} fill="none" stroke={TINT} strokeWidth="13" />
+              <circle
+                cx="60" cy="60" r={R} fill="none" stroke={GOOD} strokeWidth="13" strokeLinecap="round"
+                strokeDasharray={`${goodLen} ${CIRC - goodLen}`} strokeDashoffset={0} transform="rotate(-90 60 60)"
+              />
+              <circle
+                cx="60" cy="60" r={R} fill="none" stroke={WARN} strokeWidth="13" strokeLinecap="round"
+                strokeDasharray={`${warnLen} ${CIRC - warnLen}`} strokeDashoffset={-goodLen} transform="rotate(-90 60 60)"
+              />
+              <circle
+                cx="60" cy="60" r={R} fill="none" stroke={BAD} strokeWidth="13" strokeLinecap="round"
+                strokeDasharray={`${badLen} ${CIRC - badLen}`} strokeDashoffset={-(goodLen + warnLen)} transform="rotate(-90 60 60)"
+              />
+              <text x="60" y="66" textAnchor="middle" fontSize="26" fontWeight="700" fill={NAVY} fontFamily="'Inter', serif">
+                {total}
+              </text>
+            </svg>
+            <div style={{ display: "flex", gap: 16, marginTop: 10, flexWrap: "wrap", justifyContent: "center" }}>
+              <LegendDot color={GOOD} label={`On track (${counts.good})`} />
+              <LegendDot color={WARN} label={`Needs attn. (${counts.warn})`} />
+              <LegendDot color={BAD} label={`At risk (${counts.bad})`} />
+            </div>
+          </div>
+
+          {/* Coordinator performance bars */}
+          <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 22px", display: "flex", flexDirection: "column", height: "100%" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <p style={s.subSectionLabel}>Coordinator performance</p>
+              <span style={{ fontSize: "0.76rem", color: "#9a9a94" }}>applications reviewed</span>
+            </div>
+            <div style={{ ...s.barChartRow, marginTop: "auto", borderBottom: `2px solid ${LINE}`, paddingBottom: 0 }}>
+              {COORDINATOR_PERFORMANCE.map((c) => {
+                const fillPct = (c.reviewed / maxReviewed) * 100;
+                return (
+                  <div key={c.name} style={s.barChartCol}>
+                    <div style={{ ...s.barChartTrack, position: "relative" }}>
+                      <p
+                        style={{
+                          ...s.barChartValue,
+                          position: "absolute",
+                          left: "50%",
+                          bottom: `calc(${fillPct}% + 6px)`,
+                          transform: "translateX(-50%)",
+                          margin: 0,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {c.reviewed}
+                      </p>
+                      <div style={{ ...s.barChartFill, height: `${fillPct}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 14, padding: "8px 4px 0" }}>
+              {COORDINATOR_PERFORMANCE.map((c) => (
+                <p key={c.name} style={{ ...s.barChartLabel, flex: 1, textAlign: "center", lineHeight: 1.3 }}>
+                  {c.name.replace("Engr. ", "").split(" ")[0]}
+                </p>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ---------------- Scholar details table ---------------- */}
+        <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 22px 8px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+            <p style={{ fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif" }}>Scholar details</p>
+            <span style={{ fontSize: "0.8rem", color: "#9a9a94" }}>
+              {filtered.length === 0
+                ? "0 shown"
+                : `${(currentPage - 1) * PAGE_SIZE + 1}-${Math.min(currentPage * PAGE_SIZE, filtered.length)} of ${filtered.length}`}
+            </span>
+          </div>
+
+          <div className="va-table-scroll" style={{ width: "100%", overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${LINE}` }}>
+                  <th style={{ ...s.th, background: "none", padding: "14px 14px", textAlign: "center" }}>Scholar</th>
+                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>Coordinator</th>
+                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>GWA</th>
+                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>Documents</th>
+                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>Disbursement</th>
+                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>Status</th>
+                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>View</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.map((sch, i) => (
+                  <tr
+                    key={sch.id}
+                    onClick={() => setSelected(sch)}
+                    style={{ borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`, cursor: "pointer", verticalAlign: "middle" }}
+                  >
+                    <td style={{ ...s.td, padding: "16px 14px", textAlign: "center" }}>
+                      <p style={s.tdName}>{sch.name}</p>
+                      <p style={s.tdSub}>{sch.course}</p>
+                    </td>
+                    <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{sch.coordinator}</td>
+                    <td style={{ ...s.td, textAlign: "center" }}>
+                      <span
+                        style={{
+                          ...s.gwaTrendCell,
+                          fontWeight: 700,
+                          color: NAVY,
+                          gap: 4,
+                        }}
+                      >
+                        <span>{sch.gwa}%</span>
+                        {sch.trend === "up" ? (
+                          <span style={{ color: GOOD, display: "inline-flex" }}><TrendUpIcon /></span>
+                        ) : (
+                          <span style={{ color: BAD, display: "inline-flex" }}><TrendDownIcon /></span>
+                        )}
+                      </span>
+                    </td>
+                    <td style={{ ...s.td, textAlign: "center" }}>
+                      <span style={{ fontWeight: 600, color: sch.docs !== "3/3" ? WARN : "#4a4a45" }}>{sch.docs}</span>
+                    </td>
+                    <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{sch.disbursement}</td>
+                    <td style={{ ...s.td, textAlign: "center" }}>
+                      <span
+                        style={{
+                          ...s.stageTag,
+                          background: HEALTH_TAG[sch.health].bg,
+                          color: HEALTH_TAG[sch.health].text,
+                          fontWeight: 600,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: "50%",
+                            background: HEALTH_TAG[sch.health].text,
+                            flexShrink: 0,
+                          }}
+                        />
+                        {HEALTH_TAG[sch.health].label}
+                      </span>
+                    </td>
+                    <td style={{ ...s.td, textAlign: "center" }}>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setSelected(sch); }}
+                        aria-label="View scholar"
+                        style={{
+                          width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${LINE}`,
+                          display: "inline-flex", alignItems: "center", justifyContent: "center",
+                          background: WHITE, color: "#7a7a74", cursor: "pointer",
+                        }}
+                      >
+                        <EyeIcon />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {filtered.length === 0 && (
+            <p style={{ textAlign: "center", padding: "40px 0", color: "#9a9a94", fontSize: "0.9rem" }}>
+              No scholars match this filter.
+            </p>
+          )}
+
+          {filtered.length > 0 && (
+            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}>
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                style={{
+                  width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
+                  color: currentPage === 1 ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: currentPage === 1 ? "default" : "pointer",
+                }}
+                aria-label="Previous page"
+              >
+                <ChevronLeftIcon />
+              </button>
+              {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
+                <button
+                  key={num}
+                  onClick={() => setPage(num)}
+                  style={{
+                    width: 32, height: 32, borderRadius: 8, border: `1px solid ${num === currentPage ? NAVY : LINE}`,
+                    background: num === currentPage ? NAVY : WHITE, color: num === currentPage ? WHITE : "#55554f",
+                    fontSize: "0.82rem", fontWeight: 600, cursor: "pointer",
+                  }}
+                >
+                  {num}
+                </button>
+              ))}
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                style={{
+                  width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
+                  color: currentPage === totalPages ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: currentPage === totalPages ? "default" : "pointer",
+                }}
+                aria-label="Next page"
+              >
+                <ChevronRightIcon />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ---------------- Drawer ---------------- */}

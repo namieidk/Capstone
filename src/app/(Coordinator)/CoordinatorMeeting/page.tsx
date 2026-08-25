@@ -3,28 +3,27 @@
 import React, { useMemo, useState, FormEvent } from "react";
 import {
   CalendarIcon,
+  InterviewIcon,
   XCircleIcon,
   Field,
-  MEETINGS_HOSTING,
-  MEETINGS_INVITED,
-  HostedMeeting,
+  APPLICANTS,
+  UPCOMING_INTERVIEWS,
+  ScheduledInterview,
+  Applicant,
   NAVY,
   WHITE,
   TINT,
   LINE,
   AMBER,
   AMBER_BG,
-  WARN_BG,
   GOOD,
-  WARN,
   BORDER_SUBTLE,
   SHADOW_SM,
-  SHADOW_MD,
-  MenuIcon,
-  BellIcon,
-  SearchIcon,
   s,
-} from "@/components/Adminshared";
+  MenuIcon,
+  SearchIcon,
+  BellIcon,
+} from "@/components/Coordinatorshared";
 import { useSidebar } from "@/components/SidebarContext";
 
 /* ------------------------------------------------------------------ */
@@ -86,47 +85,43 @@ function getMonthMatrix(monthDate: Date): { date: Date; inMonth: boolean }[] {
   return cells;
 }
 
-type CombinedMeeting =
-  | (HostedMeeting & { kind: "hosting" })
-  | ({ id: number; title: string; date: string; time: string; host: string; status: string } & { kind: "invited" });
-
-interface MeetingFormState {
-  title: string;
+interface BookForm {
+  applicantId: string;
   date: string;
   time: string;
-  invitee: string;
 }
 
-export default function AdminMeetingPage() {
+export default function MeetingPage() {
   const { toggleMobile } = useSidebar();
-  const [hosting, setHosting] = useState<HostedMeeting[]>(MEETINGS_HOSTING);
-  const [form, setForm] = useState<MeetingFormState>({ title: "", date: "", time: "", invitee: "" });
+
+  const [search, setSearch] = useState("");
+  const [scheduled, setScheduled] = useState<ScheduledInterview[]>(UPCOMING_INTERVIEWS);
+  const [passedApplicants, setPassedApplicants] = useState<Applicant[]>(
+    APPLICANTS.filter((a) => a.stage === "Interview" && !UPCOMING_INTERVIEWS.find((iv) => iv.id === a.id))
+  );
+  const [form, setForm] = useState<BookForm>({ applicantId: "", date: "", time: "" });
   const [showBookModal, setShowBookModal] = useState(false);
   const [showAllDrawer, setShowAllDrawer] = useState(false);
   const [calendarViewMode, setCalendarViewMode] = useState<"month" | "year">("month");
-  const [searchQuery, setSearchQuery] = useState("");
 
-  const query = searchQuery.trim().toLowerCase();
+  const query = search.trim().toLowerCase();
 
   const combined = useMemo(() => {
-    const raw: CombinedMeeting[] = [
-      ...hosting.map((m) => ({ ...m, kind: "hosting" as const })),
-      ...MEETINGS_INVITED.map((m) => ({ ...m, kind: "invited" as const })),
-    ];
-    return raw
+    return scheduled
       .map((m) => ({ ...m, dateObj: parseFlexibleDate(m.date), minutes: parseTimeToMinutes(m.time) }))
       .sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime() || a.minutes - b.minutes);
-  }, [hosting]);
+  }, [scheduled]);
 
-  // Search filters by meeting title; drives the calendar dots, the day
-  // timeline, and the "All meetings" drawer, while the header count stays
-  // on the unfiltered total.
-  const filteredCombined = useMemo(() => {
-    if (!query) return combined;
-    return combined.filter((m) => m.title.toLowerCase().includes(query));
-  }, [combined, query]);
+  const filteredCombined = useMemo(
+    () => (query ? combined.filter((m) => m.name.toLowerCase().includes(query)) : combined),
+    [combined, query]
+  );
+  const filteredPassedApplicants = useMemo(
+    () => (query ? passedApplicants.filter((a) => a.name.toLowerCase().includes(query)) : passedApplicants),
+    [passedApplicants, query]
+  );
 
-  const meetingDateKeys = useMemo(() => new Set(filteredCombined.map((m) => dateKey(m.dateObj))), [filteredCombined]);
+  const meetingDateKeys = useMemo(() => new Set(combined.map((m) => dateKey(m.dateObj))), [combined]);
 
   const today = new Date();
   const todayKey = dateKey(today);
@@ -151,7 +146,9 @@ export default function AdminMeetingPage() {
     endHour = Math.min(21, Math.ceil(maxM / 60) + 2);
     if (endHour - startHour < 6) endHour = startHour + 6;
   }
-  const HOUR_H = 78;
+  // Taller hour blocks give each card more room, so text and the Join button
+  // never crowd the card edges.
+  const HOUR_H = 96;
   const hoursArr = Array.from({ length: endHour - startHour + 1 }, (_, i) => startHour + i);
   const trackHeight = (endHour - startHour) * HOUR_H;
 
@@ -167,20 +164,27 @@ export default function AdminMeetingPage() {
     setCalendarViewMode("month");
   };
 
-  const openBookModal = () => {
-    setForm((f) => ({ ...f, date: selectedDateKey }));
+  const openBookModal = (presetApplicantId?: number) => {
+    setForm({ applicantId: presetApplicantId ? String(presetApplicantId) : "", date: selectedDateKey, time: "" });
     setShowBookModal(true);
   };
 
-  const createMeeting = (e: FormEvent<HTMLFormElement>) => {
+  const confirmSchedule = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!form.title || !form.date || !form.time || !form.invitee) return;
-    setHosting((prev) => [...prev, { id: Date.now(), ...form, status: "pending" }]);
+    const applicant = passedApplicants.find((a) => String(a.id) === form.applicantId);
+    if (!applicant || !form.date || !form.time) return;
+    setScheduled((prev) => [...prev, { id: applicant.id, name: applicant.name, initials: applicant.initials, date: form.date, time: form.time }]);
+    setPassedApplicants((prev) => prev.filter((a) => a.id !== applicant.id));
     const d = parseFlexibleDate(form.date);
     setSelectedDateKey(dateKey(d));
     setCalendarMonth(new Date(d.getFullYear(), d.getMonth(), 1));
-    setForm({ title: "", date: "", time: "", invitee: "" });
+    setForm({ applicantId: "", date: "", time: "" });
     setShowBookModal(false);
+  };
+
+  const joinMeeting = (iv: ScheduledInterview) => {
+    // Hook up to your actual video call link / room here.
+    console.log("Joining meeting with", iv.name);
   };
 
   const selectedLabel = isSelectedToday
@@ -212,32 +216,28 @@ export default function AdminMeetingPage() {
         @keyframes agendaIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         .book-btn:hover { filter: brightness(1.06); }
         .view-all-link:hover { text-decoration: underline; }
-        .mtg-topbar-actions { flex-wrap: wrap; }
+        .waiting-row:hover { background-color: ${TINT}; }
       `}</style>
 
-      {/* ---------------- Page-level navbar (search + Book a meeting) ---------------- */}
+      {/* ---------------- Page-level navbar ---------------- */}
       <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button className="va-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
-          <h1 style={s.topbarGreeting}>Meetings</h1>
-          <p style={s.topbarSub}>Everything youre hosting or invited to, in one place.</p>
+          <h1 style={s.topbarGreeting}>Meeting</h1>
+          <p style={s.topbarSub}>Schedule interviews for applicants who passed review.</p>
         </div>
-        <div className="mtg-topbar-actions" style={{ ...s.topbarRight, gap: 10 }}>
-          <div className="va-topbar-search" style={s.searchBox}>
+        <div style={s.topbarRight}>
+          <div className="vc-topbar-search" style={s.searchBox}>
             <SearchIcon />
             <input
-              type="text"
-              placeholder="Search meetings..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search applicant name..."
               style={s.searchInput}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <button onClick={openBookModal} style={{ ...s.continueBtnSmall, whiteSpace: "nowrap" }}>
-            <CalendarIcon /> Book a meeting
-          </button>
           <button style={s.bellBtn}>
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
@@ -267,11 +267,13 @@ export default function AdminMeetingPage() {
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "64px 0", color: "#9a9a94", gap: 10 }}>
                 <CalendarIcon />
                 <p style={{ fontSize: "0.92rem" }}>
-                  {query ? "No meetings match your search for this day." : "No meetings scheduled for this day."}
+                  {query ? "No matching interviews on this day." : "No interviews scheduled for this day."}
                 </p>
-                <button onClick={openBookModal} style={{ ...s.continueBtnSmall, marginTop: 6 }}>
-                  <CalendarIcon /> Book a meeting
-                </button>
+                {passedApplicants.length > 0 && !query && (
+                  <button onClick={() => openBookModal()} style={{ ...s.continueBtnSmall, marginTop: 6 }}>
+                    <CalendarIcon /> Schedule an interview
+                  </button>
+                )}
               </div>
             ) : (
               <div style={{ display: "flex" }}>
@@ -300,13 +302,11 @@ export default function AdminMeetingPage() {
                     </div>
                   )}
                   {dayMeetings.map((m, i) => {
-                    const isHosting = m.kind === "hosting";
-                    const top = ((m.minutes - startHour * 60) / 60) * HOUR_H + 4;
-                    const cardH = Math.max(56, HOUR_H - 14);
-                    const statusColor = m.status === "confirmed" ? GOOD : WARN;
+                    const top = ((m.minutes - startHour * 60) / 60) * HOUR_H + 6;
+                    const cardH = Math.max(88, HOUR_H - 18);
                     return (
                       <div
-                        key={`${m.kind}-${m.id}`}
+                        key={m.id}
                         className="agenda-card"
                         style={{
                           position: "absolute",
@@ -314,27 +314,36 @@ export default function AdminMeetingPage() {
                           left: 16,
                           right: 12,
                           height: cardH,
-                          background: isHosting ? TINT : AMBER_BG,
-                          borderLeft: `4px solid ${isHosting ? NAVY : AMBER}`,
+                          background: TINT,
+                          borderLeft: `4px solid ${NAVY}`,
                           borderRadius: 12,
-                          padding: "10px 14px",
+                          padding: "14px 16px",
                           display: "flex",
                           flexDirection: "column",
-                          justifyContent: "center",
-                          gap: 3,
+                          justifyContent: "space-between",
+                          gap: 6,
                           overflow: "hidden",
+                          boxSizing: "border-box",
                           animationDelay: `${i * 45}ms`,
                         }}
                       >
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-                          <p style={{ fontSize: "0.88rem", fontWeight: 700, color: NAVY, lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {m.title}
+                        <div>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+                            <p style={{ fontSize: "0.9rem", fontWeight: 700, color: NAVY, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexGrow: 1, minWidth: 0 }}>
+                              {m.name}
+                            </p>
+                            <span style={{ width: 7, height: 7, borderRadius: "50%", background: GOOD, marginTop: 6, flexShrink: 0 }} />
+                          </div>
+                          <p style={{ fontSize: "0.78rem", color: "#5a5a55", marginTop: 4 }}>
+                            {formatTimeLabel(m.minutes)} · Scholarship interview
                           </p>
-                          <span style={{ width: 7, height: 7, borderRadius: "50%", background: statusColor, marginTop: 5, flexShrink: 0 }} />
                         </div>
-                        <p style={{ fontSize: "0.76rem", color: "#5a5a55" }}>
-                          {formatTimeLabel(m.minutes)} · {isHosting ? `You invited ${m.invitee}` : `Invited by ${m.host}`}
-                        </p>
+                        <button
+                          onClick={() => joinMeeting(m)}
+                          style={{ alignSelf: "flex-start", background: WHITE, color: NAVY, fontWeight: 600, fontSize: "0.74rem", padding: "6px 14px", borderRadius: 999, border: `1px solid ${LINE}`, flexShrink: 0 }}
+                        >
+                          Join
+                        </button>
                       </div>
                     );
                   })}
@@ -469,29 +478,80 @@ export default function AdminMeetingPage() {
             )}
 
             <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 10 }}>
-              <button className="book-btn" onClick={openBookModal} style={{ ...s.continueBtn, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%" }}>
-                <CalendarIcon /> Book a meeting
+              <button
+                className="book-btn"
+                onClick={() => openBookModal()}
+                disabled={passedApplicants.length === 0}
+                style={{
+                  ...s.continueBtn,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  width: "100%",
+                  opacity: passedApplicants.length === 0 ? 0.5 : 1,
+                  cursor: passedApplicants.length === 0 ? "default" : "pointer",
+                }}
+              >
+                <CalendarIcon /> Schedule an interview
               </button>
             </div>
 
+            {filteredPassedApplicants.length > 0 && (
+              <div style={{ marginTop: 20, borderTop: `1px solid ${LINE}`, paddingTop: 18 }}>
+                <p style={{ fontSize: "0.76rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#9a9a94", marginBottom: 10 }}>
+                  Awaiting schedule ({filteredPassedApplicants.length})
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {filteredPassedApplicants.map((a) => (
+                    <button
+                      key={a.id}
+                      className="waiting-row"
+                      onClick={() => openBookModal(a.id)}
+                      style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 6px", borderRadius: 10, textAlign: "left", width: "100%" }}
+                    >
+                      <span style={{ ...s.convoAvatar, width: 30, height: 30, fontSize: "0.72rem" }}>{a.initials}</span>
+                      <span style={{ flexGrow: 1, minWidth: 0, fontSize: "0.84rem", fontWeight: 600, color: "#3a3a36", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {a.name}
+                      </span>
+                      <InterviewIcon />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {query && filteredPassedApplicants.length === 0 && passedApplicants.length > 0 && (
+              <p style={{ marginTop: 20, fontSize: "0.8rem", color: "#9a9a94", textAlign: "center" }}>
+                No awaiting applicants match {search}.
+              </p>
+            )}
+
             <button className="view-all-link" onClick={() => setShowAllDrawer(true)} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", marginTop: 16, fontSize: "0.86rem", fontWeight: 700, color: "#8A6410" }}>
-              View all meetings <span aria-hidden>→</span>
+              View all interviews <span aria-hidden>→</span>
             </button>
           </aside>
         </div>
       </div>
 
-      {/* ---------------- Book meeting modal ---------------- */}
+      {/* ---------------- Book interview modal ---------------- */}
       {showBookModal && (
         <div style={s.drawerOverlay} onClick={() => setShowBookModal(false)}>
           <div style={s.modalCard} onClick={(e) => e.stopPropagation()}>
-            <h3 style={s.drawerName}>Book a meeting</h3>
-            <p style={s.drawerMeta}>Schedule a new meeting and choose who to invite.</p>
-            <form onSubmit={createMeeting} style={{ marginTop: 20 }}>
-              <Field label="Meeting title" required>
-                <input style={s.input} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Coordinator sync" />
+            <h3 style={s.drawerName}>Schedule an interview</h3>
+            <p style={s.drawerMeta}>Pick an applicant who passed review, then choose a date and time.</p>
+            <form onSubmit={confirmSchedule} style={{ marginTop: 20 }}>
+              <Field label="Applicant" required>
+                <select style={s.select} value={form.applicantId} onChange={(e) => setForm({ ...form, applicantId: e.target.value })}>
+                  <option value="">Select an applicant...</option>
+                  {passedApplicants.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name} — {a.course}
+                    </option>
+                  ))}
+                </select>
               </Field>
-              <div className="va-field-row-2" style={s.fieldRow2}>
+              <div className="vc-field-row-2" style={s.fieldRow2}>
                 <Field label="Date" required>
                   <input type="date" style={s.input} value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
                 </Field>
@@ -499,21 +559,12 @@ export default function AdminMeetingPage() {
                   <input type="time" style={s.input} value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} />
                 </Field>
               </div>
-              <Field label="Invite" required>
-                <select style={s.select} value={form.invitee} onChange={(e) => setForm({ ...form, invitee: e.target.value })}>
-                  <option value="">Select a person or group to invite...</option>
-                  <option>Engr. Paolo Reyes — Coordinator</option>
-                  <option>Jenny Avila — Coordinator</option>
-                  <option>All coordinators</option>
-                  <option>Cawayan River Dev. Corp. — Partner company</option>
-                </select>
-              </Field>
               <div style={s.modalActionsRow}>
                 <button type="button" onClick={() => setShowBookModal(false)} style={s.backBtn}>
                   Cancel
                 </button>
                 <button type="submit" style={s.continueBtn}>
-                  Book meeting
+                  Confirm interview
                 </button>
               </div>
             </form>
@@ -521,59 +572,80 @@ export default function AdminMeetingPage() {
         </div>
       )}
 
-      {/* ---------------- All meetings drawer ---------------- */}
+      {/* ---------------- All interviews drawer ---------------- */}
       {showAllDrawer && (
         <div style={s.drawerOverlay} onClick={() => setShowAllDrawer(false)}>
           <div style={s.drawerPanel} onClick={(e) => e.stopPropagation()}>
             <div style={{ ...s.drawerHeader, marginBottom: 22 }}>
               <div style={{ flexGrow: 1 }}>
-                <h3 style={s.drawerName}>All meetings</h3>
-                <p style={s.drawerMeta}>
-                  {query ? `${filteredCombined.length} of ${combined.length} match` : `${combined.length} total, hosted and invited`}
-                </p>
+                <h3 style={s.drawerName}>All interviews</h3>
+                <p style={s.drawerMeta}>{combined.length} scheduled, {passedApplicants.length} awaiting</p>
               </div>
               <button onClick={() => setShowAllDrawer(false)} style={s.drawerCloseBtn}>
                 <XCircleIcon />
               </button>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {filteredCombined.map((m) => {
-                const isHosting = m.kind === "hosting";
-                const statusColor = m.status === "confirmed" ? GOOD : WARN;
-                const statusBg = m.status === "confirmed" ? "#DDEEE3" : WARN_BG;
-                return (
-                  <button
-                    key={`${m.kind}-${m.id}`}
-                    onClick={() => {
-                      setSelectedDateKey(dateKey(m.dateObj));
-                      setCalendarMonth(new Date(m.dateObj.getFullYear(), m.dateObj.getMonth(), 1));
-                      setShowAllDrawer(false);
-                    }}
-                    style={{ display: "flex", alignItems: "center", gap: 14, background: TINT, borderRadius: 14, padding: "14px 16px", textAlign: "left", width: "100%" }}
-                  >
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", background: WHITE, borderRadius: 10, padding: "8px 12px", minWidth: 58, flexShrink: 0 }}>
-                      <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "#8A6410", textTransform: "uppercase" }}>
-                        {MONTH_ABBR[m.dateObj.getMonth()]}
-                      </span>
-                      <span style={{ fontSize: "1.05rem", fontWeight: 700, color: NAVY }}>{m.dateObj.getDate()}</span>
-                    </div>
-                    <div style={{ flexGrow: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: "0.92rem", fontWeight: 700, color: NAVY, marginBottom: 2 }}>{m.title}</p>
-                      <p style={{ fontSize: "0.8rem", color: "#7a7a74" }}>
-                        {formatTimeLabel(m.minutes)} · {isHosting ? `You invited ${m.invitee}` : `Invited by ${m.host}`}
-                      </p>
-                    </div>
-                    <span style={{ fontSize: "0.72rem", fontWeight: 700, padding: "5px 11px", borderRadius: 999, background: statusBg, color: statusColor, whiteSpace: "nowrap", flexShrink: 0 }}>
-                      {isHosting ? "Hosting" : "Invited"}
-                    </span>
-                  </button>
-                );
-              })}
+
+            <p style={{ ...s.drawerSectionLabel, marginBottom: 10 }}>Scheduled</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 26 }}>
               {filteredCombined.length === 0 && (
-                <p style={{ textAlign: "center", padding: "30px 0", color: "#9a9a94", fontSize: "0.9rem" }}>
-                  No meetings match your search.
+                <p style={{ fontSize: "0.86rem", color: "#9a9a94" }}>
+                  {query ? "No scheduled interviews match your search." : "No interviews scheduled yet."}
                 </p>
               )}
+              {filteredCombined.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => {
+                    setSelectedDateKey(dateKey(m.dateObj));
+                    setCalendarMonth(new Date(m.dateObj.getFullYear(), m.dateObj.getMonth(), 1));
+                    setShowAllDrawer(false);
+                  }}
+                  style={{ display: "flex", alignItems: "center", gap: 14, background: TINT, borderRadius: 14, padding: "14px 16px", textAlign: "left", width: "100%" }}
+                >
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", background: WHITE, borderRadius: 10, padding: "8px 12px", minWidth: 58, flexShrink: 0 }}>
+                    <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "#8A6410", textTransform: "uppercase" }}>
+                      {MONTH_ABBR[m.dateObj.getMonth()]}
+                    </span>
+                    <span style={{ fontSize: "1.05rem", fontWeight: 700, color: NAVY }}>{m.dateObj.getDate()}</span>
+                  </div>
+                  <div style={{ flexGrow: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: "0.92rem", fontWeight: 700, color: NAVY, marginBottom: 2 }}>{m.name}</p>
+                    <p style={{ fontSize: "0.8rem", color: "#7a7a74" }}>{formatTimeLabel(m.minutes)} · Scholarship interview</p>
+                  </div>
+                  <span style={{ ...s.meetingStatusTag, background: AMBER_BG, color: "#7A5C0A" }}>Confirmed</span>
+                </button>
+              ))}
+            </div>
+
+            <p style={{ ...s.drawerSectionLabel, marginBottom: 10 }}>Awaiting schedule</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {filteredPassedApplicants.length === 0 && (
+                <p style={{ fontSize: "0.86rem", color: "#9a9a94" }}>
+                  {query ? "No awaiting applicants match your search." : "Everyone who passed review has been scheduled."}
+                </p>
+              )}
+              {filteredPassedApplicants.map((a) => (
+                <button
+                  key={a.id}
+                  onClick={() => {
+                    setShowAllDrawer(false);
+                    openBookModal(a.id);
+                  }}
+                  style={{ display: "flex", alignItems: "center", gap: 14, background: TINT, borderRadius: 14, padding: "14px 16px", textAlign: "left", width: "100%" }}
+                >
+                  <span style={s.convoAvatar}>{a.initials}</span>
+                  <div style={{ flexGrow: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: "0.92rem", fontWeight: 700, color: NAVY, marginBottom: 2 }}>{a.name}</p>
+                    <p style={{ fontSize: "0.8rem", color: "#7a7a74" }}>
+                      {a.course} · {a.track} track · Passed review
+                    </p>
+                  </div>
+                  <span style={{ fontSize: "0.72rem", fontWeight: 700, padding: "5px 11px", borderRadius: 999, background: TINT, color: NAVY, whiteSpace: "nowrap", flexShrink: 0, border: `1px solid ${LINE}` }}>
+                    Select date
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
         </div>

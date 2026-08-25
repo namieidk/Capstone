@@ -14,20 +14,31 @@ import {
   LINE,
   TINT,
   GRAY,
+  AMBER,
   BORDER_SUBTLE,
   SHADOW_SM,
+  MenuIcon,
+  BellIcon,
+  SearchIcon,
   s,
 } from "@/components/Adminshared";
+import { useSidebar } from "@/components/SidebarContext";
 
 const ARCHIVE_FILTERS: (ArchivedScholar["status"] | "All")[] = ["All", "Graduated", "Terminated", "Withdrawn"];
 
 export default function AdminArchivePage() {
+  const { toggleMobile } = useSidebar();
   const [filter, setFilter] = useState<ArchivedScholar["status"] | "All">("All");
   const [selected, setSelected] = useState<ArchivedScholar | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
 
-  const filtered = filter === "All" ? ARCHIVED_SCHOLARS : ARCHIVED_SCHOLARS.filter((a) => a.status === filter);
+  const filtered = ARCHIVED_SCHOLARS.filter((a) => {
+    const matchesStatus = filter === "All" || a.status === filter;
+    const matchesSearch = searchQuery.trim() === "" || a.name.toLowerCase().includes(searchQuery.trim().toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
   const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
@@ -53,149 +64,170 @@ export default function AdminArchivePage() {
         .filter-select option { color: ${NAVY}; background: ${WHITE}; }
       `}</style>
 
-      {/* ---------------- Filter dropdown, right-aligned, matching Monitor's top row spacing ---------------- */}
-      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", marginTop: 36, marginBottom: 28 }}>
-        <PillFilter>
-          <select
-            className="filter-select"
-            value={filter}
-            onChange={(e) => handleFilterChange(e.target.value as ArchivedScholar["status"] | "All")}
-            style={{ ...pillSelectStyle, minWidth: 180, width: 180 }}
-          >
-            {ARCHIVE_FILTERS.map((f) => (
-              <option key={f} value={f}>{`${f} (${counts[f]})`}</option>
-            ))}
-          </select>
-        </PillFilter>
-      </div>
-
-      {/* ---------------- Table card, same shell/header/th/td treatment as Monitor ---------------- */}
-      <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 22px 8px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <p style={{ fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif" }}>Archived scholars</p>
-          <span style={{ fontSize: "0.8rem", color: "#9a9a94" }}>
-            {filtered.length === 0
-              ? "0 shown"
-              : `${(currentPage - 1) * PAGE_SIZE + 1}-${Math.min(currentPage * PAGE_SIZE, filtered.length)} of ${filtered.length}`}
-          </span>
+      {/* ---------------- Page-level navbar (search + filter pill) ---------------- */}
+      <header style={s.topbar}>
+        <button className="va-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+          <MenuIcon />
+        </button>
+        <div>
+          <h1 style={s.topbarGreeting}>Archive</h1>
+          <p style={s.topbarSub}>Scholars who are no longer active, across all coordinators.</p>
         </div>
+        <div style={{ ...s.topbarRight, gap: 10 }}>
+          <PillFilter>
+            <select
+              className="filter-select"
+              value={filter}
+              onChange={(e) => handleFilterChange(e.target.value as ArchivedScholar["status"] | "All")}
+              style={{ ...pillSelectStyle, minWidth: 180, width: 180 }}
+            >
+              {ARCHIVE_FILTERS.map((f) => (
+                <option key={f} value={f}>{`${f} (${counts[f]})`}</option>
+              ))}
+            </select>
+          </PillFilter>
+          <div className="va-topbar-search" style={s.searchBox}>
+            <SearchIcon />
+            <input
+              type="text"
+              placeholder="Search scholars..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1);
+              }}
+              style={s.searchInput}
+            />
+          </div>
+          <button style={s.bellBtn}>
+            <BellIcon />
+            <span style={{ ...s.bellDot, background: AMBER }} />
+          </button>
+        </div>
+      </header>
 
-        <div className="va-table-scroll" style={{ width: "100%", overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ borderBottom: `1px solid ${LINE}` }}>
-                <th style={{ ...s.th, background: "none", padding: "14px 14px", textAlign: "center" }}>Scholar</th>
-                <th style={{ ...s.th, background: "none", textAlign: "center" }}>Track</th>
-                <th style={{ ...s.th, background: "none", textAlign: "center" }}>Coordinator</th>
-                <th style={{ ...s.th, background: "none", textAlign: "center" }}>Exited</th>
-                <th style={{ ...s.th, background: "none", textAlign: "center" }}>Status</th>
-                <th style={{ ...s.th, background: "none", textAlign: "center" }}>View</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginated.map((a, i) => (
-                <tr
-                  key={a.id}
-                  onClick={() => setSelected(a)}
-                  style={{ borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`, cursor: "pointer", verticalAlign: "middle" }}
-                >
-                  <td style={{ ...s.td, padding: "16px 14px", textAlign: "center" }}>
-                    <p style={s.tdName}>{a.name}</p>
-                    <p style={s.tdSub}>{a.course}</p>
-                  </td>
-                  <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{a.track}</td>
-                  <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{a.coordinator}</td>
-                  <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{a.exited}</td>
-                  <td style={{ ...s.td, textAlign: "center" }}>
-                    <span
-                      style={{
-                        ...s.stageTag,
-                        background: ARCHIVE_STATUS_STYLE[a.status].bg,
-                        color: ARCHIVE_STATUS_STYLE[a.status].text,
-                        fontWeight: 600,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                      }}
-                    >
+      <div style={{ ...s.mainContent, padding: s.mainContent.padding }}>
+        {/* ---------------- Table card, same shell/header/th/td treatment as Monitor ---------------- */}
+        <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 22px 8px", marginTop: 20 }}>
+          
+
+          <div className="va-table-scroll" style={{ width: "100%", overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${LINE}` }}>
+                  <th style={{ ...s.th, background: "none", padding: "14px 14px", textAlign: "center" }}>Scholar</th>
+                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>Track</th>
+                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>Coordinator</th>
+                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>Exited</th>
+                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>Status</th>
+                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>View</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.map((a, i) => (
+                  <tr
+                    key={a.id}
+                    onClick={() => setSelected(a)}
+                    style={{ borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`, cursor: "pointer", verticalAlign: "middle" }}
+                  >
+                    <td style={{ ...s.td, padding: "16px 14px", textAlign: "center" }}>
+                      <p style={s.tdName}>{a.name}</p>
+                      <p style={s.tdSub}>{a.course}</p>
+                    </td>
+                    <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{a.track}</td>
+                    <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{a.coordinator}</td>
+                    <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{a.exited}</td>
+                    <td style={{ ...s.td, textAlign: "center" }}>
                       <span
                         style={{
-                          width: 6,
-                          height: 6,
-                          borderRadius: "50%",
-                          background: ARCHIVE_STATUS_STYLE[a.status].text,
-                          flexShrink: 0,
+                          ...s.stageTag,
+                          background: ARCHIVE_STATUS_STYLE[a.status].bg,
+                          color: ARCHIVE_STATUS_STYLE[a.status].text,
+                          fontWeight: 600,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
                         }}
-                      />
-                      {a.status}
-                    </span>
-                  </td>
-                  <td style={{ ...s.td, textAlign: "center" }}>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setSelected(a); }}
-                      aria-label="View scholar"
-                      style={{
-                        width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${LINE}`,
-                        display: "inline-flex", alignItems: "center", justifyContent: "center",
-                        background: WHITE, color: "#7a7a74", cursor: "pointer",
-                      }}
-                    >
-                      <EyeIcon />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {filtered.length === 0 && (
-          <p style={{ textAlign: "center", padding: "40px 0", color: "#9a9a94", fontSize: "0.9rem" }}>
-            No scholars match this filter.
-          </p>
-        )}
-
-        {filtered.length > 0 && (
-          <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}>
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              style={{
-                width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
-                color: currentPage === 1 ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: currentPage === 1 ? "default" : "pointer",
-              }}
-              aria-label="Previous page"
-            >
-              <ChevronLeftIcon />
-            </button>
-            {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
-              <button
-                key={num}
-                onClick={() => setPage(num)}
-                style={{
-                  width: 32, height: 32, borderRadius: 8, border: `1px solid ${num === currentPage ? NAVY : LINE}`,
-                  background: num === currentPage ? NAVY : WHITE, color: num === currentPage ? WHITE : "#55554f",
-                  fontSize: "0.82rem", fontWeight: 600, cursor: "pointer",
-                }}
-              >
-                {num}
-              </button>
-            ))}
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              style={{
-                width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
-                color: currentPage === totalPages ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: currentPage === totalPages ? "default" : "pointer",
-              }}
-              aria-label="Next page"
-            >
-              <ChevronRightIcon />
-            </button>
+                      >
+                        <span
+                          style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: "50%",
+                            background: ARCHIVE_STATUS_STYLE[a.status].text,
+                            flexShrink: 0,
+                          }}
+                        />
+                        {a.status}
+                      </span>
+                    </td>
+                    <td style={{ ...s.td, textAlign: "center" }}>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setSelected(a); }}
+                        aria-label="View scholar"
+                        style={{
+                          width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${LINE}`,
+                          display: "inline-flex", alignItems: "center", justifyContent: "center",
+                          background: WHITE, color: "#7a7a74", cursor: "pointer",
+                        }}
+                      >
+                        <EyeIcon />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
+
+          {filtered.length === 0 && (
+            <p style={{ textAlign: "center", padding: "40px 0", color: "#9a9a94", fontSize: "0.9rem" }}>
+              No scholars match this filter.
+            </p>
+          )}
+
+          {filtered.length > 0 && (
+            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}>
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                style={{
+                  width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
+                  color: currentPage === 1 ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: currentPage === 1 ? "default" : "pointer",
+                }}
+                aria-label="Previous page"
+              >
+                <ChevronLeftIcon />
+              </button>
+              {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
+                <button
+                  key={num}
+                  onClick={() => setPage(num)}
+                  style={{
+                    width: 32, height: 32, borderRadius: 8, border: `1px solid ${num === currentPage ? NAVY : LINE}`,
+                    background: num === currentPage ? NAVY : WHITE, color: num === currentPage ? WHITE : "#55554f",
+                    fontSize: "0.82rem", fontWeight: 600, cursor: "pointer",
+                  }}
+                >
+                  {num}
+                </button>
+              ))}
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                style={{
+                  width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
+                  color: currentPage === totalPages ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: currentPage === totalPages ? "default" : "pointer",
+                }}
+                aria-label="Next page"
+              >
+                <ChevronRightIcon />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {selected && (

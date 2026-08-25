@@ -1,27 +1,25 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   XCircleIcon,
+  CheckCircleIcon,
   DrawerInfoRow,
-  ADMIN_PAYMENT_RECORDS,
+  PAYMENT_RECORDS,
   PAYMENT_STATUS_COLORS,
-  AdminPaymentRecord,
+  PaymentRecord,
   NAVY,
   WHITE,
   LINE,
   TINT,
-  AMBER,
   SHADOW_SM,
   BORDER_SUBTLE,
-  MenuIcon,
-  BellIcon,
-  SearchIcon,
   s,
-} from "@/components/Adminshared";
+  MenuIcon,
+} from "@/components/Coordinatorshared";
 import { useSidebar } from "@/components/SidebarContext";
 
-const PAYMENT_FILTERS: (AdminPaymentRecord["status"] | "All")[] = ["All", "Paid", "Scheduled", "On hold"];
+const PAYMENT_FILTERS: (PaymentRecord["status"] | "All")[] = ["All", "Paid", "Scheduled", "On hold"];
 
 // Approx height (px) of a single table row, used to work out how many rows
 // fit on screen so the table adapts to the device instead of overflowing.
@@ -31,13 +29,12 @@ const ROW_HEIGHT = 58;
 const RESERVED_HEIGHT = 210;
 const MIN_ROWS = 3;
 
-export default function AdminPaymentsPage() {
+export default function PaymentPage() {
   const { toggleMobile } = useSidebar();
 
-  const [records, setRecords] = useState<AdminPaymentRecord[]>(ADMIN_PAYMENT_RECORDS);
-  const [selected, setSelected] = useState<AdminPaymentRecord | null>(null);
-  const [filter, setFilter] = useState<AdminPaymentRecord["status"] | "All">("All");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [records, setRecords] = useState<PaymentRecord[]>(PAYMENT_RECORDS);
+  const [selected, setSelected] = useState<PaymentRecord | null>(null);
+  const [filter, setFilter] = useState<PaymentRecord["status"] | "All">("All");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -60,27 +57,17 @@ export default function AdminPaymentsPage() {
   const scheduledCount = records.filter((r) => r.status === "Scheduled").length;
   const onHoldCount = records.filter((r) => r.status === "On hold").length;
 
-  const setStatus = (id: number, status: AdminPaymentRecord["status"]) => {
-    setRecords((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
-    setSelected((sel) => (sel && sel.id === id ? { ...sel, status } : sel));
+  const markPaid = (id: number) => {
+    setRecords((prev) => prev.map((r) => (r.id === id ? { ...r, status: "Paid" } : r)));
+    setSelected((sel) => (sel && sel.id === id ? { ...sel, status: "Paid" } : sel));
   };
 
-  const query = searchQuery.trim().toLowerCase();
-  const filtered = useMemo(() => {
-    let list = filter === "All" ? records : records.filter((r) => r.status === filter);
-    if (query) {
-      list = list.filter(
-        (r) => r.name.toLowerCase().includes(query) || r.coordinator.toLowerCase().includes(query) || r.course.toLowerCase().includes(query)
-      );
-    }
-    return list;
-  }, [records, filter, query]);
-
+  const filtered = filter === "All" ? records : records.filter((r) => r.status === filter);
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
   const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-  const handleFilterChange = (f: AdminPaymentRecord["status"] | "All") => {
+  const handleFilterChange = (f: PaymentRecord["status"] | "All") => {
     setFilter(f);
     setPage(1);
   };
@@ -99,11 +86,10 @@ export default function AdminPaymentsPage() {
         .filter-pill:hover { border-color: rgba(30, 58, 95, 0.35); }
         .filter-select:focus { outline: none; }
         .filter-select option { color: ${NAVY}; background: ${WHITE}; }
-        .pay-topbar-actions { flex-wrap: wrap; }
         @media (max-width: 720px) {
           .payment-stat-row { grid-template-columns: repeat(2, 1fr) !important; }
           .payment-table th, .payment-table td { padding-left: 8px !important; padding-right: 8px !important; font-size: 0.78rem !important; }
-          .payment-col-term, .payment-col-date, .payment-col-coordinator { display: none; }
+          .payment-col-term, .payment-col-date { display: none; }
         }
         @media (max-width: 480px) {
           .payment-stat-row { grid-template-columns: 1fr !important; }
@@ -112,19 +98,19 @@ export default function AdminPaymentsPage() {
 
       {/* ---------------- Page-level navbar ---------------- */}
       <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button className="va-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
           <h1 style={s.topbarGreeting}>Payments</h1>
-          <p style={s.topbarSub}>Track disbursements, schedules, and holds across all scholars.</p>
+          <p style={s.topbarSub}>Track disbursements, schedules, and payment status.</p>
         </div>
-        <div className="pay-topbar-actions" style={{ ...s.topbarRight, gap: 10 }}>
+        <div style={{ ...s.topbarRight, marginLeft: "auto" }}>
           <PillFilter>
             <select
               className="filter-select"
               value={filter}
-              onChange={(e) => handleFilterChange(e.target.value as AdminPaymentRecord["status"] | "All")}
+              onChange={(e) => handleFilterChange(e.target.value as PaymentRecord["status"] | "All")}
               style={{ ...pillSelectStyle, minWidth: 180, width: 180 }}
             >
               {PAYMENT_FILTERS.map((f) => (
@@ -132,23 +118,6 @@ export default function AdminPaymentsPage() {
               ))}
             </select>
           </PillFilter>
-          <div className="va-topbar-search" style={s.searchBox}>
-            <SearchIcon />
-            <input
-              type="text"
-              placeholder="Search payments..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setPage(1);
-              }}
-              style={s.searchInput}
-            />
-          </div>
-          <button style={s.bellBtn}>
-            <BellIcon />
-            <span style={{ ...s.bellDot, background: AMBER }} />
-          </button>
         </div>
       </header>
 
@@ -156,7 +125,7 @@ export default function AdminPaymentsPage() {
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: "24px 4px 40px" }}>
           {/* ---------------- Summary cards ---------------- */}
           <div
-            className="va-stat-row payment-stat-row"
+            className="vc-stat-row payment-stat-row"
             style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, marginBottom: 28 }}
           >
             <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, padding: "26px 28px", boxShadow: SHADOW_SM, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
@@ -174,15 +143,14 @@ export default function AdminPaymentsPage() {
               <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.9rem", fontWeight: 700, color: NAVY, lineHeight: 1, textAlign: "right" }}>{onHoldCount}</p>
             </div>
             <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, padding: "26px 28px", boxShadow: SHADOW_SM, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-              <p style={{ fontSize: "0.84rem", color: "#7a7a74", fontWeight: 500 }}>Next batch date</p>
+              <p style={{ fontSize: "0.84rem", color: "#7a7a74", fontWeight: 500 }}>Next disbursement</p>
               <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.3rem", fontWeight: 700, color: NAVY, lineHeight: 1.2, textAlign: "right", whiteSpace: "nowrap" }}>Jul 15, 2026</p>
             </div>
           </div>
 
           {/* ---------------- Table card ---------------- */}
           <div ref={tableCardRef} style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "16px 22px 8px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <p style={{ fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif" }}>Payment records</p>
+            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: 6 }}>
               <span style={{ fontSize: "0.8rem", color: "#9a9a94" }}>
                 {filtered.length === 0
                   ? "0 shown"
@@ -190,12 +158,11 @@ export default function AdminPaymentsPage() {
               </span>
             </div>
 
-            <div className="va-table-scroll" style={{ width: "100%", overflowX: "auto" }}>
+            <div className="vc-table-scroll" style={{ width: "100%", overflowX: "auto" }}>
               <table className="payment-table" style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${LINE}` }}>
                     <th style={{ ...s.th, background: "none", padding: "14px 14px", textAlign: "center" }}>Scholar</th>
-                    <th className="payment-col-coordinator" style={{ ...s.th, background: "none", textAlign: "center" }}>Coordinator</th>
                     <th style={{ ...s.th, background: "none", textAlign: "center" }}>Amount</th>
                     <th className="payment-col-term" style={{ ...s.th, background: "none", textAlign: "center" }}>Term</th>
                     <th className="payment-col-date" style={{ ...s.th, background: "none", textAlign: "center" }}>Scheduled date</th>
@@ -214,7 +181,6 @@ export default function AdminPaymentsPage() {
                         <p style={s.tdName}>{r.name}</p>
                         <p style={s.tdSub}>{r.course}</p>
                       </td>
-                      <td className="payment-col-coordinator" style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{r.coordinator}</td>
                       <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>₱{r.amount.toLocaleString()}</td>
                       <td className="payment-col-term" style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{r.term}</td>
                       <td className="payment-col-date" style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{r.scheduledDate}</td>
@@ -328,22 +294,33 @@ export default function AdminPaymentsPage() {
             </div>
 
             <div style={{ ...s.drawerInfoGrid, marginBottom: 22, rowGap: 20 }}>
-              <DrawerInfoRow label="Coordinator" value={selected.coordinator} />
               <DrawerInfoRow label="Amount" value={`₱${selected.amount.toLocaleString()}`} />
               <DrawerInfoRow label="Term" value={selected.term} />
               <DrawerInfoRow label="Scheduled date" value={selected.scheduledDate} />
+              <DrawerInfoRow label="Status" value={selected.status} />
+            </div>
+
+            <p style={{ ...s.drawerSectionLabel, marginBottom: 10 }}>Payment history</p>
+            <div style={{ ...s.drawerDocList, marginBottom: 26 }}>
+              <div style={s.drawerDocRow}>
+                <span>
+                  <CheckCircleIcon small />
+                </span>
+                <span style={s.drawerDocText}>Q2 2026 — ₱8,000 paid Apr 15, 2026</span>
+              </div>
+              <div style={s.drawerDocRow}>
+                <span>
+                  <CheckCircleIcon small />
+                </span>
+                <span style={s.drawerDocText}>Q1 2026 — ₱8,000 paid Jan 15, 2026</span>
+              </div>
             </div>
 
             <p style={{ ...s.drawerSectionLabel, marginBottom: 10 }}>Actions</p>
             <div style={{ ...s.drawerStageActions, marginTop: 4 }}>
               {selected.status !== "Paid" && (
-                <button onClick={() => setStatus(selected.id, "Paid")} style={s.continueBtnSmall}>
+                <button onClick={() => markPaid(selected.id)} style={s.continueBtnSmall}>
                   Mark as paid
-                </button>
-              )}
-              {selected.status !== "On hold" && (
-                <button onClick={() => setStatus(selected.id, "On hold")} style={s.rejectBtn}>
-                  Put on hold
                 </button>
               )}
             </div>
@@ -354,7 +331,7 @@ export default function AdminPaymentsPage() {
   );
 }
 
-/* ---------------- Pill filter (rounded navy dropdown, matches Coordinator) ---------------- */
+/* ---------------- Pill filter (rounded navy dropdown, matches Admin) ---------------- */
 
 const pillSelectStyle: React.CSSProperties = {
   border: "none",

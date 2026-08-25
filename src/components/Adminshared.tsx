@@ -309,7 +309,7 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { key: "dashboard", label: "Dashboard", icon: <HomeIcon />, href: "/AdminDashboard" },
-  { key: "monitor", label: "Monitor", icon: <MonitorIcon />, href: "/Adminmonitor" },
+  { key: "monitor", label: "Monitor", icon: <MonitorIcon />, href: "/AdminMonitor" },
   { key: "archive", label: "Archive", icon: <ArchiveIcon />, href: "/AdminArchive" },
   { key: "employee", label: "Employee", icon: <BriefcaseIcon />, href: "/AdminEmployee" },
   { key: "meeting", label: "Meeting", icon: <CalendarIcon />, href: "/AdminMeeting", badge: 2 },

@@ -1,3 +1,4 @@
+// components/Sidebar.tsx
 "use client";
 
 import React from "react";
@@ -5,11 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import {
-  GradCapIcon,
   LogoutIcon,
-  MenuIcon,
-  SearchIcon,
-  BellIcon,
   NAV_ITEMS as adminNav,
   ADMIN,
   s as adminStyles,
@@ -72,13 +69,6 @@ type SidebarNavItem = {
 interface SidebarProps {
   mobileOpen: boolean;
   role?: SidebarRole;
-}
-
-interface TopBarProps {
-  onMenuClick: () => void;
-  role?: SidebarRole;
-  title?: string;
-  subtitle?: string;
 }
 
 type RoleConfig = {
@@ -161,7 +151,16 @@ export function Sidebar({ mobileOpen, role = "scholar" }: SidebarProps) {
         ...config.styles.sidebar,
         background: GREEN,
         borderRight: "1px solid rgba(255,255,255,0.18)",
-        overflow: "visible",
+        // Pin the sidebar to the viewport instead of scrolling with the
+        // page: fixed height + sticky positioning at the top, with its own
+        // internal flex layout so the logo stays pinned at top and the
+        // user card stays pinned at bottom regardless of nav item count.
+        position: "sticky",
+        top: 0,
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
       }}
     >
       <div
@@ -172,6 +171,7 @@ export function Sidebar({ mobileOpen, role = "scholar" }: SidebarProps) {
           gap: 8,
           marginBottom: 18,
           paddingLeft: 4,
+          flexShrink: 0,
         }}
       >
         <span
@@ -204,7 +204,9 @@ export function Sidebar({ mobileOpen, role = "scholar" }: SidebarProps) {
         </span>
       </div>
 
-      <nav style={config.styles.sidebarNav}>
+      {/* Nav list is the only part allowed to scroll, and only if it ever
+          overflows the available height — logo and user card never move. */}
+      <nav style={{ ...config.styles.sidebarNav, flexGrow: 1, minHeight: 0, overflowY: "auto" }}>
         {config.navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -228,7 +230,7 @@ export function Sidebar({ mobileOpen, role = "scholar" }: SidebarProps) {
         })}
       </nav>
 
-      <div style={{ ...config.styles.sidebarUserCard, borderTop: "1px solid rgba(255,255,255,0.18)" }}>
+      <div style={{ ...config.styles.sidebarUserCard, borderTop: "1px solid rgba(255,255,255,0.18)", flexShrink: 0 }}>
         <span style={{ ...config.styles.sidebarAvatar, background: "rgba(255,255,255,0.16)", color: WHITE }}>{config.profile.initials}</span>
         <div style={config.styles.sidebarUserInfo}>
           <p style={{ ...config.styles.sidebarUserName, color: WHITE }}>{config.profile.name}</p>
@@ -242,101 +244,18 @@ export function Sidebar({ mobileOpen, role = "scholar" }: SidebarProps) {
   );
 }
 
-export function TopBar({ onMenuClick, role = "scholar", title, subtitle }: TopBarProps) {
-  const config = getRoleConfig(role);
-  const mobileClassMap = {
-    admin: "va-mobile-toggle",
-    coordinator: "vc-mobile-toggle",
-    grantor: "vg-mobile-toggle",
-    scholar: "vd-mobile-toggle",
-    student: "vd-mobile-toggle",
-  } as const;
-  const searchClassMap = {
-    admin: "va-topbar-search",
-    coordinator: "vc-topbar-search",
-    grantor: "vg-topbar-search",
-    scholar: "vd-topbar-search",
-    student: "vd-topbar-search",
-  } as const;
-
-  if (role === "scholar" || role === "student") {
-    const scholarProfile = config.profile as typeof SCHOLAR;
-    return (
-      <header style={config.styles.topbar}>
-        <button className={mobileClassMap[role]} onClick={onMenuClick} style={config.styles.mobileToggle}>
-          <MenuIcon />
-        </button>
-        <div>
-          <h1 style={config.styles.topbarGreeting}>Welcome back, {scholarProfile.name.split(" ")[0]}.</h1>
-          <p style={config.styles.topbarSub}>
-            {scholarProfile.course} · {scholarProfile.year}
-          </p>
-        </div>
-        <div style={config.styles.topbarRight}>
-          <div className={searchClassMap[role]} style={config.styles.searchBox}>
-            <SearchIcon />
-            <input placeholder={config.searchPlaceholder} style={config.styles.searchInput} />
-          </div>
-          <button style={config.styles.bellBtn}>
-            <BellIcon />
-            <span style={{ ...config.styles.bellDot, background: AMBER }} />
-          </button>
-        </div>
-      </header>
-    );
-  }
-
-  return (
-    <header style={config.styles.topbar}>
-      <button className={mobileClassMap[role]} onClick={onMenuClick} style={config.styles.mobileToggle}>
-        <MenuIcon />
-      </button>
-      <div>
-        <h1 style={config.styles.topbarGreeting}>{title ?? "ViaScholar"}</h1>
-        <p style={config.styles.topbarSub}>{subtitle ?? ""}</p>
-      </div>
-      <div style={config.styles.topbarRight}>
-        <div className={searchClassMap[role]} style={config.styles.searchBox}>
-          <SearchIcon />
-          <input placeholder={config.searchPlaceholder} style={config.styles.searchInput} />
-        </div>
-        <button style={config.styles.bellBtn}>
-          <BellIcon />
-          <span style={{ ...config.styles.bellDot, background: AMBER }} />
-        </button>
-      </div>
-    </header>
-  );
-}
-
 export function AdminSidebar(props: Omit<SidebarProps, "role">) {
   return <Sidebar {...props} role="admin" />;
-}
-
-export function AdminTopBar(props: Omit<TopBarProps, "role">) {
-  return <TopBar {...props} role="admin" />;
 }
 
 export function CoordinatorSidebar(props: Omit<SidebarProps, "role">) {
   return <Sidebar {...props} role="coordinator" />;
 }
 
-export function CoordinatorTopBar(props: Omit<TopBarProps, "role">) {
-  return <TopBar {...props} role="coordinator" />;
-}
-
 export function GrantorSidebar(props: Omit<SidebarProps, "role">) {
   return <Sidebar {...props} role="grantor" />;
 }
 
-export function GrantorTopBar(props: Omit<TopBarProps, "role">) {
-  return <TopBar {...props} role="grantor" />;
-}
-
 export function ScholarSidebar(props: Omit<SidebarProps, "role">) {
   return <Sidebar {...props} role="scholar" />;
-}
-
-export function ScholarTopBar(props: Omit<TopBarProps, "role">) {
-  return <TopBar {...props} role="scholar" />;
 }

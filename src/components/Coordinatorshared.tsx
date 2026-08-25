@@ -237,16 +237,16 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { key: "home", label: "Home", icon: <HomeIcon />, href: "/coorDashboard" },
-  { key: "applicants", label: "Applicants", icon: <PeopleIcon />, href: "/coorApplicants", badge: 12 },
-  { key: "meeting", label: "Meeting", icon: <InterviewIcon />, href: "/coorMeeting", badge: 4 },
-  { key: "monitor", label: "Monitor", icon: <MonitorIcon />, href: "/coorMonitor" },
-  { key: "payment", label: "Payment", icon: <PaymentsIcon />, href: "/coorPayment", badge: 2 },
-  { key: "archive", label: "Archive", icon: <ArchiveIcon />, href: "/coorArchive" },
-  { key: "reports", label: "Reports", icon: <ReportsIcon />, href: "/coorReports" },
-  { key: "message", label: "Message", icon: <MailIcon />, href: "/coorMessage", badge: 3 },
-  { key: "settings", label: "Settings", icon: <SettingsIcon />, href: "/coorSettings" },
-  { key: "profile", label: "Profile", icon: <ProfileIcon />, href: "/coorProfile" },
+  { key: "home", label: "Home", icon: <HomeIcon />, href: "/CoordinatorDashboard" },
+  { key: "applicants", label: "Applicants", icon: <PeopleIcon />, href: "/CoordinatorApplicants", badge: 12 },
+  { key: "meeting", label: "Meeting", icon: <InterviewIcon />, href: "/CoordinatorMeeting", badge: 4 },
+  { key: "monitor", label: "Monitor", icon: <MonitorIcon />, href: "/CoordinatorMonitor" },
+  { key: "payment", label: "Payment", icon: <PaymentsIcon />, href: "/CoordinatorPayment", badge: 2 },
+  { key: "archive", label: "Archive", icon: <ArchiveIcon />, href: "/CoordinatorArchive" },
+  { key: "reports", label: "Reports", icon: <ReportsIcon />, href: "/CoordinatorReports" },
+  { key: "message", label: "Message", icon: <MailIcon />, href: "/CoordinatorMessage", badge: 3 },
+  { key: "settings", label: "Settings", icon: <SettingsIcon />, href: "/CoordinatorSettings" },
+  { key: "profile", label: "Profile", icon: <ProfileIcon />, href: "/CoordinatorProfile" },
 ];
 
 export const APPLICANTS: Applicant[] = [

@@ -1,16 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
-import { usePathname } from "next/navigation";
-import { GlobalStyles, TITLES, s } from "@/components/Coordinatorshared";
-import { CoordinatorSidebar, CoordinatorTopBar } from "@/components/Sidebar";
+import React from "react";
+import { GlobalStyles, s } from "@/components/Coordinatorshared";
+import { CoordinatorSidebar } from "@/components/Sidebar";
+import { SidebarProvider, useSidebar } from "@/components/SidebarContext";
 
-export default function CoordinatorLayout({ children }: { children: React.ReactNode }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const pathname = usePathname();
-
-  const [title, subtitle] = TITLES[pathname] ?? ["ViaScholar", ""];
-  const isWideContent = pathname === "/coorProfile" || pathname === "/coorMessage";
+function LayoutBody({ children }: { children: React.ReactNode }) {
+  const { mobileOpen } = useSidebar();
 
   return (
     <div className="vc">
@@ -19,12 +15,17 @@ export default function CoordinatorLayout({ children }: { children: React.ReactN
         <CoordinatorSidebar mobileOpen={mobileOpen} />
 
         <main className="vc-main" style={s.main}>
-          <CoordinatorTopBar onMenuClick={() => setMobileOpen((v) => !v)} title={title} subtitle={subtitle} />
-          <div style={{ ...s.mainContent, padding: isWideContent ? "32px 40px 48px" : s.mainContent.padding }}>
-            {children}
-          </div>
+          {children}
         </main>
       </div>
     </div>
+  );
+}
+
+export default function CoordinatorLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <SidebarProvider>
+      <LayoutBody>{children}</LayoutBody>
+    </SidebarProvider>
   );
 }
