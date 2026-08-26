@@ -1,4 +1,11 @@
 import React, { CSSProperties, ReactNode } from "react";
+import {
+  Home, Users, Activity, BarChart3, Archive, Mail, Settings, User,
+  MessageCircle, Briefcase, Calendar, CheckCircle2, XCircle, Bell,
+  Search, Menu, LogOut, ArrowRight, GraduationCap, Send, Camera,
+  Download, TrendingUp, TrendingDown, Heart, MessageSquare, Trash2,
+  CreditCard,
+} from "lucide-react";
 
 // ============================================================
 // GLOBAL STYLES
@@ -93,16 +100,16 @@ export function GlobalStyles() {
 // DESIGN TOKENS
 // ============================================================
 //
-// Three-color brand palette: deep navy, forest green, and warm gold.
-// NAVY carries headings, primary text, and structural elements. GREEN
-// is the "positive / success" accent (on-track scholars, approvals,
-// growth). AMBER is the single warm highlight — CTAs, active states,
-// key numbers — used sparingly so it still reads as an accent rather
-// than a background color. Everything else (CREAM, WHITE, GRAY, LINE,
-// TINT) is neutral scaffolding that lets the three brand colors stand
-// out instead of competing with each other.
+// Brand palette locked to the ViaScholar logo: deep green (#0a4f42)
+// and warm gold (#F1B71E). NAVY, GREEN, and GOOD all resolve to the
+// same logo green so headings, primary actions, and "on track" status
+// share one color. AMBER is the single warm highlight — CTAs, active
+// states, key numbers. WARN and BAD stay separate (amber-brown / red)
+// so "needs attention" and "at risk" scholars remain distinguishable
+// from "on track" in tables and tags. Everything else (CREAM, WHITE,
+// GRAY, LINE, TINT) is neutral scaffolding.
 
-export const NAVY = "#1E3A5F";
+export const NAVY = "#0a4f42";
 export const CREAM = "#FFFFFF";
 export const AMBER = "#F1B71E";
 export const AMBER_BG = "#FCEEC4";
@@ -110,9 +117,9 @@ export const WHITE = "#FFFFFF";
 export const GRAY = "#6B6B66";
 export const LINE = "#DFE4EA";
 export const TINT = "#EEF1F5";
-export const GREEN = "#1E7B4D";
+export const GREEN = "#0a4f42";
 export const GREEN_BG = "#DDEEE3";
-export const GOOD = "#1E7B4D";
+export const GOOD = "#0a4f42";
 export const GOOD_BG = "#DDEEE3";
 export const WARN = "#8A6410";
 export const WARN_BG = "#FCEEC4";
@@ -127,37 +134,37 @@ export const SHADOW_MD = "0 10px 28px rgba(30, 58, 95, 0.13)";
 export const BORDER_SUBTLE = "1px solid rgba(30, 58, 95, 0.10)";
 
 // ============================================================
-// ICONS
+// ICONS (lucide-react)
 // ============================================================
 
-export function HomeIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /></svg>); }
-export function PeopleIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="8" r="3.2" /><path d="M3 19c0-3.2 2.7-5.6 6-5.6s6 2.4 6 5.6" /><circle cx="17" cy="8.5" r="2.6" /><path d="M21 19c0-2.6-1.7-4.7-4-5.3" /></svg>); }
-export function MonitorIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18" /><path d="M7 14l4-4 3 3 5-6" /></svg>); }
-export function ReportsIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M8 16v-4M12 16V8M16 16v-7" /></svg>); }
-export function ArchiveIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="5" rx="1.5" /><path d="M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9" /><path d="M10 13h4" /></svg>); }
-export function MailIcon({ small }: { small?: boolean }) { const sz = small ? 16 : 19; return (<svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>); }
-export function SettingsIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.51.99.9 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>); }
-export function ProfileIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7" /></svg>); }
-export function ForumIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" /></svg>); }
-export function BriefcaseIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18" /></svg>); }
-export function CalendarIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></svg>); }
-export function CheckCircleIcon({ small }: { small?: boolean }) { const sz = small ? 16 : 19; return (<svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M8.5 12.5l2.2 2.2 5-5.4" /></svg>); }
-export function XCircleIcon() { return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M9 9l6 6M15 9l-6 6" /></svg>); }
-export function BellIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={NAVY} strokeWidth="2"><path d="M6 10a6 6 0 1 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10z" /><path d="M9.5 18a2.5 2.5 0 0 0 5 0" /></svg>); }
-export function SearchIcon() { return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7a7a74" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>); }
-export function MenuIcon() { return (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={NAVY} strokeWidth="2"><path d="M4 6h16M4 12h16M4 18h16" /></svg>); }
-export function LogoutIcon() { return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" /></svg>); }
-export function ArrowRightIcon() { return (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M13 6l6 6-6 6" /></svg>); }
-export function GradCapIcon() { return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3 1 8l11 5 9-4.09V17h2V8L12 3z" fill="white" /><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" fill="white" /></svg>); }
-export function SendIcon() { return (<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z" /></svg>); }
-export function CameraIcon() { return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>); }
-export function DownloadIcon() { return (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v12M7 11l5 5 5-5M5 21h14" /></svg>); }
-export function TrendUpIcon() { return (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 17l6-6 4 4 8-8" /><path d="M17 7h4v4" /></svg>); }
-export function TrendDownIcon() { return (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 7l6 6 4-4 8 8" /><path d="M17 17h4v-4" /></svg>); }
-export function HeartIcon({ filled }: { filled?: boolean }) { return (<svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? AMBER : "none"} stroke={filled ? AMBER : "currentColor"} strokeWidth="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" /></svg>); }
-export function CommentIcon() { return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" /></svg>); }
-export function TrashIcon() { return (<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6" /></svg>); }
-export function PaymentsIcon() { return (<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="6" width="20" height="13" rx="2.2" /><path d="M2 10.5h20" /><circle cx="7" cy="15" r="1.2" fill="currentColor" stroke="none" /></svg>); }
+export function HomeIcon() { return <Home size={19} strokeWidth={2} />; }
+export function PeopleIcon() { return <Users size={19} strokeWidth={2} />; }
+export function MonitorIcon() { return <Activity size={19} strokeWidth={2} />; }
+export function ReportsIcon() { return <BarChart3 size={19} strokeWidth={2} />; }
+export function ArchiveIcon() { return <Archive size={19} strokeWidth={2} />; }
+export function MailIcon({ small }: { small?: boolean }) { return <Mail size={small ? 16 : 19} strokeWidth={2} />; }
+export function SettingsIcon() { return <Settings size={19} strokeWidth={2} />; }
+export function ProfileIcon() { return <User size={19} strokeWidth={2} />; }
+export function ForumIcon() { return <MessageCircle size={19} strokeWidth={2} />; }
+export function BriefcaseIcon() { return <Briefcase size={19} strokeWidth={2} />; }
+export function CalendarIcon() { return <Calendar size={19} strokeWidth={2} />; }
+export function CheckCircleIcon({ small }: { small?: boolean }) { return <CheckCircle2 size={small ? 16 : 19} strokeWidth={2} />; }
+export function XCircleIcon() { return <XCircle size={16} strokeWidth={2} />; }
+export function BellIcon() { return <Bell size={19} strokeWidth={2} color={NAVY} />; }
+export function SearchIcon() { return <Search size={16} strokeWidth={2} color="#7a7a74" />; }
+export function MenuIcon() { return <Menu size={20} strokeWidth={2} color={NAVY} />; }
+export function LogoutIcon() { return <LogOut size={16} strokeWidth={2} />; }
+export function ArrowRightIcon() { return <ArrowRight size={14} strokeWidth={2} />; }
+export function GradCapIcon() { return <GraduationCap size={16} strokeWidth={2} color="white" fill="white" />; }
+export function SendIcon() { return <Send size={17} strokeWidth={2} />; }
+export function CameraIcon() { return <Camera size={16} strokeWidth={2} color="white" />; }
+export function DownloadIcon() { return <Download size={14} strokeWidth={2} />; }
+export function TrendUpIcon() { return <TrendingUp size={14} strokeWidth={2} />; }
+export function TrendDownIcon() { return <TrendingDown size={14} strokeWidth={2} />; }
+export function HeartIcon({ filled }: { filled?: boolean }) { return <Heart size={16} strokeWidth={2} fill={filled ? AMBER : "none"} color={filled ? AMBER : "currentColor"} />; }
+export function CommentIcon() { return <MessageSquare size={16} strokeWidth={2} />; }
+export function TrashIcon() { return <Trash2 size={15} strokeWidth={2} />; }
+export function PaymentsIcon() { return <CreditCard size={19} strokeWidth={2} />; }
 export function ToggleIcon({ on }: { on: boolean }) {
   return (
     <span style={{ width: 42, height: 24, borderRadius: 999, background: on ? AMBER : LINE, display: "inline-flex", alignItems: "center", padding: 3, transition: "background-color 0.15s ease" }}>

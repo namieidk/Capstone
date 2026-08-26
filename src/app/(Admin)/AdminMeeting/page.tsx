@@ -16,6 +16,7 @@ import {
   AMBER_BG,
   WARN_BG,
   GOOD,
+  GOOD_BG,
   WARN,
   BORDER_SUBTLE,
   SHADOW_SM,
@@ -235,9 +236,6 @@ export default function AdminMeetingPage() {
               style={s.searchInput}
             />
           </div>
-          <button onClick={openBookModal} style={{ ...s.continueBtnSmall, whiteSpace: "nowrap" }}>
-            <CalendarIcon /> Book a meeting
-          </button>
           <button style={s.bellBtn}>
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
@@ -251,7 +249,7 @@ export default function AdminMeetingPage() {
           <div className="meeting-scroll-col" style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, boxShadow: SHADOW_SM, padding: "28px 30px 32px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 26 }}>
               <div>
-                <p style={{ fontSize: "0.76rem", fontWeight: 700, letterSpacing: "0.08em", color: "#8A6410", marginBottom: 4 }}>
+                <p style={{ fontSize: "0.76rem", fontWeight: 700, letterSpacing: "0.08em", color: WARN, marginBottom: 4 }}>
                   {selectedLabel}
                 </p>
                 <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.5rem", fontWeight: 700, color: NAVY }}>{selectedDateFull}</h2>
@@ -474,7 +472,7 @@ export default function AdminMeetingPage() {
               </button>
             </div>
 
-            <button className="view-all-link" onClick={() => setShowAllDrawer(true)} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", marginTop: 16, fontSize: "0.86rem", fontWeight: 700, color: "#8A6410" }}>
+            <button className="view-all-link" onClick={() => setShowAllDrawer(true)} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", marginTop: 16, fontSize: "0.86rem", fontWeight: 700, color: WARN }}>
               View all meetings <span aria-hidden>→</span>
             </button>
           </aside>
@@ -540,7 +538,7 @@ export default function AdminMeetingPage() {
               {filteredCombined.map((m) => {
                 const isHosting = m.kind === "hosting";
                 const statusColor = m.status === "confirmed" ? GOOD : WARN;
-                const statusBg = m.status === "confirmed" ? "#DDEEE3" : WARN_BG;
+                const statusBg = m.status === "confirmed" ? GOOD_BG : WARN_BG;
                 return (
                   <button
                     key={`${m.kind}-${m.id}`}
@@ -552,7 +550,7 @@ export default function AdminMeetingPage() {
                     style={{ display: "flex", alignItems: "center", gap: 14, background: TINT, borderRadius: 14, padding: "14px 16px", textAlign: "left", width: "100%" }}
                   >
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", background: WHITE, borderRadius: 10, padding: "8px 12px", minWidth: 58, flexShrink: 0 }}>
-                      <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "#8A6410", textTransform: "uppercase" }}>
+                      <span style={{ fontSize: "0.68rem", fontWeight: 700, color: WARN, textTransform: "uppercase" }}>
                         {MONTH_ABBR[m.dateObj.getMonth()]}
                       </span>
                       <span style={{ fontSize: "1.05rem", fontWeight: 700, color: NAVY }}>{m.dateObj.getDate()}</span>

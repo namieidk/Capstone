@@ -4,18 +4,20 @@ import { CSSProperties } from "react";
 // DESIGN TOKENS
 // ============================================================
 
-export const NAVY = "#14213A";
-export const CREAM = "#F8F4EA";
-export const AMBER = "#C9943D";
-export const AMBER_BG = "#F3E6C8";
+export const NAVY = "#0a4f42";
+export const CREAM = "#FFFFFF";
+export const AMBER = "#F1B71E";
+export const AMBER_BG = "#FCEEC4";
 export const WHITE = "#FFFFFF";
 export const GRAY = "#6B6B66";
-export const LINE = "#E4DCC8";
-export const TINT = "#F4F0E6";
-export const GOOD = "#6b8a3e";
-export const GOOD_BG = "#E9F0DC";
-export const WARN = "#a17a1f";
-export const WARN_BG = "#F3E6C8";
+export const LINE = "#DFE4EA";
+export const TINT = "#EEF1F5";
+export const GREEN = "#0a4f42";
+export const GREEN_BG = "#DDEEE3";
+export const GOOD = "#0a4f42";
+export const GOOD_BG = "#DDEEE3";
+export const WARN = "#8A6410";
+export const WARN_BG = "#FCEEC4";
 export const BAD = "#8a3a2e";
 export const BAD_BG = "#F6E4DF";
 

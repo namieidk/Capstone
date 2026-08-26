@@ -204,9 +204,9 @@ export function Sidebar({ mobileOpen, role = "scholar" }: SidebarProps) {
         </span>
       </div>
 
-      {/* Nav list is the only part allowed to scroll, and only if it ever
-          overflows the available height — logo and user card never move. */}
-      <nav style={{ ...config.styles.sidebarNav, flexGrow: 1, minHeight: 0, overflowY: "auto" }}>
+      {/* Nav list no longer scrolls independently — it grows to fit its
+          content and the logo/user card stay pinned top and bottom. */}
+      <nav style={{ ...config.styles.sidebarNav, flexGrow: 1, minHeight: 0, overflow: "visible" }}>
         {config.navItems.map((item) => {
           const isActive = pathname === item.href;
           return (

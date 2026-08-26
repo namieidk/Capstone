@@ -116,8 +116,6 @@ export default function AdminDashboard() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&display=swap');
         .tile { transition: box-shadow 0.15s ease, transform 0.15s ease; cursor: pointer; }
         .tile:hover { box-shadow: 0 10px 28px rgba(30,58,95,0.12); transform: translateY(-2px); }
-        .row:hover { background-color: ${TINT}; }
-        .row { transition: background-color 0.12s ease; }
         .iconring { transition: background-color 0.2s ease, border-color 0.2s ease; }
         .tile:hover .iconring { background: var(--ring-color); border-color: var(--ring-color); }
         .tile:hover .iconring svg { color: ${WHITE} !important; }
@@ -242,10 +240,6 @@ export default function AdminDashboard() {
             {/* Chart card */}
             <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "28px 30px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
-                <div>
-                  <p style={{ margin: "0 0 8px", fontSize: 15.5, color: "#7a7a74", fontWeight: 600 }}>Approved scholars</p>
-                  <p style={{ margin: 0, fontSize: 40, fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif" }}>87</p>
-                </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
                   <Legend color={AMBER} label="Approved" />
                   <Legend color={GREEN} label="Submitted" dashed />
@@ -259,6 +253,10 @@ export default function AdminDashboard() {
                   >
                     Week <ChevronDown size={14} />
                   </button>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <p style={{ margin: "0 0 8px", fontSize: 15.5, color: "#7a7a74", fontWeight: 600 }}>Approved scholars</p>
+                  <p style={{ margin: 0, fontSize: 40, fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif" }}>87</p>
                 </div>
               </div>
 
@@ -326,7 +324,6 @@ export default function AdminDashboard() {
                 return (
                   <div
                     key={i}
-                    className="row"
                     style={{
                       display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
                       padding: "14px 8px", borderRadius: 10,
@@ -351,17 +348,15 @@ export default function AdminDashboard() {
               <div
                 style={{
                   background: WHITE, border: BORDER_SUBTLE, boxShadow: SHADOW_SM, borderRadius: 18,
-                  padding: "26px 24px", color: NAVY, display: "flex", flexDirection: "column", justifyContent: "space-between",
+                  padding: "26px 24px", color: NAVY, display: "flex", flexDirection: "column",
                 }}
               >
-                <div>
-                  <p style={{ margin: "0 0 20px", fontSize: 16.5, fontWeight: 700, fontFamily: "'Inter', sans-serif", color: NAVY }}>
-                    Atty. Ramon Castillo
-                  </p>
-                  <p style={{ margin: "0 0 4px", fontSize: 12.5, color: "#9a9a94", fontWeight: 600 }}>Scholarship fund</p>
-                  <p style={{ margin: 0, fontSize: 26, fontWeight: 700, fontFamily: "'Inter', sans-serif", color: NAVY }}>₱6.4M</p>
-                </div>
-                <div>
+                <p style={{ margin: "0 0 18px", fontSize: 16.5, fontWeight: 700, fontFamily: "'Inter', sans-serif", color: NAVY }}>
+                  Atty. Ramon Castillo
+                </p>
+                <p style={{ margin: "0 0 4px", fontSize: 12.5, color: "#9a9a94", fontWeight: 600 }}>Scholarship fund</p>
+                <p style={{ margin: "0 0 22px", fontSize: 26, fontWeight: 700, fontFamily: "'Inter', sans-serif", color: NAVY }}>₱6.4M</p>
+                <div style={{ marginTop: "auto", paddingTop: 14, borderTop: `1px solid ${TINT}` }}>
                   <p style={{ margin: "0 0 4px", fontSize: 14, letterSpacing: "0.05em", fontWeight: 700, color: "#7A5C0A" }}>
                     BATCH 14 · CRDC
                   </p>

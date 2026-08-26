@@ -56,7 +56,7 @@ export function GlobalStyles() {
 // Matched to Adminshared's palette: deep navy + warm gold accent,
 // with green standing in as the "good/positive" tone.
 
-export const NAVY = "#1E3A5F";
+export const NAVY = "#0a4f42";
 export const CREAM = "#FFFFFF";
 export const AMBER = "#F1B71E";
 export const AMBER_BG = "#FCEEC4";
@@ -64,9 +64,9 @@ export const WHITE = "#FFFFFF";
 export const GRAY = "#6B6B66";
 export const LINE = "#DFE4EA";
 export const TINT = "#EEF1F5";
-export const GREEN = "#1E7B4D";
+export const GREEN = "#0a4f42";
 export const GREEN_BG = "#DDEEE3";
-export const GOOD = "#1E7B4D";
+export const GOOD = "#0a4f42";
 export const GOOD_BG = "#DDEEE3";
 export const WARN = "#8A6410";
 export const WARN_BG = "#FCEEC4";

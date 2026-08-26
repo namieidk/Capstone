@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { Eye, ChevronLeft, ChevronRight, ListFilter, Check } from "lucide-react";
 import {
   XCircleIcon,
   ArchiveIcon,
@@ -17,6 +19,7 @@ import {
   AMBER,
   BORDER_SUBTLE,
   SHADOW_SM,
+  SHADOW_MD,
   MenuIcon,
   BellIcon,
   SearchIcon,
@@ -29,10 +32,36 @@ const ARCHIVE_FILTERS: (ArchivedScholar["status"] | "All")[] = ["All", "Graduate
 export default function AdminArchivePage() {
   const { toggleMobile } = useSidebar();
   const [filter, setFilter] = useState<ArchivedScholar["status"] | "All">("All");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
+  const filterBtnRef = useRef<HTMLButtonElement>(null);
+  const filterMenuRef = useRef<HTMLDivElement>(null);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
   const [selected, setSelected] = useState<ArchivedScholar | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      const target = e.target as Node;
+      const insideTrigger = filterRef.current && filterRef.current.contains(target);
+      const insideMenu = filterMenuRef.current && filterMenuRef.current.contains(target);
+      if (!insideTrigger && !insideMenu) {
+        setFilterOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleFilterToggle = () => {
+    if (!filterOpen && filterBtnRef.current) {
+      const rect = filterBtnRef.current.getBoundingClientRect();
+      setMenuPos({ top: rect.bottom + 8, left: rect.left + rect.width / 2 });
+    }
+    setFilterOpen((o) => !o);
+  };
 
   const filtered = ARCHIVED_SCHOLARS.filter((a) => {
     const matchesStatus = filter === "All" || a.status === filter;
@@ -46,6 +75,7 @@ export default function AdminArchivePage() {
   const handleFilterChange = (f: ArchivedScholar["status"] | "All") => {
     setFilter(f);
     setPage(1);
+    setFilterOpen(false);
   };
 
   const counts: Record<string, number> = {
@@ -58,13 +88,34 @@ export default function AdminArchivePage() {
   return (
     <div>
       <style>{`
-        .filter-pill { transition: border-color 0.15s ease, background 0.15s ease; }
-        .filter-pill:hover { border-color: rgba(30, 58, 95, 0.35); }
-        .filter-select:focus { outline: none; }
-        .filter-select option { color: ${NAVY}; background: ${WHITE}; }
+        .filter-trigger { transition: background-color 0.15s ease, transform 0.1s ease; }
+        .filter-trigger:hover { filter: brightness(0.9); }
+        .filter-option { transition: background-color 0.12s ease; }
+        .filter-option:hover { background-color: ${TINT}; }
+        .filter-trigger-wrap { position: relative; }
+        .filter-tooltip {
+          position: absolute;
+          bottom: -26px;
+          left: 50%;
+          transform: translateX(-50%) translateY(-4px);
+          background: transparent;
+          color: #F1B71E;
+          font-size: 0.68rem;
+          font-weight: 700;
+          padding: 0;
+          white-space: nowrap;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.15s ease, transform 0.15s ease;
+          z-index: 1001;
+        }
+        .filter-trigger-wrap:hover .filter-tooltip {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
       `}</style>
 
-      {/* ---------------- Page-level navbar (search + filter pill) ---------------- */}
+      {/* ---------------- Page-level navbar (search only — filter lives in the page body) ---------------- */}
       <header style={s.topbar}>
         <button className="va-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
@@ -74,18 +125,6 @@ export default function AdminArchivePage() {
           <p style={s.topbarSub}>Scholars who are no longer active, across all coordinators.</p>
         </div>
         <div style={{ ...s.topbarRight, gap: 10 }}>
-          <PillFilter>
-            <select
-              className="filter-select"
-              value={filter}
-              onChange={(e) => handleFilterChange(e.target.value as ArchivedScholar["status"] | "All")}
-              style={{ ...pillSelectStyle, minWidth: 180, width: 180 }}
-            >
-              {ARCHIVE_FILTERS.map((f) => (
-                <option key={f} value={f}>{`${f} (${counts[f]})`}</option>
-              ))}
-            </select>
-          </PillFilter>
           <div className="va-topbar-search" style={s.searchBox}>
             <SearchIcon />
             <input
@@ -108,19 +147,153 @@ export default function AdminArchivePage() {
 
       <div style={{ ...s.mainContent, padding: s.mainContent.padding }}>
         {/* ---------------- Table card, same shell/header/th/td treatment as Monitor ---------------- */}
-        <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 22px 8px", marginTop: 20 }}>
-          
+        <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "10px 22px 8px", marginTop: 20 }}>
+          {/* Status filter now lives inside the "View" column header, directly above the eye icons.
+              Every header gets the same-height slot above its label (spacer or button) so all six stay aligned.
+              gap bumped 10 -> 16 and header padding loosened so the icon row doesn't feel cramped against the label. */}
 
           <div className="va-table-scroll" style={{ width: "100%", overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${LINE}` }}>
-                  <th style={{ ...s.th, background: "none", padding: "14px 14px", textAlign: "center" }}>Scholar</th>
-                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>Track</th>
-                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>Coordinator</th>
-                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>Exited</th>
-                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>Status</th>
-                  <th style={{ ...s.th, background: "none", textAlign: "center" }}>View</th>
+                  <th style={{ ...s.th, background: "none", padding: "6px 14px", textAlign: "center" }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+                      <span style={{ width: 34, height: 34 }} />
+                      Scholar
+                    </div>
+                  </th>
+                  <th style={{ ...s.th, background: "none", padding: "6px 14px", textAlign: "center" }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+                      <span style={{ width: 34, height: 34 }} />
+                      Track
+                    </div>
+                  </th>
+                  <th style={{ ...s.th, background: "none", padding: "6px 14px", textAlign: "center" }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+                      <span style={{ width: 34, height: 34 }} />
+                      Coordinator
+                    </div>
+                  </th>
+                  <th style={{ ...s.th, background: "none", padding: "6px 14px", textAlign: "center" }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+                      <span style={{ width: 34, height: 34 }} />
+                      Exited
+                    </div>
+                  </th>
+                  <th style={{ ...s.th, background: "none", padding: "6px 14px", textAlign: "center" }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+                      <span style={{ width: 34, height: 34 }} />
+                      Status
+                    </div>
+                  </th>
+                  <th style={{ ...s.th, background: "none", padding: "6px 14px", textAlign: "center", position: "relative" }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+                      <div style={{ position: "relative" }} ref={filterRef}>
+                        <div className="filter-trigger-wrap">
+                          <button
+                            ref={filterBtnRef}
+                            onClick={handleFilterToggle}
+                            aria-label="Filter by status"
+                            aria-expanded={filterOpen}
+                            className="filter-trigger"
+                            style={{
+                              position: "relative",
+                              width: 34,
+                              height: 34,
+                              borderRadius: "50%",
+                              background: AMBER,
+                              filter: filterOpen ? "brightness(0.9)" : "none",
+                              border: "none",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              boxShadow: SHADOW_SM,
+                              flexShrink: 0,
+                              cursor: "pointer",
+                            }}
+                          >
+                            <ListFilter size={15} color={NAVY} />
+                            {filter !== "All" && (
+                              <span
+                                style={{
+                                  position: "absolute",
+                                  top: -2,
+                                  right: -2,
+                                  width: 9,
+                                  height: 9,
+                                  borderRadius: "50%",
+                                  background: NAVY,
+                                  border: `2px solid ${WHITE}`,
+                                }}
+                              />
+                            )}
+                          </button>
+                          <span className="filter-tooltip">Filter</span>
+                        </div>
+
+                        {filterOpen &&
+                          typeof document !== "undefined" &&
+                          createPortal(
+                            <div
+                              ref={filterMenuRef}
+                              role="listbox"
+                              style={{
+                                position: "fixed",
+                                top: menuPos.top,
+                                left: menuPos.left,
+                                transform: "translateX(-50%)",
+                                width: 200,
+                                background: WHITE,
+                                borderRadius: 14,
+                                border: BORDER_SUBTLE,
+                                boxShadow: SHADOW_MD,
+                                padding: 6,
+                                zIndex: 1000,
+                                textAlign: "left",
+                              }}
+                            >
+                              {ARCHIVE_FILTERS.map((f) => {
+                                const isActive = filter === f;
+                                return (
+                                  <button
+                                    key={f}
+                                    role="option"
+                                    aria-selected={isActive}
+                                    onClick={() => handleFilterChange(f)}
+                                    className="filter-option"
+                                    style={{
+                                      width: "100%",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "space-between",
+                                      gap: 10,
+                                      padding: "10px 12px",
+                                      borderRadius: 9,
+                                      background: isActive ? TINT : "transparent",
+                                      fontSize: "0.86rem",
+                                      fontWeight: isActive ? 700 : 500,
+                                      color: isActive ? NAVY : "#4a4a45",
+                                      textAlign: "left",
+                                      cursor: "pointer",
+                                      textTransform: "none",
+                                      letterSpacing: "normal",
+                                    }}
+                                  >
+                                    <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                      {f}
+                                      <span style={{ fontSize: "0.76rem", fontWeight: 500, color: "#9a9a94" }}>({counts[f]})</span>
+                                    </span>
+                                    {isActive && <Check size={14} color={NAVY} strokeWidth={2.5} />}
+                                  </button>
+                                );
+                              })}
+                            </div>,
+                            document.body
+                          )}
+                      </div>
+                      View
+                    </div>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -171,7 +344,7 @@ export default function AdminArchivePage() {
                           background: WHITE, color: "#7a7a74", cursor: "pointer",
                         }}
                       >
-                        <EyeIcon />
+                        <Eye size={15} />
                       </button>
                     </td>
                   </tr>
@@ -198,16 +371,16 @@ export default function AdminArchivePage() {
                 }}
                 aria-label="Previous page"
               >
-                <ChevronLeftIcon />
+                <ChevronLeft size={14} />
               </button>
               {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
                 <button
                   key={num}
                   onClick={() => setPage(num)}
                   style={{
-                    width: 32, height: 32, borderRadius: 8, border: `1px solid ${num === currentPage ? NAVY : LINE}`,
-                    background: num === currentPage ? NAVY : WHITE, color: num === currentPage ? WHITE : "#55554f",
-                    fontSize: "0.82rem", fontWeight: 600, cursor: "pointer",
+                    width: 32, height: 32, borderRadius: 8, border: `1px solid ${num === currentPage ? AMBER : LINE}`,
+                    background: num === currentPage ? AMBER : WHITE, color: num === currentPage ? NAVY : "#55554f",
+                    fontSize: "0.82rem", fontWeight: 700, cursor: "pointer",
                   }}
                 >
                   {num}
@@ -223,7 +396,7 @@ export default function AdminArchivePage() {
                 }}
                 aria-label="Next page"
               >
-                <ChevronRightIcon />
+                <ChevronRight size={14} />
               </button>
             </div>
           )}
@@ -277,80 +450,4 @@ export default function AdminArchivePage() {
   );
 }
 
-/* ---------------- Pill filter (rounded navy dropdown, matches Admin Monitor / Employee) ---------------- */
-
-const pillSelectStyle: React.CSSProperties = {
-  border: "none",
-  borderRadius: 999,
-  padding: "8px 28px 8px 14px",
-  fontSize: "0.8rem",
-  color: WHITE,
-  width: 180,
-  minWidth: 180,
-  height: 38,
-  background: "transparent",
-  outline: "none",
-  fontFamily: "'Inter', sans-serif",
-  appearance: "none",
-  WebkitAppearance: "none",
-  MozAppearance: "none",
-  cursor: "pointer",
-  fontWeight: 500,
-  textAlign: "center",
-  textAlignLast: "center",
-};
-
-function ChevronIcon() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={WHITE} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 9l6 6 6-6" />
-    </svg>
-  );
-}
-
-function PillFilter({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      className="filter-pill"
-      style={{
-        position: "relative",
-        display: "inline-flex",
-        alignItems: "center",
-        background: "#1E3A5F",
-        border: "1.5px solid #1E3A5F",
-        borderRadius: 999,
-        boxShadow: SHADOW_SM,
-      }}
-    >
-      {children}
-      <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-        <ChevronIcon />
-      </span>
-    </div>
-  );
-}
-
-function EyeIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
-
-function ChevronLeftIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15 18l-6-6 6-6" />
-    </svg>
-  );
-}
-
-function ChevronRightIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 18l6-6-6-6" />
-    </svg>
-  );
-}
+/* ---------------- (icon-only status filter dropdown lives inline in the component above) ---------------- */
