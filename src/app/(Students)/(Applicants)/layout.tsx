@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { GlobalStyles, s } from "../../../components/StudentShared";
-import { Sidebar, TopBar } from "../../../components/Sidebar";
+import { Sidebar } from "../../../components/Sidebar";
+import { SidebarProvider, useSidebar } from "../../../components/SidebarContext";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
+function LayoutShell({ children }: { children: React.ReactNode }) {
+  const { mobileOpen } = useSidebar();
 
   return (
     <div className="vd">
@@ -14,10 +15,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Sidebar mobileOpen={mobileOpen} role="student" />
 
         <main className="vd-main" style={s.main}>
-          <TopBar onMenuClick={() => setMobileOpen((v) => !v)} role="student" />
-          <div style={s.mainContent}>{children}</div>
+          {children}
         </main>
       </div>
     </div>
+  );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <SidebarProvider>
+      <LayoutShell>{children}</LayoutShell>
+    </SidebarProvider>
   );
 }

@@ -48,10 +48,15 @@ import {
 // since green is the dominant color in the logo itself. Amber is kept
 // down to two jobs only (the logo's star accent, and count badges) so
 // it still reads as a highlight instead of a third competing base color.
+//
+// SIDEBAR_BG is intentionally a distinct, deeper green shade from GREEN
+// (which other components/styles still use for tints and accents) so the
+// logo mark has real contrast against the rail instead of blending in.
 // ============================================================
 
 const NAVY = "#1E3A5F";
 const GREEN = "#0a4f42";
+const SIDEBAR_BG = "#082e26"; // deeper shade than GREEN, gives the logo contrast
 const AMBER = "#F1B71E";
 const GREEN_TINT = "#E3F0E8"; // active nav-item background
 const WHITE = "#FFFFFF";
@@ -149,7 +154,7 @@ export function Sidebar({ mobileOpen, role = "scholar" }: SidebarProps) {
       className={`${config.className} ${mobileOpen ? "is-open" : ""}`}
       style={{
         ...config.styles.sidebar,
-        background: GREEN,
+        background: SIDEBAR_BG,
         borderRight: "1px solid rgba(255,255,255,0.18)",
         // Pin the sidebar to the viewport instead of scrolling with the
         // page: fixed height + sticky positioning at the top, with its own
@@ -194,7 +199,7 @@ export function Sidebar({ mobileOpen, role = "scholar" }: SidebarProps) {
               height: "100%",
               objectFit: "contain",
               display: "block",
-              transform: "scale(1.35)",
+              transform: "scale(1.75)",
               filter: "drop-shadow(0 6px 12px rgba(18,45,39,0.12))",
             }}
           />
@@ -204,9 +209,9 @@ export function Sidebar({ mobileOpen, role = "scholar" }: SidebarProps) {
         </span>
       </div>
 
-      {/* Nav list no longer scrolls independently — it grows to fit its
-          content and the logo/user card stay pinned top and bottom. */}
-      <nav style={{ ...config.styles.sidebarNav, flexGrow: 1, minHeight: 0, overflow: "visible" }}>
+      {/* Nav list is the only part allowed to scroll, and only if it ever
+          overflows the available height — logo and user card never move. */}
+      <nav style={{ ...config.styles.sidebarNav, flexGrow: 1, minHeight: 0, overflowY: "auto" }}>
         {config.navItems.map((item) => {
           const isActive = pathname === item.href;
           return (

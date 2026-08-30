@@ -5,7 +5,7 @@ export function GlobalStyles() {
     <style>{`
       .vd * { margin: 0; padding: 0; box-sizing: border-box; }
       .vd {
-        background: #F8F4EA;
+        background: #FFFFFF;
         color: #2B2B28;
         font-family: 'Inter', -apple-system, sans-serif;
         font-weight: 400;
@@ -46,7 +46,7 @@ export function GlobalStyles() {
 }
 
 export const NAVY = "#14213A";
-export const CREAM = "#F8F4EA";
+export const CREAM = "#FFFFFF";
 export const AMBER = "#C9943D";
 export const AMBER_BG = "#F3E6C8";
 export const WHITE = "#FFFFFF";
@@ -76,15 +76,15 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { key: "dashboard", label: "Home", icon: <HomeIcon />, href: "/scholardashboard" },
+  { key: "dashboard", label: "Home", icon: <HomeIcon />, href: "/ScholarDashboard" },
   { key: "grade", label: "Grades", icon: <GradeIcon />, href: "/ScholarGrade" },
-  { key: "reports", label: "Reports", icon: <ReportsIcon />, href: "/scholarReports" },
-  { key: "message", label: "Messages", icon: <MailIcon />, href: "/scholarMessage" },
-  { key: "meeting", label: "Meetings", icon: <CalendarIcon />, href: "/scholarMeeting" },
-  { key: "forum", label: "Forum", icon: <ForumIcon />, href: "/SchoForum" },
+  { key: "reports", label: "Reports", icon: <ReportsIcon />, href: "/ScholarReports" },
+  { key: "message", label: "Messages", icon: <MailIcon />, href: "/ScholarMessage" },
+  { key: "meeting", label: "Meetings", icon: <CalendarIcon />, href: "/ScholarMeeting" },
+  { key: "forum", label: "Forum", icon: <ForumIcon />, href: "/ScholarForum" },
   { key: "payment", label: "Payment", icon: <PaymentIcon />, href: "/ScholarPayment" },
-  { key: "settings", label: "Settings", icon: <SettingsIcon />, href: "/scholarSettings" },
-  { key: "profile", label: "Profile", icon: <ProfileIcon />, href: "/schoProfile" },
+  { key: "settings", label: "Settings", icon: <SettingsIcon />, href: "/ScholarSettings" },
+  { key: "profile", label: "Profile", icon: <ProfileIcon />, href: "/ScholarProfile" },
 ];
 
 export interface ActivityItem {
@@ -131,13 +131,27 @@ export const GRADE_HISTORY: GradeTerm[] = [
 export const PREDICTED_GWA = 92.6;
 export const GWA_THRESHOLD = 90;
 
-export const GRADE_DOCUMENTS = [
-  { label: "Grades / Transcript of Records", file: "TOR_2026_Q2.pdf", size: "1.2 MB", status: "verified" as const },
-  { label: "Latest report card / Form 138", file: "form138_midyear.png", size: "640 KB", status: "verified" as const },
-  { label: "Mid-year grade report", file: "not yet submitted", size: "—", status: "pending" as const },
+// ---------- Certificate of Grades / Scholarship Continuation (required every semester) ----------
+
+export interface SemesterCertificate {
+  term: string;
+  file: string;
+  size: string;
+  submittedDate: string;
+  status: "verified" | "pending" | "not_submitted";
+}
+
+export const GRADE_CERTIFICATES: SemesterCertificate[] = [
+  { term: "Mid-year, 2025–2026", file: "not yet submitted", size: "—", submittedDate: "—", status: "not_submitted" },
+  { term: "1st Sem, 2025–2026", file: "cert_grades_1stsem_2025.pdf", size: "1.1 MB", submittedDate: "Jan 20, 2026", status: "verified" },
+  { term: "2nd Sem, 2024–2025", file: "cert_grades_2ndsem_2024.pdf", size: "980 KB", submittedDate: "Jun 15, 2025", status: "verified" },
 ];
 
-// ---------- Submissions (Statement of Account + Grade reports) ----------
+export const CURRENT_TERM_CERTIFICATE_STATUS: SemesterCertificate["status"] = "not_submitted";
+export const CURRENT_TERM_LABEL = "Mid-year, 2025–2026";
+export const CERTIFICATE_DUE_DATE = "Jul 10, 2026";
+
+// ---------- Submissions (kept for reference / other pages that may still use it) ----------
 
 export interface Submission {
   id: string;
@@ -150,11 +164,9 @@ export interface Submission {
 }
 
 export const SUBMISSION_HISTORY: Submission[] = [
-  { id: "5", term: "Mid-year, 2025–2026", type: "Statement of Account", file: "SOA_midyear2026.pdf", size: "480 KB", submittedDate: "Jun 28, 2026", status: "pending" },
+  { id: "5", term: "Mid-year, 2025–2026", type: "Grade Report", file: "not yet submitted", size: "—", submittedDate: "—", status: "pending" },
   { id: "4", term: "1st Sem, 2025–2026", type: "Grade Report", file: "grades_1stsem_2025.pdf", size: "1.1 MB", submittedDate: "Jan 20, 2026", status: "verified" },
-  { id: "3", term: "1st Sem, 2025–2026", type: "Statement of Account", file: "SOA_1stsem_2025.pdf", size: "410 KB", submittedDate: "Jan 20, 2026", status: "verified" },
   { id: "2", term: "2nd Sem, 2024–2025", type: "Grade Report", file: "grades_2ndsem_2024.pdf", size: "980 KB", submittedDate: "Jun 15, 2025", status: "verified" },
-  { id: "1", term: "2nd Sem, 2024–2025", type: "Statement of Account", file: "SOA_2ndsem_2024.pdf", size: "365 KB", submittedDate: "Jun 15, 2025", status: "verified" },
 ];
 
 // ---------- Messages ----------
@@ -298,7 +310,7 @@ export const FORUM_POSTS: ForumPost[] = [
   },
 ];
 
-// ---------- Payment ----------
+// ---------- Payment (per-semester tuition disbursement) ----------
 
 export interface PaymentRecord {
   term: string;
@@ -309,15 +321,14 @@ export interface PaymentRecord {
 }
 
 export const PAYMENT_HISTORY: PaymentRecord[] = [
-  { term: "Q3 2026", amount: "₱8,000", date: "Jul 15, 2026", status: "upcoming", method: "Bank transfer" },
-  { term: "Q2 2026", amount: "₱8,000", date: "Apr 15, 2026", status: "paid", method: "Bank transfer" },
-  { term: "Q1 2026", amount: "₱8,000", date: "Jan 15, 2026", status: "paid", method: "Bank transfer" },
-  { term: "Q4 2025", amount: "₱8,000", date: "Oct 15, 2025", status: "paid", method: "Bank transfer" },
+  { term: "Mid-year, 2025–2026", amount: "₱18,500", date: "Jul 15, 2026", status: "upcoming", method: "Direct to school" },
+  { term: "1st Sem, 2025–2026", amount: "₱18,500", date: "Jan 15, 2026", status: "paid", method: "Direct to school" },
+  { term: "2nd Sem, 2024–2025", amount: "₱17,800", date: "Jun 15, 2025", status: "paid", method: "Direct to school" },
 ];
 
 export const PAYMENT_SUMMARY = {
-  totalDisbursed: "₱24,000",
-  nextAmount: "₱8,000",
+  totalDisbursed: "₱36,300",
+  nextAmount: "₱18,500",
   nextDate: "Jul 15, 2026",
 };
 
@@ -344,9 +355,9 @@ export const SCHOLAR_DISBURSEMENT_MONTHLY: ScholarDisbursementMonth[] = [
   { month: "Jul", amount: 0 },
 ];
 
-// Scholar's own entitlement (annual stipend of ₱32,000)
-export const SCHOLAR_ANNUAL_STIPEND = 32_000;
-export const SCHOLAR_DISBURSED_TO_DATE = 24_000;
+// Scholar's own entitlement (annual tuition support, per semester)
+export const SCHOLAR_ANNUAL_STIPEND = 37_000;
+export const SCHOLAR_DISBURSED_TO_DATE = 18_500;
 export const SCHOLAR_REMAINING_STIPEND = SCHOLAR_ANNUAL_STIPEND - SCHOLAR_DISBURSED_TO_DATE;
 
 export interface ScholarReportKpi {
@@ -356,9 +367,9 @@ export interface ScholarReportKpi {
 }
 
 export const SCHOLAR_REPORT_KPIS: ScholarReportKpi[] = [
-  { label: "Annual stipend", value: "₱32,000", sub: "FY 2026 entitlement" },
-  { label: "Disbursed to date", value: "₱24,000", sub: "6 of 8 payments released" },
-  { label: "Remaining balance", value: "₱8,000", sub: "Due Q3 · Jul 15, 2026" },
+  { label: "Annual tuition support", value: "₱37,000", sub: "FY 2026 entitlement" },
+  { label: "Disbursed to date", value: "₱18,500", sub: "1 of 2 semester payments released" },
+  { label: "Remaining balance", value: "₱18,500", sub: "Due Mid-year · Jul 15, 2026" },
   { label: "Fund total budget", value: "₱1,000,000", sub: "₱998,000 allocated · ₱2,000 unallocated" },
 ];
 
@@ -372,9 +383,8 @@ export interface ProfileDocument {
 }
 
 export const PROFILE_DOCUMENTS: ProfileDocument[] = [
-  { label: "Grades / Transcript of Records", file: "TOR_2026_Q2.pdf", size: "1.2 MB", status: "verified" },
+  { label: "Certificate of Grades / Scholarship Continuation", file: "cert_grades_1stsem_2025.pdf", size: "1.1 MB", status: "verified" },
   { label: "Proof of family member's employment", file: "employment_certificate.jpg", size: "780 KB", status: "verified" },
-  { label: "Latest report card / Form 138", file: "form138_midyear.png", size: "640 KB", status: "verified" },
   { label: "Valid government ID", file: "national_id.jpg", size: "410 KB", status: "pending" },
 ];
 

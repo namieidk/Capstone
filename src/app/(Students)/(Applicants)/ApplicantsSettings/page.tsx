@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, ReactNode } from "react";
-import { ToggleIcon, NAVY, AMBER_BG, s, MenuIcon } from "../../../../components/ScholarShared";
+import { ToggleIcon, NAVY, s, MenuIcon } from "../../../../components/StudentShared";
 import { useSidebar } from "../../../../components/SidebarContext";
 
 interface SettingsSectionProps {
@@ -60,7 +60,7 @@ interface Toggles {
   publicProfile: boolean;
 }
 
-export default function Settings() {
+export default function SettingsPage() {
   const { toggleMobile } = useSidebar();
 
   const [toggles, setToggles] = useState<Toggles>({
@@ -77,7 +77,7 @@ export default function Settings() {
     <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       {/* ---------------- Page-level navbar ---------------- */}
       <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -91,7 +91,7 @@ export default function Settings() {
           <SettingsSection title="Notifications">
             <SettingsRow
               label="Email notifications"
-              desc="Get updates about your application and disbursements."
+              desc="Get updates about your application status and requirements."
               on={toggles.emailNotifs}
               onToggle={() => flip("emailNotifs")}
             />
@@ -128,7 +128,7 @@ export default function Settings() {
           <SettingsSection title="Privacy">
             <SettingsRow
               label="Public profile"
-              desc="Allow other scholars to view your forum activity and bio."
+              desc="Allow other applicants to view your forum activity and bio."
               on={toggles.publicProfile}
               onToggle={() => flip("publicProfile")}
             />

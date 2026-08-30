@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   XCircleIcon,
   MonitorIcon,
@@ -17,14 +17,53 @@ import {
   FundedScholar,
   GOOD,
   BAD,
+  NAVY,
+  WHITE,
+  LINE,
+  TINT,
+  AMBER,
   s,
+  MenuIcon,
+  SearchIcon,
+  BellIcon,
 } from "@/components/Grantorshared";
+import { useSidebar } from "@/components/SidebarContext";
+
+/* ------------------------------------------------------------------ */
+/* Local tokens not exported from Grantorshared                        */
+/* ------------------------------------------------------------------ */
+
+const BORDER_SUBTLE = `1px solid ${LINE}`;
+const SHADOW_SM = "0 1px 3px rgba(0,0,0,0.04)";
 
 type DrawerView = "overview" | "history";
 
 export default function GrantorMonitorPage() {
+  const { toggleMobile } = useSidebar();
+
   const [selected, setSelected] = useState<FundedScholar | null>(null);
   const [view, setView] = useState<DrawerView>("overview");
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const PAGE_SIZE = 10;
+
+  const query = search.trim().toLowerCase();
+
+  const filteredScholars = useMemo(
+    () =>
+      query
+        ? FUNDED_SCHOLARS.filter(
+            (sch) =>
+              sch.name.toLowerCase().includes(query) ||
+              sch.course.toLowerCase().includes(query)
+          )
+        : FUNDED_SCHOLARS,
+    [query]
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filteredScholars.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filteredScholars.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   function openScholar(sch: FundedScholar) {
     setSelected(sch);
@@ -36,62 +75,179 @@ export default function GrantorMonitorPage() {
     setView("overview");
   }
 
+  function handleSearchChange(value: string) {
+    setSearch(value);
+    setPage(1);
+  }
+
   return (
-    <div style={s.pageContentTop}>
-      <div className="vg-table-scroll" style={s.tableWrap}>
-        <table>
-          <thead>
-            <tr>
-              <th style={s.th}>Scholar</th>
-              <th style={s.th}>GWA</th>
-              <th style={s.th}>Documents</th>
-              <th style={s.th}>Disbursement</th>
-              <th style={s.th}>Status</th>
-              <th style={s.th}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {FUNDED_SCHOLARS.map((sch) => (
-              <tr key={sch.id} style={s.tr}>
-                <td style={s.td}>
-                  <div style={s.tdNameRow}>
-                    <span style={s.convoAvatar}>{sch.initials}</span>
-                    <div>
-                      <p style={s.tdName}>{sch.name}</p>
-                      <p style={s.tdSub}>{sch.course}</p>
-                    </div>
-                  </div>
-                </td>
-                <td style={s.td}>
-                  <span style={s.gwaTrendCell}>
-                    {sch.gwa}%{" "}
-                    {sch.trend === "up" ? (
-                      <span style={{ color: GOOD }}>
-                        <TrendUpIcon />
-                      </span>
-                    ) : (
-                      <span style={{ color: BAD }}>
-                        <TrendDownIcon />
-                      </span>
-                    )}
-                  </span>
-                </td>
-                <td style={s.td}>{sch.docs}</td>
-                <td style={s.td}>{sch.disbursement}</td>
-                <td style={s.td}>
-                  <span style={{ ...s.stageTag, background: HEALTH_TAG[sch.health].bg, color: HEALTH_TAG[sch.health].text }}>
-                    {HEALTH_TAG[sch.health].label}
-                  </span>
-                </td>
-                <td style={s.td}>
-                  <button onClick={() => openScholar(sch)} style={s.tableActionBtn}>
-                    View
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <style>{`
+        .filter-select:focus { outline: none; }
+      `}</style>
+
+      {/* ---------------- Page-level navbar ---------------- */}
+      <header style={{ ...s.topbar, flexShrink: 0 }}>
+        <button className="vg-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+          <MenuIcon />
+        </button>
+        <div>
+          <h1 style={s.topbarGreeting}>Monitor</h1>
+          <p style={s.topbarSub}>Scholars funded by your company and their current standing.</p>
+        </div>
+        <div style={s.topbarRight}>
+          <div className="vg-topbar-search" style={s.searchBox}>
+            <SearchIcon />
+            <input
+              placeholder="Search scholar name or course..."
+              style={s.searchInput}
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+            />
+          </div>
+          <button style={s.bellBtn}>
+            <BellIcon />
+            <span style={{ ...s.bellDot, background: AMBER }} />
+          </button>
+        </div>
+      </header>
+
+      <div style={{ ...s.mainContent, padding: s.mainContent.padding, flexGrow: 1, minHeight: 0, overflowY: "auto" }}>
+        <div style={s.pageContentTop}>
+          {/* ---------------- Table card ---------------- */}
+          <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 22px 8px" }}>
+
+            <div className="vg-table-scroll" style={{ width: "100%", overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ borderBottom: `1px solid ${LINE}` }}>
+                    <th style={{ ...s.th, background: "none", padding: "14px 14px", textAlign: "center" }}>Scholar</th>
+                    <th style={{ ...s.th, background: "none", textAlign: "center" }}>GWA</th>
+                    <th style={{ ...s.th, background: "none", textAlign: "center" }}>Documents</th>
+                    <th style={{ ...s.th, background: "none", textAlign: "center" }}>Disbursement</th>
+                    <th style={{ ...s.th, background: "none", textAlign: "center" }}>Status</th>
+                    <th style={{ ...s.th, background: "none", textAlign: "center" }}>View</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginated.map((sch, i) => (
+                    <tr
+                      key={sch.id}
+                      onClick={() => openScholar(sch)}
+                      style={{ borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`, cursor: "pointer", verticalAlign: "middle" }}
+                    >
+                      <td style={{ ...s.td, padding: "16px 14px", textAlign: "center" }}>
+                        <p style={s.tdName}>{sch.name}</p>
+                        <p style={s.tdSub}>{sch.course}</p>
+                      </td>
+                      <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>
+                        <span style={{ ...s.gwaTrendCell, justifyContent: "center" }}>
+                          {sch.gwa}%{" "}
+                          {sch.trend === "up" ? (
+                            <span style={{ color: GOOD }}>
+                              <TrendUpIcon />
+                            </span>
+                          ) : (
+                            <span style={{ color: BAD }}>
+                              <TrendDownIcon />
+                            </span>
+                          )}
+                        </span>
+                      </td>
+                      <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{sch.docs}</td>
+                      <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{sch.disbursement}</td>
+                      <td style={{ ...s.td, textAlign: "center" }}>
+                        <span
+                          style={{
+                            ...s.stageTag,
+                            background: HEALTH_TAG[sch.health].bg,
+                            color: HEALTH_TAG[sch.health].text,
+                            fontWeight: 600,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 6,
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: 6,
+                              height: 6,
+                              borderRadius: "50%",
+                              background: HEALTH_TAG[sch.health].text,
+                              flexShrink: 0,
+                            }}
+                          />
+                          {HEALTH_TAG[sch.health].label}
+                        </span>
+                      </td>
+                      <td style={{ ...s.td, textAlign: "center" }}>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); openScholar(sch); }}
+                          aria-label="View scholar"
+                          style={{
+                            width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${LINE}`,
+                            display: "inline-flex", alignItems: "center", justifyContent: "center",
+                            background: WHITE, color: "#7a7a74", cursor: "pointer",
+                          }}
+                        >
+                          <EyeIcon />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {filteredScholars.length === 0 && (
+              <p style={{ textAlign: "center", padding: "40px 0", color: "#9a9a94", fontSize: "0.9rem" }}>
+                {query ? `No scholars match "${search}".` : "No funded scholars yet."}
+              </p>
+            )}
+
+            {filteredScholars.length > 0 && (
+              <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}>
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  style={{
+                    width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
+                    color: currentPage === 1 ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                    cursor: currentPage === 1 ? "default" : "pointer",
+                  }}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeftIcon />
+                </button>
+                {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
+                  <button
+                    key={num}
+                    onClick={() => setPage(num)}
+                    style={{
+                      width: 32, height: 32, borderRadius: 8, border: `1px solid ${num === currentPage ? NAVY : LINE}`,
+                      background: num === currentPage ? NAVY : WHITE, color: num === currentPage ? WHITE : "#55554f",
+                      fontSize: "0.82rem", fontWeight: 600, cursor: "pointer",
+                    }}
+                  >
+                    {num}
                   </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                ))}
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  style={{
+                    width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
+                    color: currentPage === totalPages ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                    cursor: currentPage === totalPages ? "default" : "pointer",
+                  }}
+                  aria-label="Next page"
+                >
+                  <ChevronRightIcon />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {selected && (
@@ -223,5 +379,30 @@ export default function GrantorMonitorPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function EyeIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function ChevronLeftIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 18l-6-6 6-6" />
+    </svg>
+  );
+}
+
+function ChevronRightIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 18l6-6-6-6" />
+    </svg>
   );
 }

@@ -72,10 +72,10 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { key: "dashboard", label: "Home", icon: <HomeIcon />, href: "/Appdashboard" },
-  { key: "application", label: "Application", icon: <ApplicationIcon />, href: "/applicationss" },
-  { key: "settings", label: "Settings", icon: <SettingsIcon />, href: "/applicantsettings" },
-  { key: "profile", label: "Profile", icon: <ProfileIcon />, href: "/Profile" },
+  { key: "dashboard", label: "Home", icon: <HomeIcon />, href: "/ApplicantDashboard" },
+  { key: "application", label: "Application", icon: <ApplicationIcon />, href: "/ApplicantsApplication" },
+  { key: "settings", label: "Settings", icon: <SettingsIcon />, href: "/ApplicantsSettings" },
+  { key: "profile", label: "Profile", icon: <ProfileIcon />, href: "/ApplicantsProfile" },
 ];
 
 export interface ActivityItem {
@@ -85,11 +85,11 @@ export interface ActivityItem {
 }
 
 export const ACTIVITY_FEED: ActivityItem[] = [
-  { icon: <MailIcon small />, text: "Engr. Paolo R. sent you a message about your Q3 disbursement.", time: "12 minutes ago" },
-  { icon: <ForumIcon small />, text: 'New reply on your thread "Tips for maintaining 90%+ GWA?"', time: "1 hour ago" },
-  { icon: <CalendarIcon small />, text: "Coordinator check-in scheduled for Jul 3, 2:00 PM.", time: "3 hours ago" },
+  { icon: <MailIcon small />, text: "Engr. Paolo R. sent you a message about your application requirements.", time: "12 minutes ago" },
+  { icon: <ForumIcon small />, text: 'New reply on your thread "Tips for the coordinator interview?"', time: "1 hour ago" },
+  { icon: <CalendarIcon small />, text: "Coordinator interview scheduled for Jul 3, 2:00 PM.", time: "3 hours ago" },
   { icon: <CheckCircleIcon small />, text: "Your Grades / TOR document was verified successfully.", time: "Yesterday" },
-  { icon: <MailIcon small />, text: "HR Coordinator confirmed your contract renewal.", time: "2 days ago" },
+  { icon: <MailIcon small />, text: "Coordinator confirmed receipt of your submitted documents.", time: "2 days ago" },
 ];
 
 export interface UpcomingItem {
@@ -99,9 +99,9 @@ export interface UpcomingItem {
 }
 
 export const UPCOMING_ITEMS: UpcomingItem[] = [
-  { label: "Coordinator check-in", detail: "Jul 3, 2026 · 2:00 PM", urgent: true },
-  { label: "Submit mid-year grade report", detail: "Due Jul 10, 2026" },
-  { label: "Forum: Scholar town hall", detail: "Jul 15, 2026 · 6:00 PM" },
+  { label: "Coordinator interview", detail: "Jul 3, 2026 · 2:00 PM", urgent: true },
+  { label: "Submit valid government ID", detail: "Due Jul 10, 2026" },
+  { label: "Forum: Applicant Q&A", detail: "Jul 15, 2026 · 6:00 PM" },
 ];
 
 export interface ApplicationStage {
@@ -222,8 +222,8 @@ export const s: Record<string, CSSProperties> = {
   sidebarUserRole: { fontSize: "0.76rem", color: "#8a8a84" },
   sidebarLogoutBtn: { color: "#9a9a94", display: "flex", flexShrink: 0, padding: 6 },
 
-  main: { flexGrow: 1, minWidth: 0, minHeight: "100vh", display: "flex", flexDirection: "column" as const },
-  mainContent: { padding: "0 40px 48px", flexGrow: 1 },
+  main: { flexGrow: 1, minWidth: 0, minHeight: "100vh", display: "flex", flexDirection: "column" as const, background: WHITE },
+  mainContent: { padding: "0 40px 48px", flexGrow: 1, background: WHITE },
 
   topbar: { position: "sticky", top: 0, zIndex: 30, background: WHITE, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, padding: "14px 32px", borderBottom: `1px solid ${LINE}` },
   mobileToggle: { display: "none", marginRight: 8 },

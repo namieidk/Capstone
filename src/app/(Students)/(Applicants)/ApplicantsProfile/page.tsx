@@ -3,24 +3,15 @@
 import React, { useState } from "react";
 import {
   CameraIcon,
+  ApplicationIcon,
   DownloadIcon,
   SCHOLAR,
   PROFILE_DOCUMENTS,
-  PREDICTED_GWA,
-  GWA_THRESHOLD,
-  SCHOLAR_DISBURSED_TO_DATE,
+  APPLICATION_STAGES,
+  CURRENT_STAGE_INDEX,
   AMBER_BG,
   s,
-} from "@/components/ScholarShared";
-
-function ApplicationIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
-      <path d="M9 12l2 2 4-4" />
-    </svg>
-  );
-}
+} from "../../../../components/StudentShared";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -34,72 +25,76 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 function ProfilePageStyles() {
   return (
     <style>{`
-      .scho-profile-banner { height: 160px; }
-      .scho-profile-avatar { width: 88px; height: 88px; font-size: 1.8rem; }
-      .scho-profile-header-row { margin-top: -36px; }
-      .scho-profile-doc-row { flex-wrap: wrap; }
-      .scho-profile-doc-info { min-width: 160px; }
-      .scho-profile-doc-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; margin-left: auto; }
+      .vd-profile-banner { height: 160px; }
+      .vd-profile-avatar { width: 88px; height: 88px; font-size: 1.8rem; }
+      .vd-profile-header-row { margin-top: -36px; }
+      .vd-profile-doc-row { flex-wrap: wrap; }
+      .vd-profile-doc-info { min-width: 160px; }
+      .vd-profile-doc-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; margin-left: auto; }
 
       @media (max-width: 640px) {
-        .scho-profile-banner { height: 110px; }
-        .scho-profile-avatar { width: 68px; height: 68px; font-size: 1.4rem; }
-        .scho-profile-header-row {
+        .vd-profile-banner { height: 110px; }
+        .vd-profile-avatar { width: 68px; height: 68px; font-size: 1.4rem; }
+        .vd-profile-header-row {
           margin-top: -30px;
           align-items: flex-start;
           flex-wrap: wrap;
           gap: 12px;
         }
-        .scho-profile-header-info { min-width: 0; flex-basis: 100%; order: 2; }
-        .scho-profile-edit-btn { order: 3; }
-        .scho-profile-bio-card, .scho-profile-doc-row, .scho-profile-contact-card {
+        .vd-profile-header-info { min-width: 0; flex-basis: 100%; order: 2; }
+        .vd-profile-edit-btn { order: 3; }
+        .vd-profile-bio-card, .vd-profile-doc-row, .vd-profile-contact-card {
           padding: 16px 16px !important;
         }
-        .scho-profile-name { font-size: 1.2rem !important; }
+        .vd-profile-name { font-size: 1.2rem !important; }
       }
 
       @media (max-width: 480px) {
-        .scho-profile-doc-row { align-items: center; }
-        .scho-profile-doc-info { flex-basis: 100%; min-width: 0; order: 1; }
-        .scho-profile-doc-actions { order: 2; margin-left: 0; }
+        .vd-profile-doc-row { align-items: center; }
+        .vd-profile-doc-info { flex-basis: 100%; min-width: 0; order: 1; }
+        .vd-profile-doc-actions { order: 2; margin-left: 0; }
       }
     `}</style>
   );
 }
 
-export default function SchoProfilePage() {
+export default function ProfilePage() {
   const [bio, setBio] = useState(SCHOLAR.bio);
   const [editingBio, setEditingBio] = useState(false);
+
+  const currentStage = APPLICATION_STAGES[CURRENT_STAGE_INDEX];
+  const submittedStage = APPLICATION_STAGES[0];
+  const verifiedCount = PROFILE_DOCUMENTS.filter((d) => d.status === "verified").length;
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", width: "100%" }}>
       <ProfilePageStyles />
 
-      <div className="scho-profile-banner" style={{ ...s.profileBanner, background: SCHOLAR.bannerGradient }}>
+      <div className="vd-profile-banner" style={{ ...s.profileBanner, background: SCHOLAR.bannerGradient }}>
         <button style={s.profileBannerEditBtn}>
           <CameraIcon /> Change banner
         </button>
       </div>
 
-      <div className="scho-profile-header-row" style={s.profileHeaderRow}>
+      <div className="vd-profile-header-row" style={s.profileHeaderRow}>
         <div style={s.profileAvatarWrap}>
-          <span className="scho-profile-avatar" style={{ ...s.profileAvatar, background: SCHOLAR.avatarColor }}>
+          <span className="vd-profile-avatar" style={{ ...s.profileAvatar, background: SCHOLAR.avatarColor }}>
             {SCHOLAR.initials}
           </span>
           <button style={s.profileAvatarEditBtn}>
             <CameraIcon />
           </button>
         </div>
-        <div className="scho-profile-header-info" style={s.profileHeaderInfo}>
-          <h2 className="scho-profile-name" style={s.profileName}>{SCHOLAR.name}</h2>
+        <div className="vd-profile-header-info" style={s.profileHeaderInfo}>
+          <h2 className="vd-profile-name" style={s.profileName}>{SCHOLAR.name}</h2>
           <p style={s.profileMeta}>
             {SCHOLAR.course} · {SCHOLAR.year}
           </p>
         </div>
-        <button className="scho-profile-edit-btn" style={s.continueBtnSmall}>Edit profile</button>
+        <button className="vd-profile-edit-btn" style={s.continueBtnSmall}>Edit profile</button>
       </div>
 
-      <div className="scho-profile-bio-card" style={s.profileBioCard}>
+      <div className="vd-profile-bio-card" style={s.profileBioCard}>
         <div style={s.profileBioHeader}>
           <p style={s.profileBioLabel}>Bio</p>
           <button onClick={() => setEditingBio((v) => !v)} style={s.reviewEditLink}>
@@ -115,25 +110,25 @@ export default function SchoProfilePage() {
 
       <div className="vd-stat-row" style={s.statRow}>
         <div style={s.statCard}>
-          <p style={s.statCardLabel}>Current GWA standing</p>
-          <p style={s.statCardValue}>{PREDICTED_GWA}</p>
-          <p style={s.statCardCaption}>Threshold: {GWA_THRESHOLD}</p>
-        </div>
-        <div style={s.statCard}>
-          <p style={s.statCardLabel}>Disbursed to date</p>
-          <p style={s.statCardValue}>₱{SCHOLAR_DISBURSED_TO_DATE.toLocaleString()}</p>
-          <p style={s.statCardCaption}>This academic year</p>
+          <p style={s.statCardLabel}>Application stage</p>
+          <p style={s.statCardValue}>{currentStage.title}</p>
+          <p style={s.statCardCaption}>{currentStage.date}</p>
         </div>
         <div style={s.statCard}>
           <p style={s.statCardLabel}>Documents verified</p>
           <p style={s.statCardValue}>
-            {PROFILE_DOCUMENTS.filter((d) => d.status === "verified").length}/{PROFILE_DOCUMENTS.length}
+            {verifiedCount}/{PROFILE_DOCUMENTS.length}
           </p>
           <p style={s.statCardCaption}>Profile requirements</p>
         </div>
+        <div style={s.statCard}>
+          <p style={s.statCardLabel}>Application submitted</p>
+          <p style={s.statCardValue}>{submittedStage.date}</p>
+          <p style={s.statCardCaption}>{submittedStage.desc}</p>
+        </div>
       </div>
 
-      <div className="scho-profile-contact-card" style={s.profileBioCard}>
+      <div className="vd-profile-contact-card" style={s.profileBioCard}>
         <p style={s.profileBioLabel}>Contact</p>
         <div style={{ marginTop: 10 }}>
           <InfoRow label="Course" value={SCHOLAR.course} />
@@ -144,17 +139,17 @@ export default function SchoProfilePage() {
       <h3 style={{ ...s.cardHeading, marginBottom: 14 }}>Documents</h3>
       <div style={s.profileDocList}>
         {PROFILE_DOCUMENTS.map((doc) => (
-          <div key={doc.file} className="scho-profile-doc-row" style={s.profileDocRow}>
+          <div key={doc.file} className="vd-profile-doc-row" style={s.profileDocRow}>
             <span style={s.feedIconBox}>
               <ApplicationIcon />
             </span>
-            <div className="scho-profile-doc-info" style={s.profileDocInfo}>
+            <div className="vd-profile-doc-info" style={s.profileDocInfo}>
               <p style={s.profileDocLabel}>{doc.label}</p>
               <p style={s.profileDocFile}>
                 {doc.file} · {doc.size}
               </p>
             </div>
-            <div className="scho-profile-doc-actions">
+            <div className="vd-profile-doc-actions">
               <span
                 style={{
                   ...s.statusTag,

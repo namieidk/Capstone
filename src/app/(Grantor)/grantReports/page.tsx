@@ -1,3 +1,6 @@
+/* eslint-disable react-hooks/immutability */
+"use client";
+
 import React from "react";
 import {
   GRANT_REPORT_KPIS,
@@ -16,7 +19,11 @@ import {
   GOOD_BG,
   s,
 } from "@/components/Grantorshared.data";
-import { DownloadIcon, TrendUpIcon } from "@/components/Grantorshared";
+import { DownloadIcon, TrendUpIcon, MenuIcon } from "@/components/Grantorshared";
+import { useSidebar } from "@/components/SidebarContext";
+
+const BORDER_SUBTLE = `1px solid ${LINE}`;
+const SHADOW_SM = "0 1px 3px rgba(0,0,0,0.04)";
 
 function fmt(n: number) {
   return "₱" + n.toLocaleString("en-PH");
@@ -73,6 +80,8 @@ function PieChart({
 }
 
 export default function GrantReportsPage() {
+  const { toggleMobile } = useSidebar();
+
   const allocatedPct = (GRANT_ALLOCATED / GRANT_TOTAL_BUDGET) * 100;
   const maxDisbursement = Math.max(...GRANT_DISBURSEMENT_MONTHLY.map((m) => m.amount));
 
@@ -82,175 +91,227 @@ export default function GrantReportsPage() {
   ];
 
   return (
-    <div>
-      {/* ── KPI row ── */}
-      <div className="vg-stat-row" style={s.statRow}>
-        {GRANT_REPORT_KPIS.map((k) => (
-          <div key={k.label} style={s.pipelineCard}>
-            <div style={s.pipelineTopRow}>
-              <p style={s.pipelineLabel}>{k.label}</p>
-            </div>
-            <p style={s.pipelineValue}>{k.value}</p>
-            <div style={s.pipelineKpiRow}>
-              <span style={{ color: GOOD, display: "flex", alignItems: "center", gap: 4 }}>
-                <TrendUpIcon />
-                {k.kpi}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      {/* ---------------- Page-level navbar ---------------- */}
+      <header style={{ ...s.topbar, flexShrink: 0 }}>
+        <button className="vg-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+          <MenuIcon />
+        </button>
+        <div>
+          <h1 style={s.topbarGreeting}>Reports</h1>
+          <p style={s.topbarSub}>Budget allocation and disbursement analytics for your scholarship fund.</p>
+        </div>
+        <div style={{ ...s.topbarRight, marginLeft: "auto", gap: 12 }}>
+          <button
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              background: TINT,
+              color: NAVY,
+              fontWeight: 600,
+              fontSize: "0.86rem",
+              padding: "11px 20px",
+              borderRadius: 999,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <DownloadIcon /> Budget report (CSV)
+          </button>
+          <button
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              background: NAVY,
+              color: WHITE,
+              fontWeight: 600,
+              fontSize: "0.86rem",
+              padding: "11px 22px",
+              borderRadius: 999,
+              cursor: "pointer",
+              boxShadow: "0 6px 16px rgba(30,58,95,0.25)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <DownloadIcon /> Disbursement report (CSV)
+          </button>
+        </div>
+      </header>
 
-      <div className="vg-content-grid" style={s.contentGrid}>
-        {/* ── Left column ── */}
-        <section style={s.feedCard}>
-          {/* Budget allocation pie chart */}
-          <div style={s.cardHeaderRow}>
-            <h2 style={s.cardHeading}>Budget allocation</h2>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 32, marginBottom: 30 }}>
-            {/* Pie */}
-            <div style={{ flexShrink: 0 }}>
-              <PieChart slices={pieSlices} size={180} thickness={44} />
-            </div>
-
-            {/* Legend + summary */}
-            <div style={{ flexGrow: 1 }}>
-              {pieSlices.map((sl) => {
-                const pct = ((sl.value / GRANT_TOTAL_BUDGET) * 100).toFixed(1);
-                return (
-                  <div
-                    key={sl.label}
-                    style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}
-                  >
-                    <span
-                      style={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: 3,
-                        background: sl.color,
-                        flexShrink: 0,
-                      }}
-                    />
-                    <div>
-                      <p style={{ fontSize: "0.84rem", fontWeight: 700, color: NAVY, marginBottom: 1 }}>
-                        {sl.label}
-                      </p>
-                      <p style={{ fontSize: "0.78rem", color: "#7a7a74" }}>
-                        {fmt(sl.value)} · {pct}%
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-
-              <div
-                style={{
-                  borderTop: `1px solid ${LINE}`,
-                  paddingTop: 12,
-                  marginTop: 4,
-                  fontSize: "0.78rem",
-                  color: "#9a9a94",
-                }}
-              >
-                Total budget: <strong style={{ color: NAVY }}>{fmt(GRANT_TOTAL_BUDGET)}</strong>
-              </div>
-            </div>
-          </div>
-
-          {/* Two summary tiles */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 30 }}>
-            <div style={{ background: GOOD_BG, borderRadius: 14, padding: "18px 20px" }}>
-              <p style={{ fontSize: "0.78rem", color: "#4a6b2a", marginBottom: 6 }}>Allocated</p>
-              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.6rem", fontWeight: 700, color: "#2a4a1a", lineHeight: 1, marginBottom: 4 }}>
-                {fmt(GRANT_ALLOCATED)}
-              </p>
-              <p style={{ fontSize: "0.78rem", color: "#4a6b2a" }}>{allocatedPct.toFixed(1)}% of total</p>
-            </div>
-            <div style={{ background: TINT, borderRadius: 14, padding: "18px 20px" }}>
-              <p style={{ fontSize: "0.78rem", color: "#7a7a74", marginBottom: 6 }}>Non-allocated</p>
-              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.6rem", fontWeight: 700, color: NAVY, lineHeight: 1, marginBottom: 4 }}>
-                {fmt(GRANT_NON_ALLOCATED)}
-              </p>
-              <p style={{ fontSize: "0.78rem", color: "#9a9a94" }}>available balance</p>
-            </div>
-          </div>
-
-          {/* Monthly disbursement bar chart */}
-          <div style={s.cardHeaderRow}>
-            <h2 style={s.cardHeading}>Monthly disbursements</h2>
-          </div>
-          <div style={s.barChartRow}>
-            {GRANT_DISBURSEMENT_MONTHLY.map((m) => (
-              <div key={m.month} style={s.barChartCol}>
-                <span style={s.barChartValue}>{fmt(m.amount)}</span>
-                <div style={s.barChartTrack}>
-                  <div
-                    style={{
-                      ...s.barChartFill,
-                      height: `${(m.amount / maxDisbursement) * 100}%`,
-                      background: NAVY,
-                    }}
-                  />
+      <div style={{ ...s.mainContent, padding: s.mainContent.padding, flexGrow: 1, minHeight: 0, overflowY: "auto" }}>
+        <div style={s.pageContentTop}>
+          {/* ── KPI row ── */}
+          <div className="vg-stat-row" style={s.statRow}>
+            {GRANT_REPORT_KPIS.map((k) => (
+              <div key={k.label} style={s.pipelineCard}>
+                <div style={s.pipelineTopRow}>
+                  <p style={s.pipelineLabel}>{k.label}</p>
                 </div>
-                <span style={s.barChartLabel}>{m.month}</span>
+                <p style={s.pipelineValue}>{k.value}</p>
+                <div style={s.pipelineKpiRow}>
+                  <span style={{ color: GOOD, display: "flex", alignItems: "center", gap: 4 }}>
+                    <TrendUpIcon />
+                    {k.kpi}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
-        </section>
 
-        {/* ── Right column ── */}
-        <section style={s.upcomingCard}>
-          <div style={s.cardHeaderRow}>
-            <h2 style={s.cardHeading}>Per-scholar budget</h2>
-          </div>
+          <div className="vg-content-grid" style={s.contentGrid}>
+            {/* ── Left column ── */}
+            <section style={s.feedCard}>
+              {/* Budget allocation pie chart */}
+              <div style={s.cardHeaderRow}>
+                <h2 style={s.cardHeading}>Budget allocation</h2>
+              </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
-            {BUDGET_SCHOLAR_ROWS.map((row) => {
-              const tone = BUDGET_STATUS_COLORS[row.status];
-              const disbPct = Math.min((row.disbursed / row.allocated) * 100, 100);
-              return (
-                <div
-                  key={row.name}
-                  style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius: 14, padding: "14px 16px" }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                    <div>
-                      <p style={{ ...s.tdName, fontSize: "0.88rem" }}>{row.name}</p>
-                      <p style={{ ...s.tdSub, fontSize: "0.74rem" }}>{row.course}</p>
-                    </div>
-                    <span style={{ ...s.stageTag, background: tone.bg, color: tone.text, fontSize: "0.7rem" }}>
-                      {row.status}
-                    </span>
-                  </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 32, marginBottom: 30 }}>
+                {/* Pie */}
+                <div style={{ flexShrink: 0 }}>
+                  <PieChart slices={pieSlices} size={180} thickness={44} />
+                </div>
 
-                  <div style={{ background: "#F0EAD9", borderRadius: 6, height: 6, marginBottom: 8, overflow: "hidden" }}>
-                    <div style={{ width: `${disbPct}%`, height: "100%", background: AMBER, borderRadius: 6 }} />
-                  </div>
+                {/* Legend + summary */}
+                <div style={{ flexGrow: 1 }}>
+                  {pieSlices.map((sl) => {
+                    const pct = ((sl.value / GRANT_TOTAL_BUDGET) * 100).toFixed(1);
+                    return (
+                      <div
+                        key={sl.label}
+                        style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}
+                      >
+                        <span
+                          style={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: 3,
+                            background: sl.color,
+                            flexShrink: 0,
+                          }}
+                        />
+                        <div>
+                          <p style={{ fontSize: "0.84rem", fontWeight: 700, color: NAVY, marginBottom: 1 }}>
+                            {sl.label}
+                          </p>
+                          <p style={{ fontSize: "0.78rem", color: "#7a7a74" }}>
+                            {fmt(sl.value)} · {pct}%
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
 
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", color: "#7a7a74" }}>
-                    <span>Disbursed: <strong style={{ color: NAVY }}>{fmt(row.disbursed)}</strong></span>
-                    <span>Remaining: <strong style={{ color: NAVY }}>{fmt(row.remaining)}</strong></span>
+                  <div
+                    style={{
+                      borderTop: `1px solid ${LINE}`,
+                      paddingTop: 12,
+                      marginTop: 4,
+                      fontSize: "0.78rem",
+                      color: "#9a9a94",
+                    }}
+                  >
+                    Total budget: <strong style={{ color: NAVY }}>{fmt(GRANT_TOTAL_BUDGET)}</strong>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
 
-          {/* Export */}
-          <div style={s.quickLinksWrap}>
-            <p style={s.quickLinksHeading}>Export</p>
-            <button style={s.quickLinkBtn}>
-              <span style={s.quickLinkIcon}><DownloadIcon /></span>
-              <span>Download budget report (CSV)</span>
-            </button>
-            <button style={s.quickLinkBtn}>
-              <span style={s.quickLinkIcon}><DownloadIcon /></span>
-              <span>Download disbursement report (CSV)</span>
-            </button>
+              {/* Two summary tiles */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 30 }}>
+                <div style={{ background: GOOD_BG, borderRadius: 14, padding: "18px 20px" }}>
+                  <p style={{ fontSize: "0.78rem", color: "#4a6b2a", marginBottom: 6 }}>Allocated</p>
+                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.6rem", fontWeight: 700, color: "#2a4a1a", lineHeight: 1, marginBottom: 4 }}>
+                    {fmt(GRANT_ALLOCATED)}
+                  </p>
+                  <p style={{ fontSize: "0.78rem", color: "#4a6b2a" }}>{allocatedPct.toFixed(1)}% of total</p>
+                </div>
+                <div style={{ background: TINT, borderRadius: 14, padding: "18px 20px" }}>
+                  <p style={{ fontSize: "0.78rem", color: "#7a7a74", marginBottom: 6 }}>Non-allocated</p>
+                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.6rem", fontWeight: 700, color: NAVY, lineHeight: 1, marginBottom: 4 }}>
+                    {fmt(GRANT_NON_ALLOCATED)}
+                  </p>
+                  <p style={{ fontSize: "0.78rem", color: "#9a9a94" }}>available balance</p>
+                </div>
+              </div>
+
+              {/* Monthly disbursement bar chart */}
+              <div style={s.cardHeaderRow}>
+                <h2 style={s.cardHeading}>Monthly disbursements</h2>
+              </div>
+              <div style={s.barChartRow}>
+                {GRANT_DISBURSEMENT_MONTHLY.map((m) => (
+                  <div key={m.month} style={s.barChartCol}>
+                    <span style={s.barChartValue}>{fmt(m.amount)}</span>
+                    <div style={s.barChartTrack}>
+                      <div
+                        style={{
+                          ...s.barChartFill,
+                          height: `${(m.amount / maxDisbursement) * 100}%`,
+                          background: NAVY,
+                        }}
+                      />
+                    </div>
+                    <span style={s.barChartLabel}>{m.month}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* ── Right column ── */}
+            <section style={s.upcomingCard}>
+              <div style={s.cardHeaderRow}>
+                <h2 style={s.cardHeading}>Per-scholar budget</h2>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
+                {BUDGET_SCHOLAR_ROWS.map((row) => {
+                  const tone = BUDGET_STATUS_COLORS[row.status];
+                  const disbPct = Math.min((row.disbursed / row.allocated) * 100, 100);
+                  return (
+                    <div
+                      key={row.name}
+                      style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius: 14, padding: "14px 16px" }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                        <div>
+                          <p style={{ ...s.tdName, fontSize: "0.88rem" }}>{row.name}</p>
+                          <p style={{ ...s.tdSub, fontSize: "0.74rem" }}>{row.course}</p>
+                        </div>
+                        <span style={{ ...s.stageTag, background: tone.bg, color: tone.text, fontSize: "0.7rem" }}>
+                          {row.status}
+                        </span>
+                      </div>
+
+                      <div style={{ background: "#F0EAD9", borderRadius: 6, height: 6, marginBottom: 8, overflow: "hidden" }}>
+                        <div style={{ width: `${disbPct}%`, height: "100%", background: AMBER, borderRadius: 6 }} />
+                      </div>
+
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", color: "#7a7a74" }}>
+                        <span>Disbursed: <strong style={{ color: NAVY }}>{fmt(row.disbursed)}</strong></span>
+                        <span>Remaining: <strong style={{ color: NAVY }}>{fmt(row.remaining)}</strong></span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Export */}
+              <div style={s.quickLinksWrap}>
+                <p style={s.quickLinksHeading}>Export</p>
+                <button style={s.quickLinkBtn}>
+                  <span style={s.quickLinkIcon}><DownloadIcon /></span>
+                  <span>Download budget report (CSV)</span>
+                </button>
+                <button style={s.quickLinkBtn}>
+                  <span style={s.quickLinkIcon}><DownloadIcon /></span>
+                  <span>Download disbursement report (CSV)</span>
+                </button>
+              </div>
+            </section>
           </div>
-        </section>
+        </div>
       </div>
     </div>
   );

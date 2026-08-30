@@ -1,23 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { GlobalStyles, s } from "@/components/ScholarShared";
-import { ScholarSidebar, ScholarTopBar } from "@/components/Sidebar";
+import { ScholarSidebar } from "@/components/Sidebar";
+import { SidebarProvider, useSidebar } from "@/components/SidebarContext";
 
-export default function ScholarLayout({ children }: { children: React.ReactNode }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
+function ScholarLayoutInner({ children }: { children: React.ReactNode }) {
+  const { mobileOpen } = useSidebar();
 
   return (
     <div className="vd">
       <GlobalStyles />
       <div className="vd-app-shell">
         <ScholarSidebar mobileOpen={mobileOpen} />
-
         <main className="vd-main" style={s.main}>
-          <ScholarTopBar onMenuClick={() => setMobileOpen((v) => !v)} />
-          <div style={s.mainContent}>{children}</div>
+          {children}
         </main>
       </div>
     </div>
+  );
+}
+
+export default function ScholarLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <SidebarProvider>
+      <ScholarLayoutInner>{children}</ScholarLayoutInner>
+    </SidebarProvider>
   );
 }
