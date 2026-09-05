@@ -4,7 +4,6 @@ const PUBLIC_ROUTES = [
   "/",
   "/login",
   "/signup",
-  "/stafflogin",
   "/api/auth/login",
   "/api/auth/register",
   "/api/auth/logout",

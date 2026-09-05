@@ -15,20 +15,35 @@ export function GlobalStyles() {
         color: #2B2B28;
         font-family: 'Inter', -apple-system, sans-serif;
         -webkit-font-smoothing: antialiased;
-        min-height: 100vh;
       }
       .vls h1, .vls h2, .vls h3 { font-family: 'Inter', sans-serif; color: #14213A; }
       .vls a { color: inherit; text-decoration: none; }
       .vls button { font-family: 'Inter', sans-serif; cursor: pointer; border: none; background: none; }
       .vls input, .vls select { font-family: 'Inter', sans-serif; }
 
-      .vls-shell { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; }
+      .vls-shell {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        height: 100vh;
+        overflow: hidden;
+      }
+      .vls-brand {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow: hidden;
+      }
+      .vls-form-side {
+        overflow-y: auto;
+        height: 100vh;
+      }
 
       @keyframes vls-spin { to { transform: rotate(360deg); } }
 
       @media (max-width: 940px) {
         .vls-shell { grid-template-columns: 1fr; }
-        .vls-brand { min-height: 300px !important; }
+        .vls-brand { display: none !important; }
+        .vls-form-side { height: 100vh; }
         .vls-stat-row { grid-template-columns: repeat(3, 1fr) !important; }
       }
       @media (max-width: 520px) {

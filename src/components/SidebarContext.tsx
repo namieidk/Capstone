@@ -5,6 +5,7 @@ import React, { createContext, useContext, useState } from "react";
 interface SidebarContextValue {
   mobileOpen: boolean;
   toggleMobile: () => void;
+  closeMobile: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextValue | null>(null);
@@ -12,9 +13,10 @@ const SidebarContext = createContext<SidebarContextValue | null>(null);
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const toggleMobile = () => setMobileOpen((v) => !v);
+  const closeMobile = () => setMobileOpen(false);
 
   return (
-    <SidebarContext.Provider value={{ mobileOpen, toggleMobile }}>
+    <SidebarContext.Provider value={{ mobileOpen, toggleMobile, closeMobile }}>
       {children}
     </SidebarContext.Provider>
   );

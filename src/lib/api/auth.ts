@@ -3,7 +3,7 @@ import { apiGet, apiPost, apiPatch } from "../api";
 const B = "/api/auth";
 
 export interface User {
-  id: number;
+  user_id: number;
   email: string;
   role: string;
   first_name: string;
@@ -15,7 +15,7 @@ export interface User {
   created_at: string;
   updated_at: string;
   scholar_profile?: {
-    id: number;
+    profile_id: number;
     phone_number?: string;
     student_address?: string;
     school_address?: string;
@@ -26,7 +26,12 @@ export interface User {
     scholarship_track?: string;
   };
   employee?: {
-    id: number;
+    employee_id: number;
+    first_name?: string;
+    last_name?: string;
+    bio?: string;
+    avatar_url?: string;
+    banner_url?: string;
     title?: string;
     department?: string;
   };
@@ -49,7 +54,7 @@ export function register(data: {
   password: string;
   first_name: string;
   last_name: string;
-  phone_number?: string;
+  phone_number: string;
 }) {
   return apiPost<RegisterResponse>(`${B}/register`, data);
 }
@@ -78,13 +83,13 @@ export function updateMe(data: {
 
 export function uploadAvatar(file: File) {
   const form = new FormData();
-  form.append("avatar", file);
+  form.append("file", file);
   return apiPost<{ avatar_url: string }>(`${B}/me/avatar`, form);
 }
 
 export function uploadBanner(file: File) {
   const form = new FormData();
-  form.append("banner", file);
+  form.append("file", file);
   return apiPost<{ banner_url: string }>(`${B}/me/banner`, form);
 }
 

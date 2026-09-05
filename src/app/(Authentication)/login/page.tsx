@@ -3,6 +3,7 @@
 import React, { useState, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   GlobalStyles,
   BrandPanel,
@@ -16,11 +17,9 @@ import {
   ArrowRightIcon,
   GoogleIcon,
   SpinnerIcon,
-  UserIcon,
   ls,
   AMBER,
   LINE,
-  AuthSession,
 } from "../../../components/StudentAuth";
 
 const backLinkStyle: React.CSSProperties = {
@@ -42,11 +41,16 @@ function BackToLandingLink() {
   );
 }
 
-interface SignInFormProps {
-  onSuccess: (session: AuthSession) => void;
-}
+const DASHBOARD_MAP: Record<string, string> = {
+  ADMIN: "/AdminDashboard",
+  COORDINATOR: "/CoordinatorDashboard",
+  GRANTOR: "/grantDashboard",
+  SCHOLAR: "/scholardashboard",
+  APPLICANT: "/ApplicantsDashboard",
+};
 
-function SignInForm({ onSuccess }: SignInFormProps) {
+function SignInForm() {
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -54,7 +58,7 @@ function SignInForm({ onSuccess }: SignInFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
       setError("Please enter both your email and password.");
@@ -62,11 +66,14 @@ function SignInForm({ onSuccess }: SignInFormProps) {
     }
     setError("");
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await login(email, password);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Login failed. Please try again.";
+      setError(message);
       setLoading(false);
-      document.cookie = `vls_session=demo; path=/; max-age=${60 * 60 * 24 * 7}`;
-      onSuccess({ name: email.split("@")[0], email });
-    }, 900);
+    }
   };
 
   return (
@@ -136,13 +143,20 @@ function SignInForm({ onSuccess }: SignInFormProps) {
   );
 }
 
-interface SignedInPanelProps {
-  session: AuthSession;
-  onReset: () => void;
-}
-
-function SignedInPanel({ session, onReset }: SignedInPanelProps) {
+function SignedInPanel() {
   const router = useRouter();
+  const { user, logout } = useAuth();
+
+  const role = user?.role ?? "";
+  const dashboardPath = DASHBOARD_MAP[role];
+  const roleLabel = role.charAt(0) + role.slice(1).toLowerCase();
+
+  const handleContinue = () => {
+    if (dashboardPath) {
+      router.push(dashboardPath);
+    }
+  };
+
   return (
     <div style={ls.successWrap}>
       <span style={ls.successIcon}>
@@ -150,24 +164,15 @@ function SignedInPanel({ session, onReset }: SignedInPanelProps) {
       </span>
       <h3 style={ls.successTitle}>You&apos;re signed in</h3>
       <p style={ls.successSub}>
-        Welcome, <strong>{session.name}</strong>
+        Welcome, <strong>{user?.first_name}</strong>
       </p>
       <div style={ls.successRoleTag}>
-        <span style={{ display: "flex" }}>
-          <UserIcon />
-        </span>
-        Student account
+        {roleLabel} account
       </div>
-      <button style={ls.continueBtn} onClick={() => router.push("/dashboard")}>
-        Continue to student dashboard <ArrowRightIcon />
+      <button style={ls.continueBtn} onClick={handleContinue}>
+        Continue to dashboard <ArrowRightIcon />
       </button>
-      <button
-        onClick={() => {
-          document.cookie = "vls_session=; path=/; max-age=0";
-          onReset();
-        }}
-        style={ls.switchUserLink}
-      >
+      <button onClick={logout} style={ls.switchUserLink}>
         Sign in as a different user
       </button>
     </div>
@@ -175,7 +180,23 @@ function SignedInPanel({ session, onReset }: SignedInPanelProps) {
 }
 
 export default function LoginPage() {
-  const [session, setSession] = useState<AuthSession | null>(null);
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="vls">
+        <GlobalStyles />
+        <div className="vls-shell">
+          <BrandPanel mode="signin" />
+          <div className="vls-form-side" style={ls.formSide}>
+            <div className="vls-form-card" style={ls.formCard}>
+              <div style={{ ...ls.successWrap, minHeight: 300 }} />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="vls">
@@ -183,20 +204,20 @@ export default function LoginPage() {
       <div className="vls-shell">
         <BrandPanel mode="signin" />
 
-        <div style={ls.formSide}>
+        <div className="vls-form-side" style={ls.formSide}>
           <div className="vls-form-card" style={ls.formCard}>
             <BackToLandingLink />
 
-            {!session ? (
+            {!user ? (
               <>
                 <div style={ls.formHeader}>
                   <h2 style={ls.formTitle}>Welcome back</h2>
-                  <p style={ls.formSub}>Sign in to your ViaScholar student account.</p>
+                  <p style={ls.formSub}>Sign in to your ViaScholar account.</p>
                 </div>
 
                 <ModeLinkTabs active="signin" LinkComponent={Link} />
 
-                <SignInForm onSuccess={(s) => setSession(s)} />
+                <SignInForm />
 
                 <div style={ls.dividerRow}>
                   <span style={ls.dividerLine} />
@@ -216,7 +237,7 @@ export default function LoginPage() {
                 </p>
               </>
             ) : (
-              <SignedInPanel session={session} onReset={() => setSession(null)} />
+              <SignedInPanel />
             )}
           </div>
         </div>

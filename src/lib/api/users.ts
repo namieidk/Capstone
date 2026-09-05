@@ -1,4 +1,4 @@
-import { apiGet, apiPatch } from "../api";
+import { apiGet, apiPatch, apiPost } from "../api";
 
 const B = "/api/proxy/users";
 
@@ -33,6 +33,21 @@ export function getAuditLogs(params?: { page?: number; limit?: number }) {
   if (params?.limit) qs.set("limit", String(params.limit));
   const query = qs.toString();
   return apiGet<PaginatedLogs>(`${B}/logs${query ? `?${query}` : ""}`);
+}
+
+export function createStaff(data: {
+  email: string;
+  password: string;
+  role: string;
+  first_name: string;
+  last_name: string;
+  title?: string;
+  department?: string;
+}) {
+  return apiPost<{
+    message: string;
+    user: import("./auth").User;
+  }>("/api/proxy/auth/create-staff", data);
 }
 
 export function getUser(id: number) {

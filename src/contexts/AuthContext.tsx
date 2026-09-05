@@ -7,14 +7,14 @@ import * as authApi from "@/lib/api/auth";
 interface AuthContextValue {
   user: authApi.User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<authApi.User>;
   register: (data: {
     email: string;
     password: string;
     first_name: string;
     last_name: string;
-    phone_number?: string;
-  }) => Promise<void>;
+    phone_number: string;
+  }) => Promise<authApi.User>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -43,8 +43,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (email: string, password: string) => {
       const data = await authApi.login(email, password);
       setUser(data.user);
+      refreshUser();
+      return data.user;
     },
-    [],
+    [refreshUser],
   );
 
   const register = useCallback(
@@ -53,12 +55,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password: string;
       first_name: string;
       last_name: string;
-      phone_number?: string;
+      phone_number: string;
     }) => {
       const res = await authApi.register(data);
       setUser(res.user);
+      refreshUser();
+      return res.user;
     },
-    [],
+    [refreshUser],
   );
 
   const logout = useCallback(async () => {

@@ -4,6 +4,8 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSidebar } from "@/components/SidebarContext";
 
 import {
   LogoutIcon,
@@ -61,6 +63,14 @@ const AMBER = "#F1B71E";
 const GREEN_TINT = "#E3F0E8"; // active nav-item background
 const WHITE = "#FFFFFF";
 
+const ALLOWED_NAV_KEYS = new Set([
+  "dashboard",
+  "archive",
+  "employee",
+  "settings",
+  "profile",
+]);
+
 type SidebarRole = "admin" | "coordinator" | "grantor" | "scholar" | "student";
 
 type SidebarNavItem = {
@@ -82,11 +92,24 @@ type RoleConfig = {
   profile: typeof ADMIN | typeof COORDINATOR | typeof GRANTOR | typeof SCHOLAR;
   roleLabel: string;
   searchPlaceholder: string;
-  styles: typeof adminStyles | typeof coordinatorStyles | typeof grantorStyles | typeof scholarStyles | typeof studentStyles;
+  styles:
+    | typeof adminStyles
+    | typeof coordinatorStyles
+    | typeof grantorStyles
+    | typeof scholarStyles
+    | typeof studentStyles;
 };
 
 function getRoleConfig(role: SidebarRole): RoleConfig {
-  const normalize = (navItems: Array<{ key: string; label: string; icon: React.ReactNode; href: string; badge?: number }>): SidebarNavItem[] =>
+  const normalize = (
+    navItems: Array<{
+      key: string;
+      label: string;
+      icon: React.ReactNode;
+      href: string;
+      badge?: number;
+    }>,
+  ): SidebarNavItem[] =>
     navItems.map((item) => ({
       key: item.key,
       label: item.label,
@@ -145,107 +168,209 @@ function getRoleConfig(role: SidebarRole): RoleConfig {
   }
 }
 
+function getInitials(firstName: string, lastName: string): string {
+  return ((firstName?.[0] ?? "") + (lastName?.[0] ?? "")).toUpperCase() || "?";
+}
+
+function formatRole(role: string): string {
+  if (!role) return "";
+  return role.charAt(0) + role.slice(1).toLowerCase();
+}
+
 export function Sidebar({ mobileOpen, role = "scholar" }: SidebarProps) {
   const pathname = usePathname();
   const config = getRoleConfig(role);
+  const { user, logout } = useAuth();
+  const { closeMobile } = useSidebar();
+
+  const displayName = user
+    ? `${user.first_name} ${user.last_name}`
+    : config.profile.name;
+  const displayInitials = user
+    ? getInitials(user.first_name, user.last_name)
+    : config.profile.initials;
+  const displayRole = user ? formatRole(user.role) : config.roleLabel;
+
+  const filteredNavItems =
+    role === "admin"
+      ? config.navItems.filter((item) => ALLOWED_NAV_KEYS.has(item.key))
+      : config.navItems;
 
   return (
-    <aside
-      className={`${config.className} ${mobileOpen ? "is-open" : ""}`}
-      style={{
-        ...config.styles.sidebar,
-        background: SIDEBAR_BG,
-        borderRight: "1px solid rgba(255,255,255,0.18)",
-        // Pin the sidebar to the viewport instead of scrolling with the
-        // page: fixed height + sticky positioning at the top, with its own
-        // internal flex layout so the logo stays pinned at top and the
-        // user card stays pinned at bottom regardless of nav item count.
-        position: "sticky",
-        top: 0,
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-      }}
-    >
-      <div
+    <>
+      <aside
+        className={`${config.className} ${mobileOpen ? "is-open" : ""}`}
         style={{
-          ...config.styles.sidebarLogo,
+          ...config.styles.sidebar,
+          background: SIDEBAR_BG,
+          borderRight: "1px solid rgba(255,255,255,0.18)",
+          // Pin the sidebar to the viewport instead of scrolling with the
+          // page: fixed height + sticky positioning at the top, with its own
+          // internal flex layout so the logo stays pinned at top and the
+          // user card stays pinned at bottom regardless of nav item count.
+          position: "sticky",
+          top: 0,
+          height: "100vh",
           display: "flex",
-          alignItems: "center",
-          gap: 8,
-          marginBottom: 18,
-          paddingLeft: 4,
-          flexShrink: 0,
+          flexDirection: "column",
+          overflow: "hidden",
         }}
       >
-        <span
+        <div
           style={{
-            display: "inline-flex",
+            ...config.styles.sidebarLogo,
+            display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            width: 52,
-            height: 52,
-            borderRadius: 12,
-            overflow: "visible",
+            gap: 8,
+            marginBottom: 18,
+            paddingLeft: 4,
             flexShrink: 0,
           }}
         >
-          <img
-            src="/logo.png"
-            alt="ViaScholar logo"
+          <span
             style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "contain",
-              display: "block",
-              transform: "scale(1.75)",
-              filter: "drop-shadow(0 6px 12px rgba(18,45,39,0.12))",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 52,
+              height: 52,
+              borderRadius: 12,
+              overflow: "visible",
+              flexShrink: 0,
             }}
-          />
-        </span>
-        <span style={{ ...config.styles.sidebarLogoText, fontSize: "1.2rem", fontWeight: 700, color: WHITE, letterSpacing: "-0.02em" }}>
-          ViaScholar
-        </span>
-      </div>
-
-      {/* Nav list is the only part allowed to scroll, and only if it ever
-          overflows the available height — logo and user card never move. */}
-      <nav style={{ ...config.styles.sidebarNav, flexGrow: 1, minHeight: 0, overflowY: "auto" }}>
-        {config.navItems.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.key}
-              href={item.href}
+          >
+            <img
+              src="/logo_cropped_2656.png"
+              alt="ViaScholar logo"
               style={{
-                ...config.styles.sidebarNavItem,
-                background: isActive ? "rgba(255,255,255,0.14)" : "transparent",
-                color: isActive ? WHITE : "rgba(255,255,255,0.82)",
-                border: isActive ? "1px solid rgba(255,255,255,0.18)" : "1px solid transparent",
+                width: "65%",
+                height: "65%",
+                objectFit: "contain",
+                display: "block",
+                filter: "drop-shadow(0 6px 12px rgba(18,45,39,0.12))",
+              }}
+            />
+          </span>
+          <span
+            style={{
+              ...config.styles.sidebarLogoText,
+              fontSize: "1.2rem",
+              fontWeight: 700,
+              color: WHITE,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            ViaScholar
+          </span>
+        </div>
+
+        {/* Nav list is the only part allowed to scroll, and only if it ever
+          overflows the available height — logo and user card never move. */}
+        <nav
+          style={{
+            ...config.styles.sidebarNav,
+            flexGrow: 1,
+            minHeight: 0,
+            overflowY: "auto",
+          }}
+        >
+          {filteredNavItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.key}
+                href={item.href}
+                style={{
+                  ...config.styles.sidebarNavItem,
+                  background: isActive
+                    ? "rgba(255,255,255,0.14)"
+                    : "transparent",
+                  color: isActive ? WHITE : "rgba(255,255,255,0.82)",
+                  border: isActive
+                    ? "1px solid rgba(255,255,255,0.18)"
+                    : "1px solid transparent",
+                }}
+              >
+                <span
+                  className="vls-nav-icon-scale"
+                  style={{
+                    ...config.styles.sidebarNavIcon,
+                    color: isActive ? WHITE : "rgba(255,255,255,0.8)",
+                  }}
+                >
+                  {item.icon}
+                </span>
+                <span style={config.styles.sidebarNavLabel}>{item.label}</span>
+                {item.badge && (
+                  <span
+                    style={{
+                      ...config.styles.sidebarBadge,
+                      background: AMBER,
+                      color: NAVY,
+                    }}
+                  >
+                    {item.badge}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div
+          style={{
+            ...config.styles.sidebarUserCard,
+            borderTop: "1px solid rgba(255,255,255,0.18)",
+            flexShrink: 0,
+          }}
+        >
+          <span
+            style={{
+              ...config.styles.sidebarAvatar,
+              background: "rgba(255,255,255,0.16)",
+              color: WHITE,
+            }}
+          >
+            {displayInitials}
+          </span>
+          <div style={config.styles.sidebarUserInfo}>
+            <p style={{ ...config.styles.sidebarUserName, color: WHITE }}>
+              {displayName}
+            </p>
+            <p
+              style={{
+                ...config.styles.sidebarUserRole,
+                color: "rgba(255,255,255,0.76)",
               }}
             >
-              <span style={{ ...config.styles.sidebarNavIcon, color: isActive ? WHITE : "rgba(255,255,255,0.8)" }}>{item.icon}</span>
-              <span style={config.styles.sidebarNavLabel}>{item.label}</span>
-              {item.badge && (
-                <span style={{ ...config.styles.sidebarBadge, background: AMBER, color: NAVY }}>{item.badge}</span>
-              )}
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div style={{ ...config.styles.sidebarUserCard, borderTop: "1px solid rgba(255,255,255,0.18)", flexShrink: 0 }}>
-        <span style={{ ...config.styles.sidebarAvatar, background: "rgba(255,255,255,0.16)", color: WHITE }}>{config.profile.initials}</span>
-        <div style={config.styles.sidebarUserInfo}>
-          <p style={{ ...config.styles.sidebarUserName, color: WHITE }}>{config.profile.name}</p>
-          <p style={{ ...config.styles.sidebarUserRole, color: "rgba(255,255,255,0.76)" }}>{config.roleLabel}</p>
+              {displayRole}
+            </p>
+          </div>
+          <button
+            onClick={logout}
+            style={{
+              ...config.styles.sidebarLogoutBtn,
+              color: "rgba(255,255,255,0.8)",
+            }}
+            title="Log out"
+          >
+            <LogoutIcon />
+          </button>
         </div>
-        <button style={{ ...config.styles.sidebarLogoutBtn, color: "rgba(255,255,255,0.8)" }} title="Log out">
-          <LogoutIcon />
-        </button>
-      </div>
-    </aside>
+      </aside>
+      {mobileOpen && (
+        <div
+          onClick={closeMobile}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 99,
+            background: "rgba(0,0,0,0.4)",
+          }}
+        />
+      )}
+      <style>{`.vls-nav-icon-scale { transform: scale(1); transform-origin: center; }`}</style>
+    </>
   );
 }
 

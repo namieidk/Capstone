@@ -92,6 +92,14 @@ export function GlobalStyles() {
         .va-topbar-search { display: none !important; }
         .va-field-row-2 { grid-template-columns: 1fr !important; }
       }
+
+      /* ---- Skeleton loading ---- */
+      @keyframes va-shimmer { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+      .va-skeleton {
+        background: #EEF1F5;
+        border-radius: 10px;
+        animation: va-shimmer 1.4s ease-in-out infinite;
+      }
     `}</style>
   );
 }

@@ -3,6 +3,7 @@
 import React, { useState, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   GlobalStyles,
   BrandPanel,
@@ -22,7 +23,6 @@ import {
   ls,
   AMBER,
   LINE,
-  AuthSession,
 } from "../../../components/StudentAuth";
 
 // ============================================================
@@ -38,11 +38,8 @@ interface SignUpFormState {
   confirm: string;
 }
 
-interface SignUpFormProps {
-  onSuccess: (session: AuthSession) => void;
-}
-
-function SignUpForm({ onSuccess }: SignUpFormProps) {
+function SignUpForm() {
+  const { register } = useAuth();
   const [form, setForm] = useState<SignUpFormState>({
     name: "",
     email: "",
@@ -61,7 +58,7 @@ function SignUpForm({ onSuccess }: SignUpFormProps) {
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim() || !form.school.trim() || !form.password.trim()) {
       setError("Please fill in all required fields.");
@@ -78,20 +75,24 @@ function SignUpForm({ onSuccess }: SignUpFormProps) {
     setError("");
     setLoading(true);
 
-    // TODO: replace with a real signup call, e.g.:
-    // const res = await fetch("/api/auth/signup", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify(form),
-    // });
-    setTimeout(() => {
+    const nameParts = form.name.trim().split(/\s+/);
+    const firstName = nameParts[0] ?? "";
+    const lastName = nameParts.slice(1).join(" ") || firstName;
+
+    try {
+      await register({
+        email: form.email,
+        password: form.password,
+        first_name: firstName,
+        last_name: lastName,
+        phone_number: "00000000000",
+      });
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Registration failed. Please try again.";
+      setError(message);
       setLoading(false);
-      // Demo only: set a client-readable cookie so middleware.ts can see
-      // the session. Replace with a real httpOnly cookie set by your
-      // /api/auth/signup route once you wire up actual auth.
-      document.cookie = `vls_session=demo; path=/; max-age=${60 * 60 * 24 * 7}`;
-      onSuccess({ name: form.name, email: form.email });
-    }, 900);
+    }
   };
 
   return (
@@ -200,13 +201,15 @@ function SignUpForm({ onSuccess }: SignUpFormProps) {
 // SUCCESS STATE
 // ============================================================
 
-interface SignedUpPanelProps {
-  session: AuthSession;
-  onReset: () => void;
-}
-
-function SignedUpPanel({ session, onReset }: SignedUpPanelProps) {
+function SignedUpPanel() {
   const router = useRouter();
+  const { user, logout } = useAuth();
+
+  const handleContinue = () => {
+    const path = user?.role === "SCHOLAR" ? "/scholardashboard" : "/ApplicantsDashboard";
+    router.push(path);
+  };
+
   return (
     <div style={ls.successWrap}>
       <span style={ls.successIcon}>
@@ -214,24 +217,15 @@ function SignedUpPanel({ session, onReset }: SignedUpPanelProps) {
       </span>
       <h3 style={ls.successTitle}>Account created</h3>
       <p style={ls.successSub}>
-        Welcome, <strong>{session.name}</strong>
+        Welcome, <strong>{user?.first_name}</strong>
       </p>
       <div style={ls.successRoleTag}>
-        <span style={{ display: "flex" }}>
-          <UserIcon />
-        </span>
         Student account
       </div>
-      <button style={ls.continueBtn} onClick={() => router.push("/dashboard")}>
-        Continue to student dashboard <ArrowRightIcon />
+      <button style={ls.continueBtn} onClick={handleContinue}>
+        Continue to dashboard <ArrowRightIcon />
       </button>
-      <button
-        onClick={() => {
-          document.cookie = "vls_session=; path=/; max-age=0";
-          onReset();
-        }}
-        style={ls.switchUserLink}
-      >
+      <button onClick={logout} style={ls.switchUserLink}>
         Sign in as a different user
       </button>
     </div>
@@ -243,7 +237,23 @@ function SignedUpPanel({ session, onReset }: SignedUpPanelProps) {
 // ============================================================
 
 export default function SignupPage() {
-  const [session, setSession] = useState<AuthSession | null>(null);
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="vls">
+        <GlobalStyles />
+        <div className="vls-shell">
+          <BrandPanel mode="signup" />
+          <div className="vls-form-side" style={ls.formSide}>
+            <div className="vls-form-card" style={ls.formCard}>
+              <div style={{ ...ls.successWrap, minHeight: 300 }} />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="vls">
@@ -251,9 +261,9 @@ export default function SignupPage() {
       <div className="vls-shell">
         <BrandPanel mode="signup" />
 
-        <div style={ls.formSide}>
+        <div className="vls-form-side" style={ls.formSide}>
           <div className="vls-form-card" style={ls.formCard}>
-            {!session ? (
+            {!user ? (
               <>
                 <div style={ls.formHeader}>
                   <h2 style={ls.formTitle}>Create your account</h2>
@@ -262,7 +272,7 @@ export default function SignupPage() {
 
                 <ModeLinkTabs active="signup" LinkComponent={Link} />
 
-                <SignUpForm onSuccess={(s) => setSession(s)} />
+                <SignUpForm />
 
                 <div style={ls.dividerRow}>
                   <span style={ls.dividerLine} />
@@ -282,7 +292,7 @@ export default function SignupPage() {
                 </p>
               </>
             ) : (
-              <SignedUpPanel session={session} onReset={() => setSession(null)} />
+              <SignedUpPanel />
             )}
           </div>
         </div>
