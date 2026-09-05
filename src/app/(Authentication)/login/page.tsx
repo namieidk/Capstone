@@ -1,54 +1,18 @@
 "use client";
 
+import { ArrowRight, Loader2, Lock, Mail } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import type React from "react";
 import { type FormEvent, useState } from "react";
+import { AuthShell } from "@/components/auth/AuthShell";
+import { CheckboxField } from "@/components/auth/CheckboxField";
+import { DASHBOARD_MAP, roleLabel } from "@/components/auth/data";
+import { InputField } from "@/components/auth/InputField";
+import { ModeTabs } from "@/components/auth/ModeTabs";
+import { SocialBlock } from "@/components/auth/SocialBlock";
+import { SuccessPanel } from "@/components/auth/SuccessPanel";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  AMBER,
-  ArrowRightIcon,
-  BrandPanel,
-  CheckCircleIcon,
-  EyeIcon,
-  EyeOffIcon,
-  Field,
-  GlobalStyles,
-  GoogleIcon,
-  LINE,
-  LockIcon,
-  ls,
-  MailIcon,
-  ModeLinkTabs,
-  SpinnerIcon,
-} from "../../../components/StudentAuth";
-
-const backLinkStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 6,
-  fontSize: 14,
-  fontWeight: 500,
-  color: "#6B6355",
-  textDecoration: "none",
-  marginBottom: 24,
-};
-
-function BackToLandingLink() {
-  return (
-    <Link href="/" style={backLinkStyle}>
-      Go back to landing page <ArrowRightIcon />
-    </Link>
-  );
-}
-
-const DASHBOARD_MAP: Record<string, string> = {
-  ADMIN: "/AdminDashboard",
-  COORDINATOR: "/CoordinatorDashboard",
-  GRANTOR: "/grantDashboard",
-  SCHOLAR: "/scholardashboard",
-  APPLICANT: "/ApplicantsDashboard",
-};
 
 function SignInForm() {
   const { login } = useAuth();
@@ -77,175 +41,108 @@ function SignInForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Field label="Email address">
-        <div style={ls.inputWrap}>
-          <span style={ls.inputIcon}>
-            <MailIcon />
-          </span>
-          <input
-            type="email"
-            style={ls.input}
-            placeholder="you@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-      </Field>
+    <form onSubmit={handleSubmit} className="grid gap-4">
+      <InputField
+        id="email"
+        label="Email address"
+        icon={Mail}
+        type="email"
+        placeholder="you@email.com"
+        autoComplete="email"
+        value={email}
+        onChange={setEmail}
+      />
+      <InputField
+        id="password"
+        label="Password"
+        icon={Lock}
+        type="password"
+        placeholder="Enter your password"
+        autoComplete="current-password"
+        value={password}
+        onChange={setPassword}
+        password
+        showPassword={showPassword}
+        onTogglePassword={() => setShowPassword((v) => !v)}
+      />
 
-      <Field label="Password">
-        <div style={ls.inputWrap}>
-          <span style={ls.inputIcon}>
-            <LockIcon />
-          </span>
-          <input
-            type={showPassword ? "text" : "password"}
-            style={{ ...ls.input, paddingRight: 44 }}
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button type="button" onClick={() => setShowPassword((v) => !v)} style={ls.inputEyeBtn}>
-            {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-          </button>
-        </div>
-      </Field>
+      {error && <div className="rounded-lg bg-bad-bg px-3 py-2 text-sm font-medium text-bad">{error}</div>}
 
-      {error && <div style={ls.errorBox}>{error}</div>}
-
-      <div style={ls.formRow}>
-        <label style={ls.checkboxLabel}>
-          <input
-            type="checkbox"
-            checked={remember}
-            onChange={() => setRemember((v) => !v)}
-            style={{ position: "absolute", opacity: 0, width: 1, height: 1, overflow: "hidden" }}
-          />
-          <span
-            aria-hidden="true"
-            style={{ ...ls.checkbox, background: remember ? AMBER : "#FFFFFF", borderColor: remember ? AMBER : LINE }}
-          >
-            {remember && <CheckCircleIcon />}
-          </span>
-          Keep me signed in
-        </label>
-        <button type="button" style={ls.forgotLink}>
+      <div className="flex items-center justify-between gap-3">
+        <CheckboxField
+          id="remember"
+          checked={remember}
+          onCheckedChange={(v) => setRemember(v === true)}
+          label="Keep me signed in"
+        />
+        <button
+          type="button"
+          className="text-[0.88rem] font-medium text-muted-foreground underline underline-offset-2 hover:text-navy"
+        >
           Forgot password?
         </button>
       </div>
 
-      <button type="submit" disabled={loading} style={{ ...ls.submitBtn, opacity: loading ? 0.85 : 1 }}>
+      <Button type="submit" disabled={loading} className="mt-1 h-11 w-full rounded-full text-[0.96rem] font-semibold">
         {loading ? (
           <>
-            <SpinnerIcon /> Signing in…
+            <Loader2 className="size-4 animate-spin" /> Signing in…
           </>
         ) : (
           <>
-            Sign in <ArrowRightIcon />
+            Sign in <ArrowRight className="size-4" />
           </>
         )}
-      </button>
+      </Button>
     </form>
   );
 }
 
 function SignedInPanel() {
-  const router = useRouter();
-  const { user, logout } = useAuth();
-
+  const { user } = useAuth();
   const role = user?.role ?? "";
-  const dashboardPath = DASHBOARD_MAP[role];
-  const roleLabel = role.charAt(0) + role.slice(1).toLowerCase();
-
-  const handleContinue = () => {
-    if (dashboardPath) {
-      router.push(dashboardPath);
-    }
-  };
+  const dashboardPath = DASHBOARD_MAP[role] ?? "/";
 
   return (
-    <div style={ls.successWrap}>
-      <span style={ls.successIcon}>
-        <CheckCircleIcon />
-      </span>
-      <h3 style={ls.successTitle}>You&apos;re signed in</h3>
-      <p style={ls.successSub}>
-        Welcome, <strong>{user?.first_name}</strong>
-      </p>
-      <div style={ls.successRoleTag}>{roleLabel} account</div>
-      <button type="button" style={ls.continueBtn} onClick={handleContinue}>
-        Continue to dashboard <ArrowRightIcon />
-      </button>
-      <button type="button" onClick={logout} style={ls.switchUserLink}>
-        Sign in as a different user
-      </button>
-    </div>
+    <SuccessPanel
+      title="You're signed in"
+      message={
+        <>
+          Welcome, <strong>{user?.first_name}</strong>
+        </>
+      }
+      roleLabel={roleLabel(role)}
+      continueHref={dashboardPath}
+    />
   );
 }
 
 export default function LoginPage() {
   const { user, loading } = useAuth();
 
-  if (loading) {
-    return (
-      <div className="vls">
-        <GlobalStyles />
-        <div className="vls-shell">
-          <BrandPanel mode="signin" />
-          <div className="vls-form-side" style={ls.formSide}>
-            <div className="vls-form-card" style={ls.formCard}>
-              <div style={{ ...ls.successWrap, minHeight: 300 }} />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="vls">
-      <GlobalStyles />
-      <div className="vls-shell">
-        <BrandPanel mode="signin" />
-
-        <div className="vls-form-side" style={ls.formSide}>
-          <div className="vls-form-card" style={ls.formCard}>
-            <BackToLandingLink />
-
-            {!user ? (
-              <>
-                <div style={ls.formHeader}>
-                  <h2 style={ls.formTitle}>Welcome back</h2>
-                  <p style={ls.formSub}>Sign in to your ViaScholar account.</p>
-                </div>
-
-                <ModeLinkTabs active="signin" LinkComponent={Link} />
-
-                <SignInForm />
-
-                <div style={ls.dividerRow}>
-                  <span style={ls.dividerLine} />
-                  <span style={ls.dividerText}>or continue with</span>
-                  <span style={ls.dividerLine} />
-                </div>
-
-                <button type="button" style={ls.googleBtn}>
-                  <GoogleIcon /> Continue with Google
-                </button>
-
-                <p style={ls.footerNote}>
-                  New to ViaScholar?{" "}
-                  <Link href="/signup" style={ls.footerLink}>
-                    Create an account
-                  </Link>
-                </p>
-              </>
-            ) : (
-              <SignedInPanel />
-            )}
-          </div>
+    <AuthShell mode="signin" title="Welcome back" subtitle="Sign in to your ViaScholar account.">
+      {loading ? (
+        <div className="grid gap-4">
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-11 w-full rounded-full" />
         </div>
-      </div>
-    </div>
+      ) : !user ? (
+        <div className="grid gap-6">
+          <ModeTabs active="signin" />
+          <SignInForm />
+          <SocialBlock />
+          <p className="text-center text-[0.92rem] text-muted-foreground">
+            New to ViaScholar?{" "}
+            <Link href="/signup" className="font-semibold text-navy underline underline-offset-2 hover:text-amber">
+              Create an account
+            </Link>
+          </p>
+        </div>
+      ) : (
+        <SignedInPanel />
+      )}
+    </AuthShell>
   );
 }
