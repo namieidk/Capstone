@@ -1,40 +1,36 @@
 "use client";
 
-import React, { useState, FormEvent, useRef, useEffect, useCallback } from "react";
+import { Check, ChevronLeft, ChevronRight, Eye, ListFilter, Plus } from "lucide-react";
+import type React from "react";
+import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Eye, ChevronLeft, ChevronRight, ListFilter, Check, Plus } from "lucide-react";
 import {
-  XCircleIcon,
+  AMBER,
+  AMBER_BG,
+  BellIcon,
+  BORDER_SUBTLE,
   DrawerInfoRow,
   Field,
   GOOD,
   GOOD_BG,
+  LINE,
+  MenuIcon,
+  NAVY,
+  SearchIcon,
+  SHADOW_MD,
+  SHADOW_SM,
+  s,
+  TINT,
   WARN,
   WARN_BG,
-  AMBER,
-  AMBER_BG,
-  TINT,
-  NAVY,
   WHITE,
-  LINE,
-  BORDER_SUBTLE,
-  SHADOW_SM,
-  SHADOW_MD,
-  MenuIcon,
-  BellIcon,
-  SearchIcon,
-  s,
+  XCircleIcon,
 } from "@/components/Adminshared";
 import { useSidebar } from "@/components/SidebarContext";
 import { useToast } from "@/components/ToastContext";
 import { ApiError } from "@/lib/api";
-import {
-  createStaff,
-  listUsers,
-  resetPassword,
-  updateUserStatus,
-} from "@/lib/api/users";
 import type { User } from "@/lib/api/auth";
+import { createStaff, listUsers, resetPassword, updateUserStatus } from "@/lib/api/users";
 
 const EMPLOYEE_FILTERS = ["All", "Coordinator", "Grantor"] as const;
 type EmployeeFilter = (typeof EMPLOYEE_FILTERS)[number];
@@ -82,9 +78,7 @@ function toStaffRow(user: User): StaffRow {
     type,
     status: user.is_active ? "Active" : "Inactive",
     initials: ((first[0] ?? "") + (last[0] ?? "")).toUpperCase() || "?",
-    joined: user.created_at
-      ? new Date(user.created_at).getFullYear().toString()
-      : "—",
+    joined: user.created_at ? new Date(user.created_at).getFullYear().toString() : "—",
     user,
   };
 }
@@ -127,9 +121,7 @@ export default function AdminEmployeePage() {
       setPage(1);
     } catch (err) {
       console.error("Failed to load employees:", err);
-      setLoadError(
-        err instanceof ApiError ? err.message : "Failed to load employees.",
-      );
+      setLoadError(err instanceof ApiError ? err.message : "Failed to load employees.");
     } finally {
       setLoading(false);
     }
@@ -142,8 +134,8 @@ export default function AdminEmployeePage() {
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       const target = e.target as Node;
-      const insideTrigger = filterRef.current && filterRef.current.contains(target);
-      const insideMenu = filterMenuRef.current && filterMenuRef.current.contains(target);
+      const insideTrigger = filterRef.current?.contains(target);
+      const insideMenu = filterMenuRef.current?.contains(target);
       if (!insideTrigger && !insideMenu) {
         setFilterOpen(false);
       }
@@ -199,9 +191,7 @@ export default function AdminEmployeePage() {
       await fetchStaff();
     } catch (err) {
       console.error("Failed to add employee:", err);
-      setAddError(
-        err instanceof ApiError ? err.message : "Failed to add employee.",
-      );
+      setAddError(err instanceof ApiError ? err.message : "Failed to add employee.");
     } finally {
       setAdding(false);
     }
@@ -213,13 +203,11 @@ export default function AdminEmployeePage() {
     setActionError("");
     try {
       await resetPassword(selected.id, newPassword);
-      showToast("Password reset for " + selected.name + ".");
+      showToast(`Password reset for ${selected.name}.`);
       setSelected(null);
     } catch (err) {
       console.error("Failed to reset password:", err);
-      setActionError(
-        err instanceof ApiError ? err.message : "Failed to reset password.",
-      );
+      setActionError(err instanceof ApiError ? err.message : "Failed to reset password.");
     } finally {
       setActing(false);
     }
@@ -237,9 +225,7 @@ export default function AdminEmployeePage() {
       await fetchStaff();
     } catch (err) {
       console.error("Failed to update employee status:", err);
-      setActionError(
-        err instanceof ApiError ? err.message : "Failed to update employee status.",
-      );
+      setActionError(err instanceof ApiError ? err.message : "Failed to update employee status.");
     } finally {
       setActing(false);
     }
@@ -266,7 +252,7 @@ export default function AdminEmployeePage() {
 
       {/* ---------------- Page-level navbar (search + Add employee — filter lives in the page body) ---------------- */}
       <header style={s.topbar}>
-        <button className="va-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="va-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -287,7 +273,7 @@ export default function AdminEmployeePage() {
               style={s.searchInput}
             />
           </div>
-          <button style={s.bellBtn}>
+          <button type="button" style={s.bellBtn}>
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
           </button>
@@ -295,8 +281,26 @@ export default function AdminEmployeePage() {
       </header>
 
       <div style={{ ...s.mainContent, padding: s.mainContent.padding }}>
-        <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "10px 22px 8px", marginTop: 20 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", padding: "6px 4px 14px" }}>
+        <div
+          style={{
+            background: WHITE,
+            border: BORDER_SUBTLE,
+            borderRadius: 18,
+            boxShadow: SHADOW_SM,
+            padding: "10px 22px 8px",
+            marginTop: 20,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 12,
+              flexWrap: "wrap",
+              padding: "6px 4px 14px",
+            }}
+          >
             <p style={{ fontSize: "0.88rem", color: "#7a7a74" }}>
               {!loading && !loadError && (
                 <>
@@ -307,6 +311,7 @@ export default function AdminEmployeePage() {
             <div ref={filterRef} style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div className="filter-trigger-wrap">
                 <button
+                  type="button"
                   ref={filterBtnRef}
                   onClick={handleFilterToggle}
                   aria-label="Filter by role"
@@ -346,6 +351,7 @@ export default function AdminEmployeePage() {
               </div>
 
               <button
+                type="button"
                 onClick={() => setShowAddModal(true)}
                 className="add-employee-btn"
                 style={{
@@ -394,6 +400,7 @@ export default function AdminEmployeePage() {
                     const isActive = filter === f;
                     return (
                       <button
+                        type="button"
                         key={f}
                         role="option"
                         aria-selected={isActive}
@@ -426,15 +433,15 @@ export default function AdminEmployeePage() {
                     );
                   })}
                 </div>,
-                document.body
+                document.body,
               )}
           </div>
 
           {loading ? (
             <div style={{ padding: "6px 0 14px" }}>
-              {Array.from({ length: 6 }).map((_, i) => (
+              {Array.from({ length: 6 }, (_, i) => `skeleton-${i}`).map((skeletonKey, i) => (
                 <div
-                  key={i}
+                  key={skeletonKey}
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -458,7 +465,7 @@ export default function AdminEmployeePage() {
           ) : loadError ? (
             <div style={{ textAlign: "center", padding: "40px 0" }}>
               <p style={{ color: "#8a3a2e", fontSize: "0.92rem", marginBottom: 14 }}>{loadError}</p>
-              <button onClick={fetchStaff} style={s.continueBtnSmall}>
+              <button type="button" onClick={fetchStaff} style={s.continueBtnSmall}>
                 Try again
               </button>
             </div>
@@ -510,7 +517,11 @@ export default function AdminEmployeePage() {
                     <tr
                       key={emp.id}
                       onClick={() => setSelected(emp)}
-                      style={{ borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`, cursor: "pointer", verticalAlign: "middle" }}
+                      style={{
+                        borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`,
+                        cursor: "pointer",
+                        verticalAlign: "middle",
+                      }}
                     >
                       <td style={{ ...s.td, padding: "16px 14px", textAlign: "center" }}>
                         <p style={s.tdName}>{emp.name}</p>
@@ -519,7 +530,18 @@ export default function AdminEmployeePage() {
                       <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{emp.title}</td>
                       <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{emp.department}</td>
                       <td style={{ ...s.td, textAlign: "center" }}>
-                        <span style={{ ...s.stageTag, width: 96, display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "6px 0", background: emp.type === "Coordinator" ? AMBER_BG : TINT, color: emp.type === "Coordinator" ? "#6b5220" : "#55554f" }}>
+                        <span
+                          style={{
+                            ...s.stageTag,
+                            width: 96,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: "6px 0",
+                            background: emp.type === "Coordinator" ? AMBER_BG : TINT,
+                            color: emp.type === "Coordinator" ? "#6b5220" : "#55554f",
+                          }}
+                        >
                           {emp.type}
                         </span>
                       </td>
@@ -553,12 +575,23 @@ export default function AdminEmployeePage() {
                       </td>
                       <td style={{ ...s.td, textAlign: "center" }}>
                         <button
-                          onClick={(e) => { e.stopPropagation(); setSelected(emp); }}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelected(emp);
+                          }}
                           aria-label="View employee"
                           style={{
-                            width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${LINE}`,
-                            display: "inline-flex", alignItems: "center", justifyContent: "center",
-                            background: WHITE, color: "#7a7a74", cursor: "pointer",
+                            width: 34,
+                            height: 34,
+                            borderRadius: "50%",
+                            border: `1.5px solid ${LINE}`,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            background: WHITE,
+                            color: "#7a7a74",
+                            cursor: "pointer",
                           }}
                         >
                           <Eye size={15} />
@@ -578,13 +611,23 @@ export default function AdminEmployeePage() {
           )}
 
           {!loading && !loadError && filtered.length > 0 && (
-            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}>
+            <div
+              style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}
+            >
               <button
+                type="button"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
                 style={{
-                  width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
-                  color: currentPage === 1 ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                  width: 32,
+                  height: 32,
+                  borderRadius: 8,
+                  border: `1px solid ${LINE}`,
+                  background: WHITE,
+                  color: currentPage === 1 ? "#c7c7c2" : "#55554f",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   cursor: currentPage === 1 ? "default" : "pointer",
                 }}
                 aria-label="Previous page"
@@ -593,23 +636,38 @@ export default function AdminEmployeePage() {
               </button>
               {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
                 <button
+                  type="button"
                   key={num}
                   onClick={() => setPage(num)}
                   style={{
-                    width: 32, height: 32, borderRadius: 8, border: `1px solid ${num === currentPage ? AMBER : LINE}`,
-                    background: num === currentPage ? AMBER : WHITE, color: num === currentPage ? NAVY : "#55554f",
-                    fontSize: "0.82rem", fontWeight: 700, cursor: "pointer",
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    border: `1px solid ${num === currentPage ? AMBER : LINE}`,
+                    background: num === currentPage ? AMBER : WHITE,
+                    color: num === currentPage ? NAVY : "#55554f",
+                    fontSize: "0.82rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
                   }}
                 >
                   {num}
                 </button>
               ))}
               <button
+                type="button"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
                 style={{
-                  width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
-                  color: currentPage === totalPages ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                  width: 32,
+                  height: 32,
+                  borderRadius: 8,
+                  border: `1px solid ${LINE}`,
+                  background: WHITE,
+                  color: currentPage === totalPages ? "#c7c7c2" : "#55554f",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   cursor: currentPage === totalPages ? "default" : "pointer",
                 }}
                 aria-label="Next page"
@@ -622,15 +680,38 @@ export default function AdminEmployeePage() {
       </div>
 
       {selected && (
-        <div style={s.drawerOverlay} onClick={closeDrawer}>
-          <div style={s.drawerPanel} onClick={(e) => e.stopPropagation()}>
+        // biome-ignore lint/a11y/useSemanticElements: overlay backdrop acts as a dismiss button; div cannot be a real button (contains block content)
+        <div
+          style={s.drawerOverlay}
+          onClick={closeDrawer}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              closeDrawer();
+            }
+          }}
+        >
+          <div
+            style={s.drawerPanel}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.stopPropagation();
+              }
+            }}
+          >
             <div style={{ ...s.drawerHeader, marginBottom: 22 }}>
-              <span style={{ ...s.profileAvatar, animation: "none", boxShadow: "none", transition: "none" }}>{selected.initials}</span>
+              <span style={{ ...s.profileAvatar, animation: "none", boxShadow: "none", transition: "none" }}>
+                {selected.initials}
+              </span>
               <div style={{ flexGrow: 1 }}>
                 <h3 style={s.drawerName}>{selected.name}</h3>
                 <p style={s.drawerMeta}>{selected.title}</p>
               </div>
-              <button onClick={closeDrawer} style={s.drawerCloseBtn}>
+              <button type="button" onClick={closeDrawer} style={s.drawerCloseBtn}>
                 <XCircleIcon />
               </button>
             </div>
@@ -649,11 +730,7 @@ export default function AdminEmployeePage() {
               </p>
             </div>
 
-            {actionError && (
-              <div style={actionErrorStyle}>
-                {actionError}
-              </div>
-            )}
+            {actionError && <div style={actionErrorStyle}>{actionError}</div>}
 
             {resetOpen ? (
               <div style={{ marginTop: 18 }}>
@@ -667,6 +744,7 @@ export default function AdminEmployeePage() {
                 />
                 <div style={{ ...s.drawerStageActions, marginTop: 14 }}>
                   <button
+                    type="button"
                     onClick={handleResetPassword}
                     disabled={acting || newPassword.trim().length < 8}
                     style={{ ...s.continueBtn, opacity: acting || newPassword.trim().length < 8 ? 0.6 : 1 }}
@@ -674,7 +752,11 @@ export default function AdminEmployeePage() {
                     {acting ? "Resetting..." : "Confirm reset"}
                   </button>
                   <button
-                    onClick={() => { setResetOpen(false); setNewPassword(""); }}
+                    type="button"
+                    onClick={() => {
+                      setResetOpen(false);
+                      setNewPassword("");
+                    }}
                     disabled={acting}
                     style={s.backBtn}
                   >
@@ -684,10 +766,11 @@ export default function AdminEmployeePage() {
               </div>
             ) : (
               <div style={{ ...s.drawerStageActions, marginTop: 4 }}>
-                <button style={s.continueBtnSmall} onClick={() => setResetOpen(true)}>
+                <button type="button" style={s.continueBtnSmall} onClick={() => setResetOpen(true)}>
                   Reset password
                 </button>
                 <button
+                  type="button"
                   style={selected.user.is_active ? s.rejectBtn : s.continueBtnSmall}
                   onClick={handleToggleStatus}
                   disabled={acting}
@@ -701,8 +784,29 @@ export default function AdminEmployeePage() {
       )}
 
       {showAddModal && (
-        <div style={s.drawerOverlay} onClick={() => setShowAddModal(false)}>
-          <div style={s.modalCard} onClick={(e) => e.stopPropagation()}>
+        // biome-ignore lint/a11y/useSemanticElements: modal overlay backdrop acts as a dismiss button; div cannot be a real button (contains block content)
+        <div
+          style={s.drawerOverlay}
+          onClick={() => setShowAddModal(false)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setShowAddModal(false);
+            }
+          }}
+        >
+          <div
+            style={s.modalCard}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.stopPropagation();
+              }
+            }}
+          >
             <h3 style={s.drawerName}>Add employee</h3>
             <p style={s.drawerMeta}>Add a coordinator or grantor account.</p>
             <form onSubmit={handleAddEmployee} style={{ marginTop: 20 }}>
@@ -773,11 +877,7 @@ export default function AdminEmployeePage() {
                 <button type="button" onClick={() => setShowAddModal(false)} style={s.backBtn}>
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  style={{ ...s.continueBtn, opacity: adding ? 0.6 : 1 }}
-                  disabled={adding}
-                >
+                <button type="submit" style={{ ...s.continueBtn, opacity: adding ? 0.6 : 1 }} disabled={adding}>
                   {adding ? "Adding..." : "Add employee"}
                 </button>
               </div>

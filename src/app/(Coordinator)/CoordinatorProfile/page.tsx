@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { CameraIcon, DrawerInfoRow, COORDINATOR, ACTIVE_SCHOLARS, s } from "@/components/Coordinatorshared";
+import { useState } from "react";
+import { ACTIVE_SCHOLARS, CameraIcon, COORDINATOR, DrawerInfoRow, s } from "@/components/Coordinatorshared";
 
 function ProfilePageStyles() {
   return (
@@ -39,7 +39,7 @@ export default function ProfilePage() {
       <ProfilePageStyles />
 
       <div className="coor-profile-banner" style={{ ...s.profileBanner, background: COORDINATOR.bannerGradient }}>
-        <button style={s.profileBannerEditBtn}>
+        <button type="button" style={s.profileBannerEditBtn}>
           <CameraIcon /> Change banner
         </button>
       </div>
@@ -49,26 +49,34 @@ export default function ProfilePage() {
           <span className="coor-profile-avatar" style={{ ...s.profileAvatar, background: COORDINATOR.avatarColor }}>
             {COORDINATOR.initials}
           </span>
-          <button style={s.profileAvatarEditBtn}>
+          <button type="button" style={s.profileAvatarEditBtn}>
             <CameraIcon />
           </button>
         </div>
         <div className="coor-profile-header-info" style={s.profileHeaderInfo}>
-          <h2 className="coor-profile-name" style={s.profileName}>{COORDINATOR.name}</h2>
+          <h2 className="coor-profile-name" style={s.profileName}>
+            {COORDINATOR.name}
+          </h2>
           <p style={s.profileMeta}>{COORDINATOR.title}</p>
         </div>
-        <button className="coor-profile-edit-btn" style={s.continueBtnSmall}>Edit profile</button>
+        <button type="button" className="coor-profile-edit-btn" style={s.continueBtnSmall}>
+          Edit profile
+        </button>
       </div>
 
       <div className="coor-profile-bio-card" style={s.profileBioCard}>
         <div style={s.profileBioHeader}>
           <p style={s.profileBioLabel}>Bio</p>
-          <button onClick={() => setEditingBio((v) => !v)} style={s.reviewEditLink}>
+          <button type="button" onClick={() => setEditingBio((v) => !v)} style={s.reviewEditLink}>
             {editingBio ? "Save" : "Edit"}
           </button>
         </div>
         {editingBio ? (
-          <textarea style={{ ...s.input, height: 90, resize: "vertical" }} value={bio} onChange={(e) => setBio(e.target.value)} />
+          <textarea
+            style={{ ...s.input, height: 90, resize: "vertical" }}
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+          />
         ) : (
           <p style={s.profileBioText}>{bio}</p>
         )}

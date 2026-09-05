@@ -1,26 +1,27 @@
 "use client";
 
-import React, { useMemo, useState, FormEvent } from "react";
+import type React from "react";
+import { type FormEvent, useMemo, useState } from "react";
 import {
-  InterviewIcon,
-  XCircleIcon,
-  Field,
-  UPCOMING_MEETINGS,
-  ScheduledMeeting,
-  NAVY,
-  WHITE,
-  TINT,
-  LINE,
   AMBER,
   AMBER_BG,
+  BellIcon,
+  Field,
   GOOD,
   GOOD_BG,
-  WARN_BG,
-  WARN,
-  s,
+  InterviewIcon,
+  LINE,
   MenuIcon,
+  NAVY,
+  type ScheduledMeeting,
   SearchIcon,
-  BellIcon,
+  s,
+  TINT,
+  UPCOMING_MEETINGS,
+  WARN,
+  WARN_BG,
+  WHITE,
+  XCircleIcon,
 } from "@/components/Grantorshared";
 import { useSidebar } from "@/components/SidebarContext";
 
@@ -43,7 +44,16 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
 
 function CalendarIcon() {
   return (
-    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="19"
+      height="19"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+      focusable="false"
+    >
       <rect x="3" y="5" width="18" height="16" rx="2" />
       <path d="M16 3v4M8 3v4M3 10h18" />
       <path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01" />
@@ -53,7 +63,16 @@ function CalendarIcon() {
 
 function VideoCallIcon() {
   return (
-    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="19"
+      height="19"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+      focusable="false"
+    >
       <rect x="2" y="6" width="14" height="12" rx="2" />
       <path d="M16 10l6-4v12l-6-4" />
     </svg>
@@ -62,14 +81,36 @@ function VideoCallIcon() {
 
 function ChevronLeftIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
       <path d="M15 18l-6-6 6-6" />
     </svg>
   );
 }
 function ChevronRightIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
       <path d="M9 18l6-6-6-6" />
     </svg>
   );
@@ -79,8 +120,29 @@ function ChevronRightIcon() {
 /* Date / time helpers                                                 */
 /* ------------------------------------------------------------------ */
 
-const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
-const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const WEEKDAY_LABELS = [
+  { key: "sun", label: "S" },
+  { key: "mon", label: "M" },
+  { key: "tue", label: "T" },
+  { key: "wed", label: "W" },
+  { key: "thu", label: "T" },
+  { key: "fri", label: "F" },
+  { key: "sat", label: "S" },
+];
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function pad2(n: number) {
@@ -91,7 +153,7 @@ function dateKey(d: Date) {
 }
 function parseFlexibleDate(str: string): Date {
   const d = new Date(str);
-  return isNaN(d.getTime()) ? new Date() : d;
+  return Number.isNaN(d.getTime()) ? new Date() : d;
 }
 function parseTimeToMinutes(t: string): number {
   const ampm = t.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
@@ -127,7 +189,8 @@ function getMonthMatrix(monthDate: Date): { date: Date; inMonth: boolean }[] {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const prevMonthDays = new Date(year, month, 0).getDate();
   const cells: { date: Date; inMonth: boolean }[] = [];
-  for (let i = startWeekday - 1; i >= 0; i--) cells.push({ date: new Date(year, month - 1, prevMonthDays - i), inMonth: false });
+  for (let i = startWeekday - 1; i >= 0; i--)
+    cells.push({ date: new Date(year, month - 1, prevMonthDays - i), inMonth: false });
   for (let d = 1; d <= daysInMonth; d++) cells.push({ date: new Date(year, month, d), inMonth: true });
   let next = 1;
   while (cells.length < 42) cells.push({ date: new Date(year, month + 1, next++), inMonth: false });
@@ -149,7 +212,10 @@ function genMeetingId() {
 }
 function getInitials(name: string) {
   const words = name.split(" ").filter(Boolean);
-  const letters = words.slice(0, 2).map((w) => w[0]).join("");
+  const letters = words
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("");
   return (letters || "??").toUpperCase();
 }
 
@@ -188,7 +254,7 @@ export default function GrantorMeetingPage() {
       query
         ? combined.filter((m) => m.title.toLowerCase().includes(query) || m.with.toLowerCase().includes(query))
         : combined,
-    [combined, query]
+    [combined, query],
   );
 
   const meetingDateKeys = useMemo(() => new Set(combined.map((m) => dateKey(m.dateObj))), [combined]);
@@ -302,13 +368,18 @@ export default function GrantorMeetingPage() {
   function getMonthCells(year: number, month: number) {
     const firstWeekday = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const cells: (number | null)[] = [];
-    for (let i = 0; i < firstWeekday; i++) cells.push(null);
-    for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+    const prevMonthDays = new Date(year, month, 0).getDate();
+    const cells: { key: string; day: number | null }[] = [];
+    for (let i = 0; i < firstWeekday; i++)
+      cells.push({ key: `blank-${prevMonthDays - firstWeekday + 1 + i}`, day: null });
+    for (let d = 1; d <= daysInMonth; d++) cells.push({ key: `day-${d}`, day: d });
     return cells;
   }
   const modalMonthCells = getMonthCells(modalCalYear, modalCalMonth);
-  const modalMonthLabel = new Date(modalCalYear, modalCalMonth, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const modalMonthLabel = new Date(modalCalYear, modalCalMonth, 1).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
 
   function goPrevModalMonth() {
     if (modalCalMonth === 0) {
@@ -361,7 +432,7 @@ export default function GrantorMeetingPage() {
 
       {/* ---------------- Page-level navbar ---------------- */}
       <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button className="vg-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="vg-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -378,39 +449,93 @@ export default function GrantorMeetingPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <button style={s.bellBtn}>
+          <button type="button" style={s.bellBtn}>
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
           </button>
         </div>
       </header>
 
-      <div style={{ ...s.mainContent, padding: s.mainContent.padding, flexGrow: 1, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <div
+        style={{
+          ...s.mainContent,
+          padding: s.mainContent.padding,
+          flexGrow: 1,
+          minHeight: 0,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        }}
+      >
         <div className="meeting-grid">
           {/* ---------------- Left: day timeline (its own scroll region) ---------------- */}
-          <div className="meeting-scroll-col" style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, boxShadow: SHADOW_SM, padding: "28px 30px 32px" }}>
+          <div
+            className="meeting-scroll-col"
+            style={{
+              background: WHITE,
+              border: BORDER_SUBTLE,
+              borderRadius: 20,
+              boxShadow: SHADOW_SM,
+              padding: "28px 30px 32px",
+            }}
+          >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 26 }}>
               <div>
-                <p style={{ fontSize: "0.76rem", fontWeight: 700, letterSpacing: "0.08em", color: "#8A6410", marginBottom: 4 }}>
+                <p
+                  style={{
+                    fontSize: "0.76rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.08em",
+                    color: "#8A6410",
+                    marginBottom: 4,
+                  }}
+                >
                   {selectedLabel}
                 </p>
-                <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.5rem", fontWeight: 700, color: NAVY }}>{selectedDateFull}</h2>
+                <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.5rem", fontWeight: 700, color: NAVY }}>
+                  {selectedDateFull}
+                </h2>
               </div>
               {!isSelectedToday && (
-                <button onClick={jumpToToday} style={{ background: TINT, color: NAVY, fontWeight: 600, fontSize: "0.8rem", padding: "8px 16px", borderRadius: 999 }}>
+                <button
+                  type="button"
+                  onClick={jumpToToday}
+                  style={{
+                    background: TINT,
+                    color: NAVY,
+                    fontWeight: 600,
+                    fontSize: "0.8rem",
+                    padding: "8px 16px",
+                    borderRadius: 999,
+                  }}
+                >
                   Today
                 </button>
               )}
             </div>
 
             {dayMeetings.length === 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "64px 0", color: "#9a9a94", gap: 10 }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "64px 0",
+                  color: "#9a9a94",
+                  gap: 10,
+                }}
+              >
                 <CalendarIcon />
                 <p style={{ fontSize: "0.92rem" }}>
                   {query ? "No matching meetings on this day." : "No meetings scheduled for this day."}
                 </p>
                 {!query && (
-                  <button onClick={() => setModalStep("choice")} style={{ ...s.continueBtnSmall, marginTop: 6 }}>
+                  <button
+                    type="button"
+                    onClick={() => setModalStep("choice")}
+                    style={{ ...s.continueBtnSmall, marginTop: 6 }}
+                  >
                     <CalendarIcon /> Book a meeting
                   </button>
                 )}
@@ -420,25 +545,79 @@ export default function GrantorMeetingPage() {
                 {/* Hour labels */}
                 <div style={{ width: 56, flexShrink: 0, position: "relative", height: trackHeight }}>
                   {hoursArr.slice(0, -1).map((h) => (
-                    <span key={h} style={{ position: "absolute", top: (h - startHour) * HOUR_H - 7, right: 10, fontSize: "0.74rem", color: "#9a9a94", fontWeight: 600 }}>
+                    <span
+                      key={h}
+                      style={{
+                        position: "absolute",
+                        top: (h - startHour) * HOUR_H - 7,
+                        right: 10,
+                        fontSize: "0.74rem",
+                        color: "#9a9a94",
+                        fontWeight: 600,
+                      }}
+                    >
                       {formatHourLabel(h)}
                     </span>
                   ))}
                   {showNowLine && (
-                    <span style={{ position: "absolute", top: nowTop - 10, right: 10, background: AMBER, color: NAVY, fontSize: "0.68rem", fontWeight: 700, padding: "2px 7px", borderRadius: 999, whiteSpace: "nowrap" }}>
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: nowTop - 10,
+                        right: 10,
+                        background: AMBER,
+                        color: NAVY,
+                        fontSize: "0.68rem",
+                        fontWeight: 700,
+                        padding: "2px 7px",
+                        borderRadius: 999,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {formatTimeLabel(nowMinutes)}
                     </span>
                   )}
                 </div>
 
                 {/* Track */}
-                <div style={{ flexGrow: 1, position: "relative", borderLeft: `1px solid ${LINE}`, height: trackHeight }}>
+                <div
+                  style={{ flexGrow: 1, position: "relative", borderLeft: `1px solid ${LINE}`, height: trackHeight }}
+                >
                   {hoursArr.map((h) => (
-                    <div key={h} style={{ position: "absolute", top: (h - startHour) * HOUR_H, left: 0, right: 0, borderTop: `1px solid ${TINT}` }} />
+                    <div
+                      key={h}
+                      style={{
+                        position: "absolute",
+                        top: (h - startHour) * HOUR_H,
+                        left: 0,
+                        right: 0,
+                        borderTop: `1px solid ${TINT}`,
+                      }}
+                    />
                   ))}
                   {showNowLine && (
-                    <div style={{ position: "absolute", top: nowTop, left: 0, right: 0, height: 2, background: AMBER, zIndex: 2 }}>
-                      <span style={{ position: "absolute", left: -5, top: -4, width: 10, height: 10, borderRadius: "50%", background: AMBER }} />
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: nowTop,
+                        left: 0,
+                        right: 0,
+                        height: 2,
+                        background: AMBER,
+                        zIndex: 2,
+                      }}
+                    >
+                      <span
+                        style={{
+                          position: "absolute",
+                          left: -5,
+                          top: -4,
+                          width: 10,
+                          height: 10,
+                          borderRadius: "50%",
+                          background: AMBER,
+                        }}
+                      />
                     </div>
                   )}
                   {dayMeetings.map((m, i) => {
@@ -469,11 +648,41 @@ export default function GrantorMeetingPage() {
                         }}
                       >
                         <div>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
-                            <p style={{ fontSize: "0.9rem", fontWeight: 700, color: NAVY, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexGrow: 1, minWidth: 0 }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "flex-start",
+                              gap: 10,
+                            }}
+                          >
+                            <p
+                              style={{
+                                fontSize: "0.9rem",
+                                fontWeight: 700,
+                                color: NAVY,
+                                lineHeight: 1.3,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                                flexGrow: 1,
+                                minWidth: 0,
+                              }}
+                            >
                               {m.title}
                             </p>
-                            <span style={{ fontSize: "0.66rem", fontWeight: 700, padding: "3px 9px", borderRadius: 999, background: colors.bg, color: colors.text, whiteSpace: "nowrap", flexShrink: 0 }}>
+                            <span
+                              style={{
+                                fontSize: "0.66rem",
+                                fontWeight: 700,
+                                padding: "3px 9px",
+                                borderRadius: 999,
+                                background: colors.bg,
+                                color: colors.text,
+                                whiteSpace: "nowrap",
+                                flexShrink: 0,
+                              }}
+                            >
                               {m.status}
                             </span>
                           </div>
@@ -482,8 +691,19 @@ export default function GrantorMeetingPage() {
                           </p>
                         </div>
                         <button
+                          type="button"
                           onClick={() => joinMeeting(m)}
-                          style={{ alignSelf: "flex-start", background: WHITE, color: NAVY, fontWeight: 600, fontSize: "0.74rem", padding: "6px 14px", borderRadius: 999, border: `1px solid ${LINE}`, flexShrink: 0 }}
+                          style={{
+                            alignSelf: "flex-start",
+                            background: WHITE,
+                            color: NAVY,
+                            fontWeight: 600,
+                            fontSize: "0.74rem",
+                            padding: "6px 14px",
+                            borderRadius: 999,
+                            border: `1px solid ${LINE}`,
+                            flexShrink: 0,
+                          }}
                         >
                           Join
                         </button>
@@ -496,11 +716,21 @@ export default function GrantorMeetingPage() {
           </div>
 
           {/* ---------------- Right: calendar sidebar (its own scroll region) ---------------- */}
-          <aside className="meeting-scroll-col" style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, boxShadow: SHADOW_SM, padding: "24px 24px 26px" }}>
+          <aside
+            className="meeting-scroll-col"
+            style={{
+              background: WHITE,
+              border: BORDER_SUBTLE,
+              borderRadius: 20,
+              boxShadow: SHADOW_SM,
+              padding: "24px 24px 26px",
+            }}
+          >
             <div style={{ display: "inline-flex", background: TINT, borderRadius: 999, padding: 4, marginBottom: 22 }}>
               {(["month", "year"] as const).map((mode) => (
                 <button
                   key={mode}
+                  type="button"
                   className="segment-btn"
                   onClick={() => setCalendarViewMode(mode)}
                   style={{
@@ -522,37 +752,66 @@ export default function GrantorMeetingPage() {
 
             {calendarViewMode === "month" ? (
               <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}
+                >
                   <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.2rem", fontWeight: 700, color: NAVY }}>
-                    {MONTH_NAMES[calendarMonth.getMonth()]} <span style={{ color: "#9a9a94", fontWeight: 500 }}>{calendarMonth.getFullYear()}</span>
+                    {MONTH_NAMES[calendarMonth.getMonth()]}{" "}
+                    <span style={{ color: "#9a9a94", fontWeight: 500 }}>{calendarMonth.getFullYear()}</span>
                   </p>
                   <div style={{ display: "flex", gap: 6 }}>
-                    <button className="cal-nav-btn" onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1))} style={navBtnStyle} aria-label="Previous month">
+                    <button
+                      type="button"
+                      className="cal-nav-btn"
+                      onClick={() =>
+                        setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1))
+                      }
+                      style={navBtnStyle}
+                      aria-label="Previous month"
+                    >
                       <ChevronLeftIcon />
                     </button>
-                    <button className="cal-nav-btn" onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1))} style={navBtnStyle} aria-label="Next month">
+                    <button
+                      type="button"
+                      className="cal-nav-btn"
+                      onClick={() =>
+                        setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1))
+                      }
+                      style={navBtnStyle}
+                      aria-label="Next month"
+                    >
                       <ChevronRightIcon />
                     </button>
                   </div>
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 6 }}>
-                  {WEEKDAY_LABELS.map((w, i) => (
-                    <span key={i} style={{ textAlign: "center", fontSize: "0.68rem", fontWeight: 700, color: "#9a9a94", letterSpacing: "0.04em" }}>
-                      {w}
+                  {WEEKDAY_LABELS.map((w) => (
+                    <span
+                      key={w.key}
+                      style={{
+                        textAlign: "center",
+                        fontSize: "0.68rem",
+                        fontWeight: 700,
+                        color: "#9a9a94",
+                        letterSpacing: "0.04em",
+                      }}
+                    >
+                      {w.label}
                     </span>
                   ))}
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 3 }}>
-                  {monthMatrix.map(({ date, inMonth }, i) => {
+                  {monthMatrix.map(({ date, inMonth }) => {
                     const key = dateKey(date);
                     const isSelected = key === selectedDateKey;
                     const isToday = key === todayKey;
                     const hasMeeting = meetingDateKeys.has(key);
                     return (
-                      <div key={i} style={{ position: "relative", display: "flex", justifyContent: "center" }}>
+                      <div key={key} style={{ position: "relative", display: "flex", justifyContent: "center" }}>
                         <button
+                          type="button"
                           className={`cal-day-btn ${isSelected ? "cal-day-selected" : ""}`}
                           onClick={() => {
                             setSelectedDateKey(key);
@@ -572,7 +831,16 @@ export default function GrantorMeetingPage() {
                           {date.getDate()}
                         </button>
                         {hasMeeting && (
-                          <span style={{ position: "absolute", bottom: 2, width: 4, height: 4, borderRadius: "50%", background: isSelected ? WHITE : AMBER }} />
+                          <span
+                            style={{
+                              position: "absolute",
+                              bottom: 2,
+                              width: 4,
+                              height: 4,
+                              borderRadius: "50%",
+                              background: isSelected ? WHITE : AMBER,
+                            }}
+                          />
                         )}
                       </div>
                     );
@@ -581,13 +849,33 @@ export default function GrantorMeetingPage() {
               </>
             ) : (
               <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.2rem", fontWeight: 700, color: NAVY }}>{calendarMonth.getFullYear()}</p>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}
+                >
+                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.2rem", fontWeight: 700, color: NAVY }}>
+                    {calendarMonth.getFullYear()}
+                  </p>
                   <div style={{ display: "flex", gap: 6 }}>
-                    <button className="cal-nav-btn" onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear() - 1, calendarMonth.getMonth(), 1))} style={navBtnStyle} aria-label="Previous year">
+                    <button
+                      type="button"
+                      className="cal-nav-btn"
+                      onClick={() =>
+                        setCalendarMonth(new Date(calendarMonth.getFullYear() - 1, calendarMonth.getMonth(), 1))
+                      }
+                      style={navBtnStyle}
+                      aria-label="Previous year"
+                    >
                       <ChevronLeftIcon />
                     </button>
-                    <button className="cal-nav-btn" onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear() + 1, calendarMonth.getMonth(), 1))} style={navBtnStyle} aria-label="Next year">
+                    <button
+                      type="button"
+                      className="cal-nav-btn"
+                      onClick={() =>
+                        setCalendarMonth(new Date(calendarMonth.getFullYear() + 1, calendarMonth.getMonth(), 1))
+                      }
+                      style={navBtnStyle}
+                      aria-label="Next year"
+                    >
                       <ChevronRightIcon />
                     </button>
                   </div>
@@ -598,6 +886,7 @@ export default function GrantorMeetingPage() {
                     return (
                       <button
                         key={abbr}
+                        type="button"
                         className="cal-day-btn"
                         onClick={() => {
                           setCalendarMonth(new Date(calendarMonth.getFullYear(), idx, 1));
@@ -622,6 +911,7 @@ export default function GrantorMeetingPage() {
 
             <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 10 }}>
               <button
+                type="button"
                 className="book-btn"
                 onClick={() => setModalStep("choice")}
                 style={{
@@ -639,23 +929,53 @@ export default function GrantorMeetingPage() {
 
             {otherMeetings.length > 0 && (
               <div style={{ marginTop: 20, borderTop: `1px solid ${LINE}`, paddingTop: 18 }}>
-                <p style={{ fontSize: "0.76rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#9a9a94", marginBottom: 10 }}>
+                <p
+                  style={{
+                    fontSize: "0.76rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    color: "#9a9a94",
+                    marginBottom: 10,
+                  }}
+                >
                   Upcoming ({otherMeetings.length})
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   {otherMeetings.map((m) => (
                     <button
                       key={m.id}
+                      type="button"
                       className="waiting-row"
                       onClick={() => {
                         setSelectedDateKey(dateKey(m.dateObj));
                         setCalendarMonth(new Date(m.dateObj.getFullYear(), m.dateObj.getMonth(), 1));
                       }}
-                      style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 6px", borderRadius: 10, textAlign: "left", width: "100%" }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        padding: "8px 6px",
+                        borderRadius: 10,
+                        textAlign: "left",
+                        width: "100%",
+                      }}
                     >
-                      <span style={{ ...s.convoAvatar, width: 30, height: 30, fontSize: "0.72rem" }}>{getInitials(m.with)}</span>
+                      <span style={{ ...s.convoAvatar, width: 30, height: 30, fontSize: "0.72rem" }}>
+                        {getInitials(m.with)}
+                      </span>
                       <span style={{ flexGrow: 1, minWidth: 0 }}>
-                        <span style={{ display: "block", fontSize: "0.84rem", fontWeight: 600, color: "#3a3a36", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <span
+                          style={{
+                            display: "block",
+                            fontSize: "0.84rem",
+                            fontWeight: 600,
+                            color: "#3a3a36",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
                           {m.title}
                         </span>
                         <span style={{ display: "block", fontSize: "0.72rem", color: "#9a9a94" }}>
@@ -675,7 +995,22 @@ export default function GrantorMeetingPage() {
               </p>
             )}
 
-            <button className="view-all-link" onClick={() => setShowAllDrawer(true)} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", marginTop: 16, fontSize: "0.86rem", fontWeight: 700, color: "#8A6410" }}>
+            <button
+              type="button"
+              className="view-all-link"
+              onClick={() => setShowAllDrawer(true)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                width: "100%",
+                marginTop: 16,
+                fontSize: "0.86rem",
+                fontWeight: 700,
+                color: "#8A6410",
+              }}
+            >
               View all meetings <span aria-hidden>→</span>
             </button>
           </aside>
@@ -684,19 +1019,30 @@ export default function GrantorMeetingPage() {
 
       {/* ---------------- New meeting: choice modal ---------------- */}
       {modalStep === "choice" && (
-        <div style={s.drawerOverlay} onClick={resetAndCloseModal}>
-          <div style={s.modalCard} onClick={(e) => e.stopPropagation()}>
+        <div
+          style={s.drawerOverlay}
+          role="dialog"
+          aria-modal="true"
+          onClick={resetAndCloseModal}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              resetAndCloseModal();
+            }
+          }}
+        >
+          <div style={s.modalCard} role="presentation" aria-hidden onClick={(e) => e.stopPropagation()}>
             <h3 style={s.drawerName}>New meeting</h3>
             <p style={s.drawerMeta}>Start a meeting now, or schedule one for later.</p>
             <div style={s.choiceGrid}>
-              <button style={s.choiceCard} onClick={startInstantMeeting}>
+              <button type="button" style={s.choiceCard} onClick={startInstantMeeting}>
                 <span style={s.choiceIconBox}>
                   <VideoCallIcon />
                 </span>
                 <span style={s.choiceCardTitle}>Instant meeting</span>
                 <span style={s.choiceCardDesc}>Start now and share the link with the coordinator.</span>
               </button>
-              <button style={s.choiceCard} onClick={() => setModalStep("schedule")}>
+              <button type="button" style={s.choiceCard} onClick={() => setModalStep("schedule")}>
                 <span style={s.choiceIconBox}>
                   <CalendarIcon />
                 </span>
@@ -715,8 +1061,19 @@ export default function GrantorMeetingPage() {
 
       {/* ---------------- Live meeting modal ---------------- */}
       {modalStep === "live" && (
-        <div style={s.drawerOverlay} onClick={resetAndCloseModal}>
-          <div style={s.modalCard} onClick={(e) => e.stopPropagation()}>
+        <div
+          style={s.drawerOverlay}
+          role="dialog"
+          aria-modal="true"
+          onClick={resetAndCloseModal}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              resetAndCloseModal();
+            }
+          }}
+        >
+          <div style={s.modalCard} role="presentation" aria-hidden onClick={(e) => e.stopPropagation()}>
             <h3 style={s.drawerName}>Your meeting is ready</h3>
             <p style={s.drawerMeta}>Share this link with the coordinator to join.</p>
             <div style={s.liveMeetingCard}>
@@ -741,9 +1098,22 @@ export default function GrantorMeetingPage() {
 
       {/* ---------------- Schedule modal ---------------- */}
       {modalStep === "schedule" && (
-        <div style={s.drawerOverlay} onClick={resetAndCloseModal}>
+        <div
+          style={s.drawerOverlay}
+          role="dialog"
+          aria-modal="true"
+          onClick={resetAndCloseModal}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              resetAndCloseModal();
+            }
+          }}
+        >
           <div
             style={{ ...s.modalCard, maxHeight: "85vh", overflowY: "auto", padding: "24px 26px" }}
+            role="presentation"
+            aria-hidden
             onClick={(e) => e.stopPropagation()}
           >
             <h3 style={s.drawerName}>Schedule a meeting</h3>
@@ -771,15 +1141,16 @@ export default function GrantorMeetingPage() {
                     </button>
                   </div>
                   <div style={s.calendarWeekRow}>
-                    {WEEKDAY_LABELS.map((w, i) => (
-                      <span key={i} style={s.calendarWeekday}>
-                        {w}
+                    {WEEKDAY_LABELS.map((w) => (
+                      <span key={w.key} style={s.calendarWeekday}>
+                        {w.label}
                       </span>
                     ))}
                   </div>
                   <div style={s.calendarDayGrid}>
-                    {modalMonthCells.map((day, i) => {
-                      if (day === null) return <span key={i} style={s.calendarDayBtnEmpty} />;
+                    {modalMonthCells.map((cell) => {
+                      if (cell.day === null) return <span key={cell.key} style={s.calendarDayBtnEmpty} />;
+                      const day = cell.day;
                       const past = isPastDay(day);
                       const isSelected =
                         !!modalSelectedDate &&
@@ -787,10 +1158,12 @@ export default function GrantorMeetingPage() {
                         modalSelectedDate.getMonth() === modalCalMonth &&
                         modalSelectedDate.getDate() === day;
                       const isToday =
-                        modalCalYear === today.getFullYear() && modalCalMonth === today.getMonth() && day === today.getDate();
+                        modalCalYear === today.getFullYear() &&
+                        modalCalMonth === today.getMonth() &&
+                        day === today.getDate();
                       return (
                         <button
-                          key={i}
+                          key={cell.key}
                           type="button"
                           disabled={past}
                           onClick={() => setModalSelectedDate(new Date(modalCalYear, modalCalMonth, day))}
@@ -812,10 +1185,19 @@ export default function GrantorMeetingPage() {
 
               <div className="vg-field-row-2" style={s.fieldRow2}>
                 <Field label="Time" required>
-                  <input type="time" style={s.input} value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} />
+                  <input
+                    type="time"
+                    style={s.input}
+                    value={form.time}
+                    onChange={(e) => setForm({ ...form, time: e.target.value })}
+                  />
                 </Field>
                 <Field label="With" required>
-                  <select style={s.select} value={form.invitee} onChange={(e) => setForm({ ...form, invitee: e.target.value })}>
+                  <select
+                    style={s.select}
+                    value={form.invitee}
+                    onChange={(e) => setForm({ ...form, invitee: e.target.value })}
+                  >
                     <option value="">Select a person...</option>
                     <option>Engr. Paolo R. — HR Coordinator</option>
                     <option>Coordinator Office — ViaScholar staff</option>
@@ -838,14 +1220,25 @@ export default function GrantorMeetingPage() {
 
       {/* ---------------- All meetings drawer ---------------- */}
       {showAllDrawer && (
-        <div style={s.drawerOverlay} onClick={() => setShowAllDrawer(false)}>
-          <div style={s.drawerPanel} onClick={(e) => e.stopPropagation()}>
+        <div
+          style={s.drawerOverlay}
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setShowAllDrawer(false)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setShowAllDrawer(false);
+            }
+          }}
+        >
+          <div style={s.drawerPanel} role="presentation" aria-hidden onClick={(e) => e.stopPropagation()}>
             <div style={{ ...s.drawerHeader, marginBottom: 22 }}>
               <div style={{ flexGrow: 1 }}>
                 <h3 style={s.drawerName}>All meetings</h3>
                 <p style={s.drawerMeta}>{combined.length} scheduled</p>
               </div>
-              <button onClick={() => setShowAllDrawer(false)} style={s.drawerCloseBtn}>
+              <button type="button" onClick={() => setShowAllDrawer(false)} style={s.drawerCloseBtn}>
                 <XCircleIcon />
               </button>
             </div>
@@ -862,22 +1255,47 @@ export default function GrantorMeetingPage() {
                 return (
                   <button
                     key={m.id}
+                    type="button"
                     onClick={() => {
                       setSelectedDateKey(dateKey(m.dateObj));
                       setCalendarMonth(new Date(m.dateObj.getFullYear(), m.dateObj.getMonth(), 1));
                       setShowAllDrawer(false);
                     }}
-                    style={{ display: "flex", alignItems: "center", gap: 14, background: TINT, borderRadius: 14, padding: "14px 16px", textAlign: "left", width: "100%" }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 14,
+                      background: TINT,
+                      borderRadius: 14,
+                      padding: "14px 16px",
+                      textAlign: "left",
+                      width: "100%",
+                    }}
                   >
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", background: WHITE, borderRadius: 10, padding: "8px 12px", minWidth: 58, flexShrink: 0 }}>
-                      <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "#8A6410", textTransform: "uppercase" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        background: WHITE,
+                        borderRadius: 10,
+                        padding: "8px 12px",
+                        minWidth: 58,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <span
+                        style={{ fontSize: "0.68rem", fontWeight: 700, color: "#8A6410", textTransform: "uppercase" }}
+                      >
                         {MONTH_ABBR[m.dateObj.getMonth()]}
                       </span>
                       <span style={{ fontSize: "1.05rem", fontWeight: 700, color: NAVY }}>{m.dateObj.getDate()}</span>
                     </div>
                     <div style={{ flexGrow: 1, minWidth: 0 }}>
                       <p style={{ fontSize: "0.92rem", fontWeight: 700, color: NAVY, marginBottom: 2 }}>{m.title}</p>
-                      <p style={{ fontSize: "0.8rem", color: "#7a7a74" }}>{formatTimeLabel(m.minutes)} · with {m.with}</p>
+                      <p style={{ fontSize: "0.8rem", color: "#7a7a74" }}>
+                        {formatTimeLabel(m.minutes)} · with {m.with}
+                      </p>
                     </div>
                     <span style={{ ...s.meetingStatusTag, background: colors.bg, color: colors.text }}>{m.status}</span>
                   </button>

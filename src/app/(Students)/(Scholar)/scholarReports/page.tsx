@@ -1,24 +1,21 @@
 "use client";
-
-import React from "react";
 import {
-  DownloadIcon,
-  MenuIcon,
-  SCHOLAR_REPORT_KPIS,
-  SCHOLAR_ANNUAL_STIPEND,
-  SCHOLAR_DISBURSED_TO_DATE,
-  SCHOLAR_REMAINING_STIPEND,
-  PAYMENT_HISTORY,
-  PAYMENT_SUMMARY,
-  GRADE_HISTORY,
-  PROFILE_DOCUMENTS,
-  NAVY,
-  WHITE,
-  TINT,
-  LINE,
   AMBER,
   AMBER_BG,
+  DownloadIcon,
+  GRADE_HISTORY,
+  LINE,
+  MenuIcon,
+  NAVY,
+  PAYMENT_HISTORY,
+  PAYMENT_SUMMARY,
+  PROFILE_DOCUMENTS,
+  SCHOLAR_ANNUAL_STIPEND,
+  SCHOLAR_DISBURSED_TO_DATE,
+  SCHOLAR_REPORT_KPIS,
   s,
+  TINT,
+  WHITE,
 } from "@/components/ScholarShared";
 import { useSidebar } from "@/components/SidebarContext";
 
@@ -29,7 +26,7 @@ const SHADOW_SM = "0 4px 14px rgba(20,33,58,0.05)";
 const BORDER_SUBTLE = `1px solid ${LINE}`;
 
 function fmt(n: number) {
-  return "₱" + n.toLocaleString("en-PH");
+  return `₱${n.toLocaleString("en-PH")}`;
 }
 
 function parseAmount(amount: string) {
@@ -45,7 +42,7 @@ function CircleStat({ label, pct, color, big }: { label: string; pct: number; co
   const offset = c - (Math.min(100, pct) / 100) * c;
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true" focusable="false">
         <circle cx={cx} cy={cx} r={r} fill="none" stroke={TINT} strokeWidth={big ? 8 : 6} />
         <circle
           cx={cx}
@@ -102,9 +99,7 @@ export default function ScholarReportsPage() {
   const paidTerms = PAYMENT_HISTORY.filter((p) => p.status === "paid");
 
   // Filter out any KPI tied to the overall fund — scholars only see their own entitlement
-  const visibleKpis = SCHOLAR_REPORT_KPIS.filter(
-    (k) => !k.label.toLowerCase().includes("fund")
-  );
+  const visibleKpis = SCHOLAR_REPORT_KPIS.filter((k) => !k.label.toLowerCase().includes("fund"));
 
   // ---- Tuition payments by semester (bar chart) ----
   const paymentBars = [...PAYMENT_HISTORY].reverse();
@@ -117,7 +112,7 @@ export default function ScholarReportsPage() {
     <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       {/* ---------------- Page-level navbar ---------------- */}
       <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -126,6 +121,7 @@ export default function ScholarReportsPage() {
         </div>
         <div style={{ ...s.topbarRight, marginLeft: "auto", gap: 12 }}>
           <button
+            type="button"
             style={{
               display: "flex",
               alignItems: "center",
@@ -143,6 +139,7 @@ export default function ScholarReportsPage() {
             <DownloadIcon /> Grade report (CSV)
           </button>
           <button
+            type="button"
             style={{
               display: "flex",
               alignItems: "center",
@@ -175,10 +172,26 @@ export default function ScholarReportsPage() {
             className="vd-content-grid"
           >
             {/* ---- Requirements status: circular rings ---- */}
-            <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "30px 26px", boxShadow: SHADOW_SM }}>
+            <div
+              style={{
+                background: WHITE,
+                border: BORDER_SUBTLE,
+                borderRadius: 20,
+                padding: "30px 26px",
+                boxShadow: SHADOW_SM,
+              }}
+            >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                 <div>
-                  <p style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#9a9a94" }}>
+                  <p
+                    style={{
+                      fontSize: "0.72rem",
+                      fontWeight: 700,
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                      color: "#9a9a94",
+                    }}
+                  >
                     Requirements
                   </p>
                   <p style={{ fontSize: "0.78rem", color: "#b5b5af", marginTop: 2 }}>Document status</p>
@@ -204,7 +217,15 @@ export default function ScholarReportsPage() {
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <p style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(255,255,255,0.65)" }}>
+                <p
+                  style={{
+                    fontSize: "0.72rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.65)",
+                  }}
+                >
                   Tuition disbursed to date
                 </p>
                 <span
@@ -220,7 +241,15 @@ export default function ScholarReportsPage() {
                   {paidTerms.length} of {PAYMENT_HISTORY.length} terms
                 </span>
               </div>
-              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "2.4rem", fontWeight: 700, color: WHITE, margin: "18px 0 6px" }}>
+              <p
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: "2.4rem",
+                  fontWeight: 700,
+                  color: WHITE,
+                  margin: "18px 0 6px",
+                }}
+              >
                 {fmt(SCHOLAR_DISBURSED_TO_DATE)}
               </p>
               <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.7)" }}>
@@ -229,9 +258,28 @@ export default function ScholarReportsPage() {
             </div>
 
             {/* ---- Tuition progress ring ---- */}
-            <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "30px 26px", boxShadow: SHADOW_SM, display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <div
+              style={{
+                background: WHITE,
+                border: BORDER_SUBTLE,
+                borderRadius: 20,
+                padding: "30px 26px",
+                boxShadow: SHADOW_SM,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
               <div style={{ width: "100%", marginBottom: 14 }}>
-                <p style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#9a9a94" }}>
+                <p
+                  style={{
+                    fontSize: "0.72rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    color: "#9a9a94",
+                  }}
+                >
                   Tuition progress
                 </p>
                 <p style={{ fontSize: "0.78rem", color: "#b5b5af", marginTop: 2 }}>This school year</p>
@@ -246,12 +294,35 @@ export default function ScholarReportsPage() {
           {/* ---- KPI cards ---- */}
           <div
             className="vd-stat-row"
-            style={{ display: "grid", gridTemplateColumns: `repeat(${visibleKpis.length}, 1fr)`, gap: 24, marginBottom: 28 }}
+            style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${visibleKpis.length}, 1fr)`,
+              gap: 24,
+              marginBottom: 28,
+            }}
           >
             {visibleKpis.map((k) => (
-              <div key={k.label} style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, padding: "26px 28px", boxShadow: SHADOW_SM }}>
+              <div
+                key={k.label}
+                style={{
+                  background: WHITE,
+                  border: BORDER_SUBTLE,
+                  borderRadius: 18,
+                  padding: "26px 28px",
+                  boxShadow: SHADOW_SM,
+                }}
+              >
                 <p style={{ fontSize: "0.84rem", color: "#7a7a74", fontWeight: 500, marginBottom: 12 }}>{k.label}</p>
-                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "2.15rem", fontWeight: 700, color: NAVY, lineHeight: 1, marginBottom: 10 }}>
+                <p
+                  style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: "2.15rem",
+                    fontWeight: 700,
+                    color: NAVY,
+                    lineHeight: 1,
+                    marginBottom: 10,
+                  }}
+                >
                   {k.value}
                 </p>
                 <p style={{ fontSize: "0.78rem", color: "#9a9a94" }}>{k.sub}</p>
@@ -262,26 +333,60 @@ export default function ScholarReportsPage() {
           <div className="vd-content-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: 28 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               {/* Tuition payments by semester */}
-              <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "30px 30px", boxShadow: SHADOW_SM }}>
-                <p style={{ fontSize: "1.05rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif", marginBottom: 22 }}>
+              <div
+                style={{
+                  background: WHITE,
+                  border: BORDER_SUBTLE,
+                  borderRadius: 20,
+                  padding: "30px 30px",
+                  boxShadow: SHADOW_SM,
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: "1.05rem",
+                    fontWeight: 700,
+                    color: NAVY,
+                    fontFamily: "'Inter', sans-serif",
+                    marginBottom: 22,
+                  }}
+                >
                   Tuition payments by semester
                 </p>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 14, height: 150 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-end",
+                    gap: 14,
+                    height: 150,
+                  }}
+                >
                   {paymentBars.map((p) => {
                     const amt = parseAmount(p.amount);
-                    const color = PAYMENT_STATUS_COLOR[p.status] ?? TINT;
+                    const _color = PAYMENT_STATUS_COLOR[p.status] ?? TINT;
                     return (
-                      <div key={p.term} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flexGrow: 1, height: "100%" }}>
+                      <div
+                        key={p.term}
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: 8,
+                          flexGrow: 1,
+                          height: "100%",
+                        }}
+                      >
                         <span style={{ fontSize: "0.76rem", fontWeight: 700, color: NAVY }}>{p.amount}</span>
-                        <div style={{ width: "100%", maxWidth: 40, flexGrow: 1, display: "flex", alignItems: "flex-end" }}>
+                        <div
+                          style={{ width: "100%", maxWidth: 40, flexGrow: 1, display: "flex", alignItems: "flex-end" }}
+                        >
                           <div
                             style={{
                               width: "100%",
                               height: `${(amt / maxPayment) * 100}%`,
                               background:
-                                p.status === "upcoming"
-                                  ? TINT
-                                  : `linear-gradient(180deg, ${AMBER} 0%, #F1B71E80 100%)`,
+                                p.status === "upcoming" ? TINT : `linear-gradient(180deg, ${AMBER} 0%, #F1B71E80 100%)`,
                               border: p.status === "upcoming" ? `1.5px dashed ${LINE}` : "none",
                               borderRadius: "8px 8px 3px 3px",
                               minHeight: 4,
@@ -309,8 +414,24 @@ export default function ScholarReportsPage() {
               </div>
 
               {/* Grade progress by term */}
-              <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "30px 30px", boxShadow: SHADOW_SM }}>
-                <p style={{ fontSize: "1.05rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif", marginBottom: 22 }}>
+              <div
+                style={{
+                  background: WHITE,
+                  border: BORDER_SUBTLE,
+                  borderRadius: 20,
+                  padding: "30px 30px",
+                  boxShadow: SHADOW_SM,
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: "1.05rem",
+                    fontWeight: 700,
+                    color: NAVY,
+                    fontFamily: "'Inter', sans-serif",
+                    marginBottom: 22,
+                  }}
+                >
                   Grade progress by term
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
@@ -318,10 +439,14 @@ export default function ScholarReportsPage() {
                     const color = GRADE_STATUS_COLOR[g.status] ?? NAVY;
                     return (
                       <div key={g.term} style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                        <span style={{ fontSize: "0.84rem", color: "#5a5a54", width: 160, flexShrink: 0, fontWeight: 500 }}>
+                        <span
+                          style={{ fontSize: "0.84rem", color: "#5a5a54", width: 160, flexShrink: 0, fontWeight: 500 }}
+                        >
                           {g.term}
                         </span>
-                        <div style={{ flexGrow: 1, height: 10, background: TINT, borderRadius: 999, overflow: "hidden" }}>
+                        <div
+                          style={{ flexGrow: 1, height: 10, background: TINT, borderRadius: 999, overflow: "hidden" }}
+                        >
                           <div
                             style={{
                               height: "100%",
@@ -331,7 +456,16 @@ export default function ScholarReportsPage() {
                             }}
                           />
                         </div>
-                        <span style={{ fontSize: "0.84rem", fontWeight: 700, color: NAVY, width: 52, textAlign: "right", flexShrink: 0 }}>
+                        <span
+                          style={{
+                            fontSize: "0.84rem",
+                            fontWeight: 700,
+                            color: NAVY,
+                            width: 52,
+                            textAlign: "right",
+                            flexShrink: 0,
+                          }}
+                        >
                           {g.gwa}%
                         </span>
                         <span

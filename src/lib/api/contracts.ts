@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPatch } from "../api";
+import { apiGet, apiPatch, apiPost } from "../api";
 
 const B = "/api/proxy/contracts";
 
@@ -46,10 +46,7 @@ export function requestContractChanges(id: number, reason: string) {
   return apiPatch<Contract>(`${B}/${id}/request-changes`, { reason });
 }
 
-export function signContract(
-  id: number,
-  data: { signature_base64?: string; signature_file?: File },
-) {
+export function signContract(id: number, data: { signature_base64?: string; signature_file?: File }) {
   if (data.signature_file) {
     const form = new FormData();
     form.append("signature", data.signature_file);

@@ -1,27 +1,27 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
+import type React from "react";
 import { useSidebar } from "../../../../components/SidebarContext";
 import {
-  ArrowRightIcon,
-  MailIcon,
-  CalendarIcon,
-  ForumIcon,
-  MenuIcon,
-  BellIcon,
-  CheckCircleIcon,
-  ApplicationIcon,
   ACTIVITY_FEED,
-  UPCOMING_ITEMS,
-  APPLICATION_STAGES,
-  CURRENT_STAGE_INDEX,
-  PROFILE_DOCUMENTS,
-  SCHOLAR,
   AMBER,
   AMBER_BG,
+  APPLICATION_STAGES,
+  ApplicationIcon,
+  ArrowRightIcon,
+  BellIcon,
+  CalendarIcon,
+  CheckCircleIcon,
+  CURRENT_STAGE_INDEX,
+  ForumIcon,
   LINE,
+  MailIcon,
+  MenuIcon,
+  PROFILE_DOCUMENTS,
+  SCHOLAR,
   s,
+  UPCOMING_ITEMS,
 } from "../../../../components/StudentShared";
 
 interface StatCardProps {
@@ -56,7 +56,9 @@ function InfoCard({ label, value, caption, tone }: InfoCardProps) {
     <div style={s.statCard}>
       <p style={s.statCardLabel}>{label}</p>
       <p style={s.statCardValue}>{value}</p>
-      <p style={{ ...s.statCardCaption, color: tone === "good" ? "#6b8a3e" : "#7a7a74", marginTop: "auto" }}>{caption}</p>
+      <p style={{ ...s.statCardCaption, color: tone === "good" ? "#6b8a3e" : "#7a7a74", marginTop: "auto" }}>
+        {caption}
+      </p>
     </div>
   );
 }
@@ -112,7 +114,7 @@ export default function DashboardPage() {
   return (
     <div>
       <header style={s.topbar}>
-        <button className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -120,7 +122,7 @@ export default function DashboardPage() {
           <p style={s.topbarSub}>Heres a look at your application progress and requirements.</p>
         </div>
         <div style={s.topbarRight}>
-          <button style={s.bellBtn}>
+          <button type="button" style={s.bellBtn}>
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
           </button>
@@ -156,7 +158,7 @@ export default function DashboardPage() {
             <div style={s.feedList}>
               {ACTIVITY_FEED.map((item, i) => (
                 <div
-                  key={i}
+                  key={`${item.text}-${item.time}`}
                   style={{ ...s.feedRow, borderBottom: i === ACTIVITY_FEED.length - 1 ? "none" : `1px solid ${LINE}` }}
                 >
                   <span style={s.feedIconBox}>{item.icon}</span>
@@ -172,8 +174,8 @@ export default function DashboardPage() {
           <section style={s.upcomingCard}>
             <PanelHeader title="Upcoming" href="/ApplicantsDashboard" />
             <div style={s.upcomingList}>
-              {UPCOMING_ITEMS.map((item, i) => (
-                <div key={i} style={s.upcomingRow}>
+              {UPCOMING_ITEMS.map((item) => (
+                <div key={`${item.label}-${item.detail}`} style={s.upcomingRow}>
                   <span style={{ ...s.upcomingDot, background: item.urgent ? AMBER : "#C9C2A8" }} />
                   <div>
                     <p style={s.upcomingLabel}>{item.label}</p>

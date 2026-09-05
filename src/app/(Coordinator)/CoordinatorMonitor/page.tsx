@@ -1,33 +1,33 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
-  XCircleIcon,
-  MonitorIcon,
-  MailIcon,
-  ClockIcon,
-  ArrowRightIcon,
-  TrendUpIcon,
-  TrendDownIcon,
-  DrawerInfoRow,
   ACTIVE_SCHOLARS,
-  HEALTH_TAG,
-  PAYMENT_STATUS_COLORS,
-  GRADE_STATUS_COLORS,
-  ActiveScholar,
-  GOOD,
-  BAD,
-  NAVY,
-  WHITE,
-  LINE,
-  TINT,
-  BORDER_SUBTLE,
-  SHADOW_SM,
+  type ActiveScholar,
   AMBER,
-  s,
-  MenuIcon,
-  SearchIcon,
+  ArrowRightIcon,
+  BAD,
   BellIcon,
+  BORDER_SUBTLE,
+  ClockIcon,
+  DrawerInfoRow,
+  GOOD,
+  GRADE_STATUS_COLORS,
+  HEALTH_TAG,
+  LINE,
+  MailIcon,
+  MenuIcon,
+  MonitorIcon,
+  NAVY,
+  PAYMENT_STATUS_COLORS,
+  SearchIcon,
+  SHADOW_SM,
+  s,
+  TINT,
+  TrendDownIcon,
+  TrendUpIcon,
+  WHITE,
+  XCircleIcon,
 } from "@/components/Coordinatorshared";
 import { useSidebar } from "@/components/SidebarContext";
 
@@ -48,12 +48,10 @@ export default function MonitorPage() {
     () =>
       query
         ? ACTIVE_SCHOLARS.filter(
-            (sch) =>
-              sch.name.toLowerCase().includes(query) ||
-              sch.course.toLowerCase().includes(query)
+            (sch) => sch.name.toLowerCase().includes(query) || sch.course.toLowerCase().includes(query),
           )
         : ACTIVE_SCHOLARS,
-    [query]
+    [query],
   );
 
   const totalPages = Math.max(1, Math.ceil(filteredScholars.length / PAGE_SIZE));
@@ -83,7 +81,7 @@ export default function MonitorPage() {
 
       {/* ---------------- Page-level navbar ---------------- */}
       <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -100,7 +98,7 @@ export default function MonitorPage() {
               onChange={(e) => handleSearchChange(e.target.value)}
             />
           </div>
-          <button style={s.bellBtn}>
+          <button type="button" style={s.bellBtn}>
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
           </button>
@@ -110,9 +108,15 @@ export default function MonitorPage() {
       <div style={{ ...s.mainContent, padding: s.mainContent.padding, flexGrow: 1, minHeight: 0, overflowY: "auto" }}>
         <div style={s.pageContentTop}>
           {/* ---------------- Table card, same shell/header/th/td treatment as Applicants ---------------- */}
-          <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "22px 22px 8px" }}>
-            
-
+          <div
+            style={{
+              background: WHITE,
+              border: BORDER_SUBTLE,
+              borderRadius: 18,
+              boxShadow: SHADOW_SM,
+              padding: "22px 22px 8px",
+            }}
+          >
             <div className="vc-table-scroll" style={{ width: "100%", overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
@@ -130,7 +134,11 @@ export default function MonitorPage() {
                     <tr
                       key={sch.id}
                       onClick={() => openScholar(sch)}
-                      style={{ borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`, cursor: "pointer", verticalAlign: "middle" }}
+                      style={{
+                        borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`,
+                        cursor: "pointer",
+                        verticalAlign: "middle",
+                      }}
                     >
                       <td style={{ ...s.td, padding: "16px 14px", textAlign: "center" }}>
                         <p style={s.tdName}>{sch.name}</p>
@@ -178,12 +186,23 @@ export default function MonitorPage() {
                       </td>
                       <td style={{ ...s.td, textAlign: "center" }}>
                         <button
-                          onClick={(e) => { e.stopPropagation(); openScholar(sch); }}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openScholar(sch);
+                          }}
                           aria-label="View scholar"
                           style={{
-                            width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${LINE}`,
-                            display: "inline-flex", alignItems: "center", justifyContent: "center",
-                            background: WHITE, color: "#7a7a74", cursor: "pointer",
+                            width: 34,
+                            height: 34,
+                            borderRadius: "50%",
+                            border: `1.5px solid ${LINE}`,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            background: WHITE,
+                            color: "#7a7a74",
+                            cursor: "pointer",
                           }}
                         >
                           <EyeIcon />
@@ -202,13 +221,23 @@ export default function MonitorPage() {
             )}
 
             {filteredScholars.length > 0 && (
-              <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}>
+              <div
+                style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}
+              >
                 <button
+                  type="button"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                   style={{
-                    width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
-                    color: currentPage === 1 ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    border: `1px solid ${LINE}`,
+                    background: WHITE,
+                    color: currentPage === 1 ? "#c7c7c2" : "#55554f",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     cursor: currentPage === 1 ? "default" : "pointer",
                   }}
                   aria-label="Previous page"
@@ -217,23 +246,38 @@ export default function MonitorPage() {
                 </button>
                 {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
                   <button
+                    type="button"
                     key={num}
                     onClick={() => setPage(num)}
                     style={{
-                      width: 32, height: 32, borderRadius: 8, border: `1px solid ${num === currentPage ? NAVY : LINE}`,
-                      background: num === currentPage ? NAVY : WHITE, color: num === currentPage ? WHITE : "#55554f",
-                      fontSize: "0.82rem", fontWeight: 600, cursor: "pointer",
+                      width: 32,
+                      height: 32,
+                      borderRadius: 8,
+                      border: `1px solid ${num === currentPage ? NAVY : LINE}`,
+                      background: num === currentPage ? NAVY : WHITE,
+                      color: num === currentPage ? WHITE : "#55554f",
+                      fontSize: "0.82rem",
+                      fontWeight: 600,
+                      cursor: "pointer",
                     }}
                   >
                     {num}
                   </button>
                 ))}
                 <button
+                  type="button"
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
                   style={{
-                    width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
-                    color: currentPage === totalPages ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    border: `1px solid ${LINE}`,
+                    background: WHITE,
+                    color: currentPage === totalPages ? "#c7c7c2" : "#55554f",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     cursor: currentPage === totalPages ? "default" : "pointer",
                   }}
                   aria-label="Next page"
@@ -247,15 +291,36 @@ export default function MonitorPage() {
       </div>
 
       {selected && (
-        <div style={s.drawerOverlay} onClick={closeDrawer}>
-          <div style={s.drawerPanel} onClick={(e) => e.stopPropagation()}>
+        // biome-ignore lint/a11y/useSemanticElements: overlay backdrop acts as a dismiss button; div cannot be a real button (contains block content)
+        <div
+          style={s.drawerOverlay}
+          onClick={closeDrawer}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              closeDrawer();
+            }
+          }}
+        >
+          <div
+            style={s.drawerPanel}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.stopPropagation();
+              }
+            }}
+          >
             <div style={s.drawerHeader}>
               <span style={s.profileAvatar}>{selected.initials}</span>
               <div style={{ flexGrow: 1 }}>
                 <h3 style={s.drawerName}>{selected.name}</h3>
                 <p style={s.drawerMeta}>{selected.course}</p>
               </div>
-              <button onClick={closeDrawer} style={s.drawerCloseBtn}>
+              <button type="button" onClick={closeDrawer} style={s.drawerCloseBtn}>
                 <XCircleIcon />
               </button>
             </div>
@@ -274,9 +339,7 @@ export default function MonitorPage() {
                 <div style={s.drawerCurrentPayCard}>
                   <div style={s.drawerCurrentPayLeft}>
                     <span style={s.drawerCurrentPayTerm}>{selected.currentPayment.term}</span>
-                    <span style={s.drawerCurrentPayAmount}>
-                      ₱{selected.currentPayment.amount.toLocaleString()}
-                    </span>
+                    <span style={s.drawerCurrentPayAmount}>₱{selected.currentPayment.amount.toLocaleString()}</span>
                   </div>
                   <span
                     style={{
@@ -290,7 +353,7 @@ export default function MonitorPage() {
                 </div>
 
                 <div style={s.drawerHistoryBtnRow}>
-                  <button onClick={() => setView("history")} style={s.drawerHistoryBtn}>
+                  <button type="button" onClick={() => setView("history")} style={s.drawerHistoryBtn}>
                     <ClockIcon /> View full history <ArrowRightIcon />
                   </button>
                 </div>
@@ -301,29 +364,31 @@ export default function MonitorPage() {
                     <MonitorIcon />
                   </span>
                   <p style={s.appNoteText}>
-                    {selected.health === "good" && "This scholar is meeting all retention requirements. No action needed."}
+                    {selected.health === "good" &&
+                      "This scholar is meeting all retention requirements. No action needed."}
                     {selected.health === "warn" && "Missing a required document. A reminder message is recommended."}
-                    {selected.health === "bad" && "GWA trending down and documents incomplete. Disbursement is on hold pending review."}
+                    {selected.health === "bad" &&
+                      "GWA trending down and documents incomplete. Disbursement is on hold pending review."}
                   </p>
                 </div>
 
                 <div style={s.drawerStageActions}>
-                  <button style={s.continueBtnSmall}>
+                  <button type="button" style={s.continueBtnSmall}>
                     <MailIcon small /> Message scholar
                   </button>
                 </div>
               </>
             ) : (
               <>
-                <button onClick={() => setView("overview")} style={s.backToOverviewBtn}>
+                <button type="button" onClick={() => setView("overview")} style={s.backToOverviewBtn}>
                   ← Back to overview
                 </button>
 
                 <div style={s.historySection}>
                   <p style={s.drawerSectionLabel}>Grade history</p>
                   <div style={s.historyList}>
-                    {selected.gradeHistory.map((g, i) => (
-                      <div key={i} style={s.historyRow}>
+                    {selected.gradeHistory.map((g) => (
+                      <div key={`${g.term}-${g.gwa}`} style={s.historyRow}>
                         <div style={s.historyRowLeft}>
                           <span style={s.historyRowTerm}>{g.term}</span>
                           <span style={s.historyRowSub}>GWA {g.gwa}%</span>
@@ -347,8 +412,8 @@ export default function MonitorPage() {
                 <div style={s.historySection}>
                   <p style={s.drawerSectionLabel}>Payment history</p>
                   <div style={s.historyList}>
-                    {selected.paymentHistory.map((p, i) => (
-                      <div key={i} style={s.historyRow}>
+                    {selected.paymentHistory.map((p) => (
+                      <div key={`${p.term}-${p.date}-${p.amount}`} style={s.historyRow}>
                         <div style={s.historyRowLeft}>
                           <span style={s.historyRowTerm}>{p.term}</span>
                           <span style={s.historyRowSub}>{p.date}</span>
@@ -380,7 +445,16 @@ export default function MonitorPage() {
 
 function EyeIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+      focusable="false"
+    >
       <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
       <circle cx="12" cy="12" r="3" />
     </svg>
@@ -389,7 +463,18 @@ function EyeIcon() {
 
 function ChevronLeftIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M15 18l-6-6 6-6" />
     </svg>
   );
@@ -397,7 +482,18 @@ function ChevronLeftIcon() {
 
 function ChevronRightIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M9 18l6-6-6-6" />
     </svg>
   );

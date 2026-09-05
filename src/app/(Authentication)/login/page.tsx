@@ -1,25 +1,26 @@
 "use client";
 
-import React, { useState, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type React from "react";
+import { type FormEvent, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  GlobalStyles,
+  AMBER,
+  ArrowRightIcon,
   BrandPanel,
-  ModeLinkTabs,
-  Field,
-  MailIcon,
-  LockIcon,
+  CheckCircleIcon,
   EyeIcon,
   EyeOffIcon,
-  CheckCircleIcon,
-  ArrowRightIcon,
+  Field,
+  GlobalStyles,
   GoogleIcon,
-  SpinnerIcon,
-  ls,
-  AMBER,
   LINE,
+  LockIcon,
+  ls,
+  MailIcon,
+  ModeLinkTabs,
+  SpinnerIcon,
 } from "../../../components/StudentAuth";
 
 const backLinkStyle: React.CSSProperties = {
@@ -69,8 +70,7 @@ function SignInForm() {
     try {
       await login(email, password);
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Login failed. Please try again.";
+      const message = err instanceof Error ? err.message : "Login failed. Please try again.";
       setError(message);
       setLoading(false);
     }
@@ -115,8 +115,14 @@ function SignInForm() {
 
       <div style={ls.formRow}>
         <label style={ls.checkboxLabel}>
+          <input
+            type="checkbox"
+            checked={remember}
+            onChange={() => setRemember((v) => !v)}
+            style={{ position: "absolute", opacity: 0, width: 1, height: 1, overflow: "hidden" }}
+          />
           <span
-            onClick={() => setRemember((v) => !v)}
+            aria-hidden="true"
             style={{ ...ls.checkbox, background: remember ? AMBER : "#FFFFFF", borderColor: remember ? AMBER : LINE }}
           >
             {remember && <CheckCircleIcon />}
@@ -166,13 +172,11 @@ function SignedInPanel() {
       <p style={ls.successSub}>
         Welcome, <strong>{user?.first_name}</strong>
       </p>
-      <div style={ls.successRoleTag}>
-        {roleLabel} account
-      </div>
-      <button style={ls.continueBtn} onClick={handleContinue}>
+      <div style={ls.successRoleTag}>{roleLabel} account</div>
+      <button type="button" style={ls.continueBtn} onClick={handleContinue}>
         Continue to dashboard <ArrowRightIcon />
       </button>
-      <button onClick={logout} style={ls.switchUserLink}>
+      <button type="button" onClick={logout} style={ls.switchUserLink}>
         Sign in as a different user
       </button>
     </div>

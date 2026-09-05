@@ -1,28 +1,29 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import type React from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
-  XCircleIcon,
+  AMBER,
+  APPLICANTS,
+  type Applicant,
+  ArrowRightIcon,
+  BellIcon,
+  BORDER_SUBTLE,
   CheckCircleIcon,
   DownloadIcon,
-  ArrowRightIcon,
   DrawerInfoRow,
-  APPLICANTS,
-  STAGE_COLORS,
-  Applicant,
-  Stage,
-  NAVY,
-  WHITE,
   LINE,
-  TINT,
-  BORDER_SUBTLE,
-  SHADOW_SM,
-  s,
   MenuIcon,
+  NAVY,
   SearchIcon,
-  BellIcon,
-  AMBER,
+  SHADOW_SM,
+  STAGE_COLORS,
+  type Stage,
+  s,
+  TINT,
+  WHITE,
+  XCircleIcon,
 } from "@/components/Coordinatorshared";
 import { useSidebar } from "@/components/SidebarContext";
 
@@ -70,14 +71,15 @@ export default function ApplicantsPage() {
   const stageFiltered = filter === "All" ? applicants : applicants.filter((a) => a.stage === filter);
 
   const filtered = query
-    ? stageFiltered.filter((a) =>
-        a.name.toLowerCase().includes(query) ||
-        a.course.toLowerCase().includes(query) ||
-        a.track.toLowerCase().includes(query) ||
-        a.stage.toLowerCase().includes(query) ||
-        a.year.toLowerCase().includes(query) ||
-        a.applied.toLowerCase().includes(query) ||
-        String(a.gwa).includes(query)
+    ? stageFiltered.filter(
+        (a) =>
+          a.name.toLowerCase().includes(query) ||
+          a.course.toLowerCase().includes(query) ||
+          a.track.toLowerCase().includes(query) ||
+          a.stage.toLowerCase().includes(query) ||
+          a.year.toLowerCase().includes(query) ||
+          a.applied.toLowerCase().includes(query) ||
+          String(a.gwa).includes(query),
       )
     : stageFiltered;
 
@@ -97,7 +99,7 @@ export default function ApplicantsPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [pageSize]);
+  }, []);
 
   const counts: Record<string, number> = {
     All: applicants.length,
@@ -124,7 +126,7 @@ export default function ApplicantsPage() {
 
       {/* ---------------- Page-level navbar ---------------- */}
       <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -153,7 +155,7 @@ export default function ApplicantsPage() {
               onChange={(e) => handleSearchChange(e.target.value)}
             />
           </div>
-          <button style={s.bellBtn}>
+          <button type="button" style={s.bellBtn}>
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
           </button>
@@ -185,7 +187,15 @@ export default function ApplicantsPage() {
             flexDirection: "column",
           }}
         >
-          <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: 6, flexShrink: 0 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+              marginBottom: 6,
+              flexShrink: 0,
+            }}
+          >
             <span style={{ fontSize: "0.8rem", color: "#9a9a94" }}>
               {filtered.length === 0
                 ? "0 shown"
@@ -211,7 +221,11 @@ export default function ApplicantsPage() {
                   <tr
                     key={a.id}
                     onClick={() => setSelected(a)}
-                    style={{ borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`, cursor: "pointer", verticalAlign: "middle" }}
+                    style={{
+                      borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`,
+                      cursor: "pointer",
+                      verticalAlign: "middle",
+                    }}
                   >
                     <td style={{ ...s.td, padding: "16px 14px", textAlign: "center" }}>
                       <p style={s.tdName}>{a.name}</p>
@@ -248,12 +262,23 @@ export default function ApplicantsPage() {
                     </td>
                     <td style={{ ...s.td, textAlign: "center" }}>
                       <button
-                        onClick={(e) => { e.stopPropagation(); setSelected(a); }}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelected(a);
+                        }}
                         aria-label="View applicant"
                         style={{
-                          width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${LINE}`,
-                          display: "inline-flex", alignItems: "center", justifyContent: "center",
-                          background: WHITE, color: "#7a7a74", cursor: "pointer",
+                          width: 34,
+                          height: 34,
+                          borderRadius: "50%",
+                          border: `1.5px solid ${LINE}`,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background: WHITE,
+                          color: "#7a7a74",
+                          cursor: "pointer",
                         }}
                       >
                         <EyeIcon />
@@ -272,13 +297,30 @@ export default function ApplicantsPage() {
           </div>
 
           {filtered.length > 0 && (
-            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0", flexShrink: 0 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                gap: 8,
+                padding: "18px 0",
+                flexShrink: 0,
+              }}
+            >
               <button
+                type="button"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
                 style={{
-                  width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
-                  color: currentPage === 1 ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                  width: 32,
+                  height: 32,
+                  borderRadius: 8,
+                  border: `1px solid ${LINE}`,
+                  background: WHITE,
+                  color: currentPage === 1 ? "#c7c7c2" : "#55554f",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   cursor: currentPage === 1 ? "default" : "pointer",
                 }}
                 aria-label="Previous page"
@@ -287,23 +329,38 @@ export default function ApplicantsPage() {
               </button>
               {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
                 <button
+                  type="button"
                   key={num}
                   onClick={() => setPage(num)}
                   style={{
-                    width: 32, height: 32, borderRadius: 8, border: `1px solid ${num === currentPage ? NAVY : LINE}`,
-                    background: num === currentPage ? NAVY : WHITE, color: num === currentPage ? WHITE : "#55554f",
-                    fontSize: "0.82rem", fontWeight: 600, cursor: "pointer",
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    border: `1px solid ${num === currentPage ? NAVY : LINE}`,
+                    background: num === currentPage ? NAVY : WHITE,
+                    color: num === currentPage ? WHITE : "#55554f",
+                    fontSize: "0.82rem",
+                    fontWeight: 600,
+                    cursor: "pointer",
                   }}
                 >
                   {num}
                 </button>
               ))}
               <button
+                type="button"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
                 style={{
-                  width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
-                  color: currentPage === totalPages ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                  width: 32,
+                  height: 32,
+                  borderRadius: 8,
+                  border: `1px solid ${LINE}`,
+                  background: WHITE,
+                  color: currentPage === totalPages ? "#c7c7c2" : "#55554f",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   cursor: currentPage === totalPages ? "default" : "pointer",
                 }}
                 aria-label="Next page"
@@ -328,8 +385,29 @@ interface ApplicantDrawerProps {
 
 function ApplicantDrawer({ applicant, onClose, onMoveStage }: ApplicantDrawerProps) {
   return (
-    <div style={s.drawerOverlay} onClick={onClose}>
-      <div style={s.drawerPanel} onClick={(e) => e.stopPropagation()}>
+    // biome-ignore lint/a11y/useSemanticElements: overlay backdrop acts as a dismiss button; div cannot be a real button (contains block content)
+    <div
+      style={s.drawerOverlay}
+      onClick={onClose}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClose();
+        }
+      }}
+    >
+      <div
+        style={s.drawerPanel}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.stopPropagation();
+          }
+        }}
+      >
         <div style={s.drawerHeader}>
           <span style={s.profileAvatar}>{applicant.initials}</span>
           <div style={{ flexGrow: 1 }}>
@@ -338,7 +416,7 @@ function ApplicantDrawer({ applicant, onClose, onMoveStage }: ApplicantDrawerPro
               {applicant.course} · {applicant.year}
             </p>
           </div>
-          <button onClick={onClose} style={s.drawerCloseBtn}>
+          <button type="button" onClick={onClose} style={s.drawerCloseBtn}>
             <XCircleIcon />
           </button>
         </div>
@@ -358,7 +436,7 @@ function ApplicantDrawer({ applicant, onClose, onMoveStage }: ApplicantDrawerPro
                 <CheckCircleIcon small />
               </span>
               <span style={s.drawerDocText}>{d}</span>
-              <button style={s.profileDocDownload}>
+              <button type="button" style={s.profileDocDownload}>
                 <DownloadIcon />
               </button>
             </div>
@@ -368,17 +446,17 @@ function ApplicantDrawer({ applicant, onClose, onMoveStage }: ApplicantDrawerPro
         <p style={s.drawerSectionLabel}>Move to stage</p>
         <div style={s.drawerStageActions}>
           {applicant.stage !== "Interview" && applicant.stage !== "Accepted" && (
-            <button onClick={() => onMoveStage(applicant.id, "Interview")} style={s.continueBtnSmall}>
+            <button type="button" onClick={() => onMoveStage(applicant.id, "Interview")} style={s.continueBtnSmall}>
               Pass to Interview <ArrowRightIcon />
             </button>
           )}
           {applicant.stage === "Interview" && (
-            <button onClick={() => onMoveStage(applicant.id, "Accepted")} style={s.continueBtnSmall}>
+            <button type="button" onClick={() => onMoveStage(applicant.id, "Accepted")} style={s.continueBtnSmall}>
               Accept applicant <ArrowRightIcon />
             </button>
           )}
           {applicant.stage !== "Rejected" && applicant.stage !== "Accepted" && (
-            <button onClick={() => onMoveStage(applicant.id, "Rejected")} style={s.rejectBtn}>
+            <button type="button" onClick={() => onMoveStage(applicant.id, "Rejected")} style={s.rejectBtn}>
               Reject application
             </button>
           )}
@@ -413,7 +491,18 @@ const pillSelectStyle: React.CSSProperties = {
 
 function ChevronIcon() {
   return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={WHITE} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      width="11"
+      height="11"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={WHITE}
+      strokeWidth="2.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M6 9l6 6 6-6" />
     </svg>
   );
@@ -435,7 +524,9 @@ function PillFilter({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
-      <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+      <span
+        style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
+      >
         <ChevronIcon />
       </span>
     </div>
@@ -444,7 +535,16 @@ function PillFilter({ children }: { children: React.ReactNode }) {
 
 function EyeIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+      focusable="false"
+    >
       <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
       <circle cx="12" cy="12" r="3" />
     </svg>
@@ -453,7 +553,18 @@ function EyeIcon() {
 
 function ChevronLeftIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M15 18l-6-6 6-6" />
     </svg>
   );
@@ -461,7 +572,18 @@ function ChevronLeftIcon() {
 
 function ChevronRightIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M9 18l6-6-6-6" />
     </svg>
   );

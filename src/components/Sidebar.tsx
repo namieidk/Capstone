@@ -1,42 +1,17 @@
 // components/Sidebar.tsx
 "use client";
 
-import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/contexts/AuthContext";
+import type React from "react";
+import { ADMIN, NAV_ITEMS as adminNav, s as adminStyles, LogoutIcon } from "@/components/Adminshared";
+import { COORDINATOR, NAV_ITEMS as coordinatorNav, s as coordinatorStyles } from "@/components/Coordinatorshared";
+import { GRANTOR, NAV_ITEMS as grantorNav, s as grantorStyles } from "@/components/Grantorshared";
+import { SCHOLAR, NAV_ITEMS as scholarNav, s as scholarStyles } from "@/components/ScholarShared";
 import { useSidebar } from "@/components/SidebarContext";
-
-import {
-  LogoutIcon,
-  NAV_ITEMS as adminNav,
-  ADMIN,
-  s as adminStyles,
-} from "@/components/Adminshared";
-
-import {
-  NAV_ITEMS as coordinatorNav,
-  COORDINATOR,
-  s as coordinatorStyles,
-} from "@/components/Coordinatorshared";
-
-import {
-  NAV_ITEMS as grantorNav,
-  GRANTOR,
-  s as grantorStyles,
-} from "@/components/Grantorshared";
-
-import {
-  NAV_ITEMS as scholarNav,
-  SCHOLAR,
-  s as scholarStyles,
-} from "@/components/ScholarShared";
-
-import {
-  NAV_ITEMS as studentNav,
-  SCHOLAR as studentProfile,
-  s as studentStyles,
-} from "@/components/StudentShared";
+import { NAV_ITEMS as studentNav, SCHOLAR as studentProfile, s as studentStyles } from "@/components/StudentShared";
+import { useAuth } from "@/contexts/AuthContext";
 
 // ============================================================
 // SIDEBAR PALETTE — single source of truth for this component's colors.
@@ -57,19 +32,13 @@ import {
 // ============================================================
 
 const NAVY = "#1E3A5F";
-const GREEN = "#0a4f42";
+const _GREEN = "#0a4f42";
 const SIDEBAR_BG = "#082e26"; // deeper shade than GREEN, gives the logo contrast
 const AMBER = "#F1B71E";
-const GREEN_TINT = "#E3F0E8"; // active nav-item background
+const _GREEN_TINT = "#E3F0E8"; // active nav-item background
 const WHITE = "#FFFFFF";
 
-const ALLOWED_NAV_KEYS = new Set([
-  "dashboard",
-  "archive",
-  "employee",
-  "settings",
-  "profile",
-]);
+const ALLOWED_NAV_KEYS = new Set(["dashboard", "archive", "employee", "settings", "profile"]);
 
 type SidebarRole = "admin" | "coordinator" | "grantor" | "scholar" | "student";
 
@@ -155,7 +124,6 @@ function getRoleConfig(role: SidebarRole): RoleConfig {
         searchPlaceholder: "Search...",
         styles: studentStyles,
       };
-    case "scholar":
     default:
       return {
         className: "vd-sidebar",
@@ -183,18 +151,12 @@ export function Sidebar({ mobileOpen, role = "scholar" }: SidebarProps) {
   const { user, logout } = useAuth();
   const { closeMobile } = useSidebar();
 
-  const displayName = user
-    ? `${user.first_name} ${user.last_name}`
-    : config.profile.name;
-  const displayInitials = user
-    ? getInitials(user.first_name, user.last_name)
-    : config.profile.initials;
+  const displayName = user ? `${user.first_name} ${user.last_name}` : config.profile.name;
+  const displayInitials = user ? getInitials(user.first_name, user.last_name) : config.profile.initials;
   const displayRole = user ? formatRole(user.role) : config.roleLabel;
 
   const filteredNavItems =
-    role === "admin"
-      ? config.navItems.filter((item) => ALLOWED_NAV_KEYS.has(item.key))
-      : config.navItems;
+    role === "admin" ? config.navItems.filter((item) => ALLOWED_NAV_KEYS.has(item.key)) : config.navItems;
 
   return (
     <>
@@ -239,9 +201,12 @@ export function Sidebar({ mobileOpen, role = "scholar" }: SidebarProps) {
               flexShrink: 0,
             }}
           >
-            <img
+            <Image
               src="/logo_cropped_2656.png"
               alt="ViaScholar logo"
+              width={2656}
+              height={2656}
+              unoptimized
               style={{
                 width: "65%",
                 height: "65%",
@@ -282,13 +247,9 @@ export function Sidebar({ mobileOpen, role = "scholar" }: SidebarProps) {
                 href={item.href}
                 style={{
                   ...config.styles.sidebarNavItem,
-                  background: isActive
-                    ? "rgba(255,255,255,0.14)"
-                    : "transparent",
+                  background: isActive ? "rgba(255,255,255,0.14)" : "transparent",
                   color: isActive ? WHITE : "rgba(255,255,255,0.82)",
-                  border: isActive
-                    ? "1px solid rgba(255,255,255,0.18)"
-                    : "1px solid transparent",
+                  border: isActive ? "1px solid rgba(255,255,255,0.18)" : "1px solid transparent",
                 }}
               >
                 <span
@@ -334,9 +295,7 @@ export function Sidebar({ mobileOpen, role = "scholar" }: SidebarProps) {
             {displayInitials}
           </span>
           <div style={config.styles.sidebarUserInfo}>
-            <p style={{ ...config.styles.sidebarUserName, color: WHITE }}>
-              {displayName}
-            </p>
+            <p style={{ ...config.styles.sidebarUserName, color: WHITE }}>{displayName}</p>
             <p
               style={{
                 ...config.styles.sidebarUserRole,
@@ -347,6 +306,7 @@ export function Sidebar({ mobileOpen, role = "scholar" }: SidebarProps) {
             </p>
           </div>
           <button
+            type="button"
             onClick={logout}
             style={{
               ...config.styles.sidebarLogoutBtn,
@@ -359,8 +319,17 @@ export function Sidebar({ mobileOpen, role = "scholar" }: SidebarProps) {
         </div>
       </aside>
       {mobileOpen && (
+        // biome-ignore lint/a11y/useSemanticElements: full-screen backdrop; a button cannot contain the mobile nav opening safely
         <div
+          role="button"
+          tabIndex={0}
           onClick={closeMobile}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              closeMobile();
+            }
+          }}
           style={{
             position: "fixed",
             inset: 0,
@@ -375,17 +344,17 @@ export function Sidebar({ mobileOpen, role = "scholar" }: SidebarProps) {
 }
 
 export function AdminSidebar(props: Omit<SidebarProps, "role">) {
-  return <Sidebar {...props} role="admin" />;
+  return <Sidebar {...props} />;
 }
 
 export function CoordinatorSidebar(props: Omit<SidebarProps, "role">) {
-  return <Sidebar {...props} role="coordinator" />;
+  return <Sidebar {...props} />;
 }
 
 export function GrantorSidebar(props: Omit<SidebarProps, "role">) {
-  return <Sidebar {...props} role="grantor" />;
+  return <Sidebar {...props} />;
 }
 
 export function ScholarSidebar(props: Omit<SidebarProps, "role">) {
-  return <Sidebar {...props} role="scholar" />;
+  return <Sidebar {...props} />;
 }

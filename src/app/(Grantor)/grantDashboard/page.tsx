@@ -1,31 +1,29 @@
 "use client";
 
-import React from "react";
 import { useRouter } from "next/navigation";
 import {
-  ArrowRightIcon,
-  MonitorIcon,
-  InterviewIcon,
-  PaymentsIcon,
-  TrendUpIcon,
-  TrendDownIcon,
-  DASHBOARD_STATS,
   ACTIVITY_FEED,
-  UPCOMING_MEETINGS,
-  GOOD,
-  BAD,
-  TINT,
-  WARN_BG,
-  WARN,
-  AMBER_BG,
-  GOOD_BG,
-  LINE,
-  s,
-  MenuIcon,
-  BellIcon,
   AMBER,
-  GRANTOR,
+  AMBER_BG,
+  ArrowRightIcon,
+  BAD,
+  BellIcon,
+  DASHBOARD_STATS,
+  GOOD,
+  GOOD_BG,
+  InterviewIcon,
+  LINE,
+  MenuIcon,
+  MonitorIcon,
+  PaymentsIcon,
+  s,
+  TINT,
   TITLES,
+  TrendDownIcon,
+  TrendUpIcon,
+  UPCOMING_MEETINGS,
+  WARN,
+  WARN_BG,
 } from "@/components/Grantorshared";
 import { useSidebar } from "@/components/SidebarContext";
 
@@ -46,7 +44,7 @@ export default function GrantorDashboardPage() {
     <div>
       {/* ---------------- Page-level navbar (no search) ---------------- */}
       <header style={s.topbar}>
-        <button className="vg-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="vg-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -54,7 +52,7 @@ export default function GrantorDashboardPage() {
           <p style={s.topbarSub}>{subtitle}</p>
         </div>
         <div style={s.topbarRight}>
-          <button style={s.bellBtn}>
+          <button type="button" style={s.bellBtn}>
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
           </button>
@@ -67,11 +65,15 @@ export default function GrantorDashboardPage() {
             <div key={p.label} style={s.pipelineCard}>
               <div style={s.pipelineTopRow}>
                 <p style={s.pipelineLabel}>{p.label}</p>
-                <span style={{ ...s.pipelineTag, background: TONE_MAP[p.tone].bg, color: TONE_MAP[p.tone].text }}>this term</span>
+                <span style={{ ...s.pipelineTag, background: TONE_MAP[p.tone].bg, color: TONE_MAP[p.tone].text }}>
+                  this term
+                </span>
               </div>
               <p style={s.pipelineValue}>{p.value}</p>
               <div style={s.pipelineKpiRow}>
-                <span style={{ color: p.kpiDirection === "up" ? GOOD : BAD, display: "flex", alignItems: "center", gap: 4 }}>
+                <span
+                  style={{ color: p.kpiDirection === "up" ? GOOD : BAD, display: "flex", alignItems: "center", gap: 4 }}
+                >
                   {p.kpiDirection === "up" ? <TrendUpIcon /> : <TrendDownIcon />}
                   {p.kpi}
                 </span>
@@ -85,13 +87,16 @@ export default function GrantorDashboardPage() {
           <section style={s.feedCard}>
             <div style={s.cardHeaderRow}>
               <h2 style={s.cardHeading}>Recent activity</h2>
-              <button onClick={() => router.push("/grantorMonitor")} style={s.viewAllBtn}>
+              <button type="button" onClick={() => router.push("/grantorMonitor")} style={s.viewAllBtn}>
                 View all <ArrowRightIcon />
               </button>
             </div>
             <div style={s.feedList}>
               {ACTIVITY_FEED.map((item, i) => (
-                <div key={i} style={{ ...s.feedRow, borderBottom: i === ACTIVITY_FEED.length - 1 ? "none" : `1px solid ${LINE}` }}>
+                <div
+                  key={item.text}
+                  style={{ ...s.feedRow, borderBottom: i === ACTIVITY_FEED.length - 1 ? "none" : `1px solid ${LINE}` }}
+                >
                   <span style={s.feedIconBox}>{item.icon}</span>
                   <div style={s.feedTextCol}>
                     <p style={s.feedText}>{item.text}</p>
@@ -105,7 +110,7 @@ export default function GrantorDashboardPage() {
           <section style={s.upcomingCard}>
             <div style={s.cardHeaderRow}>
               <h2 style={s.cardHeading}>Upcoming meetings</h2>
-              <button onClick={() => router.push("/grantorMeeting")} style={s.viewAllBtn}>
+              <button type="button" onClick={() => router.push("/grantorMeeting")} style={s.viewAllBtn}>
                 Manage <ArrowRightIcon />
               </button>
             </div>
@@ -125,7 +130,7 @@ export default function GrantorDashboardPage() {
 
             <div style={s.quickLinksWrap}>
               <p style={s.quickLinksHeading}>Quick actions</p>
-              <button onClick={() => router.push("/grantorMonitor")} style={s.quickLinkBtn}>
+              <button type="button" onClick={() => router.push("/grantorMonitor")} style={s.quickLinkBtn}>
                 <span style={s.quickLinkIcon}>
                   <MonitorIcon />
                 </span>
@@ -134,7 +139,7 @@ export default function GrantorDashboardPage() {
                   <ArrowRightIcon />
                 </span>
               </button>
-              <button onClick={() => router.push("/grantorMeeting")} style={s.quickLinkBtn}>
+              <button type="button" onClick={() => router.push("/grantorMeeting")} style={s.quickLinkBtn}>
                 <span style={s.quickLinkIcon}>
                   <InterviewIcon />
                 </span>
@@ -143,7 +148,7 @@ export default function GrantorDashboardPage() {
                   <ArrowRightIcon />
                 </span>
               </button>
-              <button onClick={() => router.push("/grantorPayments")} style={s.quickLinkBtn}>
+              <button type="button" onClick={() => router.push("/grantorPayments")} style={s.quickLinkBtn}>
                 <span style={s.quickLinkIcon}>
                   <PaymentsIcon />
                 </span>

@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
-import { GlobalStyles, s } from "../../../components/StudentShared";
+import type React from "react";
 import { Sidebar } from "../../../components/Sidebar";
 import { SidebarProvider, useSidebar } from "../../../components/SidebarContext";
+import { GlobalStyles, s } from "../../../components/StudentShared";
 
 function LayoutShell({ children }: { children: React.ReactNode }) {
   const { mobileOpen } = useSidebar();
@@ -12,7 +12,7 @@ function LayoutShell({ children }: { children: React.ReactNode }) {
     <div className="vd">
       <GlobalStyles />
       <div className="vd-app-shell">
-        <Sidebar mobileOpen={mobileOpen} role="student" />
+        <Sidebar mobileOpen={mobileOpen} />
 
         <main className="vd-main" style={s.main}>
           {children}

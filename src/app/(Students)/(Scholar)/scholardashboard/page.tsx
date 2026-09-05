@@ -1,29 +1,27 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
-import { useSidebar } from "@/components/SidebarContext";
 import {
-  ArrowRightIcon,
-  MailIcon,
-  CalendarIcon,
-  GradeIcon,
-  PaymentIcon,
-  MenuIcon,
-  BellIcon,
-  CONVERSATIONS,
-  MEETINGS_HOSTING,
-  MEETINGS_INVITED,
-  GRADE_HISTORY,
-  PAYMENT_SUMMARY,
-  PAYMENT_HISTORY,
-  SCHOLAR,
   AMBER,
   AMBER_BG,
-  NAVY,
+  ArrowRightIcon,
+  BellIcon,
+  CalendarIcon,
+  CONVERSATIONS,
+  GRADE_HISTORY,
+  GradeIcon,
   LINE,
+  MailIcon,
+  MEETINGS_HOSTING,
+  MEETINGS_INVITED,
+  MenuIcon,
+  PAYMENT_HISTORY,
+  PAYMENT_SUMMARY,
+  PaymentIcon,
+  SCHOLAR,
   s,
 } from "@/components/ScholarShared";
+import { useSidebar } from "@/components/SidebarContext";
 
 interface StatCardProps {
   label: string;
@@ -57,7 +55,9 @@ function InfoCard({ label, value, caption, tone }: InfoCardProps) {
     <div style={s.statCard}>
       <p style={s.statCardLabel}>{label}</p>
       <p style={s.statCardValue}>{value}</p>
-      <p style={{ ...s.statCardCaption, color: tone === "good" ? "#6b8a3e" : "#7a7a74", marginTop: "auto" }}>{caption}</p>
+      <p style={{ ...s.statCardCaption, color: tone === "good" ? "#6b8a3e" : "#7a7a74", marginTop: "auto" }}>
+        {caption}
+      </p>
     </div>
   );
 }
@@ -105,8 +105,22 @@ export default function ScholarDashboardPage() {
   const recentMessages = CONVERSATIONS.slice(0, 3);
 
   const upcomingMeetings = [
-    ...MEETINGS_HOSTING.map((m) => ({ id: `h-${m.id}`, title: m.title, date: m.date, time: m.time, person: m.invitee, status: m.status })),
-    ...MEETINGS_INVITED.map((m) => ({ id: `i-${m.id}`, title: m.title, date: m.date, time: m.time, person: m.host, status: m.status })),
+    ...MEETINGS_HOSTING.map((m) => ({
+      id: `h-${m.id}`,
+      title: m.title,
+      date: m.date,
+      time: m.time,
+      person: m.invitee,
+      status: m.status,
+    })),
+    ...MEETINGS_INVITED.map((m) => ({
+      id: `i-${m.id}`,
+      title: m.title,
+      date: m.date,
+      time: m.time,
+      person: m.host,
+      status: m.status,
+    })),
   ]
     .filter((m) => m.status !== "completed")
     .slice(0, 2);
@@ -117,7 +131,7 @@ export default function ScholarDashboardPage() {
   return (
     <div>
       <header style={s.topbar}>
-        <button className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -125,7 +139,7 @@ export default function ScholarDashboardPage() {
           <p style={s.topbarSub}>Heres a look at your grades, payments, and schedule.</p>
         </div>
         <div style={s.topbarRight}>
-          <button style={s.bellBtn}>
+          <button type="button" style={s.bellBtn}>
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
           </button>
@@ -141,7 +155,12 @@ export default function ScholarDashboardPage() {
             progress={gwaProgress}
           />
           <InfoCard label="Documents verified" value="3 of 3" caption="All requirements complete" tone="good" />
-          <InfoCard label="Next tuition disbursement" value={PAYMENT_SUMMARY.nextAmount} caption={`Due ${PAYMENT_SUMMARY.nextDate}`} tone="neutral" />
+          <InfoCard
+            label="Next tuition disbursement"
+            value={PAYMENT_SUMMARY.nextAmount}
+            caption={`Due ${PAYMENT_SUMMARY.nextDate}`}
+            tone="neutral"
+          />
         </div>
 
         {/* Messages + Meetings */}
@@ -238,7 +257,10 @@ export default function ScholarDashboardPage() {
                 return (
                   <div
                     key={g.term}
-                    style={{ ...s.gradeRow, borderBottom: i === recentGrades.length - 1 ? "none" : `1px solid ${LINE}` }}
+                    style={{
+                      ...s.gradeRow,
+                      borderBottom: i === recentGrades.length - 1 ? "none" : `1px solid ${LINE}`,
+                    }}
                   >
                     <div style={s.gradeTermCol}>
                       <p style={s.gradeTerm}>{g.term}</p>
@@ -259,7 +281,9 @@ export default function ScholarDashboardPage() {
             <div style={{ display: "flex", gap: 24, marginBottom: 18, flexWrap: "wrap" }}>
               <div>
                 <p style={s.statCardLabel}>Total disbursed</p>
-                <p style={{ ...s.statCardValue, fontSize: "1.4rem", marginBottom: 0 }}>{PAYMENT_SUMMARY.totalDisbursed}</p>
+                <p style={{ ...s.statCardValue, fontSize: "1.4rem", marginBottom: 0 }}>
+                  {PAYMENT_SUMMARY.totalDisbursed}
+                </p>
               </div>
               <div>
                 <p style={s.statCardLabel}>Next semester</p>

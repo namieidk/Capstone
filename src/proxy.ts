@@ -1,18 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = [
-  "/",
-  "/login",
-  "/signup",
-  "/api/auth/login",
-  "/api/auth/register",
-  "/api/auth/logout",
-];
+const PUBLIC_ROUTES = ["/", "/login", "/signup", "/api/auth/login", "/api/auth/register", "/api/auth/logout"];
 
 function isPublicRoute(pathname: string): boolean {
-  return PUBLIC_ROUTES.some(
-    (r) => pathname === r || pathname.startsWith(r + "/"),
-  );
+  return PUBLIC_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`));
 }
 
 export function proxy(request: NextRequest) {
@@ -38,8 +29,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/",
-    "/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)",
-  ],
+  matcher: ["/", "/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };

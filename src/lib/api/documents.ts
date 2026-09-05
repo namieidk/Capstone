@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPut, apiPatch, apiDelete } from "../api";
+import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "../api";
 
 const B = "/api/proxy/documents";
 
@@ -10,11 +10,7 @@ export type DocumentStatus =
   | "NEEDS_REUPLOAD"
   | "REJECTED";
 
-export type GradeReportStatus =
-  | "PENDING"
-  | "APPROVED"
-  | "FLAGGED"
-  | "REJECTED";
+export type GradeReportStatus = "PENDING" | "APPROVED" | "FLAGGED" | "REJECTED";
 
 export interface ScholarDocument {
   id: number;
@@ -51,10 +47,7 @@ export interface GradeReport {
   updated_at: string;
 }
 
-export function uploadDocuments(
-  files: File[],
-  type: string,
-) {
+export function uploadDocuments(files: File[], type: string) {
   const form = new FormData();
   for (const file of files) {
     form.append("files", file);
@@ -93,22 +86,15 @@ export function getGradeReports(params?: {
   if (params?.semester) qs.set("semester", params.semester);
   if (params?.search) qs.set("search", params.search);
   const query = qs.toString();
-  return apiGet<GradeReport[]>(
-    `${B}/grade-reports${query ? `?${query}` : ""}`,
-  );
+  return apiGet<GradeReport[]>(`${B}/grade-reports${query ? `?${query}` : ""}`);
 }
 
-export function updateGradeReportStatus(
-  id: number,
-  data: { status: GradeReportStatus; remarks?: string },
-) {
+export function updateGradeReportStatus(id: number, data: { status: GradeReportStatus; remarks?: string }) {
   return apiPatch<GradeReport>(`${B}/grade-reports/${id}/status`, data);
 }
 
 export function getExtractedData(id: number) {
-  return apiGet<{ ocr_data: Record<string, unknown> }>(
-    `${B}/${id}/extracted-data`,
-  );
+  return apiGet<{ ocr_data: Record<string, unknown> }>(`${B}/${id}/extracted-data`);
 }
 
 export function confirmDocument(
@@ -131,9 +117,7 @@ export function getDocument(id: number) {
 }
 
 export function syncParseur(id: number) {
-  return apiPost<{ ocr_data: Record<string, unknown> }>(
-    `${B}/${id}/sync-parseur`,
-  );
+  return apiPost<{ ocr_data: Record<string, unknown> }>(`${B}/${id}/sync-parseur`);
 }
 
 export function requestDocumentChanges(id: number, reason: string) {

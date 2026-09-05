@@ -1,27 +1,27 @@
 "use client";
 
-import React, { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/contexts/AuthContext";
+import { type FormEvent, useState } from "react";
 import {
-  GlobalStyles,
+  AMBER,
+  ArrowRightIcon,
   BrandPanel,
-  RoleToggle,
-  Field,
-  MailIcon,
-  LockIcon,
+  CheckCircleIcon,
   EyeIcon,
   EyeOffIcon,
-  CheckCircleIcon,
-  ArrowRightIcon,
-  SpinnerIcon,
-  ROLES,
-  ls,
-  AMBER,
-  WHITE,
+  Field,
+  GlobalStyles,
   LINE,
-  StaffRoleKey,
+  LockIcon,
+  ls,
+  MailIcon,
+  ROLES,
+  RoleToggle,
+  SpinnerIcon,
+  type StaffRoleKey,
+  WHITE,
 } from "@/components/StaffAuthShared";
+import { useAuth } from "@/contexts/AuthContext";
 
 // ============================================================
 // LOGIN FORM
@@ -40,7 +40,7 @@ function LoginForm({ role }: LoginFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const activeRoleInfo = ROLES.find((r) => r.key === role)!;
+  const activeRoleInfo = ROLES.find((r) => r.key === role) ?? ROLES[0];
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -53,8 +53,7 @@ function LoginForm({ role }: LoginFormProps) {
     try {
       await login(email, password);
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Login failed. Please try again.";
+      const message = err instanceof Error ? err.message : "Login failed. Please try again.";
       setError(message);
       setLoading(false);
     }
@@ -99,8 +98,14 @@ function LoginForm({ role }: LoginFormProps) {
 
       <div style={ls.formRow}>
         <label style={ls.checkboxLabel}>
+          <input
+            type="checkbox"
+            checked={remember}
+            onChange={() => setRemember((v) => !v)}
+            style={{ position: "absolute", opacity: 0, width: 1, height: 1, overflow: "hidden" }}
+          />
           <span
-            onClick={() => setRemember((v) => !v)}
+            aria-hidden="true"
             style={{ ...ls.checkbox, background: remember ? AMBER : WHITE, borderColor: remember ? AMBER : LINE }}
           >
             {remember && <CheckCircleIcon />}
@@ -166,10 +171,10 @@ function SignedInPanel() {
         <span style={{ display: "flex" }}>{roleInfo?.icon}</span>
         {roleInfo?.label}
       </div>
-      <button style={ls.continueBtn} onClick={handleContinue}>
+      <button type="button" style={ls.continueBtn} onClick={handleContinue}>
         Continue to {roleInfo?.label ? roleInfo.label.toLowerCase() : "dashboard"} dashboard <ArrowRightIcon />
       </button>
-      <button onClick={logout} style={ls.switchUserLink}>
+      <button type="button" onClick={logout} style={ls.switchUserLink}>
         Sign in as a different user
       </button>
     </div>
@@ -184,7 +189,7 @@ export default function StaffLoginPage() {
   const [role, setRole] = useState<StaffRoleKey>("coordinator");
   const { user, loading } = useAuth();
 
-  const activeRole = ROLES.find((r) => r.key === role)!;
+  const activeRole = ROLES.find((r) => r.key === role) ?? ROLES[0];
 
   if (loading) {
     return (

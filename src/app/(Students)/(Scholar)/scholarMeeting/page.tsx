@@ -1,22 +1,23 @@
 "use client";
 
-import React, { useMemo, useState, FormEvent } from "react";
+import type React from "react";
+import { type FormEvent, useMemo, useState } from "react";
 import {
-  CalendarIcon,
-  PlusIcon,
-  Field,
-  MEETINGS_HOSTING,
-  MEETINGS_INVITED,
-  NAVY,
-  WHITE,
-  TINT,
-  LINE,
   AMBER,
   AMBER_BG,
-  s,
-  MenuIcon,
-  SearchIcon,
   BellIcon,
+  CalendarIcon,
+  Field,
+  LINE,
+  MEETINGS_HOSTING,
+  MEETINGS_INVITED,
+  MenuIcon,
+  NAVY,
+  PlusIcon,
+  SearchIcon,
+  s,
+  TINT,
+  WHITE,
 } from "@/components/ScholarShared";
 import { useSidebar } from "@/components/SidebarContext";
 
@@ -32,8 +33,29 @@ const BORDER_SUBTLE = `1px solid ${LINE}`;
 /* Date / time helpers                                                 */
 /* ------------------------------------------------------------------ */
 
-const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
-const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const WEEKDAY_LABELS = [
+  { label: "S", id: "sun" },
+  { label: "M", id: "mon" },
+  { label: "T", id: "tue" },
+  { label: "W", id: "wed" },
+  { label: "T", id: "thu" },
+  { label: "F", id: "fri" },
+  { label: "S", id: "sat" },
+];
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function pad2(n: number) {
@@ -44,7 +66,7 @@ function dateKey(d: Date) {
 }
 function parseFlexibleDate(str: string): Date {
   const d = new Date(str);
-  return isNaN(d.getTime()) ? new Date() : d;
+  return Number.isNaN(d.getTime()) ? new Date() : d;
 }
 function parseTimeToMinutes(t: string): number {
   const ampm = t.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
@@ -80,7 +102,8 @@ function getMonthMatrix(monthDate: Date): { date: Date; inMonth: boolean }[] {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const prevMonthDays = new Date(year, month, 0).getDate();
   const cells: { date: Date; inMonth: boolean }[] = [];
-  for (let i = startWeekday - 1; i >= 0; i--) cells.push({ date: new Date(year, month - 1, prevMonthDays - i), inMonth: false });
+  for (let i = startWeekday - 1; i >= 0; i--)
+    cells.push({ date: new Date(year, month - 1, prevMonthDays - i), inMonth: false });
   for (let d = 1; d <= daysInMonth; d++) cells.push({ date: new Date(year, month, d), inMonth: true });
   let next = 1;
   while (cells.length < 42) cells.push({ date: new Date(year, month + 1, next++), inMonth: false });
@@ -128,13 +151,16 @@ export default function ScholarMeetingPage() {
       minutes: parseTimeToMinutes(m.time),
     }));
     return [...hostingRows, ...invitedRows].sort(
-      (a, b) => a.dateObj.getTime() - b.dateObj.getTime() || a.minutes - b.minutes
+      (a, b) => a.dateObj.getTime() - b.dateObj.getTime() || a.minutes - b.minutes,
     );
   }, [hosting]);
 
   const filteredCombined = useMemo(
-    () => (query ? combined.filter((m) => m.title.toLowerCase().includes(query) || m.person.toLowerCase().includes(query)) : combined),
-    [combined, query]
+    () =>
+      query
+        ? combined.filter((m) => m.title.toLowerCase().includes(query) || m.person.toLowerCase().includes(query))
+        : combined,
+    [combined, query],
   );
 
   const meetingDateKeys = useMemo(() => new Set(combined.map((m) => dateKey(m.dateObj))), [combined]);
@@ -236,7 +262,7 @@ export default function ScholarMeetingPage() {
 
       {/* ---------------- Page-level navbar ---------------- */}
       <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -253,39 +279,89 @@ export default function ScholarMeetingPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <button style={s.bellBtn}>
+          <button type="button" style={s.bellBtn}>
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
           </button>
         </div>
       </header>
 
-      <div style={{ ...s.mainContent, padding: s.mainContent.padding, flexGrow: 1, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <div
+        style={{
+          ...s.mainContent,
+          padding: s.mainContent.padding,
+          flexGrow: 1,
+          minHeight: 0,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        }}
+      >
         <div className="meeting-grid">
           {/* ---------------- Left: day timeline (its own scroll region) ---------------- */}
-          <div className="meeting-scroll-col" style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, boxShadow: SHADOW_SM, padding: "28px 30px 32px" }}>
+          <div
+            className="meeting-scroll-col"
+            style={{
+              background: WHITE,
+              border: BORDER_SUBTLE,
+              borderRadius: 20,
+              boxShadow: SHADOW_SM,
+              padding: "28px 30px 32px",
+            }}
+          >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 26 }}>
               <div>
-                <p style={{ fontSize: "0.76rem", fontWeight: 700, letterSpacing: "0.08em", color: "#8A6410", marginBottom: 4 }}>
+                <p
+                  style={{
+                    fontSize: "0.76rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.08em",
+                    color: "#8A6410",
+                    marginBottom: 4,
+                  }}
+                >
                   {selectedLabel}
                 </p>
-                <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.5rem", fontWeight: 700, color: NAVY }}>{selectedDateFull}</h2>
+                <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.5rem", fontWeight: 700, color: NAVY }}>
+                  {selectedDateFull}
+                </h2>
               </div>
               {!isSelectedToday && (
-                <button onClick={jumpToToday} style={{ background: TINT, color: NAVY, fontWeight: 600, fontSize: "0.8rem", padding: "8px 16px", borderRadius: 999 }}>
+                <button
+                  type="button"
+                  onClick={jumpToToday}
+                  style={{
+                    background: TINT,
+                    color: NAVY,
+                    fontWeight: 600,
+                    fontSize: "0.8rem",
+                    padding: "8px 16px",
+                    borderRadius: 999,
+                  }}
+                >
                   Today
                 </button>
               )}
             </div>
 
             {dayMeetings.length === 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "64px 0", color: "#9a9a94", gap: 10 }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "64px 0",
+                  color: "#9a9a94",
+                  gap: 10,
+                }}
+              >
                 <CalendarIcon />
                 <p style={{ fontSize: "0.92rem" }}>
                   {query ? "No matching meetings on this day." : "No meetings scheduled for this day."}
                 </p>
                 {!query && (
-                  <button onClick={openBookModal} style={{ ...s.continueBtnSmall, marginTop: 6 }}>
+                  <button type="button" onClick={openBookModal} style={{ ...s.continueBtnSmall, marginTop: 6 }}>
                     <CalendarIcon /> Book a meeting
                   </button>
                 )}
@@ -295,25 +371,79 @@ export default function ScholarMeetingPage() {
                 {/* Hour labels */}
                 <div style={{ width: 56, flexShrink: 0, position: "relative", height: trackHeight }}>
                   {hoursArr.slice(0, -1).map((h) => (
-                    <span key={h} style={{ position: "absolute", top: (h - startHour) * HOUR_H - 7, right: 10, fontSize: "0.74rem", color: "#9a9a94", fontWeight: 600 }}>
+                    <span
+                      key={h}
+                      style={{
+                        position: "absolute",
+                        top: (h - startHour) * HOUR_H - 7,
+                        right: 10,
+                        fontSize: "0.74rem",
+                        color: "#9a9a94",
+                        fontWeight: 600,
+                      }}
+                    >
                       {formatHourLabel(h)}
                     </span>
                   ))}
                   {showNowLine && (
-                    <span style={{ position: "absolute", top: nowTop - 10, right: 10, background: AMBER, color: NAVY, fontSize: "0.68rem", fontWeight: 700, padding: "2px 7px", borderRadius: 999, whiteSpace: "nowrap" }}>
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: nowTop - 10,
+                        right: 10,
+                        background: AMBER,
+                        color: NAVY,
+                        fontSize: "0.68rem",
+                        fontWeight: 700,
+                        padding: "2px 7px",
+                        borderRadius: 999,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {formatTimeLabel(nowMinutes)}
                     </span>
                   )}
                 </div>
 
                 {/* Track */}
-                <div style={{ flexGrow: 1, position: "relative", borderLeft: `1px solid ${LINE}`, height: trackHeight }}>
+                <div
+                  style={{ flexGrow: 1, position: "relative", borderLeft: `1px solid ${LINE}`, height: trackHeight }}
+                >
                   {hoursArr.map((h) => (
-                    <div key={h} style={{ position: "absolute", top: (h - startHour) * HOUR_H, left: 0, right: 0, borderTop: `1px solid ${TINT}` }} />
+                    <div
+                      key={h}
+                      style={{
+                        position: "absolute",
+                        top: (h - startHour) * HOUR_H,
+                        left: 0,
+                        right: 0,
+                        borderTop: `1px solid ${TINT}`,
+                      }}
+                    />
                   ))}
                   {showNowLine && (
-                    <div style={{ position: "absolute", top: nowTop, left: 0, right: 0, height: 2, background: AMBER, zIndex: 2 }}>
-                      <span style={{ position: "absolute", left: -5, top: -4, width: 10, height: 10, borderRadius: "50%", background: AMBER }} />
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: nowTop,
+                        left: 0,
+                        right: 0,
+                        height: 2,
+                        background: AMBER,
+                        zIndex: 2,
+                      }}
+                    >
+                      <span
+                        style={{
+                          position: "absolute",
+                          left: -5,
+                          top: -4,
+                          width: 10,
+                          height: 10,
+                          borderRadius: "50%",
+                          background: AMBER,
+                        }}
+                      />
                     </div>
                   )}
                   {dayMeetings.map((m, i) => {
@@ -343,19 +473,59 @@ export default function ScholarMeetingPage() {
                         }}
                       >
                         <div>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
-                            <p style={{ fontSize: "0.9rem", fontWeight: 700, color: NAVY, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexGrow: 1, minWidth: 0 }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "flex-start",
+                              gap: 10,
+                            }}
+                          >
+                            <p
+                              style={{
+                                fontSize: "0.9rem",
+                                fontWeight: 700,
+                                color: NAVY,
+                                lineHeight: 1.3,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                                flexGrow: 1,
+                                minWidth: 0,
+                              }}
+                            >
                               {m.title}
                             </p>
-                            <span style={{ width: 7, height: 7, borderRadius: "50%", background: GOOD, marginTop: 6, flexShrink: 0 }} />
+                            <span
+                              style={{
+                                width: 7,
+                                height: 7,
+                                borderRadius: "50%",
+                                background: GOOD,
+                                marginTop: 6,
+                                flexShrink: 0,
+                              }}
+                            />
                           </div>
                           <p style={{ fontSize: "0.78rem", color: "#5a5a55", marginTop: 4 }}>
-                            {formatTimeLabel(m.minutes)} · {m.kind === "hosting" ? `You invited ${m.person}` : `Invited by ${m.person}`}
+                            {formatTimeLabel(m.minutes)} ·{" "}
+                            {m.kind === "hosting" ? `You invited ${m.person}` : `Invited by ${m.person}`}
                           </p>
                         </div>
                         <button
+                          type="button"
                           onClick={() => joinMeeting(m)}
-                          style={{ alignSelf: "flex-start", background: WHITE, color: NAVY, fontWeight: 600, fontSize: "0.74rem", padding: "6px 14px", borderRadius: 999, border: `1px solid ${LINE}`, flexShrink: 0 }}
+                          style={{
+                            alignSelf: "flex-start",
+                            background: WHITE,
+                            color: NAVY,
+                            fontWeight: 600,
+                            fontSize: "0.74rem",
+                            padding: "6px 14px",
+                            borderRadius: 999,
+                            border: `1px solid ${LINE}`,
+                            flexShrink: 0,
+                          }}
                         >
                           Join
                         </button>
@@ -368,10 +538,20 @@ export default function ScholarMeetingPage() {
           </div>
 
           {/* ---------------- Right: calendar sidebar (its own scroll region) ---------------- */}
-          <aside className="meeting-scroll-col" style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, boxShadow: SHADOW_SM, padding: "24px 24px 26px" }}>
+          <aside
+            className="meeting-scroll-col"
+            style={{
+              background: WHITE,
+              border: BORDER_SUBTLE,
+              borderRadius: 20,
+              boxShadow: SHADOW_SM,
+              padding: "24px 24px 26px",
+            }}
+          >
             <div style={{ display: "inline-flex", background: TINT, borderRadius: 999, padding: 4, marginBottom: 22 }}>
               {(["month", "year"] as const).map((mode) => (
                 <button
+                  type="button"
                   key={mode}
                   className="segment-btn"
                   onClick={() => setCalendarViewMode(mode)}
@@ -394,37 +574,66 @@ export default function ScholarMeetingPage() {
 
             {calendarViewMode === "month" ? (
               <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}
+                >
                   <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.2rem", fontWeight: 700, color: NAVY }}>
-                    {MONTH_NAMES[calendarMonth.getMonth()]} <span style={{ color: "#9a9a94", fontWeight: 500 }}>{calendarMonth.getFullYear()}</span>
+                    {MONTH_NAMES[calendarMonth.getMonth()]}{" "}
+                    <span style={{ color: "#9a9a94", fontWeight: 500 }}>{calendarMonth.getFullYear()}</span>
                   </p>
                   <div style={{ display: "flex", gap: 6 }}>
-                    <button className="cal-nav-btn" onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1))} style={navBtnStyle} aria-label="Previous month">
+                    <button
+                      type="button"
+                      className="cal-nav-btn"
+                      onClick={() =>
+                        setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1))
+                      }
+                      style={navBtnStyle}
+                      aria-label="Previous month"
+                    >
                       <ChevronLeftIcon />
                     </button>
-                    <button className="cal-nav-btn" onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1))} style={navBtnStyle} aria-label="Next month">
+                    <button
+                      type="button"
+                      className="cal-nav-btn"
+                      onClick={() =>
+                        setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1))
+                      }
+                      style={navBtnStyle}
+                      aria-label="Next month"
+                    >
                       <ChevronRightIcon />
                     </button>
                   </div>
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 6 }}>
-                  {WEEKDAY_LABELS.map((w, i) => (
-                    <span key={i} style={{ textAlign: "center", fontSize: "0.68rem", fontWeight: 700, color: "#9a9a94", letterSpacing: "0.04em" }}>
-                      {w}
+                  {WEEKDAY_LABELS.map((w) => (
+                    <span
+                      key={w.id}
+                      style={{
+                        textAlign: "center",
+                        fontSize: "0.68rem",
+                        fontWeight: 700,
+                        color: "#9a9a94",
+                        letterSpacing: "0.04em",
+                      }}
+                    >
+                      {w.label}
                     </span>
                   ))}
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 3 }}>
-                  {monthMatrix.map(({ date, inMonth }, i) => {
+                  {monthMatrix.map(({ date, inMonth }) => {
                     const key = dateKey(date);
                     const isSelected = key === selectedDateKey;
                     const isToday = key === todayKey;
                     const hasMeeting = meetingDateKeys.has(key);
                     return (
-                      <div key={i} style={{ position: "relative", display: "flex", justifyContent: "center" }}>
+                      <div key={key} style={{ position: "relative", display: "flex", justifyContent: "center" }}>
                         <button
+                          type="button"
                           className={`cal-day-btn ${isSelected ? "cal-day-selected" : ""}`}
                           onClick={() => {
                             setSelectedDateKey(key);
@@ -444,7 +653,16 @@ export default function ScholarMeetingPage() {
                           {date.getDate()}
                         </button>
                         {hasMeeting && (
-                          <span style={{ position: "absolute", bottom: 2, width: 4, height: 4, borderRadius: "50%", background: isSelected ? WHITE : AMBER }} />
+                          <span
+                            style={{
+                              position: "absolute",
+                              bottom: 2,
+                              width: 4,
+                              height: 4,
+                              borderRadius: "50%",
+                              background: isSelected ? WHITE : AMBER,
+                            }}
+                          />
                         )}
                       </div>
                     );
@@ -453,13 +671,33 @@ export default function ScholarMeetingPage() {
               </>
             ) : (
               <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.2rem", fontWeight: 700, color: NAVY }}>{calendarMonth.getFullYear()}</p>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}
+                >
+                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.2rem", fontWeight: 700, color: NAVY }}>
+                    {calendarMonth.getFullYear()}
+                  </p>
                   <div style={{ display: "flex", gap: 6 }}>
-                    <button className="cal-nav-btn" onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear() - 1, calendarMonth.getMonth(), 1))} style={navBtnStyle} aria-label="Previous year">
+                    <button
+                      type="button"
+                      className="cal-nav-btn"
+                      onClick={() =>
+                        setCalendarMonth(new Date(calendarMonth.getFullYear() - 1, calendarMonth.getMonth(), 1))
+                      }
+                      style={navBtnStyle}
+                      aria-label="Previous year"
+                    >
                       <ChevronLeftIcon />
                     </button>
-                    <button className="cal-nav-btn" onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear() + 1, calendarMonth.getMonth(), 1))} style={navBtnStyle} aria-label="Next year">
+                    <button
+                      type="button"
+                      className="cal-nav-btn"
+                      onClick={() =>
+                        setCalendarMonth(new Date(calendarMonth.getFullYear() + 1, calendarMonth.getMonth(), 1))
+                      }
+                      style={navBtnStyle}
+                      aria-label="Next year"
+                    >
                       <ChevronRightIcon />
                     </button>
                   </div>
@@ -469,6 +707,7 @@ export default function ScholarMeetingPage() {
                     const active = idx === calendarMonth.getMonth();
                     return (
                       <button
+                        type="button"
                         key={abbr}
                         className="cal-day-btn"
                         onClick={() => {
@@ -494,6 +733,7 @@ export default function ScholarMeetingPage() {
 
             <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 10 }}>
               <button
+                type="button"
                 className="book-btn"
                 onClick={openBookModal}
                 style={{
@@ -511,27 +751,69 @@ export default function ScholarMeetingPage() {
 
             {filteredCombined.length > 0 && (
               <div style={{ marginTop: 20, borderTop: `1px solid ${LINE}`, paddingTop: 18 }}>
-                <p style={{ fontSize: "0.76rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#9a9a94", marginBottom: 10 }}>
+                <p
+                  style={{
+                    fontSize: "0.76rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    color: "#9a9a94",
+                    marginBottom: 10,
+                  }}
+                >
                   Upcoming ({filteredCombined.length})
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   {filteredCombined.slice(0, 5).map((m) => (
                     <button
+                      type="button"
                       key={m.id}
                       className="waiting-row"
                       onClick={() => {
                         setSelectedDateKey(dateKey(m.dateObj));
                         setCalendarMonth(new Date(m.dateObj.getFullYear(), m.dateObj.getMonth(), 1));
                       }}
-                      style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 6px", borderRadius: 10, textAlign: "left", width: "100%" }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        padding: "8px 6px",
+                        borderRadius: 10,
+                        textAlign: "left",
+                        width: "100%",
+                      }}
                     >
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", background: TINT, borderRadius: 8, padding: "4px 8px", minWidth: 40, flexShrink: 0 }}>
-                        <span style={{ fontSize: "0.6rem", fontWeight: 700, color: "#8A6410", textTransform: "uppercase" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          background: TINT,
+                          borderRadius: 8,
+                          padding: "4px 8px",
+                          minWidth: 40,
+                          flexShrink: 0,
+                        }}
+                      >
+                        <span
+                          style={{ fontSize: "0.6rem", fontWeight: 700, color: "#8A6410", textTransform: "uppercase" }}
+                        >
                           {MONTH_ABBR[m.dateObj.getMonth()]}
                         </span>
                         <span style={{ fontSize: "0.86rem", fontWeight: 700, color: NAVY }}>{m.dateObj.getDate()}</span>
                       </div>
-                      <span style={{ flexGrow: 1, minWidth: 0, fontSize: "0.84rem", fontWeight: 600, color: "#3a3a36", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <span
+                        style={{
+                          flexGrow: 1,
+                          minWidth: 0,
+                          fontSize: "0.84rem",
+                          fontWeight: 600,
+                          color: "#3a3a36",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
                         {m.title}
                       </span>
                       <CalendarIcon />
@@ -547,7 +829,22 @@ export default function ScholarMeetingPage() {
               </p>
             )}
 
-            <button className="view-all-link" onClick={() => setShowAllDrawer(true)} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", marginTop: 16, fontSize: "0.86rem", fontWeight: 700, color: "#8A6410" }}>
+            <button
+              type="button"
+              className="view-all-link"
+              onClick={() => setShowAllDrawer(true)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                width: "100%",
+                marginTop: 16,
+                fontSize: "0.86rem",
+                fontWeight: 700,
+                color: "#8A6410",
+              }}
+            >
               View all meetings <span aria-hidden>→</span>
             </button>
           </aside>
@@ -556,8 +853,8 @@ export default function ScholarMeetingPage() {
 
       {/* ---------------- Book meeting modal ---------------- */}
       {showBookModal && (
-        <div style={overlayStyle} onClick={() => setShowBookModal(false)}>
-          <div style={modalCardStyle} onClick={(e) => e.stopPropagation()}>
+        <div style={overlayStyle}>
+          <div style={modalCardStyle}>
             <h3 style={drawerNameStyle}>Book a meeting</h3>
             <p style={drawerMetaStyle}>Choose who to invite, then pick a date and time.</p>
             <form onSubmit={confirmSchedule} style={{ marginTop: 20 }}>
@@ -570,7 +867,11 @@ export default function ScholarMeetingPage() {
                 />
               </Field>
               <Field label="Invite" required>
-                <select style={s.select} value={form.invitee} onChange={(e) => setForm({ ...form, invitee: e.target.value })}>
+                <select
+                  style={s.select}
+                  value={form.invitee}
+                  onChange={(e) => setForm({ ...form, invitee: e.target.value })}
+                >
                   <option value="">Select a person to invite...</option>
                   {INVITEE_OPTIONS.map((opt) => (
                     <option key={opt} value={opt}>
@@ -581,10 +882,20 @@ export default function ScholarMeetingPage() {
               </Field>
               <div className="vd-field-row-2" style={s.fieldRow2}>
                 <Field label="Date" required>
-                  <input type="date" style={s.input} value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+                  <input
+                    type="date"
+                    style={s.input}
+                    value={form.date}
+                    onChange={(e) => setForm({ ...form, date: e.target.value })}
+                  />
                 </Field>
                 <Field label="Time" required>
-                  <input type="time" style={s.input} value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} />
+                  <input
+                    type="time"
+                    style={s.input}
+                    value={form.time}
+                    onChange={(e) => setForm({ ...form, time: e.target.value })}
+                  />
                 </Field>
               </div>
               <div style={modalActionsRowStyle}>
@@ -602,14 +913,14 @@ export default function ScholarMeetingPage() {
 
       {/* ---------------- All meetings drawer ---------------- */}
       {showAllDrawer && (
-        <div style={overlayStyle} onClick={() => setShowAllDrawer(false)}>
-          <div style={drawerPanelStyle} onClick={(e) => e.stopPropagation()}>
+        <div style={overlayStyle}>
+          <div style={drawerPanelStyle}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 22 }}>
               <div style={{ flexGrow: 1 }}>
                 <h3 style={drawerNameStyle}>All meetings</h3>
                 <p style={drawerMetaStyle}>{combined.length} scheduled</p>
               </div>
-              <button onClick={() => setShowAllDrawer(false)} style={drawerCloseBtnStyle}>
+              <button type="button" onClick={() => setShowAllDrawer(false)} style={drawerCloseBtnStyle}>
                 <XCircleIcon />
               </button>
             </div>
@@ -623,16 +934,39 @@ export default function ScholarMeetingPage() {
               )}
               {filteredCombined.map((m) => (
                 <button
+                  type="button"
                   key={m.id}
                   onClick={() => {
                     setSelectedDateKey(dateKey(m.dateObj));
                     setCalendarMonth(new Date(m.dateObj.getFullYear(), m.dateObj.getMonth(), 1));
                     setShowAllDrawer(false);
                   }}
-                  style={{ display: "flex", alignItems: "center", gap: 14, background: TINT, borderRadius: 14, padding: "14px 16px", textAlign: "left", width: "100%" }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 14,
+                    background: TINT,
+                    borderRadius: 14,
+                    padding: "14px 16px",
+                    textAlign: "left",
+                    width: "100%",
+                  }}
                 >
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", background: WHITE, borderRadius: 10, padding: "8px 12px", minWidth: 58, flexShrink: 0 }}>
-                    <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "#8A6410", textTransform: "uppercase" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      background: WHITE,
+                      borderRadius: 10,
+                      padding: "8px 12px",
+                      minWidth: 58,
+                      flexShrink: 0,
+                    }}
+                  >
+                    <span
+                      style={{ fontSize: "0.68rem", fontWeight: 700, color: "#8A6410", textTransform: "uppercase" }}
+                    >
                       {MONTH_ABBR[m.dateObj.getMonth()]}
                     </span>
                     <span style={{ fontSize: "1.05rem", fontWeight: 700, color: NAVY }}>{m.dateObj.getDate()}</span>
@@ -640,7 +974,8 @@ export default function ScholarMeetingPage() {
                   <div style={{ flexGrow: 1, minWidth: 0 }}>
                     <p style={{ fontSize: "0.92rem", fontWeight: 700, color: NAVY, marginBottom: 2 }}>{m.title}</p>
                     <p style={{ fontSize: "0.8rem", color: "#7a7a74" }}>
-                      {formatTimeLabel(m.minutes)} · {m.kind === "hosting" ? `You invited ${m.person}` : `Invited by ${m.person}`}
+                      {formatTimeLabel(m.minutes)} ·{" "}
+                      {m.kind === "hosting" ? `You invited ${m.person}` : `Invited by ${m.person}`}
                     </p>
                   </div>
                   <span
@@ -754,21 +1089,52 @@ const navBtnStyle: React.CSSProperties = {
 
 function ChevronLeftIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
       <path d="M15 18l-6-6 6-6" />
     </svg>
   );
 }
 function ChevronRightIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
       <path d="M9 18l6-6-6-6" />
     </svg>
   );
 }
 function XCircleIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+      focusable="false"
+    >
       <circle cx="12" cy="12" r="10" />
       <path d="M15 9l-6 6M9 9l6 6" />
     </svg>

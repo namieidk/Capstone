@@ -1,19 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
-import { useSidebar } from "@/components/SidebarContext";
+import type React from "react";
+import { useState } from "react";
 import {
-  PaymentIcon,
-  CheckCircleIcon,
-  MenuIcon,
-  AMBER_BG,
   AMBER,
-  NAVY,
+  AMBER_BG,
+  CheckCircleIcon,
   LINE,
-  WHITE,
-  TINT,
+  MenuIcon,
+  NAVY,
+  PaymentIcon,
   s,
+  TINT,
+  WHITE,
 } from "@/components/ScholarShared";
+import { useSidebar } from "@/components/SidebarContext";
 
 interface TuitionRecord {
   id: string;
@@ -96,7 +97,7 @@ export default function ScholarPaymentPage() {
 
   const handleConfirmClaim = (id: string) => {
     setPayments((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, status: "claimed" as const, dateClaimed: todayReadable() } : p))
+      prev.map((p) => (p.id === id ? { ...p, status: "claimed" as const, dateClaimed: todayReadable() } : p)),
     );
     setConfirmingId(null);
   };
@@ -104,7 +105,7 @@ export default function ScholarPaymentPage() {
   return (
     <div>
       <header style={s.topbar}>
-        <button className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -154,8 +155,11 @@ export default function ScholarPaymentPage() {
                 <CheckCircleIcon />
               </span>
               <p style={styles.alertText}>
-                You have <strong>{readyCount} check{readyCount !== 1 ? "s" : ""}</strong> ready to claim. Visit the office
-                to collect your tuition disbursement.
+                You have{" "}
+                <strong>
+                  {readyCount} check{readyCount !== 1 ? "s" : ""}
+                </strong>{" "}
+                ready to claim. Visit the office to collect your tuition disbursement.
               </p>
             </div>
           )}
@@ -199,16 +203,16 @@ export default function ScholarPaymentPage() {
                             Confirm that you have physically received check <strong>{p.checkNo}</strong>?
                           </p>
                           <div style={styles.confirmBtns}>
-                            <button onClick={() => setConfirmingId(null)} style={styles.cancelBtn}>
+                            <button type="button" onClick={() => setConfirmingId(null)} style={styles.cancelBtn}>
                               Cancel
                             </button>
-                            <button onClick={() => handleConfirmClaim(p.id)} style={styles.claimBtn}>
+                            <button type="button" onClick={() => handleConfirmClaim(p.id)} style={styles.claimBtn}>
                               Yes, I received it
                             </button>
                           </div>
                         </>
                       ) : (
-                        <button onClick={() => setConfirmingId(p.id)} style={styles.claimBtn}>
+                        <button type="button" onClick={() => setConfirmingId(p.id)} style={styles.claimBtn}>
                           Mark as received
                         </button>
                       )}
@@ -248,9 +252,22 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 600,
   },
   alertText: { fontSize: "0.92rem", color: "#6b5220", lineHeight: 1.5 },
-  paymentCard: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 16, padding: "20px 22px", marginBottom: 12 },
+  paymentCard: {
+    background: WHITE,
+    border: `1px solid ${LINE}`,
+    borderRadius: 16,
+    padding: "20px 22px",
+    marginBottom: 12,
+  },
   paymentCardTop: { display: "flex", alignItems: "center", gap: 16, marginBottom: 10, flexWrap: "wrap" },
-  paymentRight: { display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0, marginLeft: "auto" },
+  paymentRight: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+    gap: 6,
+    flexShrink: 0,
+    marginLeft: "auto",
+  },
   statusDesc: { fontSize: "0.84rem", color: "#7a7a74", lineHeight: 1.55, paddingLeft: 58 },
   claimRow: { marginTop: 16, paddingTop: 14, borderTop: `1px solid ${LINE}`, paddingLeft: 58 },
   confirmText: { fontSize: "0.9rem", color: NAVY, marginBottom: 12, lineHeight: 1.5 },

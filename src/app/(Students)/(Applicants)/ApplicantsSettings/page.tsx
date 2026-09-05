@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, ReactNode } from "react";
-import { ToggleIcon, NAVY, s, MenuIcon } from "../../../../components/StudentShared";
+import { type ReactNode, useState } from "react";
 import { useSidebar } from "../../../../components/SidebarContext";
+import { MenuIcon, NAVY, s, ToggleIcon } from "../../../../components/StudentShared";
 
 interface SettingsSectionProps {
   title: string;
@@ -45,7 +45,7 @@ function SettingsRow({ label, desc, on, onToggle }: SettingsRowProps) {
         <p style={s.settingsRowLabel}>{label}</p>
         <p style={s.settingsRowDesc}>{desc}</p>
       </div>
-      <button onClick={onToggle} style={{ flexShrink: 0, cursor: "pointer" }}>
+      <button type="button" onClick={onToggle} style={{ flexShrink: 0, cursor: "pointer" }}>
         <ToggleIcon on={on} />
       </button>
     </div>
@@ -77,7 +77,7 @@ export default function SettingsPage() {
     <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       {/* ---------------- Page-level navbar ---------------- */}
       <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -121,7 +121,9 @@ export default function SettingsPage() {
                 <p style={s.settingsRowLabel}>Password</p>
                 <p style={s.settingsRowDesc}>Last changed 3 months ago.</p>
               </div>
-              <button style={s.settingsActionBtn}>Change password</button>
+              <button type="button" style={s.settingsActionBtn}>
+                Change password
+              </button>
             </div>
           </SettingsSection>
 
@@ -140,7 +142,9 @@ export default function SettingsPage() {
                 <p style={s.settingsRowLabel}>Deactivate account</p>
                 <p style={s.settingsRowDesc}>Temporarily disable your ViaScholar account.</p>
               </div>
-              <button style={s.settingsDangerBtn}>Deactivate</button>
+              <button type="button" style={s.settingsDangerBtn}>
+                Deactivate
+              </button>
             </div>
           </SettingsSection>
         </div>

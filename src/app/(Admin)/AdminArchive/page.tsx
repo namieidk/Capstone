@@ -1,29 +1,28 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import { Check, ChevronLeft, ChevronRight, Eye, ListFilter } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Eye, ChevronLeft, ChevronRight, ListFilter, Check } from "lucide-react";
 import {
-  XCircleIcon,
+  AMBER,
+  ARCHIVE_STATUS_STYLE,
+  ARCHIVED_SCHOLARS,
+  type ArchivedScholar,
   ArchiveIcon,
+  BellIcon,
+  BORDER_SUBTLE,
   DownloadIcon,
   DrawerInfoRow,
-  ARCHIVED_SCHOLARS,
-  ARCHIVE_STATUS_STYLE,
-  ArchivedScholar,
-  NAVY,
-  WHITE,
   LINE,
-  TINT,
-  GRAY,
-  AMBER,
-  BORDER_SUBTLE,
-  SHADOW_SM,
-  SHADOW_MD,
   MenuIcon,
-  BellIcon,
+  NAVY,
   SearchIcon,
+  SHADOW_MD,
+  SHADOW_SM,
   s,
+  TINT,
+  WHITE,
+  XCircleIcon,
 } from "@/components/Adminshared";
 import { useSidebar } from "@/components/SidebarContext";
 
@@ -45,8 +44,8 @@ export default function AdminArchivePage() {
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       const target = e.target as Node;
-      const insideTrigger = filterRef.current && filterRef.current.contains(target);
-      const insideMenu = filterMenuRef.current && filterMenuRef.current.contains(target);
+      const insideTrigger = filterRef.current?.contains(target);
+      const insideMenu = filterMenuRef.current?.contains(target);
       if (!insideTrigger && !insideMenu) {
         setFilterOpen(false);
       }
@@ -117,7 +116,7 @@ export default function AdminArchivePage() {
 
       {/* ---------------- Page-level navbar (search only — filter lives in the page body) ---------------- */}
       <header style={s.topbar}>
-        <button className="va-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="va-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -138,7 +137,7 @@ export default function AdminArchivePage() {
               style={s.searchInput}
             />
           </div>
-          <button style={s.bellBtn}>
+          <button type="button" style={s.bellBtn}>
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
           </button>
@@ -147,7 +146,16 @@ export default function AdminArchivePage() {
 
       <div style={{ ...s.mainContent, padding: s.mainContent.padding }}>
         {/* ---------------- Table card, same shell/header/th/td treatment as Monitor ---------------- */}
-        <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "10px 22px 8px", marginTop: 20 }}>
+        <div
+          style={{
+            background: WHITE,
+            border: BORDER_SUBTLE,
+            borderRadius: 18,
+            boxShadow: SHADOW_SM,
+            padding: "10px 22px 8px",
+            marginTop: 20,
+          }}
+        >
           {/* Status filter now lives inside the "View" column header, directly above the eye icons.
               Every header gets the same-height slot above its label (spacer or button) so all six stay aligned.
               gap bumped 10 -> 16 and header padding loosened so the icon row doesn't feel cramped against the label. */}
@@ -186,11 +194,20 @@ export default function AdminArchivePage() {
                       Status
                     </div>
                   </th>
-                  <th style={{ ...s.th, background: "none", padding: "6px 14px", textAlign: "center", position: "relative" }}>
+                  <th
+                    style={{
+                      ...s.th,
+                      background: "none",
+                      padding: "6px 14px",
+                      textAlign: "center",
+                      position: "relative",
+                    }}
+                  >
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
                       <div style={{ position: "relative" }} ref={filterRef}>
                         <div className="filter-trigger-wrap">
                           <button
+                            type="button"
                             ref={filterBtnRef}
                             onClick={handleFilterToggle}
                             aria-label="Filter by status"
@@ -256,6 +273,7 @@ export default function AdminArchivePage() {
                                 const isActive = filter === f;
                                 return (
                                   <button
+                                    type="button"
                                     key={f}
                                     role="option"
                                     aria-selected={isActive}
@@ -281,14 +299,16 @@ export default function AdminArchivePage() {
                                   >
                                     <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                       {f}
-                                      <span style={{ fontSize: "0.76rem", fontWeight: 500, color: "#9a9a94" }}>({counts[f]})</span>
+                                      <span style={{ fontSize: "0.76rem", fontWeight: 500, color: "#9a9a94" }}>
+                                        ({counts[f]})
+                                      </span>
                                     </span>
                                     {isActive && <Check size={14} color={NAVY} strokeWidth={2.5} />}
                                   </button>
                                 );
                               })}
                             </div>,
-                            document.body
+                            document.body,
                           )}
                       </div>
                       View
@@ -301,7 +321,11 @@ export default function AdminArchivePage() {
                   <tr
                     key={a.id}
                     onClick={() => setSelected(a)}
-                    style={{ borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`, cursor: "pointer", verticalAlign: "middle" }}
+                    style={{
+                      borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`,
+                      cursor: "pointer",
+                      verticalAlign: "middle",
+                    }}
                   >
                     <td style={{ ...s.td, padding: "16px 14px", textAlign: "center" }}>
                       <p style={s.tdName}>{a.name}</p>
@@ -336,12 +360,23 @@ export default function AdminArchivePage() {
                     </td>
                     <td style={{ ...s.td, textAlign: "center" }}>
                       <button
-                        onClick={(e) => { e.stopPropagation(); setSelected(a); }}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelected(a);
+                        }}
                         aria-label="View scholar"
                         style={{
-                          width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${LINE}`,
-                          display: "inline-flex", alignItems: "center", justifyContent: "center",
-                          background: WHITE, color: "#7a7a74", cursor: "pointer",
+                          width: 34,
+                          height: 34,
+                          borderRadius: "50%",
+                          border: `1.5px solid ${LINE}`,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background: WHITE,
+                          color: "#7a7a74",
+                          cursor: "pointer",
                         }}
                       >
                         <Eye size={15} />
@@ -360,13 +395,23 @@ export default function AdminArchivePage() {
           )}
 
           {filtered.length > 0 && (
-            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}>
+            <div
+              style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}
+            >
               <button
+                type="button"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
                 style={{
-                  width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
-                  color: currentPage === 1 ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                  width: 32,
+                  height: 32,
+                  borderRadius: 8,
+                  border: `1px solid ${LINE}`,
+                  background: WHITE,
+                  color: currentPage === 1 ? "#c7c7c2" : "#55554f",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   cursor: currentPage === 1 ? "default" : "pointer",
                 }}
                 aria-label="Previous page"
@@ -375,23 +420,38 @@ export default function AdminArchivePage() {
               </button>
               {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
                 <button
+                  type="button"
                   key={num}
                   onClick={() => setPage(num)}
                   style={{
-                    width: 32, height: 32, borderRadius: 8, border: `1px solid ${num === currentPage ? AMBER : LINE}`,
-                    background: num === currentPage ? AMBER : WHITE, color: num === currentPage ? NAVY : "#55554f",
-                    fontSize: "0.82rem", fontWeight: 700, cursor: "pointer",
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    border: `1px solid ${num === currentPage ? AMBER : LINE}`,
+                    background: num === currentPage ? AMBER : WHITE,
+                    color: num === currentPage ? NAVY : "#55554f",
+                    fontSize: "0.82rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
                   }}
                 >
                   {num}
                 </button>
               ))}
               <button
+                type="button"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
                 style={{
-                  width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
-                  color: currentPage === totalPages ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                  width: 32,
+                  height: 32,
+                  borderRadius: 8,
+                  border: `1px solid ${LINE}`,
+                  background: WHITE,
+                  color: currentPage === totalPages ? "#c7c7c2" : "#55554f",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   cursor: currentPage === totalPages ? "default" : "pointer",
                 }}
                 aria-label="Next page"
@@ -404,15 +464,36 @@ export default function AdminArchivePage() {
       </div>
 
       {selected && (
-        <div style={s.drawerOverlay} onClick={() => setSelected(null)}>
-          <div style={s.drawerPanel} onClick={(e) => e.stopPropagation()}>
+        // biome-ignore lint/a11y/useSemanticElements: overlay backdrop acts as a dismiss button; div cannot be a real button (contains block content)
+        <div
+          style={s.drawerOverlay}
+          onClick={() => setSelected(null)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setSelected(null);
+            }
+          }}
+        >
+          <div
+            style={s.drawerPanel}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.stopPropagation();
+              }
+            }}
+          >
             <div style={{ ...s.drawerHeader, marginBottom: 22 }}>
               <span style={s.profileAvatar}>{selected.initials}</span>
               <div style={{ flexGrow: 1 }}>
                 <h3 style={s.drawerName}>{selected.name}</h3>
                 <p style={s.drawerMeta}>{selected.course}</p>
               </div>
-              <button onClick={() => setSelected(null)} style={s.drawerCloseBtn}>
+              <button type="button" onClick={() => setSelected(null)} style={s.drawerCloseBtn}>
                 <XCircleIcon />
               </button>
             </div>
@@ -431,6 +512,7 @@ export default function AdminArchivePage() {
             </div>
             <div style={{ ...s.drawerStageActions, marginTop: 4 }}>
               <button
+                type="button"
                 style={{
                   ...s.continueBtnSmall,
                   width: "100%",

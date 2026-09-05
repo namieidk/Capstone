@@ -1,33 +1,37 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import {
-  DownloadIcon,
-  TrendUpIcon,
-  MONTHLY_APPLICATIONS,
-  STAGE_FUNNEL,
-  TRACK_BREAKDOWN,
-  COORDINATOR_PERFORMANCE,
-  NAVY,
   AMBER,
   AMBER_BG,
-  WHITE,
-  TINT,
-  LINE,
-  GREEN,
-  GOOD_BG,
-  SHADOW_SM,
-  BORDER_SUBTLE,
-  MenuIcon,
   BellIcon,
+  BORDER_SUBTLE,
+  COORDINATOR_PERFORMANCE,
+  DownloadIcon,
+  GOOD_BG,
+  GREEN,
+  LINE,
+  MenuIcon,
+  MONTHLY_APPLICATIONS,
+  NAVY,
   SearchIcon,
+  SHADOW_SM,
+  STAGE_FUNNEL,
   s,
+  TINT,
+  TRACK_BREAKDOWN,
+  TrendUpIcon,
+  WHITE,
 } from "@/components/Adminshared";
 import { useSidebar } from "@/components/SidebarContext";
 
 // ---- helpers ----
 function initialsOf(name: string) {
-  return name.split(" ").map((w) => w[0]).slice(0, 2).join("");
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("");
 }
 
 function CircleStat({ label, pct, color }: { label: string; pct: number; color: string }) {
@@ -37,6 +41,7 @@ function CircleStat({ label, pct, color }: { label: string; pct: number; color: 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
       <svg width="72" height="72" viewBox="0 0 72 72">
+        <title>{`${label}: ${pct}%`}</title>
         <circle cx="36" cy="36" r={r} fill="none" stroke={TINT} strokeWidth="6" />
         <circle
           cx="36"
@@ -50,7 +55,15 @@ function CircleStat({ label, pct, color }: { label: string; pct: number; color: 
           strokeLinecap="round"
           transform="rotate(-90 36 36)"
         />
-        <text x="36" y="41" textAnchor="middle" fontSize="15" fontWeight="700" fill={NAVY} fontFamily="'Inter', sans-serif">
+        <text
+          x="36"
+          y="41"
+          textAnchor="middle"
+          fontSize="15"
+          fontWeight="700"
+          fill={NAVY}
+          fontFamily="'Inter', sans-serif"
+        >
           {pct}%
         </text>
       </svg>
@@ -86,7 +99,7 @@ export default function AdminReportsPage() {
     <div>
       {/* ---------------- Page-level navbar, same as Archive ---------------- */}
       <header style={s.topbar}>
-        <button className="va-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="va-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -104,7 +117,7 @@ export default function AdminReportsPage() {
               style={s.searchInput}
             />
           </div>
-          <button style={s.bellBtn}>
+          <button type="button" style={s.bellBtn}>
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
           </button>
@@ -116,6 +129,7 @@ export default function AdminReportsPage() {
           {/* ---- Page header row with export actions ---- */}
           <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 12, marginBottom: 32 }}>
             <button
+              type="button"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -132,6 +146,7 @@ export default function AdminReportsPage() {
               <DownloadIcon /> Coordinator report (CSV)
             </button>
             <button
+              type="button"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -160,16 +175,39 @@ export default function AdminReportsPage() {
             className="va-content-grid"
           >
             {/* ---- Track breakdown: circular rings ---- */}
-            <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "30px 26px", boxShadow: SHADOW_SM }}>
+            <div
+              style={{
+                background: WHITE,
+                border: BORDER_SUBTLE,
+                borderRadius: 20,
+                padding: "30px 26px",
+                boxShadow: SHADOW_SM,
+              }}
+            >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                 <div>
-                  <p style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#9a9a94" }}>Statistics</p>
+                  <p
+                    style={{
+                      fontSize: "0.72rem",
+                      fontWeight: 700,
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                      color: "#9a9a94",
+                    }}
+                  >
+                    Statistics
+                  </p>
                   <p style={{ fontSize: "0.78rem", color: "#b5b5af", marginTop: 2 }}>This quarter</p>
                 </div>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                 {TRACK_BREAKDOWN.map((t) => (
-                  <CircleStat key={t.track} label={t.track} pct={Math.round((t.count / totalTracks) * 100)} color={t.color} />
+                  <CircleStat
+                    key={t.track}
+                    label={t.track}
+                    pct={Math.round((t.count / totalTracks) * 100)}
+                    color={t.color}
+                  />
                 ))}
               </div>
             </div>
@@ -187,7 +225,15 @@ export default function AdminReportsPage() {
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <p style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(255,255,255,0.65)" }}>
+                <p
+                  style={{
+                    fontSize: "0.72rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.65)",
+                  }}
+                >
                   Total applicants
                 </p>
                 <span
@@ -203,17 +249,45 @@ export default function AdminReportsPage() {
                   5 months
                 </span>
               </div>
-              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "2.4rem", fontWeight: 700, color: WHITE, margin: "18px 0 6px" }}>
+              <p
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: "2.4rem",
+                  fontWeight: 700,
+                  color: WHITE,
+                  margin: "18px 0 6px",
+                }}
+              >
                 {totalApplicants}
               </p>
               <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.7)" }}>Across Feb – Jun 2026</p>
             </div>
 
             {/* ---- Projection sparkline ---- */}
-            <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "30px 26px", boxShadow: SHADOW_SM }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+            <div
+              style={{
+                background: WHITE,
+                border: BORDER_SUBTLE,
+                borderRadius: 20,
+                padding: "30px 26px",
+                boxShadow: SHADOW_SM,
+              }}
+            >
+              <div
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}
+              >
                 <div>
-                  <p style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#9a9a94" }}>Projection</p>
+                  <p
+                    style={{
+                      fontSize: "0.72rem",
+                      fontWeight: 700,
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                      color: "#9a9a94",
+                    }}
+                  >
+                    Projection
+                  </p>
                   <p style={{ fontSize: "0.78rem", color: "#b5b5af", marginTop: 2 }}>Latest month</p>
                 </div>
                 <span
@@ -233,10 +307,19 @@ export default function AdminReportsPage() {
                   {momChange}%
                 </span>
               </div>
-              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.7rem", fontWeight: 700, color: NAVY, marginBottom: 10 }}>
+              <p
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: "1.7rem",
+                  fontWeight: 700,
+                  color: NAVY,
+                  marginBottom: 10,
+                }}
+              >
                 {lastMonth.count}
               </p>
               <svg width="100%" height={sparkH} viewBox={`0 0 ${sparkW} ${sparkH}`} preserveAspectRatio="none">
+                <title>Projection trend for the latest month</title>
                 <defs>
                   <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor={AMBER} stopOpacity="0.35" />
@@ -244,7 +327,14 @@ export default function AdminReportsPage() {
                   </linearGradient>
                 </defs>
                 <path d={sparkArea} fill="url(#sparkFill)" />
-                <path d={sparkLine} fill="none" stroke={AMBER} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path
+                  d={sparkLine}
+                  fill="none"
+                  stroke={AMBER}
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </div>
           </div>
@@ -253,15 +343,51 @@ export default function AdminReportsPage() {
             {/* ---- LEFT column ---- */}
             <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               {/* Applications over time */}
-              <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "30px 30px", boxShadow: SHADOW_SM }}>
-                <p style={{ fontSize: "1.05rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif", marginBottom: 22 }}>
+              <div
+                style={{
+                  background: WHITE,
+                  border: BORDER_SUBTLE,
+                  borderRadius: 20,
+                  padding: "30px 30px",
+                  boxShadow: SHADOW_SM,
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: "1.05rem",
+                    fontWeight: 700,
+                    color: NAVY,
+                    fontFamily: "'Inter', sans-serif",
+                    marginBottom: 22,
+                  }}
+                >
                   Applications over time
                 </p>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 14, height: 150 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-end",
+                    gap: 14,
+                    height: 150,
+                  }}
+                >
                   {MONTHLY_APPLICATIONS.map((m) => (
-                    <div key={m.month} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flexGrow: 1, height: "100%" }}>
+                    <div
+                      key={m.month}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: 8,
+                        flexGrow: 1,
+                        height: "100%",
+                      }}
+                    >
                       <span style={{ fontSize: "0.76rem", fontWeight: 700, color: NAVY }}>{m.count}</span>
-                      <div style={{ width: "100%", maxWidth: 34, flexGrow: 1, display: "flex", alignItems: "flex-end" }}>
+                      <div
+                        style={{ width: "100%", maxWidth: 34, flexGrow: 1, display: "flex", alignItems: "flex-end" }}
+                      >
                         <div
                           style={{
                             width: "100%",
@@ -279,14 +405,34 @@ export default function AdminReportsPage() {
               </div>
 
               {/* Pipeline funnel */}
-              <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "30px 30px", boxShadow: SHADOW_SM }}>
-                <p style={{ fontSize: "1.05rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif", marginBottom: 22 }}>
+              <div
+                style={{
+                  background: WHITE,
+                  border: BORDER_SUBTLE,
+                  borderRadius: 20,
+                  padding: "30px 30px",
+                  boxShadow: SHADOW_SM,
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: "1.05rem",
+                    fontWeight: 700,
+                    color: NAVY,
+                    fontFamily: "'Inter', sans-serif",
+                    marginBottom: 22,
+                  }}
+                >
                   Pipeline funnel
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
                   {STAGE_FUNNEL.map((f) => (
                     <div key={f.stage} style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                      <span style={{ fontSize: "0.84rem", color: "#5a5a54", width: 100, flexShrink: 0, fontWeight: 500 }}>{f.stage}</span>
+                      <span
+                        style={{ fontSize: "0.84rem", color: "#5a5a54", width: 100, flexShrink: 0, fontWeight: 500 }}
+                      >
+                        {f.stage}
+                      </span>
                       <div style={{ flexGrow: 1, height: 10, background: TINT, borderRadius: 999, overflow: "hidden" }}>
                         <div
                           style={{
@@ -297,7 +443,18 @@ export default function AdminReportsPage() {
                           }}
                         />
                       </div>
-                      <span style={{ fontSize: "0.84rem", fontWeight: 700, color: NAVY, width: 28, textAlign: "right", flexShrink: 0 }}>{f.count}</span>
+                      <span
+                        style={{
+                          fontSize: "0.84rem",
+                          fontWeight: 700,
+                          color: NAVY,
+                          width: 28,
+                          textAlign: "right",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {f.count}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -305,8 +462,24 @@ export default function AdminReportsPage() {
             </div>
 
             {/* ---- RIGHT column: coordinator performance list ---- */}
-            <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 20, padding: "30px 26px", boxShadow: SHADOW_SM }}>
-              <p style={{ fontSize: "1.05rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif", marginBottom: 20 }}>
+            <div
+              style={{
+                background: WHITE,
+                border: BORDER_SUBTLE,
+                borderRadius: 20,
+                padding: "30px 26px",
+                boxShadow: SHADOW_SM,
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "1.05rem",
+                  fontWeight: 700,
+                  color: NAVY,
+                  fontFamily: "'Inter', sans-serif",
+                  marginBottom: 20,
+                }}
+              >
                 Coordinator performance
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -344,7 +517,16 @@ export default function AdminReportsPage() {
                         {initialsOf(c.name)}
                       </span>
                       <div style={{ flexGrow: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: "0.88rem", fontWeight: 700, color: NAVY, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        <p
+                          style={{
+                            fontSize: "0.88rem",
+                            fontWeight: 700,
+                            color: NAVY,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
                           {c.name}
                         </p>
                         <p style={{ fontSize: "0.74rem", color: "#9a9a94", marginTop: 2 }}>

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { s, XCircleIcon } from "@/components/Adminshared";
 
 interface EditProfileDrawerProps {
@@ -16,13 +17,7 @@ interface EditProfileDrawerProps {
   };
   saving?: boolean;
   error?: string;
-  onSave: (values: {
-    first_name: string;
-    last_name: string;
-    title: string;
-    department: string;
-    bio: string;
-  }) => void;
+  onSave: (values: { first_name: string; last_name: string; title: string; department: string; bio: string }) => void;
 }
 
 export default function EditProfileDrawer({
@@ -36,9 +31,7 @@ export default function EditProfileDrawer({
   const [firstName, setFirstName] = useState(initialValues?.first_name ?? "");
   const [lastName, setLastName] = useState(initialValues?.last_name ?? "");
   const [title, setTitle] = useState(initialValues?.title ?? "");
-  const [department, setDepartment] = useState(
-    initialValues?.department ?? "",
-  );
+  const [department, setDepartment] = useState(initialValues?.department ?? "");
   const [bio, setBio] = useState(initialValues?.bio ?? "");
 
   useEffect(() => {
@@ -54,18 +47,28 @@ export default function EditProfileDrawer({
   if (!open) return null;
 
   return (
-    <div style={s.drawerOverlay} onClick={onClose}>
-      <div style={s.drawerPanel} onClick={(e) => e.stopPropagation()}>
+    // biome-ignore lint/a11y/useSemanticElements: full-screen backdrop; a button cannot contain the panel's form controls
+    <div
+      style={s.drawerOverlay}
+      role="button"
+      tabIndex={0}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClose();
+        }
+      }}
+    >
+      <div style={s.drawerPanel}>
         <div style={s.drawerHeader}>
           <div style={{ flexGrow: 1 }}>
             <h3 style={s.drawerName}>Edit profile</h3>
             <p style={s.drawerMeta}>Update your personal information</p>
           </div>
-          <button
-            style={s.drawerCloseBtn}
-            onClick={onClose}
-            aria-label="Close"
-          >
+          <button type="button" style={s.drawerCloseBtn} onClick={onClose} aria-label="Close">
             <XCircleIcon />
           </button>
         </div>
@@ -80,35 +83,19 @@ export default function EditProfileDrawer({
         >
           <div>
             <p style={drawerFieldLabel}>First name</p>
-            <input
-              style={s.input}
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-            />
+            <input style={s.input} value={firstName} onChange={(e) => setFirstName(e.target.value)} />
           </div>
           <div>
             <p style={drawerFieldLabel}>Last name</p>
-            <input
-              style={s.input}
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-            />
+            <input style={s.input} value={lastName} onChange={(e) => setLastName(e.target.value)} />
           </div>
           <div>
             <p style={drawerFieldLabel}>Title</p>
-            <input
-              style={s.input}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
+            <input style={s.input} value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div>
             <p style={drawerFieldLabel}>Department</p>
-            <input
-              style={s.input}
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-            />
+            <input style={s.input} value={department} onChange={(e) => setDepartment(e.target.value)} />
           </div>
           <div>
             <p style={drawerFieldLabel}>Bio</p>
@@ -120,11 +107,7 @@ export default function EditProfileDrawer({
           </div>
         </div>
 
-        {error && (
-          <div style={drawerErrorBanner}>
-            {error}
-          </div>
-        )}
+        {error && <div style={drawerErrorBanner}>{error}</div>}
 
         <div
           style={{
@@ -135,10 +118,11 @@ export default function EditProfileDrawer({
             paddingTop: 20,
           }}
         >
-          <button style={s.reviewEditLink} onClick={onClose} disabled={saving}>
+          <button type="button" style={s.reviewEditLink} onClick={onClose} disabled={saving}>
             Cancel
           </button>
           <button
+            type="button"
             style={{
               ...s.continueBtnSmall,
               opacity: saving ? 0.6 : 1,

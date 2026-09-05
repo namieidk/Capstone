@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import type React from "react";
 import { GlobalStyles, s } from "@/components/ScholarShared";
 import { ScholarSidebar } from "@/components/Sidebar";
 import { SidebarProvider, useSidebar } from "@/components/SidebarContext";

@@ -1,21 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import {
+  AMBER_BG,
   CameraIcon,
   DownloadIcon,
-  SCHOLAR,
-  PROFILE_DOCUMENTS,
-  PREDICTED_GWA,
   GWA_THRESHOLD,
+  PREDICTED_GWA,
+  PROFILE_DOCUMENTS,
+  SCHOLAR,
   SCHOLAR_DISBURSED_TO_DATE,
-  AMBER_BG,
   s,
 } from "@/components/ScholarShared";
 
 function ApplicationIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+      focusable="false"
+    >
       <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
       <path d="M9 12l2 2 4-4" />
     </svg>
@@ -24,7 +33,16 @@ function ApplicationIcon() {
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", gap: 12, flexWrap: "wrap" }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "8px 0",
+        gap: 12,
+        flexWrap: "wrap",
+      }}
+    >
       <span style={{ fontSize: "0.86rem", color: "#8a8a84" }}>{label}</span>
       <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "#14213A", textAlign: "right" }}>{value}</span>
     </div>
@@ -76,7 +94,7 @@ export default function SchoProfilePage() {
       <ProfilePageStyles />
 
       <div className="scho-profile-banner" style={{ ...s.profileBanner, background: SCHOLAR.bannerGradient }}>
-        <button style={s.profileBannerEditBtn}>
+        <button type="button" style={s.profileBannerEditBtn}>
           <CameraIcon /> Change banner
         </button>
       </div>
@@ -86,28 +104,36 @@ export default function SchoProfilePage() {
           <span className="scho-profile-avatar" style={{ ...s.profileAvatar, background: SCHOLAR.avatarColor }}>
             {SCHOLAR.initials}
           </span>
-          <button style={s.profileAvatarEditBtn}>
+          <button type="button" style={s.profileAvatarEditBtn}>
             <CameraIcon />
           </button>
         </div>
         <div className="scho-profile-header-info" style={s.profileHeaderInfo}>
-          <h2 className="scho-profile-name" style={s.profileName}>{SCHOLAR.name}</h2>
+          <h2 className="scho-profile-name" style={s.profileName}>
+            {SCHOLAR.name}
+          </h2>
           <p style={s.profileMeta}>
             {SCHOLAR.course} · {SCHOLAR.year}
           </p>
         </div>
-        <button className="scho-profile-edit-btn" style={s.continueBtnSmall}>Edit profile</button>
+        <button type="button" className="scho-profile-edit-btn" style={s.continueBtnSmall}>
+          Edit profile
+        </button>
       </div>
 
       <div className="scho-profile-bio-card" style={s.profileBioCard}>
         <div style={s.profileBioHeader}>
           <p style={s.profileBioLabel}>Bio</p>
-          <button onClick={() => setEditingBio((v) => !v)} style={s.reviewEditLink}>
+          <button type="button" onClick={() => setEditingBio((v) => !v)} style={s.reviewEditLink}>
             {editingBio ? "Save" : "Edit"}
           </button>
         </div>
         {editingBio ? (
-          <textarea style={{ ...s.input, height: 90, resize: "vertical" }} value={bio} onChange={(e) => setBio(e.target.value)} />
+          <textarea
+            style={{ ...s.input, height: 90, resize: "vertical" }}
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+          />
         ) : (
           <p style={s.profileBioText}>{bio}</p>
         )}
@@ -164,7 +190,7 @@ export default function SchoProfilePage() {
               >
                 {doc.status}
               </span>
-              <button style={s.profileDocDownload}>
+              <button type="button" style={s.profileDocDownload}>
                 <DownloadIcon />
               </button>
             </div>

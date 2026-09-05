@@ -1,16 +1,14 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { updateMe, uploadAvatar, uploadBanner } from "@/lib/api/auth";
-import { ApiError } from "@/lib/api";
+import Image from "next/image";
+import type React from "react";
+import { useCallback, useRef, useState } from "react";
+import { CameraIcon, DrawerInfoRow, s } from "@/components/Adminshared";
 import EditProfileDrawer from "@/components/EditProfileDrawer";
 import { useToast } from "@/components/ToastContext";
-import {
-  CameraIcon,
-  DrawerInfoRow,
-  s,
-} from "@/components/Adminshared";
+import { useAuth } from "@/contexts/AuthContext";
+import { ApiError } from "@/lib/api";
+import { updateMe, uploadAvatar, uploadBanner } from "@/lib/api/auth";
 
 function ProfilePageStyles() {
   return (
@@ -59,9 +57,7 @@ export default function AdminProfilePage() {
     : "?";
   const displayRole = user ? "Main Admin" : "";
   const displayTitle = user?.employee?.title ?? "Administrator";
-  const memberSince = user?.created_at
-    ? new Date(user.created_at).getFullYear()
-    : new Date().getFullYear();
+  const memberSince = user?.created_at ? new Date(user.created_at).getFullYear() : new Date().getFullYear();
 
   const handleBannerUpload = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,10 +70,7 @@ export default function AdminProfilePage() {
         showToast("Banner updated.");
       } catch (err) {
         console.error("Banner upload failed:", err);
-        showToast(
-          err instanceof ApiError ? err.message : "Banner upload failed. Please try again.",
-          "error",
-        );
+        showToast(err instanceof ApiError ? err.message : "Banner upload failed. Please try again.", "error");
       } finally {
         setUploadingBanner(false);
         if (bannerInputRef.current) bannerInputRef.current.value = "";
@@ -97,10 +90,7 @@ export default function AdminProfilePage() {
         showToast("Profile picture updated.");
       } catch (err) {
         console.error("Avatar upload failed:", err);
-        showToast(
-          err instanceof ApiError ? err.message : "Avatar upload failed. Please try again.",
-          "error",
-        );
+        showToast(err instanceof ApiError ? err.message : "Avatar upload failed. Please try again.", "error");
       } finally {
         setUploadingAvatar(false);
         if (avatarInputRef.current) avatarInputRef.current.value = "";
@@ -110,13 +100,7 @@ export default function AdminProfilePage() {
   );
 
   const handleSaveProfile = useCallback(
-    async (values: {
-      first_name: string;
-      last_name: string;
-      title: string;
-      department: string;
-      bio: string;
-    }) => {
+    async (values: { first_name: string; last_name: string; title: string; department: string; bio: string }) => {
       setSavingProfile(true);
       setSaveError("");
       try {
@@ -126,9 +110,7 @@ export default function AdminProfilePage() {
         showToast("Profile updated.");
       } catch (err) {
         console.error("Profile update failed:", err);
-        setSaveError(
-          err instanceof ApiError ? err.message : "Failed to save profile. Please try again.",
-        );
+        setSaveError(err instanceof ApiError ? err.message : "Failed to save profile. Please try again.");
       } finally {
         setSavingProfile(false);
       }
@@ -146,7 +128,13 @@ export default function AdminProfilePage() {
         <div className="admin-profile-header-row" style={{ ...s.profileHeaderRow, marginTop: -56 }}>
           <div
             className="va-skeleton"
-            style={{ width: 120, height: 120, borderRadius: "50%", border: "4px solid #FFFFFF", boxSizing: "border-box" }}
+            style={{
+              width: 120,
+              height: 120,
+              borderRadius: "50%",
+              border: "4px solid #FFFFFF",
+              boxSizing: "border-box",
+            }}
           />
           <div style={{ flexGrow: 1 }}>
             <div className="va-skeleton" style={{ width: "55%", height: 30, borderRadius: 9, marginBottom: 12 }} />
@@ -184,11 +172,9 @@ export default function AdminProfilePage() {
         onChange={handleAvatarUpload}
       />
 
-      <div
-        className="admin-profile-banner"
-        style={{ ...s.profileBanner, height: 220, ...bannerStyle }}
-      >
+      <div className="admin-profile-banner" style={{ ...s.profileBanner, height: 220, ...bannerStyle }}>
         <button
+          type="button"
           style={s.profileBannerEditBtn}
           onClick={() => bannerInputRef.current?.click()}
           disabled={uploadingBanner}
@@ -200,10 +186,13 @@ export default function AdminProfilePage() {
       <div className="admin-profile-header-row" style={{ ...s.profileHeaderRow, marginTop: -56 }}>
         <div style={s.profileAvatarWrap}>
           {user.avatar_url ? (
-            <img
+            <Image
               src={user.avatar_url}
               alt={displayName}
               className="admin-profile-avatar"
+              width={120}
+              height={120}
+              unoptimized
               style={{
                 width: 120,
                 height: 120,
@@ -215,12 +204,20 @@ export default function AdminProfilePage() {
           ) : (
             <span
               className="admin-profile-avatar"
-              style={{ ...s.profileAvatar, width: 120, height: 120, fontSize: "2.2rem", background: "#F3E6C8", color: "#7A5C0A" }}
+              style={{
+                ...s.profileAvatar,
+                width: 120,
+                height: 120,
+                fontSize: "2.2rem",
+                background: "#F3E6C8",
+                color: "#7A5C0A",
+              }}
             >
               {displayInitials}
             </span>
           )}
           <button
+            type="button"
             style={{ ...s.profileAvatarEditBtn, width: 34, height: 34, bottom: 0, right: 0 }}
             onClick={() => avatarInputRef.current?.click()}
             disabled={uploadingAvatar}
@@ -229,10 +226,13 @@ export default function AdminProfilePage() {
           </button>
         </div>
         <div className="admin-profile-header-info" style={s.profileHeaderInfo}>
-          <h2 className="admin-profile-name" style={s.profileName}>{displayName}</h2>
+          <h2 className="admin-profile-name" style={s.profileName}>
+            {displayName}
+          </h2>
           <p style={s.profileMeta}>{displayTitle}</p>
         </div>
         <button
+          type="button"
           className="admin-profile-edit-btn"
           style={s.continueBtnSmall}
           onClick={() => {
@@ -246,17 +246,12 @@ export default function AdminProfilePage() {
 
       <div className="admin-profile-card" style={s.profileBioCard}>
         <p style={s.profileBioLabel}>Bio</p>
-        <p style={{ ...s.profileBioText, marginTop: 12 }}>
-          {user.bio || "No bio yet. Click Edit profile to add one."}
-        </p>
+        <p style={{ ...s.profileBioText, marginTop: 12 }}>{user.bio || "No bio yet. Click Edit profile to add one."}</p>
       </div>
 
       <div className="admin-profile-card" style={s.profileBioCard}>
         <p style={s.profileBioLabel}>Details</p>
-        <div
-          className="admin-profile-details-grid"
-          style={{ ...s.drawerInfoGrid, marginTop: 18, rowGap: 22 }}
-        >
+        <div className="admin-profile-details-grid" style={{ ...s.drawerInfoGrid, marginTop: 18, rowGap: 22 }}>
           <DrawerInfoRow label="Role" value={displayRole} />
           <DrawerInfoRow label="Department" value={user.employee?.department ?? "N/A"} />
           <DrawerInfoRow label="Since" value={String(memberSince)} />

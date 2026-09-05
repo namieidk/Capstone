@@ -1,30 +1,29 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
-  TrashIcon,
-  HeartIcon,
-  CommentIcon,
-  MailIcon,
-  SendIcon,
-  FORUM_POSTS,
-  SCHOLARS_DIRECTORY,
-  EMPLOYEES,
   ADMIN,
-  NAVY,
   AMBER,
   AMBER_BG,
-  WHITE,
-  TINT,
-  LINE,
+  BellIcon,
+  CommentIcon,
+  EMPLOYEES,
+  FORUM_POSTS,
   GOOD,
   GOOD_BG,
-  SHADOW_SM,
-  BORDER_SUBTLE,
+  HeartIcon,
+  LINE,
+  MailIcon,
   MenuIcon,
-  BellIcon,
+  NAVY,
+  SCHOLARS_DIRECTORY,
   SearchIcon,
+  SendIcon,
+  SHADOW_SM,
   s,
+  TINT,
+  TrashIcon,
+  WHITE,
 } from "@/components/Adminshared";
 import { useSidebar } from "@/components/SidebarContext";
 
@@ -48,7 +47,7 @@ function findProfile(author: string) {
 function deriveTitle(text: string) {
   const firstLine = text.split("\n")[0];
   const firstSentence = firstLine.split(/(?<=[.!?])\s/)[0];
-  return firstSentence.length > 58 ? firstSentence.slice(0, 56) + "…" : firstSentence;
+  return firstSentence.length > 58 ? `${firstSentence.slice(0, 56)}…` : firstSentence;
 }
 
 export default function AdminForumPage() {
@@ -65,7 +64,7 @@ export default function AdminForumPage() {
 
   const toggleLike = (id: number) => {
     setPosts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 } : p))
+      prev.map((p) => (p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 } : p)),
     );
   };
 
@@ -106,7 +105,10 @@ export default function AdminForumPage() {
   const filteredPosts = useMemo(() => {
     if (!query) return posts;
     return posts.filter(
-      (p) => p.text.toLowerCase().includes(query) || p.author.toLowerCase().includes(query) || deriveTitle(p.text).toLowerCase().includes(query)
+      (p) =>
+        p.text.toLowerCase().includes(query) ||
+        p.author.toLowerCase().includes(query) ||
+        deriveTitle(p.text).toLowerCase().includes(query),
     );
   }, [posts, query]);
 
@@ -122,7 +124,7 @@ export default function AdminForumPage() {
 
       {/* ---------------- Page-level navbar ---------------- */}
       <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button className="va-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="va-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -140,7 +142,7 @@ export default function AdminForumPage() {
               style={s.searchInput}
             />
           </div>
-          <button style={s.bellBtn}>
+          <button type="button" style={s.bellBtn}>
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
           </button>
@@ -175,9 +177,17 @@ export default function AdminForumPage() {
                   onChange={(e) => setDraft(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && submitPost()}
                   placeholder="Add a new thread"
-                  style={{ flexGrow: 1, border: "none", outline: "none", background: "transparent", fontSize: "0.88rem", color: "#2B2B28" }}
+                  style={{
+                    flexGrow: 1,
+                    border: "none",
+                    outline: "none",
+                    background: "transparent",
+                    fontSize: "0.88rem",
+                    color: "#2B2B28",
+                  }}
                 />
                 <button
+                  type="button"
                   onClick={submitPost}
                   style={{
                     width: 34,
@@ -212,9 +222,18 @@ export default function AdminForumPage() {
                 const replies = repliesByPost[post.id] ?? [];
 
                 return (
+                  // biome-ignore lint/a11y/useSemanticElements: post card clicks select the thread; div cannot be a real button (contains nested buttons and block content)
                   <div
                     key={post.id}
                     onClick={() => setSelectedId(post.id)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setSelectedId(post.id);
+                      }
+                    }}
                     style={{
                       background: WHITE,
                       border: isSelected ? `1px solid ${AMBER}` : `1px solid ${LINE}`,
@@ -276,6 +295,7 @@ export default function AdminForumPage() {
                         {post.role}
                       </span>
                       <button
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           removePost(post.id);
@@ -288,12 +308,15 @@ export default function AdminForumPage() {
                     </div>
 
                     {/* body */}
-                    <p style={{ fontSize: "0.88rem", color: "#3a3a36", lineHeight: 1.65, marginBottom: 16 }}>{post.text}</p>
+                    <p style={{ fontSize: "0.88rem", color: "#3a3a36", lineHeight: 1.65, marginBottom: 16 }}>
+                      {post.text}
+                    </p>
 
                     {/* footer row */}
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <div style={{ display: "flex", gap: 8 }}>
                         <button
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             toggleLike(post.id);
@@ -314,6 +337,7 @@ export default function AdminForumPage() {
                           <HeartIcon filled={post.liked} />
                         </button>
                         <button
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             setOpenReplyId(isReplying ? null : post.id);
@@ -382,7 +406,16 @@ export default function AdminForumPage() {
 
                     {/* ---- Responses list ---- */}
                     {replies.length > 0 && (
-                      <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${TINT}`, display: "flex", flexDirection: "column", gap: 12 }}>
+                      <div
+                        style={{
+                          marginTop: 16,
+                          paddingTop: 16,
+                          borderTop: `1px solid ${TINT}`,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 12,
+                        }}
+                      >
                         {replies.map((r) => (
                           <div key={r.id} style={{ display: "flex", gap: 10 }}>
                             <span
@@ -403,9 +436,13 @@ export default function AdminForumPage() {
                               {r.initials}
                             </span>
                             <div style={{ background: TINT, borderRadius: 12, padding: "8px 12px", flexGrow: 1 }}>
-                              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 2 }}>
+                              <div
+                                style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 2 }}
+                              >
                                 <span style={{ fontSize: "0.78rem", fontWeight: 700, color: NAVY }}>{r.author}</span>
-                                <span style={{ fontSize: "0.68rem", color: "#9a9a94", whiteSpace: "nowrap" }}>{r.time}</span>
+                                <span style={{ fontSize: "0.68rem", color: "#9a9a94", whiteSpace: "nowrap" }}>
+                                  {r.time}
+                                </span>
                               </div>
                               <p style={{ fontSize: "0.82rem", color: "#3a3a36", lineHeight: 1.5 }}>{r.text}</p>
                             </div>
@@ -418,7 +455,19 @@ export default function AdminForumPage() {
                     {isReplying && (
                       <div
                         onClick={(e) => e.stopPropagation()}
-                        style={{ marginTop: 14, paddingTop: replies.length > 0 ? 0 : 14, borderTop: replies.length > 0 ? "none" : `1px solid ${TINT}`, display: "flex", gap: 10 }}
+                        role="dialog"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.stopPropagation();
+                          }
+                        }}
+                        style={{
+                          marginTop: 14,
+                          paddingTop: replies.length > 0 ? 0 : 14,
+                          borderTop: replies.length > 0 ? "none" : `1px solid ${TINT}`,
+                          display: "flex",
+                          gap: 10,
+                        }}
                       >
                         <span
                           style={{
@@ -439,7 +488,6 @@ export default function AdminForumPage() {
                         </span>
                         <div style={{ flexGrow: 1, display: "flex", gap: 8 }}>
                           <input
-                            autoFocus
                             value={replyDrafts[post.id] ?? ""}
                             onChange={(e) => setReplyDrafts((prev) => ({ ...prev, [post.id]: e.target.value }))}
                             onKeyDown={(e) => e.key === "Enter" && submitReply(post.id)}
@@ -456,6 +504,7 @@ export default function AdminForumPage() {
                             }}
                           />
                           <button
+                            type="button"
                             onClick={() => submitReply(post.id)}
                             style={{
                               width: 34,
@@ -484,11 +533,29 @@ export default function AdminForumPage() {
             {/* RIGHT: compact profile card */}
             {selectedPost && (
               <div style={{ position: "sticky", top: 24 }}>
-                <div style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius: 18, padding: "22px 20px", boxShadow: SHADOW_SM }}>
-                  <p style={{ fontSize: "1.02rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>
+                <div
+                  style={{
+                    background: WHITE,
+                    border: `1px solid ${LINE}`,
+                    borderRadius: 18,
+                    padding: "22px 20px",
+                    boxShadow: SHADOW_SM,
+                  }}
+                >
+                  <p
+                    style={{
+                      fontSize: "1.02rem",
+                      fontWeight: 700,
+                      color: NAVY,
+                      fontFamily: "'Inter', sans-serif",
+                      marginBottom: 2,
+                    }}
+                  >
                     {selectedPost.role}
                   </p>
-                  <p style={{ fontSize: "0.72rem", color: "#9a9a94", marginBottom: 20 }}>Thread: {deriveTitle(selectedPost.text)}</p>
+                  <p style={{ fontSize: "0.72rem", color: "#9a9a94", marginBottom: 20 }}>
+                    Thread: {deriveTitle(selectedPost.text)}
+                  </p>
 
                   {/* avatar + name */}
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 18 }}>
@@ -512,8 +579,27 @@ export default function AdminForumPage() {
                     >
                       {selectedPost.initials}
                     </span>
-                    <p style={{ fontSize: "0.96rem", fontWeight: 700, color: NAVY, marginBottom: 6, textAlign: "center" }}>{selectedPost.author}</p>
-                    <span style={{ fontSize: "0.68rem", fontWeight: 700, padding: "4px 12px", borderRadius: 999, background: GOOD_BG, color: GOOD }}>
+                    <p
+                      style={{
+                        fontSize: "0.96rem",
+                        fontWeight: 700,
+                        color: NAVY,
+                        marginBottom: 6,
+                        textAlign: "center",
+                      }}
+                    >
+                      {selectedPost.author}
+                    </p>
+                    <span
+                      style={{
+                        fontSize: "0.68rem",
+                        fontWeight: 700,
+                        padding: "4px 12px",
+                        borderRadius: 999,
+                        background: GOOD_BG,
+                        color: GOOD,
+                      }}
+                    >
                       {selectedPost.role}
                     </span>
                   </div>
@@ -522,14 +608,38 @@ export default function AdminForumPage() {
                   {selectedProfile && (
                     <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
                       {selectedProfile.phone && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", background: TINT, borderRadius: 10 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            padding: "9px 12px",
+                            background: TINT,
+                            borderRadius: 10,
+                          }}
+                        >
                           <span style={{ color: "#8a8a84", fontSize: "0.82rem" }}>☎</span>
-                          <span style={{ fontSize: "0.78rem", color: "#3a3a36", fontWeight: 500 }}>{selectedProfile.phone}</span>
+                          <span style={{ fontSize: "0.78rem", color: "#3a3a36", fontWeight: 500 }}>
+                            {selectedProfile.phone}
+                          </span>
                         </div>
                       )}
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", background: TINT, borderRadius: 10 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          padding: "9px 12px",
+                          background: TINT,
+                          borderRadius: 10,
+                        }}
+                      >
                         <MailIcon small />
-                        <span style={{ fontSize: "0.78rem", color: "#3a3a36", fontWeight: 500, wordBreak: "break-all" }}>{selectedProfile.email}</span>
+                        <span
+                          style={{ fontSize: "0.78rem", color: "#3a3a36", fontWeight: 500, wordBreak: "break-all" }}
+                        >
+                          {selectedProfile.email}
+                        </span>
                       </div>
                     </div>
                   )}
@@ -539,9 +649,12 @@ export default function AdminForumPage() {
                     <p style={{ fontSize: "0.76rem", fontWeight: 700, color: "#9a9a94", marginBottom: 12 }}>
                       {others.length} other threads
                     </p>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 2, maxHeight: 280, overflowY: "auto" }}>
+                    <div
+                      style={{ display: "flex", flexDirection: "column", gap: 2, maxHeight: 280, overflowY: "auto" }}
+                    >
                       {others.map((o) => (
                         <button
+                          type="button"
                           key={o.id}
                           onClick={() => setSelectedId(o.id)}
                           className="va-nav-item"
@@ -573,7 +686,16 @@ export default function AdminForumPage() {
                           >
                             {o.initials}
                           </span>
-                          <span style={{ fontSize: "0.8rem", color: "#3a3a36", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          <span
+                            style={{
+                              fontSize: "0.8rem",
+                              color: "#3a3a36",
+                              fontWeight: 600,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
                             {o.author}
                           </span>
                         </button>

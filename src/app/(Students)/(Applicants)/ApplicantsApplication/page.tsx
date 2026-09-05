@@ -1,22 +1,22 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useSidebar } from "../../../../components/SidebarContext";
 import {
-  CheckIconSmall,
-  CheckCircleIcon,
-  ApplicationIcon,
-  MenuIcon,
-  BellIcon,
-  APPLICATION_STAGES,
-  CURRENT_STAGE_INDEX,
-  PROFILE_DOCUMENTS,
   AMBER,
   AMBER_BG,
-  NAVY,
-  WHITE,
+  APPLICATION_STAGES,
+  ApplicationIcon,
+  BellIcon,
+  CheckCircleIcon,
+  CheckIconSmall,
+  CURRENT_STAGE_INDEX,
   LINE,
+  MenuIcon,
+  NAVY,
+  PROFILE_DOCUMENTS,
   s,
+  WHITE,
 } from "../../../../components/StudentShared";
 
 interface DocState {
@@ -35,7 +35,7 @@ export default function ApplicationPage() {
       file: d.file,
       size: d.size,
       submitted: d.status === "verified",
-    }))
+    })),
   );
 
   const allSubmitted = docs.every((d) => d.submitted);
@@ -45,7 +45,9 @@ export default function ApplicationPage() {
 
   function handleUpload(label: string) {
     const updated = docs.map((d) =>
-      d.label === label ? { ...d, submitted: true, file: d.file === "—" ? `${label.split(" ")[0].toLowerCase()}_upload.pdf` : d.file } : d
+      d.label === label
+        ? { ...d, submitted: true, file: d.file === "—" ? `${label.split(" ")[0].toLowerCase()}_upload.pdf` : d.file }
+        : d,
     );
     setDocs(updated);
     if (updated.every((d) => d.submitted)) {
@@ -56,7 +58,7 @@ export default function ApplicationPage() {
   return (
     <div style={{ background: WHITE, minHeight: "100vh" }}>
       <header style={s.topbar}>
-        <button className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -64,7 +66,7 @@ export default function ApplicationPage() {
           <p style={s.topbarSub}>Upload your requirements and track your progress.</p>
         </div>
         <div style={s.topbarRight}>
-          <button style={s.bellBtn}>
+          <button type="button" style={s.bellBtn}>
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
           </button>
@@ -75,6 +77,7 @@ export default function ApplicationPage() {
         <div style={{ ...s.pageWrap, marginTop: 28 }}>
           <div style={s.tabRow}>
             <button
+              type="button"
               onClick={() => setView("upload")}
               style={{
                 ...s.tabButton,
@@ -85,6 +88,7 @@ export default function ApplicationPage() {
               Documents
             </button>
             <button
+              type="button"
               onClick={() => allSubmitted && setView("status")}
               disabled={!allSubmitted}
               title={!allSubmitted ? "Upload all documents to unlock" : undefined}
@@ -118,11 +122,9 @@ export default function ApplicationPage() {
                       <p style={s.profileDocFile}>{doc.submitted ? `${doc.file} · ${doc.size}` : "Not uploaded yet"}</p>
                     </div>
                     {doc.submitted ? (
-                      <span style={{ ...s.statusTag, background: AMBER_BG, color: "#6b5220" }}>
-                        Uploaded
-                      </span>
+                      <span style={{ ...s.statusTag, background: AMBER_BG, color: "#6b5220" }}>Uploaded</span>
                     ) : (
-                      <button onClick={() => handleUpload(doc.label)} style={s.continueBtnSmall}>
+                      <button type="button" onClick={() => handleUpload(doc.label)} style={s.continueBtnSmall}>
                         Upload
                       </button>
                     )}

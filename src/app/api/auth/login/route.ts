@@ -25,22 +25,11 @@ export async function POST(request: NextRequest) {
       data && typeof data === "object" && "message" in data
         ? (data as Record<string, unknown>).message
         : "Invalid email or password.";
-    return Response.json(
-      { message: Array.isArray(message) ? message.join(", ") : message },
-      { status: res.status },
-    );
+    return Response.json({ message: Array.isArray(message) ? message.join(", ") : message }, { status: res.status });
   }
 
-  if (
-    !data ||
-    typeof data !== "object" ||
-    !("access_token" in data) ||
-    !("user" in data)
-  ) {
-    return Response.json(
-      { message: "Unexpected response from the server." },
-      { status: 500 },
-    );
+  if (!data || typeof data !== "object" || !("access_token" in data) || !("user" in data)) {
+    return Response.json({ message: "Unexpected response from the server." }, { status: 500 });
   }
 
   const tokenData = data as { access_token: string; user: unknown };

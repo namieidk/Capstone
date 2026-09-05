@@ -1,24 +1,25 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  XCircleIcon,
+  ARCHIVE_STATUS_STYLE,
+  ARCHIVED_SCHOLARS,
+  type ArchivedScholar,
   ArchiveIcon,
+  BORDER_SUBTLE,
   DownloadIcon,
   DrawerInfoRow,
-  ARCHIVED_SCHOLARS,
-  ARCHIVE_STATUS_STYLE,
-  PAYMENT_STATUS_COLORS,
   GRADE_STATUS_COLORS,
-  ArchivedScholar,
-  NAVY,
-  WHITE,
   LINE,
-  TINT,
-  BORDER_SUBTLE,
+  MenuIcon,
+  NAVY,
+  PAYMENT_STATUS_COLORS,
   SHADOW_SM,
   s,
-  MenuIcon,
+  TINT,
+  WHITE,
+  XCircleIcon,
 } from "@/components/Coordinatorshared";
 import { useSidebar } from "@/components/SidebarContext";
 
@@ -87,7 +88,7 @@ export default function ArchivePage() {
 
       {/* ---------------- Page-level navbar ---------------- */}
       <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -113,7 +114,16 @@ export default function ArchivePage() {
       <div style={{ ...s.mainContent, padding: s.mainContent.padding, flexGrow: 1, minHeight: 0, overflowY: "auto" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: "24px 4px 40px" }}>
           {/* ---------------- Table card ---------------- */}
-          <div ref={tableCardRef} style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "16px 22px 8px" }}>
+          <div
+            ref={tableCardRef}
+            style={{
+              background: WHITE,
+              border: BORDER_SUBTLE,
+              borderRadius: 18,
+              boxShadow: SHADOW_SM,
+              padding: "16px 22px 8px",
+            }}
+          >
             <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: 6 }}>
               <span style={{ fontSize: "0.8rem", color: "#9a9a94" }}>
                 {filtered.length === 0
@@ -127,8 +137,12 @@ export default function ArchivePage() {
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${LINE}` }}>
                     <th style={{ ...s.th, background: "none", padding: "14px 14px", textAlign: "center" }}>Scholar</th>
-                    <th className="archive-col-track" style={{ ...s.th, background: "none", textAlign: "center" }}>Track</th>
-                    <th className="archive-col-joined" style={{ ...s.th, background: "none", textAlign: "center" }}>Joined</th>
+                    <th className="archive-col-track" style={{ ...s.th, background: "none", textAlign: "center" }}>
+                      Track
+                    </th>
+                    <th className="archive-col-joined" style={{ ...s.th, background: "none", textAlign: "center" }}>
+                      Joined
+                    </th>
                     <th style={{ ...s.th, background: "none", textAlign: "center" }}>Exited</th>
                     <th style={{ ...s.th, background: "none", textAlign: "center" }}>Status</th>
                     <th style={{ ...s.th, background: "none", textAlign: "center" }}>View</th>
@@ -139,14 +153,22 @@ export default function ArchivePage() {
                     <tr
                       key={a.id}
                       onClick={() => setSelected(a)}
-                      style={{ borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`, cursor: "pointer", verticalAlign: "middle" }}
+                      style={{
+                        borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`,
+                        cursor: "pointer",
+                        verticalAlign: "middle",
+                      }}
                     >
                       <td style={{ ...s.td, padding: "16px 14px", textAlign: "center" }}>
                         <p style={s.tdName}>{a.name}</p>
                         <p style={s.tdSub}>{a.course}</p>
                       </td>
-                      <td className="archive-col-track" style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{a.track}</td>
-                      <td className="archive-col-joined" style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{a.joined}</td>
+                      <td className="archive-col-track" style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>
+                        {a.track}
+                      </td>
+                      <td className="archive-col-joined" style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>
+                        {a.joined}
+                      </td>
                       <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{a.exited}</td>
                       <td style={{ ...s.td, textAlign: "center" }}>
                         <span
@@ -174,12 +196,23 @@ export default function ArchivePage() {
                       </td>
                       <td style={{ ...s.td, textAlign: "center" }}>
                         <button
-                          onClick={(e) => { e.stopPropagation(); setSelected(a); }}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelected(a);
+                          }}
                           aria-label="View scholar"
                           style={{
-                            width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${LINE}`,
-                            display: "inline-flex", alignItems: "center", justifyContent: "center",
-                            background: WHITE, color: "#7a7a74", cursor: "pointer",
+                            width: 34,
+                            height: 34,
+                            borderRadius: "50%",
+                            border: `1.5px solid ${LINE}`,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            background: WHITE,
+                            color: "#7a7a74",
+                            cursor: "pointer",
                           }}
                         >
                           <EyeIcon />
@@ -198,13 +231,23 @@ export default function ArchivePage() {
             )}
 
             {filtered.length > 0 && (
-              <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}>
+              <div
+                style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}
+              >
                 <button
+                  type="button"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                   style={{
-                    width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
-                    color: currentPage === 1 ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    border: `1px solid ${LINE}`,
+                    background: WHITE,
+                    color: currentPage === 1 ? "#c7c7c2" : "#55554f",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     cursor: currentPage === 1 ? "default" : "pointer",
                   }}
                   aria-label="Previous page"
@@ -213,23 +256,38 @@ export default function ArchivePage() {
                 </button>
                 {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
                   <button
+                    type="button"
                     key={num}
                     onClick={() => setPage(num)}
                     style={{
-                      width: 32, height: 32, borderRadius: 8, border: `1px solid ${num === currentPage ? NAVY : LINE}`,
-                      background: num === currentPage ? NAVY : WHITE, color: num === currentPage ? WHITE : "#55554f",
-                      fontSize: "0.82rem", fontWeight: 600, cursor: "pointer",
+                      width: 32,
+                      height: 32,
+                      borderRadius: 8,
+                      border: `1px solid ${num === currentPage ? NAVY : LINE}`,
+                      background: num === currentPage ? NAVY : WHITE,
+                      color: num === currentPage ? WHITE : "#55554f",
+                      fontSize: "0.82rem",
+                      fontWeight: 600,
+                      cursor: "pointer",
                     }}
                   >
                     {num}
                   </button>
                 ))}
                 <button
+                  type="button"
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
                   style={{
-                    width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
-                    color: currentPage === totalPages ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    border: `1px solid ${LINE}`,
+                    background: WHITE,
+                    color: currentPage === totalPages ? "#c7c7c2" : "#55554f",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     cursor: currentPage === totalPages ? "default" : "pointer",
                   }}
                   aria-label="Next page"
@@ -244,15 +302,36 @@ export default function ArchivePage() {
 
       {/* ---------------- Drawer, same content as before, admin-style spacing ---------------- */}
       {selected && (
-        <div style={s.drawerOverlay} onClick={() => setSelected(null)}>
-          <div style={s.drawerPanel} onClick={(e) => e.stopPropagation()}>
+        // biome-ignore lint/a11y/useSemanticElements: overlay backdrop acts as a dismiss button; div cannot be a real button (contains block content)
+        <div
+          style={s.drawerOverlay}
+          onClick={() => setSelected(null)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setSelected(null);
+            }
+          }}
+        >
+          <div
+            style={s.drawerPanel}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.stopPropagation();
+              }
+            }}
+          >
             <div style={{ ...s.drawerHeader, marginBottom: 22 }}>
               <span style={s.profileAvatar}>{selected.initials}</span>
               <div style={{ flexGrow: 1 }}>
                 <h3 style={s.drawerName}>{selected.name}</h3>
                 <p style={s.drawerMeta}>{selected.course}</p>
               </div>
-              <button onClick={() => setSelected(null)} style={s.drawerCloseBtn}>
+              <button type="button" onClick={() => setSelected(null)} style={s.drawerCloseBtn}>
                 <XCircleIcon />
               </button>
             </div>
@@ -275,8 +354,8 @@ export default function ArchivePage() {
             <div style={s.historySection}>
               <p style={{ ...s.drawerSectionLabel, marginBottom: 10 }}>Grade history</p>
               <div style={s.historyList}>
-                {selected.gradeHistory.map((g, i) => (
-                  <div key={i} style={s.historyRow}>
+                {selected.gradeHistory.map((g) => (
+                  <div key={`${g.term}-${g.gwa}`} style={s.historyRow}>
                     <div style={s.historyRowLeft}>
                       <span style={s.historyRowTerm}>{g.term}</span>
                       <span style={s.historyRowSub}>GWA {g.gwa}%</span>
@@ -300,8 +379,8 @@ export default function ArchivePage() {
             <div style={s.historySection}>
               <p style={{ ...s.drawerSectionLabel, marginBottom: 10 }}>Payment history</p>
               <div style={s.historyList}>
-                {selected.paymentHistory.map((p, i) => (
-                  <div key={i} style={s.historyRow}>
+                {selected.paymentHistory.map((p) => (
+                  <div key={`${p.term}-${p.date}-${p.amount}`} style={s.historyRow}>
                     <div style={s.historyRowLeft}>
                       <span style={s.historyRowTerm}>{p.term}</span>
                       <span style={s.historyRowSub}>{p.date}</span>
@@ -325,6 +404,7 @@ export default function ArchivePage() {
 
             <div style={{ ...s.drawerStageActions, marginTop: 4 }}>
               <button
+                type="button"
                 style={{
                   ...s.continueBtnSmall,
                   width: "100%",
@@ -369,7 +449,18 @@ const pillSelectStyle: React.CSSProperties = {
 
 function ChevronIcon() {
   return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={WHITE} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      width="11"
+      height="11"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={WHITE}
+      strokeWidth="2.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M6 9l6 6 6-6" />
     </svg>
   );
@@ -390,7 +481,9 @@ function PillFilter({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
-      <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+      <span
+        style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
+      >
         <ChevronIcon />
       </span>
     </div>
@@ -399,7 +492,16 @@ function PillFilter({ children }: { children: React.ReactNode }) {
 
 function EyeIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+      focusable="false"
+    >
       <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
       <circle cx="12" cy="12" r="3" />
     </svg>
@@ -408,7 +510,18 @@ function EyeIcon() {
 
 function ChevronLeftIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M15 18l-6-6 6-6" />
     </svg>
   );
@@ -416,7 +529,18 @@ function ChevronLeftIcon() {
 
 function ChevronRightIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M9 18l6-6-6-6" />
     </svg>
   );

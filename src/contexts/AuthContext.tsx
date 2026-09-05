@@ -1,7 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import type React from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import * as authApi from "@/lib/api/auth";
 
 interface AuthContextValue {
@@ -50,13 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const register = useCallback(
-    async (data: {
-      email: string;
-      password: string;
-      first_name: string;
-      last_name: string;
-      phone_number: string;
-    }) => {
+    async (data: { email: string; password: string; first_name: string; last_name: string; phone_number: string }) => {
       const res = await authApi.register(data);
       setUser(res.user);
       refreshUser();
@@ -72,9 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   return (
-    <AuthContext.Provider
-      value={{ user, loading, login, register, logout, refreshUser }}
-    >
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

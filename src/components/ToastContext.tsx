@@ -1,13 +1,7 @@
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import type React from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 type ToastType = "success" | "error";
@@ -67,11 +61,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 }}
               >
                 <span style={toastMessageStyle}>{toast.message}</span>
-                <button
-                  onClick={() => dismiss(toast.id)}
-                  style={toastCloseStyle}
-                  aria-label="Dismiss"
-                >
+                <button type="button" onClick={() => dismiss(toast.id)} style={toastCloseStyle} aria-label="Dismiss">
                   &times;
                 </button>
               </div>

@@ -1,23 +1,23 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import {
-  SendIcon,
-  SearchIcon,
-  CONVERSATIONS,
-  NAVY,
   AMBER,
   AMBER_BG,
-  WHITE,
-  TINT,
-  LINE,
-  GREEN,
   BAD,
-  SHADOW_SM,
-  BORDER_SUBTLE,
-  MenuIcon,
   BellIcon,
+  BORDER_SUBTLE,
+  CONVERSATIONS,
+  GREEN,
+  LINE,
+  MenuIcon,
+  NAVY,
+  SearchIcon,
+  SendIcon,
+  SHADOW_SM,
   s,
+  TINT,
+  WHITE,
 } from "@/components/Adminshared";
 import { useSidebar } from "@/components/SidebarContext";
 
@@ -29,7 +29,7 @@ export default function AdminMessagePage() {
   const [query, setQuery] = useState("");
   const [topbarQuery, setTopbarQuery] = useState("");
 
-  const active = convos.find((c) => c.id === activeId)!;
+  const active = convos.find((c) => c.id === activeId) ?? CONVERSATIONS[0];
   const filtered = convos.filter((c) => c.name.toLowerCase().includes(query.toLowerCase()));
 
   const sendMessage = () => {
@@ -37,9 +37,13 @@ export default function AdminMessagePage() {
     setConvos((prev) =>
       prev.map((c) =>
         c.id === activeId
-          ? { ...c, messages: [...c.messages, { from: "me" as const, text: draft, time: "Just now" }], lastMessage: draft }
-          : c
-      )
+          ? {
+              ...c,
+              messages: [...c.messages, { from: "me" as const, text: draft, time: "Just now" }],
+              lastMessage: draft,
+            }
+          : c,
+      ),
     );
     setDraft("");
   };
@@ -48,7 +52,7 @@ export default function AdminMessagePage() {
     <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       {/* ---------------- Page-level navbar, same as Archive ---------------- */}
       <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button className="va-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="va-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -66,14 +70,23 @@ export default function AdminMessagePage() {
               style={s.searchInput}
             />
           </div>
-          <button style={s.bellBtn}>
+          <button type="button" style={s.bellBtn}>
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
           </button>
         </div>
       </header>
 
-      <div style={{ ...s.mainContent, padding: s.mainContent.padding, paddingBottom: 12, flexGrow: 1, minHeight: 0, overflow: "hidden" }}>
+      <div
+        style={{
+          ...s.mainContent,
+          padding: s.mainContent.padding,
+          paddingBottom: 12,
+          flexGrow: 1,
+          minHeight: 0,
+          overflow: "hidden",
+        }}
+      >
         <div
           style={{
             maxWidth: 1180,
@@ -119,7 +132,14 @@ export default function AdminMessagePage() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search"
-                    style={{ flexGrow: 1, border: "none", outline: "none", background: "transparent", fontSize: "0.86rem", color: "#2B2B28" }}
+                    style={{
+                      flexGrow: 1,
+                      border: "none",
+                      outline: "none",
+                      background: "transparent",
+                      fontSize: "0.86rem",
+                      color: "#2B2B28",
+                    }}
                   />
                 </div>
               </div>
@@ -129,6 +149,7 @@ export default function AdminMessagePage() {
                   const isActive = c.id === activeId;
                   return (
                     <button
+                      type="button"
                       key={c.id}
                       onClick={() => setActiveId(c.id)}
                       style={{
@@ -178,12 +199,29 @@ export default function AdminMessagePage() {
                       </div>
                       <div style={{ flexGrow: 1, minWidth: 0 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 2 }}>
-                          <span style={{ fontSize: "0.88rem", fontWeight: 700, color: NAVY, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          <span
+                            style={{
+                              fontSize: "0.88rem",
+                              fontWeight: 700,
+                              color: NAVY,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
                             {c.name}
                           </span>
                           <span style={{ fontSize: "0.7rem", color: "#9a9a94", flexShrink: 0 }}>{c.time}</span>
                         </div>
-                        <p style={{ fontSize: "0.8rem", color: "#8a8a84", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        <p
+                          style={{
+                            fontSize: "0.8rem",
+                            color: "#8a8a84",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
                           {c.lastMessage}
                         </p>
                       </div>
@@ -291,8 +329,11 @@ export default function AdminMessagePage() {
                   background: "#FBFCFD",
                 }}
               >
-                {active.messages.map((m, i) => (
-                  <div key={i} style={{ display: "flex", justifyContent: m.from === "me" ? "flex-end" : "flex-start" }}>
+                {active.messages.map((m) => (
+                  <div
+                    key={`${m.from}-${m.time}-${m.text}`}
+                    style={{ display: "flex", justifyContent: m.from === "me" ? "flex-end" : "flex-start" }}
+                  >
                     <div style={{ maxWidth: "72%" }}>
                       <div
                         style={{
@@ -308,14 +349,32 @@ export default function AdminMessagePage() {
                       >
                         {m.text}
                       </div>
-                      <p style={{ fontSize: "0.7rem", color: "#b5b5af", marginTop: 5, textAlign: m.from === "me" ? "right" : "left" }}>{m.time}</p>
+                      <p
+                        style={{
+                          fontSize: "0.7rem",
+                          color: "#b5b5af",
+                          marginTop: 5,
+                          textAlign: m.from === "me" ? "right" : "left",
+                        }}
+                      >
+                        {m.time}
+                      </p>
                     </div>
                   </div>
                 ))}
               </div>
 
               {/* composer */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "18px 22px", borderTop: `1px solid ${LINE}`, flexShrink: 0 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "18px 22px",
+                  borderTop: `1px solid ${LINE}`,
+                  flexShrink: 0,
+                }}
+              >
                 <input
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
@@ -333,6 +392,7 @@ export default function AdminMessagePage() {
                   }}
                 />
                 <button
+                  type="button"
                   onClick={sendMessage}
                   disabled={!draft.trim()}
                   style={{

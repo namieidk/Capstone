@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPatch } from "../api";
+import { apiGet, apiPatch, apiPost } from "../api";
 
 const B = "/api/auth";
 

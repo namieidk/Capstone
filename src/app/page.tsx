@@ -1,23 +1,22 @@
 "use client";
 
-import React, { useState, FormEvent } from "react";
 import Link from "next/link";
+import type React from "react";
+import { type FormEvent, useState } from "react";
 import {
-  GlobalStyles,
-  Field,
   BuildingIcon,
-  MatchIcon,
-  ShieldIcon,
   CheckIcon,
-  IdIcon,
-  PersonCheckIcon,
+  ClockIcon,
   DocIcon,
-  ReceiptIcon,
-  LetterIcon,
+  Field,
+  GlobalStyles,
+  IdIcon,
   MailIcon,
+  MatchIcon,
+  PersonCheckIcon,
   PhoneIcon,
   PinIcon,
-  ClockIcon,
+  ShieldIcon,
   s,
 } from "../components/landingpage";
 
@@ -28,6 +27,7 @@ function Nav() {
       <div className="vs-container" style={s.navInner}>
         <a href="#top" style={s.navLogo}>
           <span style={{ ...s.navLogoMark, overflow: "hidden", background: "#F8F4EA" }}>
+            {/* biome-ignore lint/performance/noImgElement: legacy landing logo, migrated later */}
             <img
               src="/logo.png"
               alt="ViaScholar logo"
@@ -68,18 +68,14 @@ function Hero() {
           <h1 className="vs-headline" style={s.headline}>
             Funding deserving
             <br />
-            minds. <em style={s.headlineAccent}>Tracked</em> with  clarity.
+            minds. <em style={s.headlineAccent}>Tracked</em> with clarity.
             <br />
-           
           </h1>
           <p style={s.heroSub}>
-            ViaScholar is the private scholarship management system built for
-            Cawayan River Development Corporation (CRDC). Descriptive
-            analytics dashboards summarize every applicants eligibility and
-            every scholars academic standing in real time, giving
-            coordinators clear, evidence-based context for every decision —
-            then keep each grantees records, contracts, and disbursements
-            on one dashboard through graduation.
+            ViaScholar is the private scholarship management system built for Cawayan River Development Corporation
+            (CRDC). Descriptive analytics dashboards summarize every applicants eligibility and every scholars academic
+            standing in real time, giving coordinators clear, evidence-based context for every decision — then keep each
+            grantees records, contracts, and disbursements on one dashboard through graduation.
           </p>
           <div style={s.heroActions}>
             <Link href="/apply" className="vs-btn-primary" style={s.primaryBtn}>
@@ -122,6 +118,7 @@ function Stat({ number, label }: StatProps) {
 function DashboardCard() {
   return (
     <div style={{ ...s.dashCard, padding: 0, overflow: "hidden", minHeight: 420, width: "100%" }}>
+      {/* biome-ignore lint/performance/noImgElement: legacy landing preview, migrated later */}
       <img
         src="/landing.jpg"
         alt="ViaScholar dashboard preview"
@@ -169,11 +166,9 @@ function About() {
           <span className="vs-eyebrow">ABOUT VIASCHOLAR</span>
           <h2 style={s.sectionHeading}>A grant program that stays organized and easy to audit.</h2>
           <p style={s.aboutParagraph}>
-            Private scholarships traditionally rely on manual shortlisting —
-            slow, hard to audit, and easy to second-guess. ViaScholar
-            replaces that process with real-time descriptive analytics and a
-            single system of record, so coordinators and providers can trust
-            every decision and every update.
+            Private scholarships traditionally rely on manual shortlisting — slow, hard to audit, and easy to
+            second-guess. ViaScholar replaces that process with real-time descriptive analytics and a single system of
+            record, so coordinators and providers can trust every decision and every update.
           </p>
         </div>
 
@@ -209,9 +204,8 @@ function Qualifications() {
           <span className="vs-eyebrow">WHO CAN APPLY</span>
           <h2 style={s.sectionHeading}>Qualifications</h2>
           <p style={s.qualParagraph}>
-            We look for students with consistent academic discipline and a
-            clear commitment to finishing their degree. Meeting every item
-            below makes you eligible for review.
+            We look for students with consistent academic discipline and a clear commitment to finishing their degree.
+            Meeting every item below makes you eligible for review.
           </p>
         </div>
 
@@ -237,9 +231,21 @@ interface Requirement {
 }
 
 const REQUIREMENTS: Requirement[] = [
-  { icon: <IdIcon />, title: "Valid government ID", text: "A clear photo or scan of any current government-issued ID belonging to the applicant." },
-  { icon: <PersonCheckIcon />, title: "Proof of relationship", text: "Birth certificate or affidavit linking the applicant to the endorsing employee." },
-  { icon: <DocIcon />, title: "Latest grade report", text: "Official transcript or report card from the most recent completed semester." },
+  {
+    icon: <IdIcon />,
+    title: "Valid government ID",
+    text: "A clear photo or scan of any current government-issued ID belonging to the applicant.",
+  },
+  {
+    icon: <PersonCheckIcon />,
+    title: "Proof of relationship",
+    text: "Birth certificate or affidavit linking the applicant to the endorsing employee.",
+  },
+  {
+    icon: <DocIcon />,
+    title: "Latest grade report",
+    text: "Official transcript or report card from the most recent completed semester.",
+  },
 ];
 
 function Requirements() {
@@ -249,9 +255,8 @@ function Requirements() {
         <span className="vs-eyebrow">WHAT TO PREPARE</span>
         <h2 style={s.sectionHeading}>Application requirements</h2>
         <p style={s.reqParagraph}>
-          Upload clear scans or photographs of each item below directly
-          into your ViaScholar dashboard. Our OCR-based verification will
-          flag missing fields before you submit.
+          Upload clear scans or photographs of each item below directly into your ViaScholar dashboard. Our OCR-based
+          verification will flag missing fields before you submit.
         </p>
 
         <div className="vs-card-grid-3x2" style={s.reqGrid}>
@@ -275,9 +280,24 @@ interface Review {
 }
 
 const REVIEWS: Review[] = [
-  { quote: "Before ViaScholar, I had to message our coordinator on Messenger every term. Now everything — grades, contracts, even the check schedule — is just there. It feels professional.", name: "Mariella S.", role: "BS Accountancy, 4th year" },
-  { quote: "The dashboard's analytics give us a clear picture of every applicant's eligibility and academic standing at a glance. What used to take weeks of manual review now takes minutes, and every decision is backed by clear data.", name: "Engr. Paolo R.", role: "HR Coordinator, partner company" },
-  { quote: "Uploading documents used to feel risky over email. The OCR check told me my ITR was unreadable before I submitted — saved me from disqualification.", name: "Jonas L.", role: "BS Computer Science, 2nd year" },
+  {
+    quote:
+      "Before ViaScholar, I had to message our coordinator on Messenger every term. Now everything — grades, contracts, even the check schedule — is just there. It feels professional.",
+    name: "Mariella S.",
+    role: "BS Accountancy, 4th year",
+  },
+  {
+    quote:
+      "The dashboard's analytics give us a clear picture of every applicant's eligibility and academic standing at a glance. What used to take weeks of manual review now takes minutes, and every decision is backed by clear data.",
+    name: "Engr. Paolo R.",
+    role: "HR Coordinator, partner company",
+  },
+  {
+    quote:
+      "Uploading documents used to feel risky over email. The OCR check told me my ITR was unreadable before I submitted — saved me from disqualification.",
+    name: "Jonas L.",
+    role: "BS Computer Science, 2nd year",
+  },
 ];
 
 function Reviews() {
@@ -317,13 +337,34 @@ interface FaqItem {
 }
 
 const FAQS: FaqItem[] = [
-  { q: "Who is eligible to apply for a ViaScholar grant?", a: "Applicants must be Filipino citizens studying in Davao City, immediate relatives of an employee of a partner private company (or formally endorsed by one), and currently enrolled in an accredited college or university with at least a 90% General Weighted Average." },
-  { q: "When is the application deadline?", a: "Applications for the current academic year close on August 15. Late submissions are only accepted on a case-by-case basis for returning scholars." },
-  { q: "How are scholarship slots assigned to applicants?", a: "Coordinators review each applicant's eligibility, academic standing, and document verification status through ViaScholar's descriptive analytics dashboard, which summarizes this data alongside available slot capacity to support a fair, well-informed decision." },
-  { q: "What documents do I need to upload?", a: "You'll need a valid government ID, proof of relationship, your latest grade report, an income statement, a letter of intent, and a certificate of enrollment." },
-  { q: "How long does the evaluation take?", a: "Most applications are reviewed within 2 to 3 weeks of submission, provided all required documents pass the initial OCR verification." },
-  { q: "What happens if my grades fall below 90%?", a: "Coordinators review each scholar's submitted grade report every semester and reach out as soon as a report falls below the threshold, giving the scholar a chance to recover before the next disbursement." },
-  { q: "Can I apply if I'm already receiving another scholarship?", a: "Yes, as long as the combined support does not exceed your total cost of education and is disclosed during application." },
+  {
+    q: "Who is eligible to apply for a ViaScholar grant?",
+    a: "Applicants must be Filipino citizens studying in Davao City, immediate relatives of an employee of a partner private company (or formally endorsed by one), and currently enrolled in an accredited college or university with at least a 90% General Weighted Average.",
+  },
+  {
+    q: "When is the application deadline?",
+    a: "Applications for the current academic year close on August 15. Late submissions are only accepted on a case-by-case basis for returning scholars.",
+  },
+  {
+    q: "How are scholarship slots assigned to applicants?",
+    a: "Coordinators review each applicant's eligibility, academic standing, and document verification status through ViaScholar's descriptive analytics dashboard, which summarizes this data alongside available slot capacity to support a fair, well-informed decision.",
+  },
+  {
+    q: "What documents do I need to upload?",
+    a: "You'll need a valid government ID, proof of relationship, your latest grade report, an income statement, a letter of intent, and a certificate of enrollment.",
+  },
+  {
+    q: "How long does the evaluation take?",
+    a: "Most applications are reviewed within 2 to 3 weeks of submission, provided all required documents pass the initial OCR verification.",
+  },
+  {
+    q: "What happens if my grades fall below 90%?",
+    a: "Coordinators review each scholar's submitted grade report every semester and reach out as soon as a report falls below the threshold, giving the scholar a chance to recover before the next disbursement.",
+  },
+  {
+    q: "Can I apply if I'm already receiving another scholarship?",
+    a: "Yes, as long as the combined support does not exceed your total cost of education and is disclosed during application.",
+  },
 ];
 
 function FAQ() {
@@ -340,8 +381,17 @@ function FAQ() {
           {FAQS.map((item, i) => {
             const isOpen = openIndex === i;
             return (
-              <div key={item.q} className="vs-faq-row" style={{ ...s.faqItem, borderBottom: i === FAQS.length - 1 ? "none" : "1px solid #E4DCC8" }}>
-                <button onClick={() => setOpenIndex(isOpen ? -1 : i)} style={s.faqQuestionRow} aria-expanded={isOpen}>
+              <div
+                key={item.q}
+                className="vs-faq-row"
+                style={{ ...s.faqItem, borderBottom: i === FAQS.length - 1 ? "none" : "1px solid #E4DCC8" }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenIndex(isOpen ? -1 : i)}
+                  style={s.faqQuestionRow}
+                  aria-expanded={isOpen}
+                >
                   <span style={s.faqQuestion}>{item.q}</span>
                   <span style={s.faqToggle}>{isOpen ? "\u00D7" : "+"}</span>
                 </button>
@@ -386,8 +436,8 @@ function Contact() {
           <span className="vs-eyebrow">GET IN TOUCH</span>
           <h2 style={s.sectionHeading}>Still have questions?</h2>
           <p style={s.contactParagraph}>
-            Our coordinators are based in Davao City and usually respond
-            within one business day. Reach out however is easiest for you.
+            Our coordinators are based in Davao City and usually respond within one business day. Reach out however is
+            easiest for you.
           </p>
 
           <div style={s.contactInfoList}>

@@ -1,28 +1,29 @@
 "use client";
 
-import React, { useState, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type React from "react";
+import { type FormEvent, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  GlobalStyles,
+  AMBER,
+  ArrowRightIcon,
   BrandPanel,
-  ModeLinkTabs,
-  Field,
-  UserIcon,
-  MailIcon,
-  SchoolIcon,
-  LockIcon,
+  CheckCircleIcon,
   EyeIcon,
   EyeOffIcon,
-  CheckCircleIcon,
-  ArrowRightIcon,
+  Field,
+  GlobalStyles,
   GoogleIcon,
+  LINE,
+  LockIcon,
+  ls,
+  MailIcon,
+  ModeLinkTabs,
+  SchoolIcon,
   SpinnerIcon,
   TRACKS,
-  ls,
-  AMBER,
-  LINE,
+  UserIcon,
 } from "../../../components/StudentAuth";
 
 // ============================================================
@@ -53,10 +54,8 @@ function SignUpForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const update =
-    (key: keyof SignUpFormState) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-      setForm((f) => ({ ...f, [key]: e.target.value }));
+  const update = (key: keyof SignUpFormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -88,8 +87,7 @@ function SignUpForm() {
         phone_number: "00000000000",
       });
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Registration failed. Please try again.";
+      const message = err instanceof Error ? err.message : "Registration failed. Please try again.";
       setError(message);
       setLoading(false);
     }
@@ -111,7 +109,13 @@ function SignUpForm() {
           <span style={ls.inputIcon}>
             <MailIcon />
           </span>
-          <input type="email" style={ls.input} placeholder="you@email.com" value={form.email} onChange={update("email")} />
+          <input
+            type="email"
+            style={ls.input}
+            placeholder="you@email.com"
+            value={form.email}
+            onChange={update("email")}
+          />
         </div>
       </Field>
 
@@ -120,7 +124,12 @@ function SignUpForm() {
           <span style={ls.inputIcon}>
             <SchoolIcon />
           </span>
-          <input style={ls.input} placeholder="University of Mindanao" value={form.school} onChange={update("school")} />
+          <input
+            style={ls.input}
+            placeholder="University of Mindanao"
+            value={form.school}
+            onChange={update("school")}
+          />
         </div>
       </Field>
 
@@ -172,8 +181,14 @@ function SignUpForm() {
 
       <div style={{ ...ls.formRow, marginBottom: 20 }}>
         <label style={ls.checkboxLabel}>
+          <input
+            type="checkbox"
+            checked={agree}
+            onChange={() => setAgree((v) => !v)}
+            style={{ position: "absolute", opacity: 0, width: 1, height: 1, overflow: "hidden" }}
+          />
           <span
-            onClick={() => setAgree((v) => !v)}
+            aria-hidden="true"
             style={{ ...ls.checkbox, background: agree ? AMBER : "#FFFFFF", borderColor: agree ? AMBER : LINE }}
           >
             {agree && <CheckCircleIcon />}
@@ -219,13 +234,11 @@ function SignedUpPanel() {
       <p style={ls.successSub}>
         Welcome, <strong>{user?.first_name}</strong>
       </p>
-      <div style={ls.successRoleTag}>
-        Student account
-      </div>
-      <button style={ls.continueBtn} onClick={handleContinue}>
+      <div style={ls.successRoleTag}>Student account</div>
+      <button type="button" style={ls.continueBtn} onClick={handleContinue}>
         Continue to dashboard <ArrowRightIcon />
       </button>
-      <button onClick={logout} style={ls.switchUserLink}>
+      <button type="button" onClick={logout} style={ls.switchUserLink}>
         Sign in as a different user
       </button>
     </div>

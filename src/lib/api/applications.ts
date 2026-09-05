@@ -1,12 +1,8 @@
-import { apiGet, apiPost, apiPatch } from "../api";
+import { apiGet, apiPatch, apiPost } from "../api";
 
 const B = "/api/proxy/applications";
 
-export type ApplicationStatus =
-  | "PENDING"
-  | "UNDER_REVIEW"
-  | "APPROVED"
-  | "REJECTED";
+export type ApplicationStatus = "PENDING" | "UNDER_REVIEW" | "APPROVED" | "REJECTED";
 
 export interface Application {
   id: number;
@@ -56,18 +52,11 @@ export function getMyApplication() {
   return apiGet<ApplicationStageTimeline>(`${B}/me`);
 }
 
-export function requestReschedule(data: {
-  reason: string;
-  preferred_availability?: string;
-}) {
+export function requestReschedule(data: { reason: string; preferred_availability?: string }) {
   return apiPost<{ ok: boolean }>(`${B}/me/request-reschedule`, data);
 }
 
-export function listApplications(params?: {
-  status?: ApplicationStatus;
-  track?: string;
-  search?: string;
-}) {
+export function listApplications(params?: { status?: ApplicationStatus; track?: string; search?: string }) {
   const qs = new URLSearchParams();
   if (params?.status) qs.set("status", params.status);
   if (params?.track) qs.set("track", params.track);

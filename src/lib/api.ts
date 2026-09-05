@@ -39,17 +39,11 @@ function getErrorMessage(status: number, data: unknown): string {
   return "An unexpected error occurred. Please try again.";
 }
 
-async function request<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const { headers: customHeaders, ...rest } = options;
 
   const headers = new Headers(customHeaders);
-  if (
-    !headers.has("Content-Type") &&
-    !(rest.body instanceof FormData)
-  ) {
+  if (!headers.has("Content-Type") && !(rest.body instanceof FormData)) {
     headers.set("Content-Type", "application/json");
   }
 
@@ -57,10 +51,7 @@ async function request<T>(
   try {
     res = await fetch(path, { headers, ...rest });
   } catch {
-    throw new ApiError(
-      "Unable to reach the server. Please check your connection.",
-      0,
-    );
+    throw new ApiError("Unable to reach the server. Please check your connection.", 0);
   }
 
   const contentType = res.headers.get("content-type") ?? "";
@@ -87,11 +78,7 @@ export function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
   return request<T>(path, { method: "GET", ...init });
 }
 
-export function apiPost<T>(
-  path: string,
-  body?: unknown,
-  init?: RequestInit,
-): Promise<T> {
+export function apiPost<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {
   return request<T>(path, {
     method: "POST",
     body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
@@ -99,11 +86,7 @@ export function apiPost<T>(
   });
 }
 
-export function apiPut<T>(
-  path: string,
-  body?: unknown,
-  init?: RequestInit,
-): Promise<T> {
+export function apiPut<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {
   return request<T>(path, {
     method: "PUT",
     body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
@@ -111,11 +94,7 @@ export function apiPut<T>(
   });
 }
 
-export function apiPatch<T>(
-  path: string,
-  body?: unknown,
-  init?: RequestInit,
-): Promise<T> {
+export function apiPatch<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {
   return request<T>(path, {
     method: "PATCH",
     body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
@@ -123,10 +102,7 @@ export function apiPatch<T>(
   });
 }
 
-export function apiDelete<T>(
-  path: string,
-  init?: RequestInit,
-): Promise<T> {
+export function apiDelete<T>(path: string, init?: RequestInit): Promise<T> {
   return request<T>(path, { method: "DELETE", ...init });
 }
 

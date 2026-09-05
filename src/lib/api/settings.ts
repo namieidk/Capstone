@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPatch, apiDelete } from "../api";
+import { apiDelete, apiGet, apiPatch, apiPost } from "../api";
 
 const B = "/api/proxy/settings";
 
