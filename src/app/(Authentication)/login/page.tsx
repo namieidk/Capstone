@@ -18,6 +18,8 @@ function SignInForm() {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -25,10 +27,24 @@ function SignInForm() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!email.trim() || !password.trim()) {
-      setError("Please enter both your email and password.");
+    const isEmailMissing = !email.trim();
+    const isPasswordMissing = !password.trim();
+
+    if (isEmailMissing || isPasswordMissing) {
+      setEmailError(isEmailMissing);
+      setPasswordError(isPasswordMissing);
+      if (isEmailMissing && isPasswordMissing) {
+        setError("Please enter both your email and password.");
+      } else if (isEmailMissing) {
+        setError("Please enter your email address.");
+      } else {
+        setError("Please enter your password.");
+      }
       return;
     }
+
+    setEmailError(false);
+    setPasswordError(false);
     setError("");
     setLoading(true);
     try {
@@ -36,6 +52,8 @@ function SignInForm() {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Login failed. Please try again.";
       setError(message);
+      setEmailError(true);
+      setPasswordError(true);
       setLoading(false);
     }
   };
@@ -50,7 +68,12 @@ function SignInForm() {
         placeholder="you@email.com"
         autoComplete="email"
         value={email}
-        onChange={setEmail}
+        hasError={emailError}
+        onChange={(val) => {
+          setEmail(val);
+          if (emailError) setEmailError(false);
+          if (error) setError("");
+        }}
       />
       <InputField
         id="password"
@@ -60,7 +83,12 @@ function SignInForm() {
         placeholder="Enter your password"
         autoComplete="current-password"
         value={password}
-        onChange={setPassword}
+        hasError={passwordError}
+        onChange={(val) => {
+          setPassword(val);
+          if (passwordError) setPasswordError(false);
+          if (error) setError("");
+        }}
         password
         showPassword={showPassword}
         onTogglePassword={() => setShowPassword((v) => !v)}

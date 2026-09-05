@@ -3,13 +3,13 @@
 import type React from "react";
 import { createContext, useContext, useState } from "react";
 
-interface SidebarContextValue {
+export interface SidebarContextValue {
   mobileOpen: boolean;
   toggleMobile: () => void;
   closeMobile: () => void;
 }
 
-const SidebarContext = createContext<SidebarContextValue | null>(null);
+export const SidebarContext = createContext<SidebarContextValue | null>(null);
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -21,7 +21,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useSidebar() {
+export function useSidebar(): SidebarContextValue {
   const ctx = useContext(SidebarContext);
   if (!ctx) {
     throw new Error("useSidebar must be used within a SidebarProvider");

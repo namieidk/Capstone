@@ -19,17 +19,17 @@ const COPY: Record<AuthMode, { headline: string; sub: string }> = {
 export function BrandSide({ mode }: BrandSideProps) {
   const copy = COPY[mode];
   return (
-    <aside className="relative hidden overflow-hidden bg-navy lg:block">
+    <aside className="relative hidden overflow-hidden bg-navy lg:flex lg:h-full lg:flex-col">
       <div className="pointer-events-none absolute -top-32 -right-32 size-96 rounded-full bg-amber/30 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -left-32 size-96 rounded-full bg-amber/10 blur-3xl" />
-      <div className="relative flex min-h-svh flex-col p-10">
+      <div className="relative flex h-full flex-col justify-between p-10">
         <span className="text-[0.78rem] font-bold tracking-[0.14em] text-amber uppercase">
           Davao City · Student Portal
         </span>
-        <div className="flex flex-1 items-center">
+        <div className="flex flex-1 items-center py-6">
           <div>
-            <h2 className="max-w-[460px] text-[2.5rem] leading-[1.12] font-bold text-white">{copy.headline}</h2>
-            <p className="mt-5 max-w-[420px] text-[1rem] leading-[1.75] text-white/70">{copy.sub}</p>
+            <h2 className="max-w-115 text-[2.5rem] leading-[1.12] font-bold text-white">{copy.headline}</h2>
+            <p className="mt-5 max-w-105 text-[1rem] leading-[1.75] text-white/70">{copy.sub}</p>
           </div>
         </div>
         <div className="grid grid-cols-3 gap-4">

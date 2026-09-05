@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import { ArrowRight, Loader2, Lock, Mail, School, User } from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
@@ -18,7 +19,8 @@ import { useAuth } from "@/contexts/AuthContext";
 
 function SignUpForm() {
   const { register } = useAuth();
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [school, setSchool] = useState("");
   const [track, setTrack] = useState("");
@@ -28,34 +30,59 @@ function SignUpForm() {
   const [agree, setAgree] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [errors, setErrors] = useState<Record<string, boolean>>({});
+
+  const clearError = (field: string) => {
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+    if (error) setError("");
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim() || !school.trim() || !password.trim()) {
+    const newErrors: Record<string, boolean> = {};
+
+    if (!firstName.trim()) newErrors.firstName = true;
+    if (!lastName.trim()) newErrors.lastName = true;
+    if (!email.trim()) newErrors.email = true;
+    if (!school.trim()) newErrors.school = true;
+    if (!track.trim()) newErrors.track = true;
+    if (!password.trim()) newErrors.password = true;
+    if (!confirm.trim()) newErrors.confirm = true;
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       setError("Please fill in all required fields.");
       return;
     }
+
     if (password !== confirm) {
+      setErrors({ password: true, confirm: true });
       setError("Passwords do not match.");
       return;
     }
+
     if (!agree) {
+      setErrors({ agree: true });
       setError("Please agree to the Terms and Privacy Policy to continue.");
       return;
     }
+
+    setErrors({});
     setError("");
     setLoading(true);
-
-    const nameParts = name.trim().split(/\s+/);
-    const firstName = nameParts[0] ?? "";
-    const lastName = nameParts.slice(1).join(" ") || firstName;
 
     try {
       await register({
         email,
         password,
-        first_name: firstName,
-        last_name: lastName,
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
         phone_number: "00000000000",
       });
     } catch (err: unknown) {
@@ -67,15 +94,34 @@ function SignUpForm() {
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-4">
-      <InputField
-        id="fullName"
-        label="Full name"
-        icon={User}
-        placeholder="Juan Dela Cruz"
-        autoComplete="name"
-        value={name}
-        onChange={setName}
-      />
+      <div className="grid grid-cols-2 gap-3">
+        <InputField
+          id="firstName"
+          label="First name"
+          icon={User}
+          placeholder="Juan"
+          autoComplete="given-name"
+          value={firstName}
+          hasError={!!errors.firstName}
+          onChange={(val) => {
+            setFirstName(val);
+            clearError("firstName");
+          }}
+        />
+        <InputField
+          id="lastName"
+          label="Last name"
+          icon={User}
+          placeholder="Dela Cruz"
+          autoComplete="family-name"
+          value={lastName}
+          hasError={!!errors.lastName}
+          onChange={(val) => {
+            setLastName(val);
+            clearError("lastName");
+          }}
+        />
+      </div>
       <InputField
         id="signup-email"
         label="Email address"
@@ -84,7 +130,11 @@ function SignUpForm() {
         placeholder="you@email.com"
         autoComplete="email"
         value={email}
-        onChange={setEmail}
+        hasError={!!errors.email}
+        onChange={(val) => {
+          setEmail(val);
+          clearError("email");
+        }}
       />
       <InputField
         id="school"
@@ -93,15 +143,36 @@ function SignUpForm() {
         placeholder="University of Mindanao"
         autoComplete="organization"
         value={school}
-        onChange={setSchool}
+        hasError={!!errors.school}
+        onChange={(val) => {
+          setSchool(val);
+          clearError("school");
+        }}
       />
 
       <div className="grid gap-1.5">
-        <Label htmlFor="track" className="text-[0.94rem] font-medium text-navy">
+        <Label
+          htmlFor="track"
+          className={cn("text-[0.94rem] font-medium transition-colors", errors.track ? "text-bad" : "text-navy")}
+        >
           Scholarship track
         </Label>
-        <Select value={track} onValueChange={setTrack} required>
-          <SelectTrigger id="track" className="h-10 w-full rounded-lg text-foreground">
+        <Select
+          value={track}
+          onValueChange={(val) => {
+            setTrack(val);
+            clearError("track");
+          }}
+          required
+        >
+          <SelectTrigger
+            id="track"
+            className={cn(
+              "h-10 w-full rounded-md text-foreground transition-colors",
+              errors.track &&
+                "border-bad/80 text-bad focus-visible:border-bad focus-visible:ring-bad/30 dark:border-bad",
+            )}
+          >
             <SelectValue placeholder="Select your track" />
           </SelectTrigger>
           <SelectContent>
@@ -123,7 +194,11 @@ function SignUpForm() {
         autoComplete="new-password"
         hint="At least 8 characters."
         value={password}
-        onChange={setPassword}
+        hasError={!!errors.password}
+        onChange={(val) => {
+          setPassword(val);
+          clearError("password");
+        }}
         password
         showPassword={showPassword}
         onTogglePassword={() => setShowPassword((v) => !v)}
@@ -136,7 +211,11 @@ function SignUpForm() {
         placeholder="Re-enter password"
         autoComplete="new-password"
         value={confirm}
-        onChange={setConfirm}
+        hasError={!!errors.confirm}
+        onChange={(val) => {
+          setConfirm(val);
+          clearError("confirm");
+        }}
         password
         showPassword={showPassword}
         onTogglePassword={() => setShowPassword((v) => !v)}
@@ -147,9 +226,12 @@ function SignUpForm() {
       <CheckboxField
         id="agree"
         checked={agree}
-        onCheckedChange={(v) => setAgree(v === true)}
+        onCheckedChange={(v) => {
+          setAgree(v === true);
+          clearError("agree");
+        }}
         label="I agree to the Terms and Privacy Policy"
-        className="mb-1"
+        className={cn("mb-1", errors.agree && "text-bad")}
       />
 
       <Button type="submit" disabled={loading} className="h-11 w-full rounded-full text-[0.96rem] font-semibold">

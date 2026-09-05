@@ -32,7 +32,15 @@ import { useSidebar } from "@/components/SidebarContext";
 /* Date / time helpers                                                 */
 /* ------------------------------------------------------------------ */
 
-const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
+const WEEKDAY_LABELS = [
+  { key: "sun", label: "S" },
+  { key: "mon", label: "M" },
+  { key: "tue", label: "T" },
+  { key: "wed", label: "W" },
+  { key: "thu", label: "T" },
+  { key: "fri", label: "F" },
+  { key: "sat", label: "S" },
+];
 const MONTH_NAMES = [
   "January",
   "February",
@@ -554,7 +562,7 @@ export default function AdminMeetingPage() {
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 6 }}>
                   {WEEKDAY_LABELS.map((w) => (
                     <span
-                      key={w}
+                      key={w.key}
                       style={{
                         textAlign: "center",
                         fontSize: "0.68rem",
@@ -563,7 +571,7 @@ export default function AdminMeetingPage() {
                         letterSpacing: "0.04em",
                       }}
                     >
-                      {w}
+                      {w.label}
                     </span>
                   ))}
                 </div>
