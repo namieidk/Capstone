@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
+import { getPasswordError } from "@/lib/validation";
 
 function SignUpForm() {
   const { register } = useAuth();
@@ -58,6 +59,13 @@ function SignUpForm() {
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       setError("Please fill in all required fields.");
+      return;
+    }
+
+    const passwordError = getPasswordError(password);
+    if (passwordError) {
+      setErrors({ password: true });
+      setError(passwordError);
       return;
     }
 

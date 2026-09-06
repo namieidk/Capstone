@@ -2,61 +2,81 @@ import { apiDelete, apiGet, apiPatch, apiPost } from "../api";
 
 const B = "/api/proxy/settings";
 
-export interface SystemSettings {
+// GET /settings — SystemSetting row. Prisma Decimals arrive as numbers
+// (or numeric strings); normalize defensively with toNum().
+export interface GlobalSettings {
+  setting_id: number;
   grade_threshold: number;
   updated_at: string;
+  updated_by_user_id: number | null;
 }
 
 export interface SchoolGrading {
-  id: number;
+  school_id: number;
   school_name: string;
   grading_scale: string;
   passing_grade: number;
   highest_grade: number;
   failing_grade: number;
-  special_codes?: Record<string, unknown>;
-  notes?: string;
+  special_codes: Record<string, string> | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
-export function getSettings() {
-  return apiGet<SystemSettings>(B);
-}
-
-export function updateSettings(data: { grade_threshold: number }) {
-  return apiPatch<SystemSettings>(B, data);
-}
-
-export function getSchools() {
-  return apiGet<SchoolGrading[]>(`${B}/schools`);
-}
-
-export function createSchool(data: {
+export interface SchoolGradingInput {
   school_name: string;
   grading_scale: string;
   passing_grade: number;
   highest_grade: number;
   failing_grade: number;
-  special_codes?: Record<string, unknown>;
+  special_codes?: Record<string, string>;
   notes?: string;
-}) {
-  return apiPost<SchoolGrading>(`${B}/schools`, data);
 }
 
-export function deleteSchool(id: number) {
-  return apiDelete<{ ok: boolean }>(`${B}/schools/${id}`);
+function toNum(value: unknown, fallback = 0): number {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
 }
 
-export function updateSchool(
-  id: number,
-  data: Partial<{
-    school_name: string;
-    grading_scale: string;
-    passing_grade: number;
-    highest_grade: number;
-    failing_grade: number;
-    special_codes: Record<string, unknown>;
-    notes: string;
-  }>,
-) {
-  return apiPatch<SchoolGrading>(`${B}/schools/${id}`, data);
+function normalizeGrading<T extends Omit<SchoolGrading, "special_codes"> & { special_codes: unknown }>(
+  row: T,
+): SchoolGrading {
+  return {
+    ...row,
+    passing_grade: toNum(row.passing_grade),
+    highest_grade: toNum(row.highest_grade),
+    failing_grade: toNum(row.failing_grade),
+    special_codes:
+      row.special_codes && typeof row.special_codes === "object" ? (row.special_codes as Record<string, string>) : null,
+  };
+}
+
+export async function getSettings(): Promise<GlobalSettings> {
+  const res = await apiGet<GlobalSettings>(B);
+  return { ...res, grade_threshold: toNum(res.grade_threshold, 90) };
+}
+
+export async function updateSettings(grade_threshold: number): Promise<GlobalSettings> {
+  const res = await apiPatch<GlobalSettings>(B, { grade_threshold });
+  return { ...res, grade_threshold: toNum(res.grade_threshold, 90) };
+}
+
+export async function listSchoolGradings(): Promise<SchoolGrading[]> {
+  const rows = await apiGet<Array<SchoolGrading & { special_codes: unknown }>>(`${B}/schools`);
+  return rows.map(normalizeGrading);
+}
+
+export async function createSchoolGrading(data: SchoolGradingInput): Promise<SchoolGrading> {
+  const row = await apiPost<SchoolGrading & { special_codes: unknown }>(`${B}/schools`, data);
+  return normalizeGrading(row);
+}
+
+export async function updateSchoolGrading(id: number, data: Partial<SchoolGradingInput>): Promise<SchoolGrading> {
+  const row = await apiPatch<SchoolGrading & { special_codes: unknown }>(`${B}/schools/${id}`, data);
+  return normalizeGrading(row);
+}
+
+export async function deleteSchoolGrading(id: number): Promise<{ message: string }> {
+  return apiDelete<{ message: string }>(`${B}/schools/${id}`);
 }

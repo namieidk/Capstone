@@ -1,0 +1,48 @@
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const SKELETON_ROWS = ["row-1", "row-2", "row-3", "row-4", "row-5", "row-6"];
+
+export function GradingSkeleton() {
+  return (
+    <div className="min-h-full bg-[#faf8f5]">
+      <div className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-line bg-white px-5 py-3.5 md:px-8">
+        <div className="flex min-w-0 flex-col gap-2">
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
+          <Skeleton className="hidden h-10 w-[198px] rounded-full md:block" />
+          <Skeleton className="size-9 rounded-full" />
+        </div>
+      </div>
+      <div className="px-5 pb-24 md:px-10">
+        <Card className="mt-5 rounded-[18px]! shadow-va-sm">
+          <CardHeader>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-11 w-36 rounded-full" />
+            </div>
+          </CardHeader>
+          <CardContent className="px-0!">
+            <div className="divide-y divide-line px-6 py-2">
+              {SKELETON_ROWS.map((key) => (
+                <div key={key} className="flex items-center gap-4 py-4">
+                  <div className="w-44 shrink-0">
+                    <Skeleton className="mb-2 h-3.5" />
+                    <Skeleton className="h-3 w-2/3" />
+                  </div>
+                  <Skeleton className="h-6 w-32 shrink-0 rounded-full" />
+                  <Skeleton className="h-3.5 w-16 shrink-0" />
+                  <Skeleton className="h-3.5 w-16 shrink-0" />
+                  <Skeleton className="h-3.5 w-16 shrink-0" />
+                  <Skeleton className="ml-auto size-9 shrink-0 rounded-full" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

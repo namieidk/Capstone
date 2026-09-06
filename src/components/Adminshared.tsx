@@ -64,16 +64,25 @@ export function GlobalStyles() {
       }
       .va h1, .va h2, .va h3 { font-family: 'Inter', -apple-system, sans-serif; font-weight: 700; color: #1A1A1A; }
       .va a { color: inherit; text-decoration: none; }
-      .va button { font-family: 'Inter', sans-serif; font-weight: 500; cursor: pointer; border: none; background: none; }
+      /* NOTE: the reset below deliberately skips ShadCN controls (they all
+         carry a data-slot attribute). This style block is unlayered, so it
+         would otherwise override every Tailwind utility (which lives in a
+         cascade layer) — e.g. background none was wiping out bg-navy and
+         bg-primary on ShadCN Buttons and leaving them transparent. */
+      .va button { cursor: pointer; }
+      .va button:not([data-slot]) { font-family: 'Inter', sans-serif; font-weight: 500; border: none; background: none; }
       .va table { border-collapse: collapse; width: 100%; }
       .va ::-webkit-scrollbar { width: 8px; height: 8px; }
       .va ::-webkit-scrollbar-thumb { background: #DFE4EA; border-radius: 8px; }
 
-      .va button:focus-visible,
+      /* Scoped the same way as the button reset above: ShadCN controls keep
+         their own focus rings instead of getting the legacy amber outline
+         and radius override. */
+      .va button:not([data-slot]):focus-visible,
       .va a:focus-visible,
-      .va input:focus-visible,
-      .va select:focus-visible,
-      .va textarea:focus-visible {
+      .va input:not([data-slot]):focus-visible,
+      .va select:not([data-slot]):focus-visible,
+      .va textarea:not([data-slot]):focus-visible {
         outline: 2px solid #F1B71E;
         outline-offset: 2px;
         border-radius: 6px;

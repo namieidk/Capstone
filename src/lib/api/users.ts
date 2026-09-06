@@ -2,21 +2,30 @@ import { apiGet, apiPatch, apiPost } from "../api";
 
 const B = "/api/proxy/users";
 
-export interface AuditLog {
-  id: number;
+export interface AuditLogUser {
   user_id: number;
-  action: string;
-  details?: Record<string, unknown>;
-  created_at: string;
-  user?: { id: number; email: string; first_name: string; last_name: string };
+  email: string;
+  role: string;
+  first_name?: string;
+  last_name?: string;
+  name?: string;
+  employee?: { first_name?: string; last_name?: string } | null;
 }
 
-export interface PaginatedLogs {
-  data: AuditLog[];
+export interface AuditLogEntry {
+  log_id: number;
+  user_id: number;
+  action: string;
+  details: string;
+  created_at: string;
+  user: AuditLogUser;
+}
+
+export interface AuditLogsResponse {
+  logs: AuditLogEntry[];
   total: number;
   page: number;
   limit: number;
-  totalPages: number;
 }
 
 export function listUsers(params?: { role?: string; search?: string }) {
@@ -32,7 +41,7 @@ export function getAuditLogs(params?: { page?: number; limit?: number }) {
   if (params?.page) qs.set("page", String(params.page));
   if (params?.limit) qs.set("limit", String(params.limit));
   const query = qs.toString();
-  return apiGet<PaginatedLogs>(`${B}/logs${query ? `?${query}` : ""}`);
+  return apiGet<AuditLogsResponse>(`${B}/logs${query ? `?${query}` : ""}`);
 }
 
 export function createStaff(data: {
