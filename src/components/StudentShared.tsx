@@ -4,17 +4,23 @@ export function GlobalStyles() {
   return (
     <style>{`
       .vd {
-        background: #F8F4EA;
+        background: #FFFFFF;
         color: #2B2B28;
         font-family: 'Inter', -apple-system, sans-serif;
         font-weight: 400;
         -webkit-font-smoothing: antialiased;
       }
-      .vd h1, .vd h2, .vd h3 { font-family: 'Inter', -apple-system, sans-serif; font-weight: 700; color: #14213A; }
+      .vd h1, .vd h2, .vd h3 { font-family: 'Inter', -apple-system, sans-serif; font-weight: 700; color: #0a4f42; }
       .vd a { color: inherit; text-decoration: none; }
-      .vd button { font-family: 'Inter', sans-serif; font-weight: 500; cursor: pointer; border: none; background: none; }
+      /* NOTE: the reset below deliberately skips ShadCN controls (they all
+         carry a data-slot attribute). This style block is unlayered, so it
+         would otherwise override every Tailwind utility (which lives in a
+         cascade layer) — e.g. background none was wiping out bg-navy and
+         bg-primary on ShadCN Buttons and leaving them transparent. */
+      .vd button { cursor: pointer; }
+      .vd button:not([data-slot]) { font-family: 'Inter', sans-serif; font-weight: 500; border: none; background: none; }
       .vd ::-webkit-scrollbar { width: 8px; height: 8px; }
-      .vd ::-webkit-scrollbar-thumb { background: #E4DCC8; border-radius: 8px; }
+      .vd ::-webkit-scrollbar-thumb { background: #DFE4EA; border-radius: 8px; }
 
       .vd-app-shell { display: flex; min-height: 100vh; }
       .vd-main { height: 100vh; overflow-y: auto; scroll-snap-type: y mandatory; }
@@ -40,14 +46,22 @@ export function GlobalStyles() {
   );
 }
 
-export const NAVY = "#14213A";
-export const CREAM = "#F8F4EA";
-export const AMBER = "#C9943D";
-export const AMBER_BG = "#F3E6C8";
+export const NAVY = "#0a4f42";
+export const CREAM = "#FFFFFF";
+export const AMBER = "#F1B71E";
+export const AMBER_BG = "#FCEEC4";
 export const WHITE = "#FFFFFF";
 export const GRAY = "#6B6B66";
-export const LINE = "#E4DCC8";
-export const TINT = "#F4F0E6";
+export const LINE = "#DFE4EA";
+export const TINT = "#EEF1F5";
+export const GREEN = "#0a4f42";
+export const GREEN_BG = "#DDEEE3";
+export const GOOD = "#0a4f42";
+export const GOOD_BG = "#DDEEE3";
+export const WARN = "#8A6410";
+export const WARN_BG = "#FCEEC4";
+export const BAD = "#8a3a2e";
+export const BAD_BG = "#F6E4DF";
 
 // ============================================================
 // MOCK DATA — swap with real data later
@@ -59,8 +73,8 @@ export const SCHOLAR = {
   course: "BS Information Technology",
   year: "3rd year",
   bio: "3rd year IT student at University of Mindanao. Into travel vlogging and video editing on the side. Grateful for the push to keep grades up this term.",
-  avatarColor: "#F3E6C8",
-  bannerGradient: "linear-gradient(120deg, #1B3A34 0%, #14213A 100%)",
+  avatarColor: "#FCEEC4",
+  bannerGradient: "linear-gradient(120deg, #0a4f42 0%, #06352c 100%)",
 };
 
 export interface NavItem {
@@ -447,7 +461,7 @@ export function ToggleIcon({ on }: { on: boolean }) {
         width: 42,
         height: 24,
         borderRadius: 999,
-        background: on ? "#C9943D" : "#E4DCC8",
+        background: on ? AMBER : LINE,
         display: "inline-flex",
         alignItems: "center",
         padding: 3,
@@ -702,7 +716,7 @@ export const s: Record<string, CSSProperties> = {
 
   input: {
     width: "100%",
-    background: "#FAF7EF",
+    background: WHITE,
     border: `1px solid ${LINE}`,
     borderRadius: 10,
     padding: "12px 15px",
@@ -748,7 +762,7 @@ export const s: Record<string, CSSProperties> = {
   },
   appStatusBadge: {
     background: AMBER_BG,
-    color: "#6b5220",
+    color: WARN,
     fontWeight: 700,
     fontSize: "0.86rem",
     padding: "8px 16px",
@@ -773,13 +787,13 @@ export const s: Record<string, CSSProperties> = {
   appTimelineLine: { width: 2, flexGrow: 1, minHeight: 30 },
   appTimelineTitle: { fontSize: "1.02rem", fontWeight: 700, marginBottom: 2 },
   appTimelineDate: { fontSize: "0.8rem", color: "#9a9a94", marginBottom: 6 },
-  appTimelineDesc: { fontSize: "0.88rem", color: "#6b6b66", lineHeight: 1.5, maxWidth: 480 },
+  appTimelineDesc: { fontSize: "0.88rem", color: GRAY, lineHeight: 1.5, maxWidth: 480 },
   appNoteCard: {
     display: "flex",
     gap: 14,
     alignItems: "flex-start",
-    background: "#F2ECDC",
-    border: "1px solid #E3CB94",
+    background: AMBER_BG,
+    border: `1px solid ${LINE}`,
     borderRadius: 14,
     padding: "18px 20px",
   },
@@ -808,8 +822,8 @@ export const s: Record<string, CSSProperties> = {
     whiteSpace: "nowrap",
   },
   settingsDangerBtn: {
-    background: "#F6E4DF",
-    color: "#8a3a2e",
+    background: BAD_BG,
+    color: BAD,
     fontWeight: 600,
     fontSize: "0.86rem",
     padding: "9px 16px",

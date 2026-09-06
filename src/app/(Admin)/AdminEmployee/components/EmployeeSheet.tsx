@@ -1,19 +1,15 @@
 "use client";
 
-import { X } from "lucide-react";
+import { Eye, EyeOff, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BAD, BAD_BG } from "@/components/Adminshared";
+import { PasswordChecklist } from "@/components/auth/PasswordChecklist";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import type { StaffRow } from "./employee-helpers";
 
 interface EmployeeSheetProps {
@@ -51,6 +47,7 @@ export function EmployeeSheet({
   onToggleStatus,
 }: EmployeeSheetProps) {
   const canConfirmReset = !acting && newPassword.trim().length >= 8;
+  const [showResetPw, setShowResetPw] = useState(false);
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
 
   // The page closes the sheet on a successful status change — make sure a
@@ -61,10 +58,7 @@ export function EmployeeSheet({
 
   return (
     <>
-      <Sheet
-        open={employee !== null}
-        onOpenChange={(open) => !open && onClose()}
-      >
+      <Sheet open={employee !== null} onOpenChange={(open) => !open && onClose()}>
         <SheetContent
           side="right"
           showCloseButton={false}
@@ -79,12 +73,8 @@ export function EmployeeSheet({
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <SheetTitle className="text-xl! text-navy!">
-                    {employee.name}
-                  </SheetTitle>
-                  <SheetDescription className="text-sm!">
-                    {employee.title}
-                  </SheetDescription>
+                  <SheetTitle className="text-xl! text-navy!">{employee.name}</SheetTitle>
+                  <SheetDescription className="text-sm!">{employee.title}</SheetDescription>
                 </div>
                 <Button
                   type="button"
@@ -105,9 +95,7 @@ export function EmployeeSheet({
                 <InfoItem label="Joined" value={employee.joined} />
               </div>
 
-              <p className="mt-6 text-xs font-bold uppercase tracking-wider text-[#9a9a94]">
-                Contact
-              </p>
+              <p className="mt-6 text-xs font-bold uppercase tracking-wider text-[#9a9a94]">Contact</p>
               <p className="mt-2 text-sm text-[#2b2b28]">
                 <strong>Email:</strong> {employee.email}
               </p>
@@ -120,20 +108,33 @@ export function EmployeeSheet({
 
               {resetOpen ? (
                 <div className="mt-6">
-                  <Label
-                    htmlFor="employee-new-password"
-                    className="text-sm! font-semibold text-navy"
-                  >
+                  <Label htmlFor="employee-new-password" className="text-sm! font-semibold text-navy">
                     New password
                   </Label>
-                  <Input
-                    id="employee-new-password"
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => onNewPasswordChange(e.target.value)}
-                    placeholder="At least 8 characters"
-                    className="mt-2 h-11! border-line bg-[#f7f9fb]! text-sm! md:text-sm!"
-                  />
+                  <div className="relative mt-2">
+                    <Input
+                      id="employee-new-password"
+                      type={showResetPw ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(e) => onNewPasswordChange(e.target.value)}
+                      placeholder="At least 8 characters"
+                      className="h-11! border-line bg-[#f7f9fb]! pr-11 text-sm! md:text-sm!"
+                    />
+                    <button
+                      type="button"
+                      aria-label={showResetPw ? "Hide password" : "Show password"}
+                      onClick={() => setShowResetPw((v) => !v)}
+                      className="absolute top-1/2 right-2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground transition-colors hover:text-navy"
+                    >
+                      {showResetPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                  <p className="mt-1.5 text-xs text-muted-foreground">
+                    8+ characters with an uppercase, a lowercase, a number, and a special character.
+                  </p>
+                  <div className="mt-2">
+                    <PasswordChecklist password={newPassword} />
+                  </div>
                   <div className="mt-4 flex flex-col gap-2.5">
                     <Button
                       type="button"

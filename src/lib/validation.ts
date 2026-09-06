@@ -1,13 +1,16 @@
 import { z } from "zod";
 
 // Standard password policy: at least 8 characters with 1 uppercase,
-// 1 lowercase, and 1 special character. Used everywhere a password is
-// set (admin add-employee, signup, …) so the rule stays in one place.
+// 1 lowercase, 1 number, and 1 special character. Used everywhere a
+// password is set (admin add-employee, signup, …) so the rule stays in
+// one place. Stricter than the backend minimum (8 chars), so anything
+// passing here is always accepted server-side.
 export const passwordSchema = z
   .string()
   .min(8, "Password must be at least 8 characters long.")
   .regex(/[A-Z]/, "Password must contain at least 1 uppercase letter.")
   .regex(/[a-z]/, "Password must contain at least 1 lowercase letter.")
+  .regex(/[0-9]/, "Password must contain at least 1 number.")
   .regex(/[^A-Za-z0-9]/, "Password must contain at least 1 special character.");
 
 export type PasswordInput = z.infer<typeof passwordSchema>;
@@ -35,3 +38,21 @@ export const schoolGradingSchema = z.object({
   notes: z.string().max(2000, "Notes are too long.").optional(),
   special_codes: z.record(z.string(), z.string()).optional(),
 });
+
+// Scholarship application form (mirrors CreateApplicationDto on the backend).
+export const applicationSchema = z.object({
+  scholarship_track: z.string().trim().min(1, "Please choose a scholarship track."),
+  student_number: z.string().trim().min(1, "Student number is required.").max(50, "Student number is too long."),
+  student_address: z.string().trim().min(1, "Home address is required.").max(500, "Address is too long."),
+  course_of_study: z.string().trim().min(1, "Course of study is required.").max(150, "Course is too long."),
+  school_name: z.string().trim().min(1, "School name is required.").max(150, "School name is too long."),
+  school_address: z.string().trim().min(1, "School address is required.").max(500, "Address is too long."),
+  phone_number: z.string().trim().max(30, "Phone number is too long.").optional(),
+  relative_employee: z
+    .string()
+    .trim()
+    .min(1, "Relative employed by partner is required.")
+    .max(150, "Name is too long."),
+});
+
+export type ApplicationFormValues = z.infer<typeof applicationSchema>;

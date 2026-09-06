@@ -6,7 +6,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type React from "react";
 import { ADMIN } from "@/components/Adminshared";
-import { ADMIN_NAV_ITEMS } from "@/components/app-sidebar/nav-admin";
 import {
   Sidebar,
   SidebarContent,
@@ -22,6 +21,14 @@ import {
 } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
+import { ADMIN_SIDEBAR_CONFIG } from "./nav-admin";
+import { APPLICANT_SIDEBAR_CONFIG } from "./nav-applicant";
+import type { SidebarRole } from "./types";
+
+const ROLE_CONFIG = {
+  admin: ADMIN_SIDEBAR_CONFIG,
+  applicant: APPLICANT_SIDEBAR_CONFIG,
+} as const;
 
 function getInitials(firstName?: string, lastName?: string): string {
   const f = firstName?.[0] ?? "";
@@ -29,19 +36,20 @@ function getInitials(firstName?: string, lastName?: string): string {
   return (f + l).toUpperCase() || ADMIN.initials || "RC";
 }
 
-export type SidebarRole = "admin" | "coordinator" | "grantor" | "scholar" | "student";
-
-interface AdminSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  role?: SidebarRole;
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  // Required on purpose: layouts must declare their role so the correct
+  // menu renders. There is no default — a forgotten role previously fell
+  // back to the wrong menu.
+  role: SidebarRole;
 }
 
-export function AdminSidebar({ role = "admin", ...props }: AdminSidebarProps) {
+export function AppSidebar({ role, ...props }: AppSidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const config = ROLE_CONFIG[role];
 
-  const displayName = user ? `${user.first_name} ${user.last_name}` : ADMIN.name;
-  const displayInitials = user ? getInitials(user.first_name, user.last_name) : ADMIN.initials;
-  const displayRole = role === "admin" ? "Main Admin" : role.charAt(0).toUpperCase() + role.slice(1);
+  const displayName = user ? `${user.first_name} ${user.last_name}` : "Guest";
+  const displayInitials = user ? getInitials(user.first_name, user.last_name) : "G";
 
   return (
     <Sidebar
@@ -52,7 +60,7 @@ export function AdminSidebar({ role = "admin", ...props }: AdminSidebarProps) {
       {/* Sidebar Header: Logo & Branding */}
       <SidebarHeader className="border-b border-white/10 p-4">
         <Link
-          href="/AdminDashboard"
+          href={config.homeHref}
           className="flex items-center gap-2.5 overflow-hidden rounded-lg p-1 transition-colors hover:bg-white/10"
         >
           <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white/10">
@@ -76,42 +84,44 @@ export function AdminSidebar({ role = "admin", ...props }: AdminSidebarProps) {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
-              {ADMIN_NAV_ITEMS.filter((item) => !item.hidden).map((item) => {
-                const Icon = item.icon;
-                const isActive =
-                  pathname === item.href || (item.href !== "/AdminDashboard" && pathname.startsWith(item.href));
+              {config.items
+                .filter((item) => !item.hidden)
+                .map((item) => {
+                  const Icon = item.icon;
+                  const isActive =
+                    pathname === item.href || (item.href !== config.homeHref && pathname.startsWith(item.href));
 
-                return (
-                  <SidebarMenuItem key={item.key}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive}
-                      tooltip={item.label}
-                      className={`h-9.5 rounded-lg px-2.5 text-[0.92rem] font-medium transition-all duration-150 ${
-                        isActive
-                          ? "bg-amber! text-navy! data-[active=true]:bg-amber! data-[active=true]:text-white! hover:bg-amber! hover:text-navy! [--sidebar-accent:var(--amber)] [--sidebar-accent-foreground:var(--navy)] font-semibold shadow-xs"
-                          : "text-white/80 hover:bg-white/10! hover:text-white!"
-                      }`}
-                    >
-                      <Link href={item.href} className="flex items-center gap-3">
-                        <Icon
-                          className={`size-4.5 shrink-0 transition-colors ${isActive ? "text-white!" : "text-white/80"}`}
-                        />
-                        <span className="truncate group-data-[collapsible=icon]:hidden">{item.label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                    {item.badge !== undefined && (
-                      <SidebarMenuBadge
-                        className={`font-bold text-[0.7rem] px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden transition-colors ${
-                          isActive ? "bg-navy! text-white/80!" : "bg-amber text-navy"
+                  return (
+                    <SidebarMenuItem key={item.key}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        tooltip={item.label}
+                        className={`h-9.5 rounded-lg px-2.5 text-[0.92rem] font-medium transition-all duration-150 ${
+                          isActive
+                            ? "bg-amber! text-navy! data-[active=true]:bg-amber! data-[active=true]:text-white! hover:bg-amber! hover:text-navy! [--sidebar-accent:var(--amber)] [--sidebar-accent-foreground:var(--navy)] font-semibold shadow-xs"
+                            : "text-white/80 hover:bg-white/10! hover:text-white!"
                         }`}
                       >
-                        {item.badge}
-                      </SidebarMenuBadge>
-                    )}
-                  </SidebarMenuItem>
-                );
-              })}
+                        <Link href={item.href} className="flex items-center gap-3">
+                          <Icon
+                            className={`size-4.5 shrink-0 transition-colors ${isActive ? "text-white!" : "text-white/80"}`}
+                          />
+                          <span className="truncate group-data-[collapsible=icon]:hidden">{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                      {item.badge !== undefined && (
+                        <SidebarMenuBadge
+                          className={`font-bold text-[0.7rem] px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden transition-colors ${
+                            isActive ? "bg-navy! text-white/80!" : "bg-amber text-navy"
+                          }`}
+                        >
+                          {item.badge}
+                        </SidebarMenuBadge>
+                      )}
+                    </SidebarMenuItem>
+                  );
+                })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -121,7 +131,7 @@ export function AdminSidebar({ role = "admin", ...props }: AdminSidebarProps) {
       <SidebarFooter className="border-t border-white/10 p-2.5">
         <div className="flex items-center justify-between gap-2 rounded-lg bg-white/5 p-2 transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0">
           <Link
-            href="/AdminProfile"
+            href={config.profileHref}
             className="flex min-w-0 flex-1 items-center gap-2.5 group-data-[collapsible=icon]:justify-center"
             title="View Profile"
           >
@@ -130,7 +140,7 @@ export function AdminSidebar({ role = "admin", ...props }: AdminSidebarProps) {
             </span>
             <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
               <span className="truncate text-[0.84rem] font-semibold text-white leading-snug">{displayName}</span>
-              <span className="truncate text-[0.72rem] text-white/60 leading-tight">{displayRole}</span>
+              <span className="truncate text-[0.72rem] text-white/60 leading-tight">{config.roleLabel}</span>
             </div>
           </Link>
 

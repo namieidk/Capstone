@@ -15,13 +15,17 @@ import {
   CheckCircleIcon,
   CURRENT_STAGE_INDEX,
   ForumIcon,
+  GOOD,
+  GOOD_BG,
   LINE,
   MailIcon,
   MenuIcon,
+  NAVY,
   PROFILE_DOCUMENTS,
   SCHOLAR,
   s,
   UPCOMING_ITEMS,
+  WARN,
 } from "../../../../components/StudentShared";
 
 interface StatCardProps {
@@ -56,9 +60,7 @@ function InfoCard({ label, value, caption, tone }: InfoCardProps) {
     <div style={s.statCard}>
       <p style={s.statCardLabel}>{label}</p>
       <p style={s.statCardValue}>{value}</p>
-      <p style={{ ...s.statCardCaption, color: tone === "good" ? "#6b8a3e" : "#7a7a74", marginTop: "auto" }}>
-        {caption}
-      </p>
+      <p style={{ ...s.statCardCaption, color: tone === "good" ? GOOD : "#7a7a74", marginTop: "auto" }}>{caption}</p>
     </div>
   );
 }
@@ -176,7 +178,7 @@ export default function DashboardPage() {
             <div style={s.upcomingList}>
               {UPCOMING_ITEMS.map((item) => (
                 <div key={`${item.label}-${item.detail}`} style={s.upcomingRow}>
-                  <span style={{ ...s.upcomingDot, background: item.urgent ? AMBER : "#C9C2A8" }} />
+                  <span style={{ ...s.upcomingDot, background: item.urgent ? AMBER : LINE }} />
                   <div>
                     <p style={s.upcomingLabel}>{item.label}</p>
                     <p style={s.upcomingDetail}>{item.detail}</p>
@@ -204,17 +206,17 @@ export default function DashboardPage() {
                 const isDone = i < CURRENT_STAGE_INDEX;
                 const isCurrent = i === CURRENT_STAGE_INDEX;
                 const isLast = i === APPLICATION_STAGES.length - 1;
-                const dotColor = isDone ? "#6b8a3e" : isCurrent ? AMBER : "#C9C2A8";
+                const dotColor = isDone ? GOOD : isCurrent ? AMBER : LINE;
                 return (
                   <div key={stage.key} style={s.appTimelineRow}>
                     <div style={s.appTimelineMarkerCol}>
                       <span style={{ ...s.appTimelineDot, borderColor: dotColor, color: dotColor }}>
                         {isDone ? <CheckCircleIcon small /> : i + 1}
                       </span>
-                      {!isLast && <span style={{ ...s.appTimelineLine, background: isDone ? "#6b8a3e" : LINE }} />}
+                      {!isLast && <span style={{ ...s.appTimelineLine, background: isDone ? GOOD : LINE }} />}
                     </div>
                     <div style={{ paddingBottom: isLast ? 0 : 20 }}>
-                      <p style={{ ...s.appTimelineTitle, color: isCurrent ? AMBER : "#14213A" }}>{stage.title}</p>
+                      <p style={{ ...s.appTimelineTitle, color: isCurrent ? AMBER : NAVY }}>{stage.title}</p>
                       <p style={s.appTimelineDate}>{stage.date}</p>
                       <p style={s.appTimelineDesc}>{stage.desc}</p>
                     </div>
@@ -241,8 +243,8 @@ export default function DashboardPage() {
                   <span
                     style={{
                       ...s.statusTag,
-                      background: doc.status === "verified" ? AMBER_BG : "#F3E6C8",
-                      color: "#6b5220",
+                      background: doc.status === "verified" ? GOOD_BG : AMBER_BG,
+                      color: doc.status === "verified" ? GOOD : WARN,
                     }}
                   >
                     {doc.status}

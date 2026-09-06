@@ -13,15 +13,15 @@ async function proxyRequest(method: string, path: string, request: NextRequest) 
   }
 
   const contentType = request.headers.get("content-type");
-  if (contentType) {
+  const isMultipart = Boolean(contentType?.includes("multipart/form-data"));
+  if (contentType && !isMultipart) {
     headers.set("Content-Type", contentType);
   }
 
   const init: RequestInit = { method, headers };
 
   if (method !== "GET" && method !== "HEAD") {
-    const contentHeader = request.headers.get("content-type") ?? "";
-    if (contentHeader.includes("multipart/form-data")) {
+    if (isMultipart) {
       init.body = await request.formData();
     } else {
       init.body = await request.text();

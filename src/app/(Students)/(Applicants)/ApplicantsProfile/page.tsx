@@ -8,9 +8,13 @@ import {
   CameraIcon,
   CURRENT_STAGE_INDEX,
   DownloadIcon,
+  GOOD,
+  GOOD_BG,
+  NAVY,
   PROFILE_DOCUMENTS,
   SCHOLAR,
   s,
+  WARN,
 } from "../../../../components/StudentShared";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
@@ -26,7 +30,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
       }}
     >
       <span style={{ fontSize: "0.86rem", color: "#8a8a84" }}>{label}</span>
-      <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "#14213A", textAlign: "right" }}>{value}</span>
+      <span style={{ fontSize: "0.9rem", fontWeight: 600, color: NAVY, textAlign: "right" }}>{value}</span>
     </div>
   );
 }
@@ -170,8 +174,8 @@ export default function ProfilePage() {
               <span
                 style={{
                   ...s.statusTag,
-                  background: doc.status === "verified" ? AMBER_BG : "#F3E6C8",
-                  color: "#6b5220",
+                  background: doc.status === "verified" ? GOOD_BG : AMBER_BG,
+                  color: doc.status === "verified" ? GOOD : WARN,
                 }}
               >
                 {doc.status}

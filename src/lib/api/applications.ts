@@ -4,35 +4,20 @@ const B = "/api/proxy/applications";
 
 export type ApplicationStatus = "PENDING" | "UNDER_REVIEW" | "APPROVED" | "REJECTED";
 
+// Mirrors the backend Application row (GET /applications/me returns one).
 export interface Application {
-  id: number;
-  scholarship_track: string;
-  student_number: string;
-  student_address: string;
-  course_of_study: string;
-  school_name: string;
-  school_address: string;
-  phone_number?: string;
-  relative_employee?: string;
+  application_id: number;
+  scholar_profile_id: number;
   status: ApplicationStatus;
   stage: string;
-  interview_at?: string;
-  interview_meeting_link?: string;
-  reschedule_reason?: string;
-  provider_notes?: string;
-  rejection_reason?: string;
-  created_at: string;
-  updated_at: string;
-  applicant?: import("./auth").User;
-}
-
-export interface ApplicationStageTimeline {
-  application: Application;
-  stages: {
-    stage: string;
-    status: string;
-    timestamp: string;
-  }[];
+  submitted_at: string;
+  stage_updated_at?: string | null;
+  interview_at?: string | null;
+  interview_meeting_link?: string | null;
+  reschedule_reason?: string | null;
+  decision_at?: string | null;
+  provider_notes?: string | null;
+  rejection_reason?: string | null;
 }
 
 export function createApplication(data: {
@@ -49,7 +34,7 @@ export function createApplication(data: {
 }
 
 export function getMyApplication() {
-  return apiGet<ApplicationStageTimeline>(`${B}/me`);
+  return apiGet<Application>(`${B}/me`);
 }
 
 export function requestReschedule(data: { reason: string; preferred_availability?: string }) {

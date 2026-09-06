@@ -1,19 +1,17 @@
 "use client";
 
 import { cn } from "cn";
-import { ArrowRight, Loader2, Lock, Mail, School, User } from "lucide-react";
+import { ArrowRight, Loader2, Lock, Mail, Phone, User } from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { CheckboxField } from "@/components/auth/CheckboxField";
-import { TRACKS } from "@/components/auth/data";
 import { InputField } from "@/components/auth/InputField";
 import { ModeTabs } from "@/components/auth/ModeTabs";
+import { PasswordChecklist } from "@/components/auth/PasswordChecklist";
 import { SocialBlock } from "@/components/auth/SocialBlock";
 import { SuccessPanel } from "@/components/auth/SuccessPanel";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { getPasswordError } from "@/lib/validation";
@@ -23,8 +21,7 @@ function SignUpForm() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [school, setSchool] = useState("");
-  const [track, setTrack] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -51,8 +48,14 @@ function SignUpForm() {
     if (!firstName.trim()) newErrors.firstName = true;
     if (!lastName.trim()) newErrors.lastName = true;
     if (!email.trim()) newErrors.email = true;
-    if (!school.trim()) newErrors.school = true;
-    if (!track.trim()) newErrors.track = true;
+    if (!phone.trim()) {
+      newErrors.phone = true;
+    } else if ((phone.match(/[0-9]/g) ?? []).length < 7) {
+      newErrors.phone = true;
+      setErrors(newErrors);
+      setError("Please enter a valid phone number.");
+      return;
+    }
     if (!password.trim()) newErrors.password = true;
     if (!confirm.trim()) newErrors.confirm = true;
 
@@ -91,7 +94,7 @@ function SignUpForm() {
         password,
         first_name: firstName.trim(),
         last_name: lastName.trim(),
-        phone_number: "00000000000",
+        phone_number: phone.trim(),
       });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Registration failed. Please try again.";
@@ -145,53 +148,19 @@ function SignUpForm() {
         }}
       />
       <InputField
-        id="school"
-        label="School / university"
-        icon={School}
-        placeholder="University of Mindanao"
-        autoComplete="organization"
-        value={school}
-        hasError={!!errors.school}
+        id="signup-phone"
+        label="Phone number"
+        icon={Phone}
+        type="tel"
+        placeholder="09171234567"
+        autoComplete="tel"
+        value={phone}
+        hasError={!!errors.phone}
         onChange={(val) => {
-          setSchool(val);
-          clearError("school");
+          setPhone(val);
+          clearError("phone");
         }}
       />
-
-      <div className="grid gap-1.5">
-        <Label
-          htmlFor="track"
-          className={cn("text-[0.94rem] font-medium transition-colors", errors.track ? "text-bad" : "text-navy")}
-        >
-          Scholarship track
-        </Label>
-        <Select
-          value={track}
-          onValueChange={(val) => {
-            setTrack(val);
-            clearError("track");
-          }}
-          required
-        >
-          <SelectTrigger
-            id="track"
-            className={cn(
-              "h-10 w-full rounded-md text-foreground transition-colors",
-              errors.track &&
-                "border-bad/80 text-bad focus-visible:border-bad focus-visible:ring-bad/30 dark:border-bad",
-            )}
-          >
-            <SelectValue placeholder="Select your track" />
-          </SelectTrigger>
-          <SelectContent>
-            {TRACKS.map((t) => (
-              <SelectItem key={t} value={t}>
-                {t}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
 
       <InputField
         id="signup-password"
@@ -200,7 +169,7 @@ function SignUpForm() {
         type="password"
         placeholder="Create password"
         autoComplete="new-password"
-        hint="At least 8 characters."
+        hint="8+ characters: uppercase, lowercase, number, special character."
         value={password}
         hasError={!!errors.password}
         onChange={(val) => {
@@ -211,6 +180,7 @@ function SignUpForm() {
         showPassword={showPassword}
         onTogglePassword={() => setShowPassword((v) => !v)}
       />
+      <PasswordChecklist password={password} />
       <InputField
         id="confirm-password"
         label="Confirm password"
@@ -282,6 +252,7 @@ export default function SignupPage() {
     <AuthShell mode="signup" title="Create your account" subtitle="Start your scholarship application in minutes.">
       {loading ? (
         <div className="grid gap-4">
+          <Skeleton className="h-20 w-full" />
           <Skeleton className="h-20 w-full" />
           <Skeleton className="h-20 w-full" />
           <Skeleton className="h-20 w-full" />

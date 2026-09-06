@@ -1,7 +1,9 @@
 "use client";
 
-import { UserPlus, X } from "lucide-react";
+import { Eye, EyeOff, UserPlus, X } from "lucide-react";
 import type { FormEvent } from "react";
+import { useState } from "react";
+import { PasswordChecklist } from "@/components/auth/PasswordChecklist";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +41,7 @@ export function AddEmployeeSheet({
   onSubmit,
 }: AddEmployeeSheetProps) {
   const set = (patch: Partial<AddEmployeeFields>) => onFieldsChange({ ...fields, ...patch });
+  const [showPw, setShowPw] = useState(false);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -111,18 +114,31 @@ export function AddEmployeeSheet({
             <FieldLabel htmlFor="add-password" required>
               Password
             </FieldLabel>
-            <Input
-              id="add-password"
-              type="password"
-              placeholder="At least 8 characters"
-              value={fields.password}
-              onChange={(e) => set({ password: e.target.value })}
-              required
-              className={FIELD_INPUT}
-            />
+            <div className="relative">
+              <Input
+                id="add-password"
+                type={showPw ? "text" : "password"}
+                placeholder="At least 8 characters"
+                value={fields.password}
+                onChange={(e) => set({ password: e.target.value })}
+                required
+                className={`${FIELD_INPUT} pr-11`}
+              />
+              <button
+                type="button"
+                aria-label={showPw ? "Hide password" : "Show password"}
+                onClick={() => setShowPw((v) => !v)}
+                className="absolute top-1/2 right-2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground transition-colors hover:text-navy"
+              >
+                {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </div>
             <p className="mt-1.5 text-xs text-muted-foreground">
-              8+ characters with an uppercase, a lowercase, and a special character.
+              8+ characters with an uppercase, a lowercase, a number, and a special character.
             </p>
+            <div className="mt-2">
+              <PasswordChecklist password={fields.password} />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>

@@ -13,18 +13,20 @@ export type DocumentStatus =
 export type GradeReportStatus = "PENDING" | "APPROVED" | "FLAGGED" | "REJECTED";
 
 export interface ScholarDocument {
-  id: number;
-  type: string;
+  document_id: number;
+  scholar_profile_id: number;
+  document_type: string;
+  label?: string | null;
+  file_name?: string | null;
   file_url: string;
-  original_name: string;
+  file_size?: string | null;
+  file_type?: string | null;
   status: DocumentStatus;
-  ocr_data?: Record<string, unknown>;
-  remarks?: string;
-  academic_year?: string;
-  general_average?: number;
-  grade_items?: GradeItem[];
-  created_at: string;
-  updated_at: string;
+  rejection_reason?: string | null;
+  extracted_data?: Record<string, unknown> | null;
+  confirmed_data?: Record<string, unknown> | null;
+  uploaded_at: string;
+  verified_at?: string | null;
 }
 
 export interface GradeItem {
@@ -47,23 +49,26 @@ export interface GradeReport {
   updated_at: string;
 }
 
-export function uploadDocuments(files: File[], type: string) {
+export function uploadDocuments(files: File[], documentType: string) {
   const form = new FormData();
   for (const file of files) {
     form.append("files", file);
   }
-  form.append("type", type);
-  return apiPost<{ documents: ScholarDocument[] }>(`${B}/upload`, form);
+  form.append("document_type", documentType);
+  return apiPost<ScholarDocument>(`${B}/upload`, form);
 }
 
-export function replaceDocument(id: number, file: File) {
+export function replaceDocument(id: number, files: File[] | File) {
   const form = new FormData();
-  form.append("file", file);
+  const list = Array.isArray(files) ? files : [files];
+  for (const file of list) {
+    form.append("files", file);
+  }
   return apiPut<ScholarDocument>(`${B}/${id}/replace`, form);
 }
 
 export function deleteDocument(id: number) {
-  return apiDelete<{ ok: boolean }>(`${B}/${id}`);
+  return apiDelete<{ success: boolean; message: string }>(`${B}/${id}`);
 }
 
 export function getMyDocuments() {
@@ -105,7 +110,7 @@ export function confirmDocument(
     grade_items?: GradeItem[];
   },
 ) {
-  return apiPost<ScholarDocument>(`${B}/${id}/confirm`, data);
+  return apiPatch<ScholarDocument>(`${B}/${id}/confirm`, data);
 }
 
 export function getPendingDocuments() {

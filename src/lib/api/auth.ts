@@ -24,6 +24,7 @@ export interface User {
     school_name?: string;
     current_year_level?: number;
     scholarship_track?: string;
+    relative_employee?: string;
   };
   employee?: {
     employee_id: number;

@@ -2,7 +2,7 @@
 
 import { type ReactNode, useState } from "react";
 import { useSidebar } from "../../../../components/SidebarContext";
-import { MenuIcon, NAVY, s, ToggleIcon } from "../../../../components/StudentShared";
+import { BAD, BAD_BG, MenuIcon, NAVY, s, ToggleIcon } from "../../../../components/StudentShared";
 
 interface SettingsSectionProps {
   title: string;
@@ -15,13 +15,13 @@ function SettingsSection({ title, children, danger }: SettingsSectionProps) {
     <div
       style={{
         ...s.settingsSection,
-        border: danger ? "1px solid #F0C9BC" : s.settingsSection.border,
+        border: danger ? `1px solid ${BAD_BG}` : s.settingsSection.border,
       }}
     >
       <h3
         style={{
           ...s.settingsSectionTitle,
-          color: danger ? "#8a3a2e" : NAVY,
+          color: danger ? BAD : NAVY,
         }}
       >
         {title}

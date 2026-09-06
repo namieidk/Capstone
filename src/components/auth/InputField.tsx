@@ -65,7 +65,7 @@ export function InputField({
         />
         <Input
           id={id}
-          type={isPassword && !visible ? "password" : type}
+          type={isPassword ? (visible ? "text" : "password") : type}
           placeholder={placeholder}
           autoComplete={autoComplete}
           value={value}
