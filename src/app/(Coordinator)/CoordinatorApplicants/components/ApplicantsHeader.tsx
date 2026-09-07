@@ -9,10 +9,7 @@ interface ApplicantsHeaderProps {
   onSearchChange: (value: string) => void;
 }
 
-export function ApplicantsHeader({
-  searchQuery,
-  onSearchChange,
-}: ApplicantsHeaderProps) {
+export function ApplicantsHeader({ searchQuery, onSearchChange }: ApplicantsHeaderProps) {
   const { toggleMobile } = useSidebar();
 
   return (
@@ -29,9 +26,7 @@ export function ApplicantsHeader({
         </Button>
         <div className="min-w-0">
           <h1 className="truncate text-xl font-bold text-navy!">Applicants</h1>
-          <p className="truncate text-sm text-muted-foreground">
-            Everyone who has applied to ViaScholar.
-          </p>
+          <p className="truncate text-sm text-muted-foreground">Everyone who has applied to ViaScholar.</p>
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-3">

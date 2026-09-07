@@ -1,26 +1,50 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { APPLICANTS, type Applicant, type Stage } from "@/components/Coordinatorshared";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { Applicant, Stage } from "@/components/Coordinatorshared";
+import { ApiError } from "@/lib/api";
+import { listApplications, updateStage } from "@/lib/api/applications";
 import { ApplicantDialog } from "./components/ApplicantDialog";
 import { ApplicantsHeader } from "./components/ApplicantsHeader";
 import { ApplicantsTable } from "./components/ApplicantsTable";
-import { matchesQuery, type StageFilter } from "./components/applicant-helpers";
+import {
+  mapApplicationToApplicant,
+  matchesQuery,
+  resolveDisplayStage,
+  type StageFilter,
+  stageToUpdatePayload,
+} from "./components/applicant-helpers";
 
 const PAGE_SIZE = 8;
 
 export default function ApplicantsPage() {
   const [query, setQuery] = useState("");
   const [stageFilter, setStageFilter] = useState<StageFilter>("all");
-  const [applicants, setApplicants] = useState<Applicant[]>(APPLICANTS);
+  const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [selected, setSelected] = useState<Applicant | null>(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [acting, setActing] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const fetchApplicants = useCallback(async () => {
+    setLoading(true);
+    setLoadError("");
+    try {
+      const rows = await listApplications();
+      setApplicants(rows.map(mapApplicationToApplicant));
+    } catch (err) {
+      console.error("Failed to load applicants:", err);
+      setLoadError(err instanceof ApiError ? err.message : "Failed to load applicants.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 600);
-    return () => clearTimeout(t);
-  }, []);
+    fetchApplicants();
+  }, [fetchApplicants]);
 
   const filtered = useMemo(() => {
     return applicants.filter((a) => {
@@ -40,9 +64,29 @@ export default function ApplicantsPage() {
     setPage(1);
   }
 
-  function moveStage(id: number, stage: Stage) {
-    setApplicants((prev) => prev.map((a) => (a.id === id ? { ...a, stage } : a)));
-    setSelected((sel) => (sel && sel.id === id ? { ...sel, stage } : sel));
+  // Applied when a document verify moves the application (backend writes the
+  // new stage on verify) without a full refetch.
+  function updateApplicantStage(id: number, stage: Stage) {
+    const mapped = (prev: Applicant) => (prev.id === id ? { ...prev, stage } : prev);
+    setApplicants((prev) => prev.map(mapped));
+    setSelected((sel) => (sel && sel.id === id ? mapped(sel) : sel));
+  }
+
+  async function moveStage(id: number, stage: Stage, rejectionReason?: string) {
+    setActing(true);
+    setActionError(null);
+    try {
+      const updated = await updateStage(id, stageToUpdatePayload(stage, rejectionReason));
+      const mapped = (prev: Applicant) =>
+        prev.id === id ? { ...prev, stage: resolveDisplayStage(updated.status, updated.stage) } : prev;
+      setApplicants((prev) => prev.map(mapped));
+      setSelected((sel) => (sel && sel.id === id ? mapped(sel) : sel));
+    } catch (err) {
+      console.error("Failed to move stage:", err);
+      setActionError(err instanceof ApiError ? err.message : "Failed to update stage.");
+    } finally {
+      setActing(false);
+    }
   }
 
   return (
@@ -72,6 +116,8 @@ export default function ApplicantsPage() {
           applicants={paginated}
           totalFiltered={filtered.length}
           loading={loading}
+          loadError={loadError}
+          onRetry={fetchApplicants}
           stageFilter={stageFilter}
           onStageChange={(v) => {
             setStageFilter(v);
@@ -82,10 +128,23 @@ export default function ApplicantsPage() {
           currentPage={safePage}
           totalPages={totalPages}
           onPageChange={setPage}
-          onSelect={setSelected}
+          onSelect={(a) => {
+            setSelected(a);
+            setActionError(null);
+          }}
         />
       </div>
-      <ApplicantDialog applicant={selected} onClose={() => setSelected(null)} onMoveStage={moveStage} />
+      <ApplicantDialog
+        applicant={selected}
+        acting={acting}
+        actionError={actionError}
+        onClose={() => {
+          setSelected(null);
+          setActionError(null);
+        }}
+        onMoveStage={moveStage}
+        onStagesChanged={updateApplicantStage}
+      />
     </div>
   );
 }

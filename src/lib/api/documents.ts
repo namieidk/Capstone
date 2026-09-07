@@ -138,5 +138,22 @@ export function verifyDocument(
     notes?: string;
   },
 ) {
-  return apiPatch<ScholarDocument>(`${B}/${id}/verify`, data);
+  return apiPatch<VerifyDocumentResult>(`${B}/${id}/verify`, data);
+}
+
+// PATCH /documents/:id/verify — coordinator confirms grades, the backend
+// creates the grade report, marks the document VERIFIED, and (for APPLICANT
+// users with a pending application) moves the application to UNDER_REVIEW.
+export interface VerifyDocumentResult {
+  report: {
+    report_id: number;
+    academic_year: string;
+    semester: string;
+    gpa: number | string;
+    status: string;
+    is_eligible: boolean;
+  };
+  isEligible: boolean;
+  evaluationFlag: string;
+  application: { application_id: number; status: string; stage: string } | null;
 }

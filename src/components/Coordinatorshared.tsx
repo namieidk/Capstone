@@ -588,7 +588,12 @@ export interface Applicant {
   course: string;
   year: string;
   track: string;
-  gwa: number;
+  // Null when the applicant has neither confirmed document data nor a grade
+  // report yet. GET /applications resolves this from confirmed_data first.
+  gwa: number | null;
+  // Where the GWA came from: the student's confirmed document data or a
+  // verified grade report. Used as a tooltip on the GWA column.
+  gwaSource?: "confirmed" | "verified" | null;
   applied: string;
   stage: Stage;
 }

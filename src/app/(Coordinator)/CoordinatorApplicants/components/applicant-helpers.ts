@@ -1,4 +1,5 @@
 import type { Applicant, Stage } from "@/components/Coordinatorshared";
+import type { ApplicationStatus, ApplicationWithProfile } from "@/lib/api/applications";
 
 export type StageFilter = Stage | "all";
 
@@ -38,11 +39,108 @@ export function matchesQuery(a: Applicant, query: string): boolean {
     a.stage.toLowerCase().includes(q) ||
     a.year.toLowerCase().includes(q) ||
     a.applied.toLowerCase().includes(q) ||
-    String(a.gwa).includes(q)
+    (a.gwa !== null && String(a.gwa).includes(q))
   );
 }
 
 export function getStageCount(list: Applicant[], filter: StageFilter): number {
   if (filter === "all") return list.length;
   return list.filter((a) => a.stage === filter).length;
+}
+
+// ============================================================
+// BACKEND MAPPING (GET /applications → Applicant row)
+// ============================================================
+// Backend stage is a free-text label (e.g. "Submitted", "Under Review");
+// normalize it onto the frontend Stage union.
+
+export function normalizeStage(raw: string): Stage {
+  const s = raw.trim().toLowerCase();
+  if (s === "under review" || s === "under_review") return "Under review";
+  if (s.includes("interview")) return "Interview";
+  if (s === "accepted" || s === "approved") return "Accepted";
+  if (s === "rejected") return "Rejected";
+  // Written by PATCH /documents/:id/verify when a coordinator confirms a
+  // document — the application is under review either way.
+  if (s === "document verification complete" || s === "flagged for review") return "Under review";
+  return "Submitted";
+}
+
+// The Stage column must never contradict the authoritative backend status:
+// status and stage are written independently (approvals, interview
+// scheduling, and verification each write their own stage label), so a
+// terminal status always wins over a stale label.
+export function resolveDisplayStage(status: ApplicationStatus, stage: string): Stage {
+  if (status === "APPROVED") return "Accepted";
+  if (status === "REJECTED") return "Rejected";
+  return normalizeStage(stage);
+}
+
+// College TORs use a 1.0–5.0 scale while Form 138 uses percent — only append
+// % for percent-scale values so "1.25" never renders as "1.25%".
+export function formatGwa(gwa: number): string {
+  return gwa > 5 ? `${gwa}%` : `${gwa}`;
+}
+
+export function gwaSourceTitle(source?: "confirmed" | "verified" | null): string | undefined {
+  if (source === "confirmed") return "Student-confirmed average";
+  if (source === "verified") return "Verified grade report";
+  return undefined;
+}
+
+export function formatYearLevel(level?: number | null): string {
+  if (level === 1) return "1st year";
+  if (level === 2) return "2nd year";
+  if (level === 3) return "3rd year";
+  if (typeof level === "number") return `${level}th year`;
+  return "—";
+}
+
+export function formatAppliedDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+export function getInitials(firstName?: string, lastName?: string): string {
+  return `${firstName?.[0] ?? ""}${lastName?.[0] ?? ""}`.toUpperCase() || "?";
+}
+
+export function mapApplicationToApplicant(row: ApplicationWithProfile): Applicant {
+  const p = row.scholar_profile;
+  const firstName = p?.first_name ?? "";
+  const lastName = p?.last_name ?? "";
+  const name = `${firstName} ${lastName}`.trim() || `Applicant #${row.application_id}`;
+  return {
+    id: row.application_id,
+    name,
+    initials: getInitials(firstName, lastName),
+    course: p?.course_of_study?.trim() || "—",
+    year: formatYearLevel(p?.current_year_level),
+    track: p?.scholarship_track?.trim() || "—",
+    gwa: row.general_average !== null ? Number(row.general_average) : null,
+    gwaSource: row.general_average_source,
+    applied: formatAppliedDate(row.submitted_at),
+    stage: resolveDisplayStage(row.status, row.stage),
+  };
+}
+
+// Stage → PATCH /applications/:id/stage payload. Note: the backend only lets
+// ADMIN/GRANTOR approve or reject — coordinator moves to Interview/Under review.
+export function stageToUpdatePayload(
+  stage: Stage,
+  rejectionReason?: string,
+): { status: ApplicationStatus; stage: string; rejection_reason?: string } {
+  switch (stage) {
+    case "Accepted":
+      return { status: "APPROVED", stage: "Accepted" };
+    case "Rejected":
+      return { status: "REJECTED", stage: "Rejected", rejection_reason: rejectionReason };
+    case "Interview":
+      return { status: "UNDER_REVIEW", stage: "Interview" };
+    case "Under review":
+      return { status: "UNDER_REVIEW", stage: "Under review" };
+    default:
+      return { status: "PENDING", stage: "Submitted" };
+  }
 }

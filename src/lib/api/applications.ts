@@ -20,6 +20,30 @@ export interface Application {
   rejection_reason?: string | null;
 }
 
+// Mirrors the backend ScholarProfile row as included by GET /applications
+// (findAll includes the full scholar_profile relation).
+export interface ScholarProfileSummary {
+  profile_id: number;
+  user_id: number;
+  first_name: string;
+  last_name: string;
+  student_number?: string | null;
+  scholarship_track?: string | null;
+  course_of_study?: string | null;
+  school_name?: string | null;
+  current_year_level?: number | null;
+}
+
+// GET /applications returns each Application with its scholar_profile
+// (and reviewed_by_employee) plus the applicant's General Average — the
+// student's confirmed document average when present, otherwise the latest
+// verified grade report GPA (null when neither exists yet).
+export interface ApplicationWithProfile extends Application {
+  scholar_profile: ScholarProfileSummary | null;
+  general_average: number | null;
+  general_average_source: "confirmed" | "verified" | null;
+}
+
 export function createApplication(data: {
   scholarship_track: string;
   student_number: string;
@@ -47,7 +71,13 @@ export function listApplications(params?: { status?: ApplicationStatus; track?: 
   if (params?.track) qs.set("track", params.track);
   if (params?.search) qs.set("search", params.search);
   const query = qs.toString();
-  return apiGet<Application[]>(`${B}${query ? `?${query}` : ""}`);
+  return apiGet<ApplicationWithProfile[]>(`${B}${query ? `?${query}` : ""}`);
+}
+
+// Every document an applicant has uploaded — for coordinator review.
+// Same shape as GET /documents/me (file, OCR data, confirmed data).
+export function getApplicationDocuments(applicationId: number) {
+  return apiGet<import("./documents").ScholarDocument[]>(`${B}/${applicationId}/documents`);
 }
 
 export function scheduleInterview(

@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, RotateCcw, Users } from "lucide-react";
+import { Eye, RotateCcw, ScrollText, Users } from "lucide-react";
 import type { Applicant } from "@/components/Coordinatorshared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,12 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ApplicantsPagination } from "./ApplicantsPagination";
-import { getStageVariant, STAGE_FILTERS, type StageFilter } from "./applicant-helpers";
+import { formatGwa, getStageVariant, gwaSourceTitle, STAGE_FILTERS, type StageFilter } from "./applicant-helpers";
 
 interface ApplicantsTableProps {
   applicants: Applicant[];
   totalFiltered: number;
   loading: boolean;
+  loadError: string;
+  onRetry: () => void;
   stageFilter: StageFilter;
   onStageChange: (value: StageFilter) => void;
   hasActiveFilters: boolean;
@@ -32,6 +34,8 @@ export function ApplicantsTable({
   applicants,
   totalFiltered,
   loading,
+  loadError,
+  onRetry,
   stageFilter,
   onStageChange,
   hasActiveFilters,
@@ -46,7 +50,9 @@ export function ApplicantsTable({
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
-            {!loading && (hasActiveFilters ? `${totalFiltered} matches` : `${totalFiltered} total applicants`)}
+            {!loading &&
+              !loadError &&
+              (hasActiveFilters ? `${totalFiltered} matches` : `${totalFiltered} total applicants`)}
           </p>
           <div className="flex flex-wrap items-center gap-2.5">
             <Select value={stageFilter} onValueChange={(v) => onStageChange(v as StageFilter)}>
@@ -83,6 +89,18 @@ export function ApplicantsTable({
               </div>
             ))}
           </div>
+        ) : loadError ? (
+          <div className="flex flex-col items-center gap-4 px-6 py-14 text-center">
+            <ScrollText className="size-10 text-muted-foreground" />
+            <div>
+              <p className="text-base font-semibold">Could not load applicants</p>
+              <p className="mt-1 text-sm text-muted-foreground">{loadError}</p>
+            </div>
+            <Button type="button" className="h-11 px-5 text-sm!" onClick={onRetry}>
+              <RotateCcw className="size-4" />
+              Try again
+            </Button>
+          </div>
         ) : (
           <>
             <Table className="text-sm!">
@@ -118,7 +136,9 @@ export function ApplicantsTable({
                       </p>
                     </TableCell>
                     <TableCell className="py-3 text-center! text-sm">{a.track}</TableCell>
-                    <TableCell className="py-3 text-center! text-sm tabular-nums">{a.gwa}%</TableCell>
+                    <TableCell className="py-3 text-center! text-sm tabular-nums" title={gwaSourceTitle(a.gwaSource)}>
+                      {a.gwa !== null ? formatGwa(a.gwa) : "—"}
+                    </TableCell>
                     <TableCell className="hidden py-3 text-center! text-sm whitespace-nowrap md:table-cell">
                       {a.applied}
                     </TableCell>
