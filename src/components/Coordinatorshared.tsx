@@ -3,6 +3,27 @@ import type { CSSProperties, ReactNode } from "react";
 // ============================================================
 // GLOBAL STYLES
 // ============================================================
+//
+// NOTE ON THE LAYOUT FIX
+// -----------------------
+// The old .vc-main / .vc-snap-section rules used `height: 100vh` +
+// `scroll-snap-type: y mandatory` + `min-height: 100vh` with
+// `justify-content: center`. That combination is what was cutting
+// cards, panels, and tables off at the bottom: every "page" was
+// forced into exactly one viewport tall, snapped, and vertically
+// centered, so anything taller than the window got clipped instead
+// of scrolled to.
+//
+// The fix below removes the forced viewport-height sections and the
+// scroll-snapping entirely. The page now scrolls the normal way
+// (natural document flow via SidebarInset), the shadcn sidebar stays
+// pinned by the SidebarProvider, and every content area gets generous
+// bottom padding so the last card or table always ends with visible
+// rounded corners instead of running into the edge of the window.
+//
+// Sidebar migration note: the legacy .vc-sidebar fixed-position rules
+// were removed — the shadcn Sidebar handles desktop collapse (icon
+// mode) and mobile (Sheet) itself, so those overrides only fought it.
 
 export function GlobalStyles() {
   return (
@@ -13,18 +34,49 @@ export function GlobalStyles() {
         font-family: 'Inter', -apple-system, sans-serif;
         font-weight: 400;
         -webkit-font-smoothing: antialiased;
+        line-height: 1.45;
       }
       .vc h1, .vc h2, .vc h3 { font-family: 'Inter', -apple-system, sans-serif; font-weight: 700; color: #14213A; }
       .vc a { color: inherit; text-decoration: none; }
-      .vc button { font-family: 'Inter', sans-serif; font-weight: 500; cursor: pointer; border: none; background: none; }
+      /* NOTE: the reset below deliberately skips ShadCN controls (they all
+         carry a data-slot attribute). This style block is unlayered, so it
+         would otherwise override every Tailwind utility (which lives in a
+         cascade layer) — e.g. background none was wiping out bg-navy and
+         bg-primary on ShadCN Buttons and leaving them transparent. */
+      .vc button { cursor: pointer; }
+      .vc button:not([data-slot]) { font-family: 'Inter', sans-serif; font-weight: 500; border: none; background: none; }
       .vc table { border-collapse: collapse; width: 100%; }
       .vc ::-webkit-scrollbar { width: 8px; height: 8px; }
       .vc ::-webkit-scrollbar-thumb { background: #DFE4EA; border-radius: 8px; }
 
-      .vc-app-shell { display: flex; min-height: 100vh; }
-      .vc-main { height: 100vh; overflow-y: auto; scroll-snap-type: y mandatory; }
-      .vc-snap-section { scroll-snap-align: start; scroll-snap-stop: always; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 40px; box-sizing: border-box; }
-      .vc-snap-section-table { scroll-snap-align: start; scroll-snap-stop: always; min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-start; padding: 40px; box-sizing: border-box; overflow: visible; }
+      /* Scoped the same way as the button reset above: ShadCN controls keep
+         their own focus rings instead of getting the legacy amber outline
+         and radius override. */
+      .vc button:not([data-slot]):focus-visible,
+      .vc a:focus-visible,
+      .vc input:not([data-slot]):focus-visible,
+      .vc select:not([data-slot]):focus-visible,
+      .vc textarea:not([data-slot]):focus-visible {
+        outline: 2px solid #F1B71E;
+        outline-offset: 2px;
+        border-radius: 6px;
+      }
+
+      /* ---- Layout: natural scrolling, no viewport clipping ---- */
+      .vc-app-shell { display: flex; min-height: 100vh; align-items: flex-start; }
+      .vc-main { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; }
+      .vc-snap-section,
+      .vc-snap-section-table { padding: 0; }
+
+      /* ---- Subtle, consistent interaction states ---- */
+      .vc table tbody tr { transition: background-color 0.12s ease; }
+      .vc table tbody tr:hover { background-color: #F7F9FB; }
+
+      .vc-card-interactive { transition: box-shadow 0.15s ease, transform 0.15s ease; cursor: pointer; }
+      .vc-card-interactive:hover { box-shadow: 0 10px 28px rgba(20, 33, 58, 0.10); transform: translateY(-2px); }
+
+      .vc-nav-item { transition: background-color 0.12s ease, color 0.12s ease; }
+      .vc-nav-item:hover { background-color: #EEF1F5; }
 
       @media (max-width: 980px) {
         .vc-content-grid { grid-template-columns: 1fr !important; }
@@ -32,8 +84,6 @@ export function GlobalStyles() {
         .vc-table-scroll { overflow-x: auto; }
       }
       @media (max-width: 860px) {
-        .vc-sidebar { position: fixed !important; left: -260px; transition: left 0.2s ease; z-index: 100; }
-        .vc-sidebar.is-open { left: 0 !important; }
         .vc-main { margin-left: 0 !important; }
         .vc-mobile-toggle { display: flex !important; }
       }

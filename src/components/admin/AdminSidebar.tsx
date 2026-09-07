@@ -102,7 +102,7 @@ export function AdminSidebar({ role = "admin", ...props }: AdminSidebarProps) {
                     </SidebarMenuButton>
                     {item.badge !== undefined && (
                       <SidebarMenuBadge
-                        className={`font-bold text-[0.7rem] px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden transition-colors ${
+                        className={`top-1/2! right-2! -translate-y-1/2 font-bold text-[0.7rem] px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden transition-colors ${
                           isActive ? "bg-navy! text-white/80!" : "bg-amber text-navy"
                         }`}
                       >
