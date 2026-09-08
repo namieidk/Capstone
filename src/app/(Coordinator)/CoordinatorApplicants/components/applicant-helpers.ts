@@ -120,6 +120,7 @@ export function mapApplicationToApplicant(row: ApplicationWithProfile): Applican
     track: p?.scholarship_track?.trim() || "—",
     gwa: row.general_average !== null ? Number(row.general_average) : null,
     gwaSource: row.general_average_source,
+    hasInterview: row.interview_at != null,
     applied: formatAppliedDate(row.submitted_at),
     stage: resolveDisplayStage(row.status, row.stage),
   };

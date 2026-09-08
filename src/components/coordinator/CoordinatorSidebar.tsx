@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type React from "react";
 import { COORDINATOR_NAV_ITEMS } from "@/components/app-sidebar/nav-coordinator";
+import { useStaffBadges } from "@/components/app-sidebar/useStaffBadges";
 import { COORDINATOR } from "@/components/Coordinatorshared";
 import {
   Sidebar,
@@ -37,6 +38,7 @@ export function CoordinatorSidebar({ ...props }: CoordinatorSidebarProps) {
 
   const displayName = user ? `${user.first_name} ${user.last_name}` : COORDINATOR.name;
   const displayInitials = user ? getInitials(user.first_name, user.last_name) : COORDINATOR.initials;
+  const liveBadges = useStaffBadges({ includeApplicants: true });
 
   return (
     <Sidebar
@@ -75,6 +77,12 @@ export function CoordinatorSidebar({ ...props }: CoordinatorSidebarProps) {
                 const Icon = item.icon;
                 const isActive =
                   pathname === item.href || (item.href !== "/CoordinatorDashboard" && pathname.startsWith(item.href));
+                const badge =
+                  item.key === "meeting"
+                    ? liveBadges.meetings
+                    : item.key === "applicants"
+                      ? liveBadges.applicants
+                      : item.badge;
 
                 return (
                   <SidebarMenuItem key={item.key}>
@@ -95,13 +103,13 @@ export function CoordinatorSidebar({ ...props }: CoordinatorSidebarProps) {
                         <span className="truncate group-data-[collapsible=icon]:hidden">{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
-                    {item.badge !== undefined && (
+                    {badge !== undefined && (
                       <SidebarMenuBadge
                         className={`top-1/2! right-2! -translate-y-1/2 font-bold text-[0.7rem] px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden transition-colors ${
                           isActive ? "bg-navy! text-white/80!" : "bg-amber text-navy"
                         }`}
                       >
-                        {item.badge}
+                        {badge}
                       </SidebarMenuBadge>
                     )}
                   </SidebarMenuItem>

@@ -20,9 +20,12 @@ interface StatusStepProps {
 const TIMELINE_STEPS = ["Application", "Verification", "Interview", "Decision"];
 
 // Derives the current node from backend state (no history endpoint exists).
+// Note: stage "Interview" alone (no interview_at yet) still counts as the
+// Interview node — the label move is the coordinator declaring the meeting,
+// the scheduled date/link card below appears once it exists.
 function currentNodeIndex(app: Application, docs: ScholarDocument[]): number {
   if (app.status === "APPROVED" || app.status === "REJECTED") return 3;
-  if (app.interview_at) return 2;
+  if (app.interview_at || app.stage.toLowerCase().includes("interview")) return 2;
   const verified = docs.some((d) => d.status === "VERIFIED" || d.status === "STUDENT_CONFIRMED");
   if (app.status === "UNDER_REVIEW" || verified || app.stage.toLowerCase().includes("verif")) return 1;
   return 0;
@@ -103,7 +106,7 @@ export function StatusStep({ application, documents, onBackToDocuments }: Status
         </CardContent>
       </Card>
 
-      {application.interview_at && (
+      {application.interview_at ? (
         <Card className="rounded-[18px]! border-border bg-white shadow-xs">
           <CardHeader>
             <div className="flex items-center gap-3">
@@ -136,6 +139,22 @@ export function StatusStep({ application, documents, onBackToDocuments }: Status
             )}
           </CardContent>
         </Card>
+      ) : (
+        current === 2 && (
+          <Card className="rounded-[18px]! border-border bg-white shadow-xs">
+            <CardContent className="flex items-center gap-3 px-6 py-5">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-tint text-navy shadow-xs">
+                <CalendarClock className="size-5" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-navy">You are in the interview stage</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  Your interview date and meeting link will appear here once confirmed.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )
       )}
 
       {application.status === "REJECTED" && (

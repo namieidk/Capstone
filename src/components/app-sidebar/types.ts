@@ -14,7 +14,7 @@ export interface NavItem {
 // Roles served by the unified AppSidebar. Required (no default) so layouts
 // must declare their role — an omitted role previously fell back to the
 // wrong menu.
-export type SidebarRole = "admin" | "applicant" | "coordinator";
+export type SidebarRole = "admin" | "applicant" | "coordinator" | "grantor";
 
 export interface RoleSidebarConfig {
   homeHref: string;

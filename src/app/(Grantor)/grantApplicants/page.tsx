@@ -1,0 +1,147 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ApplicantsTable } from "@/app/(Coordinator)/CoordinatorApplicants/components/ApplicantsTable";
+import {
+  mapApplicationToApplicant,
+  matchesQuery,
+  resolveDisplayStage,
+  type StageFilter,
+  stageToUpdatePayload,
+} from "@/app/(Coordinator)/CoordinatorApplicants/components/applicant-helpers";
+import type { Applicant, Stage } from "@/components/Coordinatorshared";
+import { ApiError } from "@/lib/api";
+import { listApplications, updateStage } from "@/lib/api/applications";
+import { GrantApplicantDialog } from "./components/GrantApplicantDialog";
+import { GrantApplicantsHeader } from "./components/GrantApplicantsHeader";
+
+const PAGE_SIZE = 8;
+
+export default function GrantApplicantsPage() {
+  const [query, setQuery] = useState("");
+  const [stageFilter, setStageFilter] = useState<StageFilter>("all");
+  const [applicants, setApplicants] = useState<Applicant[]>([]);
+  const [selected, setSelected] = useState<Applicant | null>(null);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [acting, setActing] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const fetchApplicants = useCallback(async () => {
+    setLoading(true);
+    setLoadError("");
+    try {
+      const rows = await listApplications();
+      setApplicants(rows.map(mapApplicationToApplicant));
+    } catch (err) {
+      console.error("Failed to load applicants:", err);
+      setLoadError(err instanceof ApiError ? err.message : "Failed to load applicants.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchApplicants();
+  }, [fetchApplicants]);
+
+  const filtered = useMemo(() => {
+    return applicants.filter((a) => {
+      if (stageFilter !== "all" && a.stage !== stageFilter) return false;
+      return matchesQuery(a, query);
+    });
+  }, [applicants, query, stageFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const hasActiveFilters = query.trim() !== "" || stageFilter !== "all";
+
+  function resetFilters() {
+    setQuery("");
+    setStageFilter("all");
+    setPage(1);
+  }
+
+  function updateApplicantStage(id: number, stage: Stage) {
+    const mapped = (prev: Applicant) => (prev.id === id ? { ...prev, stage } : prev);
+    setApplicants((prev) => prev.map(mapped));
+    setSelected((sel) => (sel && sel.id === id ? mapped(sel) : sel));
+  }
+
+  // Grantors may approve or reject — the backend permits both for this role.
+  async function moveStage(id: number, stage: Stage, rejectionReason?: string) {
+    setActing(true);
+    setActionError(null);
+    try {
+      const updated = await updateStage(id, stageToUpdatePayload(stage, rejectionReason));
+      updateApplicantStage(id, resolveDisplayStage(updated.status, updated.stage));
+    } catch (err) {
+      console.error("Failed to move stage:", err);
+      setActionError(err instanceof ApiError ? err.message : "Failed to update stage.");
+    } finally {
+      setActing(false);
+    }
+  }
+
+  return (
+    <div className="min-h-full bg-[#faf8f5]">
+      <GrantApplicantsHeader
+        searchQuery={query}
+        onSearchChange={(v) => {
+          setQuery(v);
+          setPage(1);
+        }}
+      />
+      <div className="px-5 pb-24 md:px-10">
+        <div className="mt-4 flex h-10 items-center gap-2 rounded-full border border-line bg-tint px-3.5 md:hidden">
+          <input
+            type="text"
+            placeholder="Search name, track, stage..."
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setPage(1);
+            }}
+            className="w-full bg-transparent text-[0.82rem] outline-none placeholder:text-[#9a9a94]"
+            aria-label="Search applicants"
+          />
+        </div>
+        <ApplicantsTable
+          applicants={paginated}
+          totalFiltered={filtered.length}
+          loading={loading}
+          loadError={loadError}
+          onRetry={fetchApplicants}
+          stageFilter={stageFilter}
+          onStageChange={(v) => {
+            setStageFilter(v);
+            setPage(1);
+          }}
+          hasActiveFilters={hasActiveFilters}
+          onClearFilters={resetFilters}
+          currentPage={safePage}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          onSelect={(a) => {
+            setSelected(a);
+            setActionError(null);
+          }}
+        />
+      </div>
+      <GrantApplicantDialog
+        applicant={selected}
+        acting={acting}
+        actionError={actionError}
+        onClose={() => {
+          setSelected(null);
+          setActionError(null);
+        }}
+        onMoveStage={moveStage}
+        onStagesChanged={updateApplicantStage}
+        onMeetingScheduled={fetchApplicants}
+      />
+    </div>
+  );
+}

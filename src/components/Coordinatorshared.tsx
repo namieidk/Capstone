@@ -594,6 +594,11 @@ export interface Applicant {
   // Where the GWA came from: the student's confirmed document data or a
   // verified grade report. Used as a tooltip on the GWA column.
   gwaSource?: "confirmed" | "verified" | null;
+  // Whether a real interview exists (application.interview_at is set).
+  // Distinct from stage === "Interview", which is only a pipeline label and
+  // can be set without anything scheduled — the schedule/reschedule choice
+  // must key off this, never off the label.
+  hasInterview?: boolean;
   applied: string;
   stage: Stage;
 }
