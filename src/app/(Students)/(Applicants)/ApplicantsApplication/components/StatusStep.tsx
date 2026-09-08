@@ -1,6 +1,7 @@
 "use client";
 
 import { CalendarClock, Check, ExternalLink, Eye, FileText } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -164,6 +165,24 @@ export function StatusStep({ application, documents, onBackToDocuments }: Status
             {application.rejection_reason && (
               <p className="mt-1 text-sm leading-relaxed text-foreground">{application.rejection_reason}</p>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {application.status === "APPROVED" && (
+        <Card className="rounded-[18px]! border-good/30 bg-white shadow-xs">
+          <CardContent className="flex flex-wrap items-center justify-between gap-3 px-6 py-5">
+            <div>
+              <p className="text-sm font-semibold text-navy">Contract ready for signature</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Review your scholarship agreement — signing activates your Scholar status.
+              </p>
+            </div>
+            <Link href="/ApplicantsContract">
+              <Button type="button" className="h-10 text-sm!">
+                Review & sign
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       )}

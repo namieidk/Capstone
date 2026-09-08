@@ -47,10 +47,15 @@ export default function GrantApplicantsPage() {
   }, [fetchApplicants]);
 
   const filtered = useMemo(() => {
-    return applicants.filter((a) => {
-      if (stageFilter !== "all" && a.stage !== stageFilter) return false;
-      return matchesQuery(a, query);
-    });
+    return (
+      applicants
+        .filter((a) => {
+          if (stageFilter !== "all" && a.stage !== stageFilter) return false;
+          return matchesQuery(a, query);
+        })
+        // Endorsed applications await the grantor's final verdict — surface first.
+        .sort((a, b) => Number(b.stage === "Endorsed") - Number(a.stage === "Endorsed"))
+    );
   }, [applicants, query, stageFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));

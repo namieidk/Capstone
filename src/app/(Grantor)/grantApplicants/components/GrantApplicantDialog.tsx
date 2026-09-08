@@ -4,6 +4,7 @@ import { ArrowRight, CalendarClock } from "lucide-react";
 import { useState } from "react";
 import { ApplicantDocumentsList } from "@/app/(Coordinator)/CoordinatorApplicants/components/ApplicantDocumentsList";
 import {
+  acceptWarning,
   formatGwa,
   getStageVariant,
   gwaSourceTitle,
@@ -17,6 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import type { ScholarDocument } from "@/lib/api/documents";
+import { ProvideContractForm } from "./ProvideContractForm";
 
 interface GrantApplicantDialogProps {
   applicant: Applicant | null;
@@ -39,6 +41,7 @@ export function GrantApplicantDialog({
 }: GrantApplicantDialogProps) {
   const [confirmingReject, setConfirmingReject] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+  const [confirmingAccept, setConfirmingAccept] = useState(false);
   const [docsToken, setDocsToken] = useState(0);
   const [verifyingDoc, setVerifyingDoc] = useState<ScholarDocument | null>(null);
   const [scheduling, setScheduling] = useState(false);
@@ -46,6 +49,7 @@ export function GrantApplicantDialog({
   function handleClose() {
     setConfirmingReject(false);
     setRejectReason("");
+    setConfirmingAccept(false);
     setVerifyingDoc(null);
     setScheduling(false);
     onClose();
@@ -136,16 +140,46 @@ export function GrantApplicantDialog({
                     <ArrowRight className="size-4" />
                   </Button>
                 )}
-                {applicant.stage === "Interview" && (
+                {(applicant.stage === "Interview" || applicant.stage === "Endorsed") && !confirmingAccept && (
                   <Button
                     type="button"
                     className="h-11 text-sm!"
                     disabled={acting}
-                    onClick={() => onMoveStage(applicant.id, "Accepted")}
+                    onClick={() => {
+                      const warning = acceptWarning(applicant.hasInterview, applicant.interviewAt);
+                      if (warning) setConfirmingAccept(true);
+                      else onMoveStage(applicant.id, "Accepted");
+                    }}
                   >
                     Accept applicant
                     <ArrowRight className="size-4" />
                   </Button>
+                )}
+                {confirmingAccept && (
+                  <>
+                    <p className="rounded-md bg-warn-bg px-3 py-2.5 text-sm text-warn">
+                      {acceptWarning(applicant.hasInterview, applicant.interviewAt)} Proceed with approval anyway?
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-11 flex-1 text-sm!"
+                        disabled={acting}
+                        onClick={() => setConfirmingAccept(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        className="h-11 flex-1 text-sm!"
+                        disabled={acting}
+                        onClick={() => onMoveStage(applicant.id, "Accepted")}
+                      >
+                        Proceed anyway
+                      </Button>
+                    </div>
+                  </>
                 )}
                 {applicant.stage !== "Rejected" && applicant.stage !== "Accepted" && !confirmingReject && (
                   <Button
@@ -193,6 +227,15 @@ export function GrantApplicantDialog({
                   </>
                 )}
               </div>
+              {applicant.stage === "Accepted" && (
+                <>
+                  <Separator />
+                  <div>
+                    <p className="mb-1.5 text-sm font-medium text-muted-foreground">Scholarship contract</p>
+                    <ProvideContractForm profileId={applicant.profileId ?? null} />
+                  </div>
+                </>
+              )}
             </div>
           )}
         </DialogContent>

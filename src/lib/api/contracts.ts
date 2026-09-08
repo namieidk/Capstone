@@ -5,17 +5,18 @@ const B = "/api/proxy/contracts";
 export type ContractStatus = "PENDING" | "SIGNED" | "TERMINATED";
 
 export interface Contract {
-  id: number;
+  contract_id: number;
+  scholar_profile_id: number;
   contract_number: string;
-  effective_date?: string;
-  expiry_date?: string;
+  // Unsigned draft PDF (present while PENDING).
+  document_url?: string | null;
+  signed_document_url?: string | null;
+  signature_url?: string | null;
+  certificate_id?: string | null;
   status: ContractStatus;
-  certificate_id?: string;
-  signed_file_url?: string;
-  draft_file_url?: string;
-  created_at: string;
-  updated_at: string;
-  scholar?: import("./auth").User;
+  effective_date?: string | null;
+  expiry_date?: string | null;
+  signed_at?: string | null;
 }
 
 export function createContract(data: {
@@ -43,7 +44,7 @@ export function listContracts(params?: { status?: ContractStatus }) {
 }
 
 export function requestContractChanges(id: number, reason: string) {
-  return apiPatch<Contract>(`${B}/${id}/request-changes`, { reason });
+  return apiPost<Contract>(`${B}/${id}/request-changes`, { reason });
 }
 
 export function signContract(id: number, data: { signature_base64?: string; signature_file?: File }) {

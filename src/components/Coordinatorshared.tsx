@@ -579,7 +579,7 @@ export function ToggleIcon({ on }: { on: boolean }) {
 // DATA TYPES
 // ============================================================
 
-export type Stage = "Submitted" | "Under review" | "Interview" | "Accepted" | "Rejected";
+export type Stage = "Submitted" | "Under review" | "Interview" | "Endorsed" | "Accepted" | "Rejected";
 
 export interface Applicant {
   id: number;
@@ -599,6 +599,10 @@ export interface Applicant {
   // can be set without anything scheduled — the schedule/reschedule choice
   // must key off this, never off the label.
   hasInterview?: boolean;
+  // Raw interview timestamp for "before the meeting" confirmations.
+  interviewAt?: string | null;
+  // Scholar profile id — needed to provide a contract after approval.
+  profileId?: number | null;
   applied: string;
   stage: Stage;
 }
@@ -859,6 +863,7 @@ export const STAGE_COLORS: Record<Stage, { bg: string; text: string }> = {
   Submitted: { bg: TINT, text: "#6b6b66" },
   "Under review": { bg: WARN_BG, text: WARN },
   Interview: { bg: AMBER_BG, text: "#7A5C0A" },
+  Endorsed: { bg: AMBER_BG, text: "#7A5C0A" },
   Accepted: { bg: GOOD_BG, text: GOOD },
   Rejected: { bg: BAD_BG, text: BAD },
 };

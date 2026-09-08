@@ -9,25 +9,59 @@ export function GlobalStyles() {
         font-family: 'Inter', -apple-system, sans-serif;
         font-weight: 400;
         -webkit-font-smoothing: antialiased;
+        line-height: 1.45;
       }
       .vd h1, .vd h2, .vd h3 { font-family: 'Inter', -apple-system, sans-serif; font-weight: 700; color: #14213A; }
       .vd a { color: inherit; text-decoration: none; }
-      .vd button { font-family: 'Inter', sans-serif; font-weight: 500; cursor: pointer; border: none; background: none; }
+      /* NOTE: the reset below deliberately skips ShadCN controls (they all
+         carry a data-slot attribute). This style block is unlayered, so it
+         would otherwise override every Tailwind utility (which lives in a
+         cascade layer) — e.g. background none was wiping out bg-navy and
+         bg-primary on ShadCN Buttons and leaving them transparent. */
+      .vd button { cursor: pointer; }
+      .vd button:not([data-slot]) { font-family: 'Inter', sans-serif; font-weight: 500; border: none; background: none; }
       .vd ::-webkit-scrollbar { width: 8px; height: 8px; }
       .vd ::-webkit-scrollbar-thumb { background: #E4DCC8; border-radius: 8px; }
 
-      .vd-app-shell { display: flex; min-height: 100vh; }
-      .vd-main { height: 100vh; overflow-y: auto; scroll-snap-type: y mandatory; }
-      .vd-snap-section { scroll-snap-align: start; scroll-snap-stop: always; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 40px; box-sizing: border-box; }
-      .vd-snap-section-table { scroll-snap-align: start; scroll-snap-stop: always; min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-start; padding: 40px; box-sizing: border-box; overflow: visible; }
+      /* Scoped the same way as the button reset above: ShadCN controls keep
+         their own focus rings instead of getting the legacy amber outline
+         and radius override. */
+      .vd button:not([data-slot]):focus-visible,
+      .vd a:focus-visible,
+      .vd input:not([data-slot]):focus-visible,
+      .vd select:not([data-slot]):focus-visible,
+      .vd textarea:not([data-slot]):focus-visible {
+        outline: 2px solid #F1B71E;
+        outline-offset: 2px;
+        border-radius: 6px;
+      }
+
+      /* ---- Layout: natural scrolling, no viewport clipping ----
+         The old .vd-main / .vd-snap-section rules used height: 100vh +
+         scroll-snap + min-height: 100vh, which clipped tall content.
+         The shadcn Sidebar handles its own pinning (sticky) and mobile
+         (Sheet), so the legacy .vd-sidebar fixed-position overrides are
+         removed — they only fought it. */
+      .vd-app-shell { display: flex; min-height: 100vh; align-items: flex-start; }
+      .vd-main { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; }
+      .vd-snap-section,
+      .vd-snap-section-table { padding: 0; }
+
+      /* ---- Subtle, consistent interaction states ---- */
+      .vd table tbody tr { transition: background-color 0.12s ease; }
+      .vd table tbody tr:hover { background-color: #F7F9FB; }
+
+      .vd-card-interactive { transition: box-shadow 0.15s ease, transform 0.15s ease; cursor: pointer; }
+      .vd-card-interactive:hover { box-shadow: 0 10px 28px rgba(20, 33, 58, 0.10); transform: translateY(-2px); }
+
+      .vd-nav-item { transition: background-color 0.12s ease, color 0.12s ease; }
+      .vd-nav-item:hover { background-color: #EEF1F5; }
 
       @media (max-width: 980px) {
         .vd-content-grid { grid-template-columns: 1fr !important; }
         .vd-stat-row { grid-template-columns: 1fr 1fr !important; }
       }
       @media (max-width: 860px) {
-        .vd-sidebar { position: fixed !important; left: -260px; transition: left 0.2s ease; z-index: 100; }
-        .vd-sidebar.is-open { left: 0 !important; }
         .vd-main { margin-left: 0 !important; }
         .vd-mobile-toggle { display: flex !important; }
       }

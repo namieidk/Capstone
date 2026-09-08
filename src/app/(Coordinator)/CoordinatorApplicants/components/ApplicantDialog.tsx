@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import type { ScholarDocument } from "@/lib/api/documents";
 import { ApplicantDocumentsList } from "./ApplicantDocumentsList";
-import { formatGwa, getStageVariant, gwaSourceTitle } from "./applicant-helpers";
+import { acceptWarning, formatGwa, getStageVariant, gwaSourceTitle } from "./applicant-helpers";
 import { DocumentVerifyDialog } from "./DocumentVerifyDialog";
 
 interface ApplicantDialogProps {
@@ -32,12 +32,14 @@ export function ApplicantDialog({
 }: ApplicantDialogProps) {
   const [confirmingReject, setConfirmingReject] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+  const [confirmingAccept, setConfirmingAccept] = useState(false);
   const [docsToken, setDocsToken] = useState(0);
   const [verifyingDoc, setVerifyingDoc] = useState<ScholarDocument | null>(null);
 
   function handleClose() {
     setConfirmingReject(false);
     setRejectReason("");
+    setConfirmingAccept(false);
     setVerifyingDoc(null);
     onClose();
   }
@@ -97,39 +99,74 @@ export function ApplicantDialog({
                 <p className="rounded-md bg-destructive/10 px-3 py-2.5 text-sm text-destructive">{actionError}</p>
               )}
               <div className="flex flex-col gap-2">
-                {applicant.stage !== "Interview" && applicant.stage !== "Accepted" && (
+                {applicant.stage !== "Interview" &&
+                  applicant.stage !== "Endorsed" &&
+                  applicant.stage !== "Accepted" && (
+                    <Button
+                      type="button"
+                      className="h-11 text-sm!"
+                      disabled={acting}
+                      onClick={() => onMoveStage(applicant.id, "Interview")}
+                    >
+                      Pass to Interview
+                      <ArrowRight className="size-4" />
+                    </Button>
+                  )}
+                {applicant.stage === "Interview" && !confirmingAccept && (
                   <Button
                     type="button"
                     className="h-11 text-sm!"
                     disabled={acting}
-                    onClick={() => onMoveStage(applicant.id, "Interview")}
-                  >
-                    Pass to Interview
-                    <ArrowRight className="size-4" />
-                  </Button>
-                )}
-                {applicant.stage === "Interview" && (
-                  <Button
-                    type="button"
-                    className="h-11 text-sm!"
-                    disabled={acting}
-                    onClick={() => onMoveStage(applicant.id, "Accepted")}
+                    onClick={() => {
+                      const warning = acceptWarning(applicant.hasInterview, applicant.interviewAt);
+                      if (warning) setConfirmingAccept(true);
+                      else onMoveStage(applicant.id, "Endorsed");
+                    }}
                   >
                     Accept applicant
                     <ArrowRight className="size-4" />
                   </Button>
                 )}
-                {applicant.stage !== "Rejected" && applicant.stage !== "Accepted" && !confirmingReject && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    className="h-11 text-sm!"
-                    disabled={acting}
-                    onClick={() => setConfirmingReject(true)}
-                  >
-                    Reject application
-                  </Button>
+                {confirmingAccept && (
+                  <>
+                    <p className="rounded-md bg-warn-bg px-3 py-2.5 text-sm text-warn">
+                      {acceptWarning(applicant.hasInterview, applicant.interviewAt)} Proceed with endorsement anyway?
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-11 flex-1 text-sm!"
+                        disabled={acting}
+                        onClick={() => setConfirmingAccept(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        className="h-11 flex-1 text-sm!"
+                        disabled={acting}
+                        onClick={() => onMoveStage(applicant.id, "Endorsed")}
+                      >
+                        Proceed anyway
+                      </Button>
+                    </div>
+                  </>
                 )}
+                {applicant.stage !== "Rejected" &&
+                  applicant.stage !== "Accepted" &&
+                  applicant.stage !== "Endorsed" &&
+                  !confirmingReject && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      className="h-11 text-sm!"
+                      disabled={acting}
+                      onClick={() => setConfirmingReject(true)}
+                    >
+                      Reject application
+                    </Button>
+                  )}
                 {confirmingReject && (
                   <>
                     <Textarea

@@ -10,6 +10,7 @@ export const STAGE_FILTERS: { value: StageFilter; label: string }[] = [
   { value: "Submitted", label: "Submitted" },
   { value: "Under review", label: "Under review" },
   { value: "Interview", label: "Interview" },
+  { value: "Endorsed", label: "Endorsed" },
   { value: "Accepted", label: "Accepted" },
   { value: "Rejected", label: "Rejected" },
 ];
@@ -19,6 +20,8 @@ export function getStageVariant(stage: Stage): BadgeVariant {
     case "Accepted":
       return "default";
     case "Interview":
+      return "secondary";
+    case "Endorsed":
       return "secondary";
     case "Under review":
       return "outline";
@@ -58,6 +61,7 @@ export function normalizeStage(raw: string): Stage {
   const s = raw.trim().toLowerCase();
   if (s === "under review" || s === "under_review") return "Under review";
   if (s.includes("interview")) return "Interview";
+  if (s === "endorsed to grantor" || s === "endorsed") return "Endorsed";
   if (s === "accepted" || s === "approved") return "Accepted";
   if (s === "rejected") return "Rejected";
   // Written by PATCH /documents/:id/verify when a coordinator confirms a
@@ -102,6 +106,29 @@ export function formatAppliedDate(iso: string): string {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+export function formatInterviewDateTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+// Warning when endorsing/approving before any interview happened, mirroring
+// the reject-confirm pattern. Null means a past interview exists — proceed.
+export function acceptWarning(hasInterview: boolean | undefined, interviewAt?: string | null): string | null {
+  if (!hasInterview) return "No interview has been scheduled for this applicant yet.";
+  const d = interviewAt ? new Date(interviewAt) : null;
+  if (d && !Number.isNaN(d.getTime()) && d.getTime() > Date.now()) {
+    return `The interview is scheduled for ${formatInterviewDateTime(interviewAt as string)}, which hasn't happened yet.`;
+  }
+  return null;
+}
+
 export function getInitials(firstName?: string, lastName?: string): string {
   return `${firstName?.[0] ?? ""}${lastName?.[0] ?? ""}`.toUpperCase() || "?";
 }
@@ -121,13 +148,16 @@ export function mapApplicationToApplicant(row: ApplicationWithProfile): Applican
     gwa: row.general_average !== null ? Number(row.general_average) : null,
     gwaSource: row.general_average_source,
     hasInterview: row.interview_at != null,
+    interviewAt: row.interview_at ?? null,
+    profileId: p?.profile_id ?? null,
     applied: formatAppliedDate(row.submitted_at),
     stage: resolveDisplayStage(row.status, row.stage),
   };
 }
 
 // Stage → PATCH /applications/:id/stage payload. Note: the backend only lets
-// ADMIN/GRANTOR approve or reject — coordinator moves to Interview/Under review.
+// ADMIN/GRANTOR approve or reject — a coordinator "accept" is an endorsement
+// (UNDER_REVIEW + label) that escalates the application to the grantor.
 export function stageToUpdatePayload(
   stage: Stage,
   rejectionReason?: string,
@@ -135,6 +165,8 @@ export function stageToUpdatePayload(
   switch (stage) {
     case "Accepted":
       return { status: "APPROVED", stage: "Accepted" };
+    case "Endorsed":
+      return { status: "UNDER_REVIEW", stage: "Endorsed to Grantor" };
     case "Rejected":
       return { status: "REJECTED", stage: "Rejected", rejection_reason: rejectionReason };
     case "Interview":
