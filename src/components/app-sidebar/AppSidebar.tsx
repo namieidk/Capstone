@@ -57,6 +57,10 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
   const displayName = user ? `${user.first_name} ${user.last_name}` : "Guest";
   const displayInitials = user ? getInitials(user.first_name, user.last_name) : "G";
 
+  const isFooterItem = (key: string) => key === "settings" || key === "profile";
+  const mainItems = config.items.filter((item) => !item.hidden && !isFooterItem(item.key));
+  const footerNavItems = config.items.filter((item) => !item.hidden && isFooterItem(item.key));
+
   return (
     <Sidebar
       collapsible="icon"
@@ -85,56 +89,95 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
         </Link>
       </SidebarHeader>
 
-      {/* Sidebar Content: Navigation Items */}
+      {/* Sidebar Content: Main Navigation Items */}
       <SidebarContent className="px-2 py-2">
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
-              {config.items
-                .filter((item) => !item.hidden)
-                .map((item) => {
-                  const Icon = item.icon;
-                  const isActive =
-                    pathname === item.href || (item.href !== config.homeHref && pathname.startsWith(item.href));
+              {mainItems.map((item) => {
+                const Icon = item.icon;
+                const isActive =
+                  pathname === item.href || (item.href !== config.homeHref && pathname.startsWith(item.href));
 
-                  return (
-                    <SidebarMenuItem key={item.key}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive}
-                        tooltip={item.label}
-                        className={`h-9.5 rounded-lg px-2.5 text-[0.92rem] font-medium transition-all duration-150 ${
-                          isActive
-                            ? "bg-amber! text-navy! data-[active=true]:bg-amber! data-[active=true]:text-white! hover:bg-amber! hover:text-navy! [--sidebar-accent:var(--amber)] [--sidebar-accent-foreground:var(--navy)] font-semibold shadow-xs"
-                            : "text-white/80 hover:bg-white/10! hover:text-white!"
+                return (
+                  <SidebarMenuItem key={item.key}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={item.label}
+                      className={`h-9.5 rounded-lg px-2.5 text-[0.92rem] font-medium transition-all duration-150 ${
+                        isActive
+                          ? "bg-amber! text-navy! data-[active=true]:bg-amber! data-[active=true]:text-white! hover:bg-amber! hover:text-navy! [--sidebar-accent:var(--amber)] [--sidebar-accent-foreground:var(--navy)] font-semibold shadow-xs"
+                          : "text-white/80 hover:bg-white/10! hover:text-white!"
+                      }`}
+                    >
+                      <Link href={item.href} className="flex items-center gap-3">
+                        <Icon
+                          className={`size-4.5 shrink-0 transition-colors ${isActive ? "text-white!" : "text-white/80"}`}
+                        />
+                        <span className="truncate group-data-[collapsible=icon]:hidden">{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                    {item.badge !== undefined && (
+                      <SidebarMenuBadge
+                        className={`top-1/2! right-2! -translate-y-1/2 font-bold text-[0.7rem] px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden transition-colors ${
+                          isActive ? "bg-navy! text-white/80!" : "bg-amber text-navy"
                         }`}
                       >
-                        <Link href={item.href} className="flex items-center gap-3">
-                          <Icon
-                            className={`size-4.5 shrink-0 transition-colors ${isActive ? "text-white!" : "text-white/80"}`}
-                          />
-                          <span className="truncate group-data-[collapsible=icon]:hidden">{item.label}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                      {item.badge !== undefined && (
-                        <SidebarMenuBadge
-                          className={`top-1/2! right-2! -translate-y-1/2 font-bold text-[0.7rem] px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden transition-colors ${
-                            isActive ? "bg-navy! text-white/80!" : "bg-amber text-navy"
-                          }`}
-                        >
-                          {item.badge}
-                        </SidebarMenuBadge>
-                      )}
-                    </SidebarMenuItem>
-                  );
-                })}
+                        {item.badge}
+                      </SidebarMenuBadge>
+                    )}
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
-      {/* Sidebar Footer: User Card & Logout */}
-      <SidebarFooter className="border-t border-white/10 p-2.5">
+      {/* Sidebar Footer: Profile & Settings Navigation + User Card & Logout */}
+      <SidebarFooter className="border-t border-white/10 p-2.5 gap-2">
+        {footerNavItems.length > 0 && (
+          <SidebarMenu className="gap-1">
+            {footerNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive =
+                pathname === item.href || (item.href !== config.homeHref && pathname.startsWith(item.href));
+
+              return (
+                <SidebarMenuItem key={item.key}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive}
+                    tooltip={item.label}
+                    className={`h-9 rounded-lg px-2.5 text-[0.88rem] font-medium transition-all duration-150 ${
+                      isActive
+                        ? "bg-amber! text-navy! data-[active=true]:bg-amber! data-[active=true]:text-white! hover:bg-amber! hover:text-navy! [--sidebar-accent:var(--amber)] [--sidebar-accent-foreground:var(--navy)] font-semibold shadow-xs"
+                        : "text-white/80 hover:bg-white/10! hover:text-white!"
+                    }`}
+                  >
+                    <Link href={item.href} className="flex items-center gap-3">
+                      <Icon
+                        className={`size-4.5 shrink-0 transition-colors ${isActive ? "text-white!" : "text-white/80"}`}
+                      />
+                      <span className="truncate group-data-[collapsible=icon]:hidden">{item.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                  {item.badge !== undefined && (
+                    <SidebarMenuBadge
+                      className={`top-1/2! right-2! -translate-y-1/2 font-bold text-[0.7rem] px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden transition-colors ${
+                        isActive ? "bg-navy! text-white/80!" : "bg-amber text-navy"
+                      }`}
+                    >
+                      {item.badge}
+                    </SidebarMenuBadge>
+                  )}
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        )}
+
         <div className="flex items-center justify-between gap-2 rounded-lg bg-white/5 p-2 transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0">
           <Link
             href={config.profileHref}

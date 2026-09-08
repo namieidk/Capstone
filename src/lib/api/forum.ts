@@ -4,10 +4,11 @@ const B = "/api/proxy/forum";
 
 export interface ForumAuthor {
   user_id: number;
-  email: string;
+  email?: string;
   role: string;
-  first_name: string;
-  last_name: string;
+  name?: string;
+  first_name?: string;
+  last_name?: string;
   avatar_url?: string | null;
   detail?: string | null;
 }

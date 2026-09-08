@@ -1,4 +1,4 @@
-import { ForumSkeleton } from "@/components/admin/AdminSkeletons";
+import { ForumSkeleton } from "@/app/(Admin)/components/AdminSkeletons";
 
 export default function AdminForumLoading() {
   return <ForumSkeleton />;

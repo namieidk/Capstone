@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { GlobalStyles, s } from "@/components/Adminshared";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AppSidebar } from "@/components/app-sidebar/AppSidebar";
 import { SidebarContext } from "@/components/SidebarContext";
 import { SidebarInset, SidebarProvider, useSidebar as useShadcnSidebar } from "@/components/ui/sidebar";
 
@@ -27,7 +27,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <SidebarBridge>
         <div className="va flex min-h-svh w-full bg-[#FAF8F5]">
           <GlobalStyles />
-          <AdminSidebar />
+          {/* biome-ignore lint/a11y/useValidAriaRole: `role` is AppSidebar menu role */}
+          <AppSidebar role="admin" />
           <SidebarInset className="flex min-w-0 flex-1 flex-col bg-[#FAF8F5]">
             <main className="va-main flex-1 overflow-y-auto" style={s.main}>
               {children}

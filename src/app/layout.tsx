@@ -4,6 +4,7 @@ import "./globals.css";
 import { ToastProvider } from "@/components/ToastContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import { SocketProvider } from "@/contexts/SocketContext";
 
 const inter = Inter({
@@ -29,7 +30,9 @@ export default function RootLayout({
         <AuthProvider>
           <ToastProvider>
             <SocketProvider>
-              <TooltipProvider>{children}</TooltipProvider>
+              <NotificationProvider>
+                <TooltipProvider>{children}</TooltipProvider>
+              </NotificationProvider>
             </SocketProvider>
           </ToastProvider>
         </AuthProvider>

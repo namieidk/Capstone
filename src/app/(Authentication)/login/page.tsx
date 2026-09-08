@@ -3,16 +3,16 @@
 import { ArrowRight, Loader2, Lock, Mail } from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
-import { AuthShell } from "@/components/auth/AuthShell";
-import { CheckboxField } from "@/components/auth/CheckboxField";
-import { DASHBOARD_MAP, roleLabel } from "@/components/auth/data";
-import { InputField } from "@/components/auth/InputField";
-import { ModeTabs } from "@/components/auth/ModeTabs";
-import { SocialBlock } from "@/components/auth/SocialBlock";
-import { SuccessPanel } from "@/components/auth/SuccessPanel";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
+import { AuthShell } from "../components/AuthShell";
+import { CheckboxField } from "../components/CheckboxField";
+import { DASHBOARD_MAP, roleLabel } from "../components/data";
+import { InputField } from "../components/InputField";
+import { ModeTabs } from "../components/ModeTabs";
+import { SocialBlock } from "../components/SocialBlock";
+import { SuccessPanel } from "../components/SuccessPanel";
 
 function SignInForm() {
   const { login } = useAuth();

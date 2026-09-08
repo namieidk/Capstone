@@ -3,5 +3,5 @@
 import { ChatContainer } from "@/components/chat/ChatContainer";
 
 export default function ScholarMessagePage() {
-  return <ChatContainer title="Messages" subtitle="Talk with your coordinator and advisers in real-time." />;
+  return <ChatContainer title="Messages" subtitle="Talk with your coordinator." />;
 }

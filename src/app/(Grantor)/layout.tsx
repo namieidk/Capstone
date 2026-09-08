@@ -1,8 +1,8 @@
 "use client";
 
 import type React from "react";
+import { AppSidebar } from "@/components/app-sidebar/AppSidebar";
 import { GlobalStyles, s } from "@/components/Grantorshared";
-import { GrantorSidebar } from "@/components/grantor/GrantorSidebar";
 import { SidebarContext } from "@/components/SidebarContext";
 import { SidebarInset, SidebarProvider, useSidebar as useShadcnSidebar } from "@/components/ui/sidebar";
 
@@ -27,7 +27,8 @@ export default function GrantorLayout({ children }: { children: React.ReactNode 
       <SidebarBridge>
         <div className="vg flex min-h-svh w-full bg-[#FAF8F5]">
           <GlobalStyles />
-          <GrantorSidebar />
+          {/* biome-ignore lint/a11y/useValidAriaRole: `role` is AppSidebar menu role */}
+          <AppSidebar role="grantor" />
           <SidebarInset className="flex min-w-0 flex-1 flex-col bg-[#FAF8F5]">
             <main className="vg-main flex-1 overflow-y-auto" style={s.main}>
               {children}

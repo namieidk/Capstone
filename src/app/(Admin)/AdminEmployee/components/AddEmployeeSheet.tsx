@@ -3,7 +3,7 @@
 import { Eye, EyeOff, UserPlus, X } from "lucide-react";
 import type { FormEvent } from "react";
 import { useState } from "react";
-import { PasswordChecklist } from "@/components/auth/PasswordChecklist";
+import { PasswordChecklist } from "@/app/(Authentication)/components/PasswordChecklist";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,7 +48,7 @@ export function AddEmployeeSheet({
       <SheetContent
         side="right"
         showCloseButton={false}
-        className="w-[440px]! max-w-[92vw]! gap-0 overflow-y-auto border-line bg-white p-8 text-sm!"
+        className="w-110! max-w-[92vw]! gap-0 overflow-y-auto border-line bg-white p-8 text-sm!"
       >
         <div className="flex items-start gap-3.5">
           <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-navy text-white shadow-xs">

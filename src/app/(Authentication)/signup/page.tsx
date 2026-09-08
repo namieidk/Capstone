@@ -4,17 +4,17 @@ import { cn } from "cn";
 import { ArrowRight, Loader2, Lock, Mail, Phone, User } from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
-import { AuthShell } from "@/components/auth/AuthShell";
-import { CheckboxField } from "@/components/auth/CheckboxField";
-import { InputField } from "@/components/auth/InputField";
-import { ModeTabs } from "@/components/auth/ModeTabs";
-import { PasswordChecklist } from "@/components/auth/PasswordChecklist";
-import { SocialBlock } from "@/components/auth/SocialBlock";
-import { SuccessPanel } from "@/components/auth/SuccessPanel";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { getPasswordError } from "@/lib/validation";
+import { AuthShell } from "../components/AuthShell";
+import { CheckboxField } from "../components/CheckboxField";
+import { InputField } from "../components/InputField";
+import { ModeTabs } from "../components/ModeTabs";
+import { PasswordChecklist } from "../components/PasswordChecklist";
+import { SocialBlock } from "../components/SocialBlock";
+import { SuccessPanel } from "../components/SuccessPanel";
 
 function SignUpForm() {
   const { register } = useAuth();

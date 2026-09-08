@@ -2,8 +2,8 @@
 
 import { Eye, EyeOff, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { PasswordChecklist } from "@/app/(Authentication)/components/PasswordChecklist";
 import { BAD, BAD_BG } from "@/components/Adminshared";
-import { PasswordChecklist } from "@/components/auth/PasswordChecklist";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";

@@ -1,4 +1,4 @@
-import { SettingsSkeleton } from "@/components/admin/AdminSkeletons";
+import { SettingsSkeleton } from "@/app/(Admin)/components/AdminSkeletons";
 
 export default function AdminSettingsLoading() {
   return <SettingsSkeleton />;

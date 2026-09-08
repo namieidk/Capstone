@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useEffect } from "react";
+import { AppSidebar } from "@/components/app-sidebar/AppSidebar";
 import { GlobalStyles, s } from "@/components/ScholarShared";
 import { SidebarContext } from "@/components/SidebarContext";
-import { ScholarSidebar } from "@/components/scholar/ScholarSidebar";
 import { SidebarInset, SidebarProvider, useSidebar as useShadcnSidebar } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -31,7 +31,8 @@ export default function ScholarLayout({ children }: { children: React.ReactNode 
         <ScholarRoleGuard>
           <div className="vd flex min-h-svh w-full bg-[#FAF8F5]">
             <GlobalStyles />
-            <ScholarSidebar />
+            {/* biome-ignore lint/a11y/useValidAriaRole: `role` is AppSidebar menu role */}
+            <AppSidebar role="scholar" />
             <SidebarInset className="flex min-w-0 flex-1 flex-col bg-[#FAF8F5]">
               <main className="vd-main flex-1 overflow-y-auto" style={s.main}>
                 {children}
