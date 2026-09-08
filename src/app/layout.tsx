@@ -4,6 +4,7 @@ import "./globals.css";
 import { ToastProvider } from "@/components/ToastContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { SocketProvider } from "@/contexts/SocketContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -27,7 +28,9 @@ export default function RootLayout({
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <AuthProvider>
           <ToastProvider>
-            <TooltipProvider>{children}</TooltipProvider>
+            <SocketProvider>
+              <TooltipProvider>{children}</TooltipProvider>
+            </SocketProvider>
           </ToastProvider>
         </AuthProvider>
       </body>

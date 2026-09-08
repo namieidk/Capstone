@@ -115,6 +115,7 @@ export function updateStage(
     reschedule_reason?: string;
     provider_notes?: string;
     rejection_reason?: string;
+    confirm_without_meeting?: boolean;
   },
 ) {
   return apiPatch<Application>(`${B}/${id}/stage`, data);

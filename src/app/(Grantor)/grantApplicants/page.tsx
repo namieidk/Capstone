@@ -10,6 +10,8 @@ import {
   stageToUpdatePayload,
 } from "@/app/(Coordinator)/CoordinatorApplicants/components/applicant-helpers";
 import type { Applicant, Stage } from "@/components/Coordinatorshared";
+import { MeetingSafeguardDialog } from "@/components/MeetingSafeguardDialog";
+import { useSocketEvent } from "@/contexts/SocketContext";
 import { ApiError } from "@/lib/api";
 import { listApplications, updateStage } from "@/lib/api/applications";
 import { GrantApplicantDialog } from "./components/GrantApplicantDialog";
@@ -27,6 +29,16 @@ export default function GrantApplicantsPage() {
   const [loadError, setLoadError] = useState("");
   const [acting, setActing] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [safeguardState, setSafeguardState] = useState<{
+    open: boolean;
+    id: number;
+    stage: Stage;
+    rejectionReason?: string;
+  }>({
+    open: false,
+    id: 0,
+    stage: "Accepted",
+  });
 
   const fetchApplicants = useCallback(async () => {
     setLoading(true);
@@ -45,6 +57,10 @@ export default function GrantApplicantsPage() {
   useEffect(() => {
     fetchApplicants();
   }, [fetchApplicants]);
+
+  // Real-time lifecycle listener
+  useSocketEvent("application:stage_updated", () => fetchApplicants());
+  useSocketEvent("contract:signed", () => fetchApplicants());
 
   const filtered = useMemo(() => {
     return (
@@ -76,13 +92,27 @@ export default function GrantApplicantsPage() {
   }
 
   // Grantors may approve or reject — the backend permits both for this role.
-  async function moveStage(id: number, stage: Stage, rejectionReason?: string) {
+  async function moveStage(id: number, stage: Stage, rejectionReason?: string, confirmWithoutMeeting = false) {
     setActing(true);
     setActionError(null);
     try {
-      const updated = await updateStage(id, stageToUpdatePayload(stage, rejectionReason));
+      const payload = {
+        ...stageToUpdatePayload(stage, rejectionReason),
+        confirm_without_meeting: confirmWithoutMeeting,
+      };
+      const updated = await updateStage(id, payload);
       updateApplicantStage(id, resolveDisplayStage(updated.status, updated.stage));
+      setSafeguardState((prev) => ({ ...prev, open: false }));
     } catch (err) {
+      if (err instanceof ApiError && err.requiresMeetingConfirmation) {
+        setSafeguardState({
+          open: true,
+          id,
+          stage,
+          rejectionReason,
+        });
+        return;
+      }
       console.error("Failed to move stage:", err);
       setActionError(err instanceof ApiError ? err.message : "Failed to update stage.");
     } finally {
@@ -146,6 +176,12 @@ export default function GrantApplicantsPage() {
         onMoveStage={moveStage}
         onStagesChanged={updateApplicantStage}
         onMeetingScheduled={fetchApplicants}
+      />
+      <MeetingSafeguardDialog
+        open={safeguardState.open}
+        onOpenChange={(open) => setSafeguardState((prev) => ({ ...prev, open }))}
+        loading={acting}
+        onConfirm={() => moveStage(safeguardState.id, safeguardState.stage, safeguardState.rejectionReason, true)}
       />
     </div>
   );

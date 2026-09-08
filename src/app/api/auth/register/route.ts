@@ -15,6 +15,12 @@ export async function POST(request: NextRequest) {
   const data = await res.json();
 
   if (!res.ok) {
+    if (res.status === 429) {
+      return Response.json(
+        { message: "Too many registration attempts. Please wait a moment and try again later." },
+        { status: 429 },
+      );
+    }
     return Response.json(data, { status: res.status });
   }
 

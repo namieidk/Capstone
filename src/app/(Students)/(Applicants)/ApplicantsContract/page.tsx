@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSocketEvent } from "@/contexts/SocketContext";
 import { ApiError } from "@/lib/api";
 import { getMe } from "@/lib/api/auth";
 import { type Contract, getMyContracts } from "@/lib/api/contracts";
@@ -34,6 +35,11 @@ export default function ApplicantsContractPage() {
   useEffect(() => {
     fetchContracts();
   }, [fetchContracts]);
+
+  // Real-time contract events
+  useSocketEvent("contract:created", fetchContracts);
+  useSocketEvent("contract:changes_requested", fetchContracts);
+  useSocketEvent("contract:signed", fetchContracts);
 
   // Signing promotes APPLICANT → SCHOLAR: sync auth state, then route by
   // the fresh role instead of the stale pre-sign one.

@@ -109,15 +109,15 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { key: "dashboard", label: "Home", icon: <HomeIcon />, href: "/ScholarDashboard" },
+  { key: "dashboard", label: "Home", icon: <HomeIcon />, href: "/scholardashboard" },
   { key: "grade", label: "Grades", icon: <GradeIcon />, href: "/ScholarGrade" },
-  { key: "reports", label: "Reports", icon: <ReportsIcon />, href: "/ScholarReports" },
-  { key: "message", label: "Messages", icon: <MailIcon />, href: "/ScholarMessage" },
-  { key: "meeting", label: "Meetings", icon: <CalendarIcon />, href: "/ScholarMeeting" },
-  { key: "forum", label: "Forum", icon: <ForumIcon />, href: "/ScholarForum" },
+  { key: "reports", label: "Reports", icon: <ReportsIcon />, href: "/scholarReports" },
+  { key: "message", label: "Messages", icon: <MailIcon />, href: "/scholarMessage" },
+  { key: "meeting", label: "Meetings", icon: <CalendarIcon />, href: "/scholarMeeting" },
+  { key: "forum", label: "Forum", icon: <ForumIcon />, href: "/SchoForum" },
   { key: "payment", label: "Payment", icon: <PaymentIcon />, href: "/ScholarPayment" },
-  { key: "settings", label: "Settings", icon: <SettingsIcon />, href: "/ScholarSettings" },
-  { key: "profile", label: "Profile", icon: <ProfileIcon />, href: "/ScholarProfile" },
+  { key: "settings", label: "Settings", icon: <SettingsIcon />, href: "/scholarSettings" },
+  { key: "profile", label: "Profile", icon: <ProfileIcon />, href: "/schoProfile" },
 ];
 
 export interface ActivityItem {

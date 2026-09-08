@@ -547,3 +547,5 @@ export function ProfileSkeleton() {
 export function DefaultAdminSkeleton() {
   return <DashboardSkeleton />;
 }
+
+export { ForumSkeleton } from "@/components/forum/ForumSkeleton";

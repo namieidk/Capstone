@@ -1,16 +1,35 @@
 class ApiError extends Error {
   status: number;
   code?: string;
+  data?: unknown;
 
-  constructor(message: string, status: number, code?: string) {
+  constructor(message: string, status: number, code?: string, data?: unknown) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
+    this.data = data;
+  }
+
+  get isRateLimited(): boolean {
+    return this.status === 429;
+  }
+
+  get requiresMeetingConfirmation(): boolean {
+    if (this.data && typeof this.data === "object") {
+      const obj = this.data as Record<string, unknown>;
+      if (obj.requires_meeting_confirmation === true) return true;
+      if (typeof obj.message === "string" && obj.message.includes("MEETING_CONFIRMATION_REQUIRED")) return true;
+    }
+    return this.message.includes("MEETING_CONFIRMATION_REQUIRED");
   }
 }
 
 function getErrorMessage(status: number, data: unknown): string {
+  if (status === 429) {
+    return "You're making requests too quickly. Please wait a moment and try again.";
+  }
+
   if (data && typeof data === "object") {
     const obj = data as Record<string, unknown>;
 
@@ -68,7 +87,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
       data && typeof data === "object" && "statusCode" in data
         ? String((data as Record<string, unknown>).statusCode)
         : undefined;
-    throw new ApiError(message, res.status, code);
+    throw new ApiError(message, res.status, code, data);
   }
 
   return data as T;

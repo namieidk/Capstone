@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Applicant, Stage } from "@/components/Coordinatorshared";
+import { MeetingSafeguardDialog } from "@/components/MeetingSafeguardDialog";
+import { useSocketEvent } from "@/contexts/SocketContext";
 import { ApiError } from "@/lib/api";
 import { listApplications, updateStage } from "@/lib/api/applications";
 import { ApplicantDialog } from "./components/ApplicantDialog";
@@ -27,6 +29,16 @@ export default function ApplicantsPage() {
   const [loadError, setLoadError] = useState("");
   const [acting, setActing] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [safeguardState, setSafeguardState] = useState<{
+    open: boolean;
+    id: number;
+    stage: Stage;
+    rejectionReason?: string;
+  }>({
+    open: false,
+    id: 0,
+    stage: "Accepted",
+  });
 
   const fetchApplicants = useCallback(async () => {
     setLoading(true);
@@ -45,6 +57,11 @@ export default function ApplicantsPage() {
   useEffect(() => {
     fetchApplicants();
   }, [fetchApplicants]);
+
+  // Real-time updates for coordinator application table
+  useSocketEvent("application:submitted", () => fetchApplicants());
+  useSocketEvent("document:confirmed_by_applicant", () => fetchApplicants());
+  useSocketEvent("application:stage_updated", () => fetchApplicants());
 
   const filtered = useMemo(() => {
     return applicants.filter((a) => {
@@ -72,16 +89,30 @@ export default function ApplicantsPage() {
     setSelected((sel) => (sel && sel.id === id ? mapped(sel) : sel));
   }
 
-  async function moveStage(id: number, stage: Stage, rejectionReason?: string) {
+  async function moveStage(id: number, stage: Stage, rejectionReason?: string, confirmWithoutMeeting = false) {
     setActing(true);
     setActionError(null);
     try {
-      const updated = await updateStage(id, stageToUpdatePayload(stage, rejectionReason));
+      const payload = {
+        ...stageToUpdatePayload(stage, rejectionReason),
+        confirm_without_meeting: confirmWithoutMeeting,
+      };
+      const updated = await updateStage(id, payload);
       const mapped = (prev: Applicant) =>
         prev.id === id ? { ...prev, stage: resolveDisplayStage(updated.status, updated.stage) } : prev;
       setApplicants((prev) => prev.map(mapped));
       setSelected((sel) => (sel && sel.id === id ? mapped(sel) : sel));
+      setSafeguardState((prev) => ({ ...prev, open: false }));
     } catch (err) {
+      if (err instanceof ApiError && err.requiresMeetingConfirmation) {
+        setSafeguardState({
+          open: true,
+          id,
+          stage,
+          rejectionReason,
+        });
+        return;
+      }
       console.error("Failed to move stage:", err);
       setActionError(err instanceof ApiError ? err.message : "Failed to update stage.");
     } finally {
@@ -144,6 +175,12 @@ export default function ApplicantsPage() {
         }}
         onMoveStage={moveStage}
         onStagesChanged={updateApplicantStage}
+      />
+      <MeetingSafeguardDialog
+        open={safeguardState.open}
+        onOpenChange={(open) => setSafeguardState((prev) => ({ ...prev, open }))}
+        loading={acting}
+        onConfirm={() => moveStage(safeguardState.id, safeguardState.stage, safeguardState.rejectionReason, true)}
       />
     </div>
   );

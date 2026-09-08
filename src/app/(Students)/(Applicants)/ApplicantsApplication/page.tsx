@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSidebar } from "@/components/SidebarContext";
 import { useToast } from "@/components/ToastContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSocketEvent } from "@/contexts/SocketContext";
 import { ApiError } from "@/lib/api";
 import { type Application, createApplication, getMyApplication } from "@/lib/api/applications";
 import {
@@ -85,6 +86,14 @@ export default function ApplicantsApplicationPage() {
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
+
+  // Real-time lifecycle events for applicant application
+  useSocketEvent("document:changes_requested", fetchAll);
+  useSocketEvent("document:verified", fetchAll);
+  useSocketEvent("application:stage_updated", fetchAll);
+  useSocketEvent("interview:scheduled", fetchAll);
+  useSocketEvent("interview:rescheduled", fetchAll);
+  useSocketEvent("interview:cancelled", fetchAll);
 
   const prefill = useMemo(() => {
     const p = user?.scholar_profile;

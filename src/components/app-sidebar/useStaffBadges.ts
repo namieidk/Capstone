@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useSocketEvent } from "@/contexts/SocketContext";
 import { listApplications } from "@/lib/api/applications";
 import { listMeetings } from "@/lib/api/meetings";
 
@@ -15,7 +16,7 @@ export function useStaffBadges(opts: { includeApplicants: boolean }): StaffBadge
   const [applicants, setApplicants] = useState<number | null>(null);
   const [meetings, setMeetings] = useState<number | null>(null);
 
-  useEffect(() => {
+  const refreshBadges = useCallback(() => {
     let alive = true;
     if (opts.includeApplicants) {
       listApplications()
@@ -37,6 +38,17 @@ export function useStaffBadges(opts: { includeApplicants: boolean }): StaffBadge
       alive = false;
     };
   }, [opts.includeApplicants]);
+
+  useEffect(() => {
+    return refreshBadges();
+  }, [refreshBadges]);
+
+  // Real-time updates for sidebar badges
+  useSocketEvent("application:submitted", refreshBadges);
+  useSocketEvent("application:stage_updated", refreshBadges);
+  useSocketEvent("interview:scheduled", refreshBadges);
+  useSocketEvent("interview:rescheduled", refreshBadges);
+  useSocketEvent("interview:cancelled", refreshBadges);
 
   return {
     applicants: applicants != null && applicants > 0 ? applicants : undefined,

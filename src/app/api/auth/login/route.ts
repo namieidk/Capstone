@@ -21,6 +21,12 @@ export async function POST(request: NextRequest) {
   }
 
   if (!res.ok) {
+    if (res.status === 429) {
+      return Response.json(
+        { message: "Too many login attempts. Please wait a moment and try again later." },
+        { status: 429 },
+      );
+    }
     const message =
       data && typeof data === "object" && "message" in data
         ? (data as Record<string, unknown>).message

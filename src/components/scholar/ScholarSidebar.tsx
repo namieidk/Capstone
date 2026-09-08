@@ -47,7 +47,7 @@ export function ScholarSidebar({ ...props }: ScholarSidebarProps) {
       {/* Sidebar Header: Logo & Branding */}
       <SidebarHeader className="border-b border-white/10 p-4">
         <Link
-          href="/ScholarDashboard"
+          href="/scholardashboard"
           className="flex items-center gap-2.5 overflow-hidden rounded-lg p-1 transition-colors hover:bg-white/10"
         >
           <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white/10">
@@ -60,21 +60,22 @@ export function ScholarSidebar({ ...props }: ScholarSidebarProps) {
               className="size-6 object-contain drop-shadow"
             />
           </span>
-          <div className="flex flex-col overflow-hidden text-left group-data-[collapsible=icon]:hidden">
-            <span className="text-[1.05rem] font-bold tracking-tight text-white leading-tight">ViaScholar</span>
+          <div className="flex flex-col truncate leading-tight group-data-[collapsible=icon]:hidden">
+            <span className="font-bold text-white text-base tracking-tight">ViaScholar</span>
+            <span className="text-[0.72rem] font-medium text-white/60">Scholar Portal</span>
           </div>
         </Link>
       </SidebarHeader>
 
       {/* Sidebar Content: Navigation Items */}
-      <SidebarContent className="px-2 py-2">
+      <SidebarContent className="px-2 py-3">
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu className="gap-1">
+            <SidebarMenu>
               {SCHOLAR_NAV_ITEMS.filter((item) => !item.hidden).map((item) => {
                 const Icon = item.icon;
                 const isActive =
-                  pathname === item.href || (item.href !== "/ScholarDashboard" && pathname.startsWith(item.href));
+                  pathname === item.href || (item.href !== "/scholardashboard" && pathname.startsWith(item.href));
 
                 return (
                   <SidebarMenuItem key={item.key}>
@@ -116,7 +117,7 @@ export function ScholarSidebar({ ...props }: ScholarSidebarProps) {
       <SidebarFooter className="border-t border-white/10 p-2.5">
         <div className="flex items-center justify-between gap-2 rounded-lg bg-white/5 p-2 transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0">
           <Link
-            href="/ScholarProfile"
+            href="/schoProfile"
             className="flex min-w-0 flex-1 items-center gap-2.5 group-data-[collapsible=icon]:justify-center"
             title="View Profile"
           >
