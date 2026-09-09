@@ -37,6 +37,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isRemembered = localStorage.getItem("vls_remember") === "true";
+      const isSessionActive = sessionStorage.getItem("vls_session_active") === "true";
+
+      // If user did NOT choose "Keep me signed in" and this is a brand new session/window,
+      // invalidate any residual cookie so browser session restore doesn't bypass it.
+      if (!isRemembered && !isSessionActive) {
+        authApi.logout().finally(() => {
+          setUser(null);
+          setLoading(false);
+        });
+        return;
+      }
+    }
     refreshUser().finally(() => setLoading(false));
   }, [refreshUser]);
 
@@ -44,6 +58,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (email: string, password: string, remember?: boolean) => {
       const data = await authApi.login(email, password, remember);
       setUser(data.user);
+      if (typeof window !== "undefined") {
+        if (remember) {
+          localStorage.setItem("vls_remember", "true");
+        } else {
+          localStorage.removeItem("vls_remember");
+          sessionStorage.setItem("vls_session_active", "true");
+        }
+      }
       refreshUser();
       return data.user;
     },
@@ -54,6 +76,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (data: { email: string; password: string; first_name: string; last_name: string; phone_number: string }) => {
       const res = await authApi.register(data);
       setUser(res.user);
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("vls_session_active", "true");
+      }
       refreshUser();
       return res.user;
     },
@@ -61,6 +86,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const logout = useCallback(async () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("vls_remember");
+      sessionStorage.removeItem("vls_session_active");
+    }
     await authApi.logout();
     setUser(null);
     router.push("/login");
