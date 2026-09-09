@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useToast } from "@/components/ToastContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSocketEvent } from "@/contexts/SocketContext";
 import { ApiError } from "@/lib/api";
 import {
   createSchoolGrading,
@@ -46,6 +47,11 @@ export default function GradingSystemsPage() {
   useEffect(() => {
     fetchGradings();
   }, [fetchGradings]);
+
+  // Real-time updates for school grading system configurations
+  useSocketEvent("school_grading:created", fetchGradings);
+  useSocketEvent("school_grading:updated", fetchGradings);
+  useSocketEvent("school_grading:deleted", fetchGradings);
 
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();

@@ -3,6 +3,7 @@
 import type React from "react";
 import { AppSidebar } from "@/components/app-sidebar/AppSidebar";
 import { GlobalStyles, s } from "@/components/Grantorshared";
+import { RoleGuard } from "@/components/RoleGuard";
 import { SidebarContext } from "@/components/SidebarContext";
 import { SidebarInset, SidebarProvider, useSidebar as useShadcnSidebar } from "@/components/ui/sidebar";
 
@@ -23,19 +24,21 @@ function SidebarBridge({ children }: { children: React.ReactNode }) {
 
 export default function GrantorLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SidebarProvider>
-      <SidebarBridge>
-        <div className="vg flex min-h-svh w-full bg-[#FAF8F5]">
-          <GlobalStyles />
-          {/* biome-ignore lint/a11y/useValidAriaRole: `role` is AppSidebar menu role */}
-          <AppSidebar role="grantor" />
-          <SidebarInset className="flex min-w-0 flex-1 flex-col bg-[#FAF8F5]">
-            <main className="vg-main flex-1 overflow-y-auto" style={s.main}>
-              {children}
-            </main>
-          </SidebarInset>
-        </div>
-      </SidebarBridge>
-    </SidebarProvider>
+    <RoleGuard allowedRoles={["GRANTOR"]}>
+      <SidebarProvider>
+        <SidebarBridge>
+          <div className="vg flex min-h-svh w-full bg-[#FAF8F5]">
+            <GlobalStyles />
+            {/* biome-ignore lint/a11y/useValidAriaRole: `role` is AppSidebar menu role */}
+            <AppSidebar role="grantor" />
+            <SidebarInset className="flex min-w-0 flex-1 flex-col bg-[#FAF8F5]">
+              <main className="vg-main flex-1 overflow-y-auto" style={s.main}>
+                {children}
+              </main>
+            </SidebarInset>
+          </div>
+        </SidebarBridge>
+      </SidebarProvider>
+    </RoleGuard>
   );
 }

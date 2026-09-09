@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSocketEvent } from "@/contexts/SocketContext";
 import { ApiError } from "@/lib/api";
 import { type AuditLogEntry as AuditLog, getAuditLogs } from "@/lib/api/users";
 import { AuditLogsHeader } from "./components/AuditLogsHeader";
@@ -44,6 +45,22 @@ export default function AuditLogsPage() {
   useEffect(() => {
     fetchLogs(page);
   }, [fetchLogs, page]);
+
+  // Real-time live updates when audit logs are generated across the system
+  const handleNewLog = useCallback((newLog: AuditLog) => {
+    if (!newLog) return;
+    setKnownActions((prev) => Array.from(new Set([...prev, newLog.action])).sort());
+    if (newLog.user?.role) {
+      setKnownRoles((prev) => Array.from(new Set([...prev, newLog.user.role])).sort());
+    }
+    setTotal((t) => t + 1);
+    setPageLogs((prev) => {
+      if (prev.some((l) => l.log_id === newLog.log_id)) return prev;
+      return [newLog, ...prev.slice(0, PAGE_SIZE - 1)];
+    });
+  }, []);
+
+  useSocketEvent<AuditLog>("audit:new_log", handleNewLog);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 

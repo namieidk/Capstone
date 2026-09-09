@@ -51,6 +51,7 @@ export function createApplication(data: {
   course_of_study: string;
   school_name: string;
   school_address: string;
+  current_year_level?: number;
   phone_number?: string;
   relative_employee?: string;
 }) {

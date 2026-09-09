@@ -171,10 +171,7 @@ export function ChatContainer({ title = "Messages", subtitle = "Chat directly in
   // Handle starting a chat with a coordinator
   const handleStartCoordinatorChat = async (coordinatorUserId: number) => {
     try {
-      const convo = await getOrCreateConversation({
-        target_user_id: coordinatorUserId,
-        subject: "General Inquiry",
-      });
+      const convo = await getOrCreateConversation(coordinatorUserId, "General Inquiry");
 
       await loadConversations();
       await loadDirectories();

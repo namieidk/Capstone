@@ -46,8 +46,8 @@ export interface RegisterResponse {
   user: User;
 }
 
-export function login(email: string, password: string) {
-  return apiPost<LoginResponse>(`${B}/login`, { email, password });
+export function login(email: string, password: string, remember?: boolean) {
+  return apiPost<LoginResponse>(`${B}/login`, { email, password, remember });
 }
 
 export function register(data: {

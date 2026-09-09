@@ -1,13 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import type React from "react";
-import { useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar/AppSidebar";
+import { RoleGuard } from "@/components/RoleGuard";
 import { SidebarContext } from "@/components/SidebarContext";
 import { GlobalStyles, s } from "@/components/StudentShared";
 import { SidebarProvider, useSidebar as useShadcnSidebar } from "@/components/ui/sidebar";
-import { useAuth } from "@/contexts/AuthContext";
 
 function SidebarBridge({ children }: { children: React.ReactNode }) {
   const { openMobile, toggleSidebar, setOpenMobile } = useShadcnSidebar();
@@ -26,9 +24,9 @@ function SidebarBridge({ children }: { children: React.ReactNode }) {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SidebarProvider>
-      <SidebarBridge>
-        <ApplicantRoleGuard>
+    <RoleGuard allowedRoles={["APPLICANT"]}>
+      <SidebarProvider>
+        <SidebarBridge>
           <div className="vd w-full min-w-0">
             <GlobalStyles />
             <div className="vd-app-shell">
@@ -40,17 +38,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </main>
             </div>
           </div>
-        </ApplicantRoleGuard>
-      </SidebarBridge>
-    </SidebarProvider>
+        </SidebarBridge>
+      </SidebarProvider>
+    </RoleGuard>
   );
-}
-
-function ApplicantRoleGuard({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-  useEffect(() => {
-    if (!loading && user && user.role === "SCHOLAR") router.replace("/scholardashboard");
-  }, [user, loading, router]);
-  return <>{children}</>;
 }

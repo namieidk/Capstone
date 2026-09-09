@@ -80,6 +80,19 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
         const staffRoles = ["ADMIN", "COORDINATOR", "GRANTOR"];
         const isStaff = staffRoles.includes(user?.role || "");
+        const isAdmin = user?.role === "ADMIN";
+
+        socketInstance.on("staff:created", (data: { email?: string; role?: string }) => {
+          if (isAdmin) {
+            showToast(`New staff account created: ${data?.email || "Employee"} (${data?.role || "Staff"})`, "success");
+          }
+        });
+
+        socketInstance.on("user:status_updated", (data: { isActive?: boolean; userId?: number }) => {
+          if (data?.isActive === false && user?.user_id === data.userId) {
+            showToast("Your account has been deactivated. Please contact support.", "error");
+          }
+        });
 
         socketInstance.on("application:submitted", (data: { trackName?: string }) => {
           if (isStaff) {

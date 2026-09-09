@@ -5,6 +5,7 @@ import { useToast } from "@/components/ToastContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSocketEvent } from "@/contexts/SocketContext";
 import { ApiError } from "@/lib/api";
 import { type GlobalSettings, getSettings, updateSettings } from "@/lib/api/settings";
 import { SettingsHeader } from "./components/SettingsHeader";
@@ -37,6 +38,14 @@ export default function GlobalSettingsPage() {
   useEffect(() => {
     fetchSettings();
   }, [fetchSettings]);
+
+  // Real-time updates when global settings change
+  useSocketEvent<GlobalSettings>("settings:updated", (updated) => {
+    if (updated) {
+      setSettings(updated);
+      showToast("Global grade threshold was updated in real time.");
+    }
+  });
 
   async function handleSave(threshold: number): Promise<void> {
     try {

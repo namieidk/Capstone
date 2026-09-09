@@ -2,6 +2,7 @@
 
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { useToast } from "@/components/ToastContext";
+import { useSocketEvent } from "@/contexts/SocketContext";
 import { ApiError } from "@/lib/api";
 import { createStaff, listUsers, resetPassword, updateUserStatus } from "@/lib/api/users";
 import { getPasswordError } from "@/lib/validation";
@@ -58,6 +59,11 @@ export default function AdminEmployeePage() {
   useEffect(() => {
     fetchStaff();
   }, [fetchStaff]);
+
+  // Real-time socket events for admin staff management
+  useSocketEvent("staff:created", fetchStaff);
+  useSocketEvent("user:status_updated", fetchStaff);
+  useSocketEvent("user:password_reset", fetchStaff);
 
   const filtered = staff.filter((e) => {
     const q = searchQuery.trim().toLowerCase();

@@ -96,6 +96,10 @@ export function formatYearLevel(level?: number | null): string {
   if (level === 1) return "1st year";
   if (level === 2) return "2nd year";
   if (level === 3) return "3rd year";
+  if (level === 4) return "4th year";
+  if (level === 5) return "5th year";
+  if (level === 6) return "Masteral";
+  if (level === 7) return "Doctoral";
   if (typeof level === "number") return `${level}th year`;
   return "—";
 }

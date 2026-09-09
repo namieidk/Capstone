@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { ApplicationFormValues } from "@/lib/validation";
+import { type ApplicationFormValues, YEAR_LEVEL_OPTIONS } from "@/lib/validation";
 import { parseApplicationForm } from "./wizard-helpers";
 
 interface ApplicationStepProps {
@@ -21,6 +21,7 @@ const EMPTY_VALUES: Record<string, string> = {
   student_number: "",
   student_address: "",
   course_of_study: "",
+  current_year_level: "",
   school_name: "",
   school_address: "",
   phone_number: "",
@@ -153,16 +154,35 @@ export function ApplicationStep({ prefill, hasApplication, onSubmit }: Applicati
                 className={FIELD_INPUT}
               />
             </Field>
-            <Field id="app-school-name" label="School name" required error={fieldErrors.school_name}>
-              <Input
-                id="app-school-name"
-                placeholder="University of Mindanao"
-                value={values.school_name}
-                onChange={(e) => set("school_name", e.target.value)}
-                className={FIELD_INPUT}
-              />
+            <Field id="app-year-level" label="Current year level" required error={fieldErrors.current_year_level}>
+              <Select value={values.current_year_level} onValueChange={(v) => set("current_year_level", v)}>
+                <SelectTrigger
+                  id="app-year-level"
+                  size="lg"
+                  className={`${FIELD_INPUT} w-full`}
+                  aria-label="Current year level"
+                >
+                  <SelectValue placeholder="Select year level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {YEAR_LEVEL_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value} className="text-sm!">
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
           </div>
+          <Field id="app-school-name" label="School name" required error={fieldErrors.school_name}>
+            <Input
+              id="app-school-name"
+              placeholder="University of Mindanao"
+              value={values.school_name}
+              onChange={(e) => set("school_name", e.target.value)}
+              className={FIELD_INPUT}
+            />
+          </Field>
           <Field id="app-student-address" label="Home address" required error={fieldErrors.student_address}>
             <Input
               id="app-student-address"

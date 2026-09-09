@@ -1,13 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import type React from "react";
-import { useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar/AppSidebar";
+import { RoleGuard } from "@/components/RoleGuard";
 import { GlobalStyles, s } from "@/components/ScholarShared";
 import { SidebarContext } from "@/components/SidebarContext";
 import { SidebarInset, SidebarProvider, useSidebar as useShadcnSidebar } from "@/components/ui/sidebar";
-import { useAuth } from "@/contexts/AuthContext";
 
 function SidebarBridge({ children }: { children: React.ReactNode }) {
   const { openMobile, toggleSidebar, setOpenMobile } = useShadcnSidebar();
@@ -26,9 +24,9 @@ function SidebarBridge({ children }: { children: React.ReactNode }) {
 
 export default function ScholarLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SidebarProvider>
-      <SidebarBridge>
-        <ScholarRoleGuard>
+    <RoleGuard allowedRoles={["SCHOLAR"]}>
+      <SidebarProvider>
+        <SidebarBridge>
           <div className="vd flex min-h-svh w-full bg-[#FAF8F5]">
             <GlobalStyles />
             {/* biome-ignore lint/a11y/useValidAriaRole: `role` is AppSidebar menu role */}
@@ -39,17 +37,8 @@ export default function ScholarLayout({ children }: { children: React.ReactNode 
               </main>
             </SidebarInset>
           </div>
-        </ScholarRoleGuard>
-      </SidebarBridge>
-    </SidebarProvider>
+        </SidebarBridge>
+      </SidebarProvider>
+    </RoleGuard>
   );
-}
-
-function ScholarRoleGuard({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-  useEffect(() => {
-    if (!loading && user && user.role === "APPLICANT") router.replace("/ApplicantsDashboard");
-  }, [user, loading, router]);
-  return <>{children}</>;
 }

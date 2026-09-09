@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import {
   AMBER,
   ArrowRightIcon,
@@ -33,6 +33,7 @@ interface LoginFormProps {
 
 function LoginForm({ role }: LoginFormProps) {
   const { login } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -51,7 +52,14 @@ function LoginForm({ role }: LoginFormProps) {
     setError("");
     setLoading(true);
     try {
-      await login(email, password);
+      const loggedInUser = await login(email, password, remember);
+      const dashboardMap: Record<string, string> = {
+        ADMIN: "/AdminDashboard",
+        COORDINATOR: "/CoordinatorDashboard",
+        GRANTOR: "/grantDashboard",
+      };
+      const path = dashboardMap[loggedInUser.role];
+      if (path) router.push(path);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Login failed. Please try again.";
       setError(message);
@@ -188,6 +196,21 @@ function SignedInPanel() {
 export default function StaffLoginPage() {
   const [role, setRole] = useState<StaffRoleKey>("coordinator");
   const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      const dashboardMap: Record<string, string> = {
+        ADMIN: "/AdminDashboard",
+        COORDINATOR: "/CoordinatorDashboard",
+        GRANTOR: "/grantDashboard",
+        SCHOLAR: "/scholardashboard",
+        APPLICANT: "/ApplicantsDashboard",
+      };
+      const path = dashboardMap[user.role];
+      if (path) router.replace(path);
+    }
+  }, [user, loading, router]);
 
   const activeRole = ROLES.find((r) => r.key === role) ?? ROLES[0];
 

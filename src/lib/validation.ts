@@ -39,12 +39,24 @@ export const schoolGradingSchema = z.object({
   special_codes: z.record(z.string(), z.string()).optional(),
 });
 
+// Academic year level options (1 to 5: College, 6: Masteral, 7: Doctoral)
+export const YEAR_LEVEL_OPTIONS = [
+  { value: "1", label: "1st Year" },
+  { value: "2", label: "2nd Year" },
+  { value: "3", label: "3rd Year" },
+  { value: "4", label: "4th Year" },
+  { value: "5", label: "5th Year" },
+  { value: "6", label: "Masteral" },
+  { value: "7", label: "Doctoral" },
+] as const;
+
 // Scholarship application form (mirrors CreateApplicationDto on the backend).
 export const applicationSchema = z.object({
   scholarship_track: z.string().trim().min(1, "Please choose a scholarship track."),
   student_number: z.string().trim().min(1, "Student number is required.").max(50, "Student number is too long."),
   student_address: z.string().trim().min(1, "Home address is required.").max(500, "Address is too long."),
   course_of_study: z.string().trim().min(1, "Course of study is required.").max(150, "Course is too long."),
+  current_year_level: z.string().trim().min(1, "Please select your current year level."),
   school_name: z.string().trim().min(1, "School name is required.").max(150, "School name is too long."),
   school_address: z.string().trim().min(1, "School address is required.").max(500, "Address is too long."),
   phone_number: z.string().trim().max(30, "Phone number is too long.").optional(),

@@ -2,7 +2,8 @@
 
 import { ArrowRight, Loader2, Lock, Mail } from "lucide-react";
 import Link from "next/link";
-import { type FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import { type FormEvent, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,6 +17,7 @@ import { SuccessPanel } from "../components/SuccessPanel";
 
 function SignInForm() {
   const { login } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState(false);
@@ -48,7 +50,9 @@ function SignInForm() {
     setError("");
     setLoading(true);
     try {
-      await login(email, password);
+      const loggedInUser = await login(email, password, remember);
+      const dashboardPath = DASHBOARD_MAP[loggedInUser.role] ?? "/";
+      router.push(dashboardPath);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Login failed. Please try again.";
       setError(message);
@@ -147,6 +151,14 @@ function SignedInPanel() {
 
 export default function LoginPage() {
   const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      const target = DASHBOARD_MAP[user.role] ?? "/";
+      router.replace(target);
+    }
+  }, [user, loading, router]);
 
   return (
     <AuthShell mode="signin" title="Welcome back" subtitle="Sign in to your ViaScholar account.">

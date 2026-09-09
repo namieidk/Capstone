@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type React from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useSidebar } from "../../../../components/SidebarContext";
 import {
   ACTIVITY_FEED,
@@ -101,8 +102,9 @@ function QuickLink({ icon, label, href }: QuickLinkProps) {
 
 export default function DashboardPage() {
   const { toggleMobile } = useSidebar();
+  const { user } = useAuth();
 
-  const firstName = SCHOLAR.name.split(" ")[0];
+  const firstName = user?.first_name?.trim() ? user.first_name : SCHOLAR.name.split(" ")[0];
 
   const currentStage = APPLICATION_STAGES[CURRENT_STAGE_INDEX];
   const stageProgress = Math.round(((CURRENT_STAGE_INDEX + 1) / APPLICATION_STAGES.length) * 100);

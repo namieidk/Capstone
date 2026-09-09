@@ -8,7 +8,7 @@ import * as authApi from "@/lib/api/auth";
 interface AuthContextValue {
   user: authApi.User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<authApi.User>;
+  login: (email: string, password: string, remember?: boolean) => Promise<authApi.User>;
   register: (data: {
     email: string;
     password: string;
@@ -41,8 +41,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshUser]);
 
   const login = useCallback(
-    async (email: string, password: string) => {
-      const data = await authApi.login(email, password);
+    async (email: string, password: string, remember?: boolean) => {
+      const data = await authApi.login(email, password, remember);
       setUser(data.user);
       refreshUser();
       return data.user;
