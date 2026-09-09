@@ -1,7 +1,8 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
-import { useMemo } from "react";
+import { ChevronLeft, ChevronRight, FileText, ZoomIn, ZoomOut } from "lucide-react";
+import Image from "next/image";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Carousel, type CarouselApi, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import type { ScholarDocument } from "@/lib/api/documents";
@@ -28,6 +29,8 @@ export function DocumentPreviewCarousel({
   onPageFailed,
   onSwitchToData,
 }: DocumentPreviewCarouselProps) {
+  const [zoom, setZoom] = useState(1);
+
   const validCandidates = useMemo(() => {
     return candidatePageUrls.map((url, index) => ({ url, index })).filter(({ index }) => !failedPages[index]);
   }, [candidatePageUrls, failedPages]);
@@ -52,38 +55,83 @@ export function DocumentPreviewCarousel({
     }
   };
 
+  const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.25, 3));
+  const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.25, 0.75));
+  const handleZoomReset = () => setZoom(1);
+
   return (
     <div className="flex flex-col border-b border-border bg-neutral-900/5 p-3 sm:p-4 lg:col-span-5 lg:border-r lg:border-b-0">
-      <div className="mb-2.5 flex items-center justify-between">
-        <span className="text-xs font-semibold text-navy">
+      <div className="mb-2.5 flex items-center justify-between gap-2">
+        <span className="text-xs font-semibold text-navy truncate">
           Document Preview {hasMultiplePages && `(Page ${currentPage} of ${validCandidates.length})`}
         </span>
-        {hasMultiplePages && (
-          <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
+          {/* Zoom controls */}
+          <div className="flex items-center gap-0.5 rounded-lg border border-border bg-white p-0.5 shadow-2xs">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               size="icon-sm"
-              className="size-7! rounded-full bg-white!"
-              onClick={handlePrev}
-              disabled={!hasMultiplePages}
-              aria-label="Previous page"
+              className="size-6! rounded-md p-0"
+              onClick={handleZoomOut}
+              disabled={zoom <= 0.75}
+              title="Zoom out"
+              aria-label="Zoom out"
             >
-              <ChevronLeft className="size-3.5" />
+              <ZoomOut className="size-3.5 text-navy" />
             </Button>
             <Button
               type="button"
-              variant="outline"
-              size="icon-sm"
-              className="size-7! rounded-full bg-white!"
-              onClick={handleNext}
-              disabled={!hasMultiplePages}
-              aria-label="Next page"
+              variant="ghost"
+              size="sm"
+              className="h-6! px-1 text-[0.65rem]! font-semibold text-navy hover:bg-muted"
+              onClick={handleZoomReset}
+              title="Reset zoom"
+              aria-label="Reset zoom"
             >
-              <ChevronRight className="size-3.5" />
+              {Math.round(zoom * 100)}%
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className="size-6! rounded-md p-0"
+              onClick={handleZoomIn}
+              disabled={zoom >= 3}
+              title="Zoom in"
+              aria-label="Zoom in"
+            >
+              <ZoomIn className="size-3.5 text-navy" />
             </Button>
           </div>
-        )}
+
+          {hasMultiplePages && (
+            <div className="flex items-center gap-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-sm"
+                className="size-7! rounded-full bg-white!"
+                onClick={handlePrev}
+                disabled={!hasMultiplePages}
+                aria-label="Previous page"
+              >
+                <ChevronLeft className="size-3.5" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-sm"
+                className="size-7! rounded-full bg-white!"
+                onClick={handleNext}
+                disabled={!hasMultiplePages}
+                aria-label="Next page"
+              >
+                <ChevronRight className="size-3.5" />
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Carousel Container */}
@@ -109,13 +157,24 @@ export function DocumentPreviewCarousel({
                 return (
                   <CarouselItem key={`page-${url}`}>
                     <div className="flex max-h-[50vh] min-h-65 w-full items-center justify-center overflow-auto bg-neutral-100/50 p-2 sm:max-h-[62vh] sm:min-h-95">
-                      {/* biome-ignore lint/performance/noImgElement: dynamically loaded external PDF page previews from Cloudinary */}
-                      <img
-                        src={url}
-                        alt={`${doc.document_type} page ${index + 1}`}
-                        className="max-h-[48vh] max-w-full rounded-md object-contain shadow-sm sm:max-h-[60vh]"
-                        onError={() => onPageFailed(index)}
-                      />
+                      <div
+                        style={{
+                          transform: `scale(${zoom})`,
+                          transformOrigin: "center center",
+                          transition: "transform 0.15s ease-out",
+                        }}
+                        className="flex items-center justify-center max-w-full max-h-full"
+                      >
+                        <Image
+                          src={url}
+                          alt={`${doc.document_type} page ${index + 1}`}
+                          width={800}
+                          height={1100}
+                          unoptimized
+                          className="max-h-[48vh] max-w-full rounded-md object-contain shadow-sm sm:max-h-[60vh]"
+                          onError={() => onPageFailed(index)}
+                        />
+                      </div>
                     </div>
                   </CarouselItem>
                 );

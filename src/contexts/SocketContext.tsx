@@ -82,14 +82,24 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           reconnectionDelayMax: 5000,
         });
 
+        let pingTimer: NodeJS.Timeout | null = null;
+
         socketInstance.on("connect", () => {
           if (!isMounted) return;
           setIsConnected(true);
           console.log(`[Socket] Connected: ${socketInstance.id} (User: ${userId}, Role: ${userRole})`);
+
+          if (pingTimer) clearInterval(pingTimer);
+          pingTimer = setInterval(() => {
+            if (socketInstance.connected) {
+              socketInstance.emit("ping");
+            }
+          }, 25000);
         });
 
         socketInstance.on("disconnect", (reason) => {
           if (!isMounted) return;
+          if (pingTimer) clearInterval(pingTimer);
           setIsConnected(false);
           console.warn(`[Socket] Disconnected (Reason: ${reason})`);
         });

@@ -33,11 +33,22 @@ export function useChatSocket({
   useEffect(() => {
     if (!socket) return;
 
-    if (activeId !== null) {
-      const convoId = Number(activeId);
-      socket.emit("chat:join_conversation", { conversationId: convoId });
-      socket.emit("chat:join_room", { conversationId: convoId });
-    }
+    const joinCurrentRoom = () => {
+      if (activeIdRef.current !== null) {
+        const convoId = Number(activeIdRef.current);
+        socket.emit("chat:join_conversation", { conversationId: convoId });
+        socket.emit("chat:join_room", { conversationId: convoId });
+      }
+    };
+
+    joinCurrentRoom();
+
+    const handleConnect = () => {
+      joinCurrentRoom();
+      onRefreshConvos();
+    };
+
+    socket.on("connect", handleConnect);
 
     const handleNewMessage = (msg: MessageItem) => {
       if (Number(msg.conversation_id) === Number(activeIdRef.current)) {
@@ -108,6 +119,7 @@ export function useChatSocket({
         socket.emit("chat:leave_conversation", { conversationId: convoId });
         socket.emit("chat:leave_room", { conversationId: convoId });
       }
+      socket.off("connect", handleConnect);
       socket.off("chat:new_message", handleNewMessage);
       socket.off("chat:typing", handleTyping);
       socket.off("chat:messages_read", handleRead);

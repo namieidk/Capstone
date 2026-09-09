@@ -20,6 +20,11 @@ export function GradeItemsTable({
   onRemoveSubject,
   onItemChange,
 }: GradeItemsTableProps) {
+  const hasCodes = gradeItems.some((i) => Boolean(i.subject_code?.trim()));
+  const hasUnits = gradeItems.some(
+    (i) => i.units !== undefined && i.units !== null && String(i.units) !== "" && Number(i.units) > 0,
+  );
+
   return (
     <div className="rounded-xl border border-border bg-white p-4 shadow-xs">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -59,14 +64,16 @@ export function GradeItemsTable({
                     <span className="flex size-5 shrink-0 items-center justify-center rounded-full border border-border bg-white text-[0.65rem] font-bold text-navy">
                       {index + 1}
                     </span>
-                    <Input
-                      value={item.subject_code}
-                      disabled={isReadOnly}
-                      onChange={(e) => onItemChange(item.id, "subject_code", e.target.value)}
-                      placeholder="Code (e.g. MATH 101)"
-                      className="h-8! w-32! shrink-0 bg-white! text-xs!"
-                      title="Subject Code"
-                    />
+                    {(hasCodes || !isReadOnly) && (
+                      <Input
+                        value={item.subject_code}
+                        disabled={isReadOnly}
+                        onChange={(e) => onItemChange(item.id, "subject_code", e.target.value)}
+                        placeholder="Code (e.g. MATH 101)"
+                        className="h-8! w-32! shrink-0 bg-white! text-xs!"
+                        title="Subject Code"
+                      />
+                    )}
                   </div>
                   {!isReadOnly && (
                     <button
@@ -90,21 +97,23 @@ export function GradeItemsTable({
                   title="Subject Title"
                 />
 
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center justify-between rounded-md border border-border bg-white px-2.5 py-1">
-                    <span className="text-[0.65rem] font-semibold text-muted-foreground uppercase">Units</span>
-                    <Input
-                      type="number"
-                      step="0.5"
-                      min="0.5"
-                      max="10"
-                      value={item.units}
-                      disabled={isReadOnly}
-                      onChange={(e) => onItemChange(item.id, "units", Number(e.target.value))}
-                      placeholder="Units"
-                      className="h-6! w-16! border-0! bg-transparent! p-0! text-right font-medium text-navy text-xs! focus-visible:ring-0!"
-                    />
-                  </div>
+                <div className={`grid ${hasUnits ? "grid-cols-2" : "grid-cols-1"} gap-2`}>
+                  {hasUnits && (
+                    <div className="flex items-center justify-between rounded-md border border-border bg-white px-2.5 py-1">
+                      <span className="text-[0.65rem] font-semibold text-muted-foreground uppercase">Units</span>
+                      <Input
+                        type="number"
+                        step="0.5"
+                        min="0.5"
+                        max="10"
+                        value={item.units}
+                        disabled={isReadOnly}
+                        onChange={(e) => onItemChange(item.id, "units", Number(e.target.value))}
+                        placeholder="Units"
+                        className="h-6! w-16! border-0! bg-transparent! p-0! text-right font-medium text-navy text-xs! focus-visible:ring-0!"
+                      />
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between rounded-md border border-border bg-white px-2.5 py-1">
                     <span className="text-[0.65rem] font-semibold text-muted-foreground uppercase">Grade</span>
@@ -128,14 +137,16 @@ export function GradeItemsTable({
               {/* Desktop Row View (sm and up) */}
               <div className="hidden items-center gap-2 rounded-lg border border-border bg-muted/40 p-2 text-xs sm:flex">
                 <span className="w-5 text-center text-[0.7rem] font-semibold text-muted-foreground">{index + 1}</span>
-                <Input
-                  value={item.subject_code}
-                  disabled={isReadOnly}
-                  onChange={(e) => onItemChange(item.id, "subject_code", e.target.value)}
-                  placeholder="Code"
-                  className="h-8! w-24! shrink-0 bg-white! text-xs! sm:text-xs!"
-                  title="Subject Code"
-                />
+                {(hasCodes || !isReadOnly) && (
+                  <Input
+                    value={item.subject_code}
+                    disabled={isReadOnly}
+                    onChange={(e) => onItemChange(item.id, "subject_code", e.target.value)}
+                    placeholder="Code"
+                    className="h-8! w-24! shrink-0 bg-white! text-xs! sm:text-xs!"
+                    title="Subject Code"
+                  />
+                )}
                 <Input
                   value={item.subject_name}
                   disabled={isReadOnly}
@@ -144,18 +155,20 @@ export function GradeItemsTable({
                   className="h-8! min-w-0 flex-1 bg-white! text-xs! sm:text-xs!"
                   title="Subject Title"
                 />
-                <Input
-                  type="number"
-                  step="0.5"
-                  min="0.5"
-                  max="10"
-                  value={item.units}
-                  disabled={isReadOnly}
-                  onChange={(e) => onItemChange(item.id, "units", Number(e.target.value))}
-                  placeholder="Units"
-                  className="h-8! w-16! shrink-0 bg-white! text-center text-xs! sm:text-xs!"
-                  title="Credits / Units"
-                />
+                {hasUnits && (
+                  <Input
+                    type="number"
+                    step="0.5"
+                    min="0.5"
+                    max="10"
+                    value={item.units}
+                    disabled={isReadOnly}
+                    onChange={(e) => onItemChange(item.id, "units", Number(e.target.value))}
+                    placeholder="Units"
+                    className="h-8! w-16! shrink-0 bg-white! text-center text-xs! sm:text-xs!"
+                    title="Credits / Units"
+                  />
+                )}
                 <Input
                   type="number"
                   step="0.1"
