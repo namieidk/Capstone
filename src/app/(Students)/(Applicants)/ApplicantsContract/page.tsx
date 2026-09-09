@@ -44,12 +44,20 @@ export default function ApplicantsContractPage() {
   // Signing promotes APPLICANT → SCHOLAR: sync auth state, then route by
   // the fresh role instead of the stale pre-sign one.
   async function handleSigned() {
-    await refreshUser();
-    try {
-      const me = await getMe();
-      router.push(me.role === "SCHOLAR" ? "/scholardashboard" : "/ApplicantsDashboard");
-    } catch {
-      fetchContracts();
+    const freshUser = await refreshUser();
+    if (freshUser?.role === "SCHOLAR") {
+      window.location.href = "/scholardashboard";
+    } else {
+      try {
+        const me = await getMe();
+        if (me.role === "SCHOLAR") {
+          window.location.href = "/scholardashboard";
+        } else {
+          router.push("/ApplicantsDashboard");
+        }
+      } catch {
+        fetchContracts();
+      }
     }
   }
 

@@ -14,9 +14,15 @@ interface ApplicantDocumentsListProps {
   applicationId: number;
   refreshToken: number;
   onVerify: (doc: ScholarDocument) => void;
+  onDocumentsLoaded?: (docs: ScholarDocument[]) => void;
 }
 
-export function ApplicantDocumentsList({ applicationId, refreshToken, onVerify }: ApplicantDocumentsListProps) {
+export function ApplicantDocumentsList({
+  applicationId,
+  refreshToken,
+  onVerify,
+  onDocumentsLoaded,
+}: ApplicantDocumentsListProps) {
   const [docs, setDocs] = useState<ScholarDocument[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -29,7 +35,10 @@ export function ApplicantDocumentsList({ applicationId, refreshToken, onVerify }
     setError("");
     getApplicationDocuments(applicationId)
       .then((rows) => {
-        if (!cancelled) setDocs(rows);
+        if (!cancelled) {
+          setDocs(rows);
+          onDocumentsLoaded?.(rows);
+        }
       })
       .catch((err: unknown) => {
         if (!cancelled) setError(err instanceof ApiError ? err.message : "Failed to load documents.");

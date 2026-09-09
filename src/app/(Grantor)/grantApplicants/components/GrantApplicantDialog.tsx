@@ -1,7 +1,7 @@
 "use client";
 
-import { ArrowRight, CalendarClock } from "lucide-react";
-import { useState } from "react";
+import { AlertCircle, ArrowRight, CalendarClock } from "lucide-react";
+import { useEffect, useState } from "react";
 import { ApplicantDocumentsList } from "@/app/(Coordinator)/CoordinatorApplicants/components/ApplicantDocumentsList";
 import {
   acceptWarning,
@@ -25,7 +25,7 @@ interface GrantApplicantDialogProps {
   acting: boolean;
   actionError: string | null;
   onClose: () => void;
-  onMoveStage: (id: number, stage: Stage, rejectionReason?: string) => void;
+  onMoveStage: (id: number, stage: Stage, rejectionReason?: string, confirmWithoutMeeting?: boolean) => void;
   onStagesChanged: (id: number, stage: Stage) => void;
   onMeetingScheduled: () => void;
 }
@@ -44,13 +44,24 @@ export function GrantApplicantDialog({
   const [confirmingAccept, setConfirmingAccept] = useState(false);
   const [docsToken, setDocsToken] = useState(0);
   const [verifyingDoc, setVerifyingDoc] = useState<ScholarDocument | null>(null);
+  const [loadedDocs, setLoadedDocs] = useState<ScholarDocument[] | null>(null);
   const [scheduling, setScheduling] = useState(false);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: applicant.id and applicant.stage intentionally reset dialog confirmation state on applicant or stage change
+  useEffect(() => {
+    setLoadedDocs(null);
+    setConfirmingAccept(false);
+    setConfirmingReject(false);
+    setRejectReason("");
+    setScheduling(false);
+  }, [applicant?.id, applicant?.stage]);
 
   function handleClose() {
     setConfirmingReject(false);
     setRejectReason("");
     setConfirmingAccept(false);
     setVerifyingDoc(null);
+    setLoadedDocs(null);
     setScheduling(false);
     onClose();
   }
@@ -66,6 +77,12 @@ export function GrantApplicantDialog({
     onMeetingScheduled();
   }
 
+  const isDocsLoading = loadedDocs === null;
+  const hasNoDocs = loadedDocs !== null ? loadedDocs.length === 0 : (applicant?.documentsCount ?? 0) === 0;
+  const hasConfirmedDocs = Boolean(
+    loadedDocs?.some((d) => d.status === "STUDENT_CONFIRMED" || d.status === "VERIFIED"),
+  );
+  const canPassToInterview = !isDocsLoading && !hasNoDocs && hasConfirmedDocs;
   const canSchedule = applicant !== null && ["Submitted", "Under review", "Interview"].includes(applicant.stage);
 
   return (
@@ -111,6 +128,7 @@ export function GrantApplicantDialog({
                   applicationId={applicant.id}
                   refreshToken={docsToken}
                   onVerify={setVerifyingDoc}
+                  onDocumentsLoaded={setLoadedDocs}
                 />
               </div>
               {actionError && (
@@ -130,15 +148,39 @@ export function GrantApplicantDialog({
                   </Button>
                 )}
                 {applicant.stage !== "Interview" && applicant.stage !== "Accepted" && (
-                  <Button
-                    type="button"
-                    className="h-11 text-sm!"
-                    disabled={acting}
-                    onClick={() => onMoveStage(applicant.id, "Interview")}
-                  >
-                    Pass to Interview
-                    <ArrowRight className="size-4" />
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    {hasNoDocs && !isDocsLoading && (
+                      <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+                        <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                        <span>Cannot pass applicant to interview: No documents have been submitted yet.</span>
+                      </div>
+                    )}
+                    {!hasNoDocs && !hasConfirmedDocs && !isDocsLoading && (
+                      <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+                        <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                        <span>
+                          Cannot pass applicant to interview: Submitted document(s) have not been confirmed by the
+                          applicant yet (awaiting student review).
+                        </span>
+                      </div>
+                    )}
+                    <Button
+                      type="button"
+                      className="h-11 text-sm!"
+                      disabled={acting || !canPassToInterview}
+                      title={
+                        hasNoDocs
+                          ? "Applicant has not submitted any documents yet"
+                          : !hasConfirmedDocs
+                            ? "Applicant must review and confirm their document first"
+                            : undefined
+                      }
+                      onClick={() => onMoveStage(applicant.id, "Interview")}
+                    >
+                      Pass to Interview
+                      <ArrowRight className="size-4" />
+                    </Button>
+                  </div>
                 )}
                 {(applicant.stage === "Interview" || applicant.stage === "Endorsed") && !confirmingAccept && (
                   <Button
@@ -155,7 +197,7 @@ export function GrantApplicantDialog({
                     <ArrowRight className="size-4" />
                   </Button>
                 )}
-                {confirmingAccept && (
+                {(applicant.stage === "Interview" || applicant.stage === "Endorsed") && confirmingAccept && (
                   <>
                     <p className="rounded-md bg-warn-bg px-3 py-2.5 text-sm text-warn">
                       {acceptWarning(applicant.hasInterview, applicant.interviewAt)} Proceed with approval anyway?
@@ -174,7 +216,10 @@ export function GrantApplicantDialog({
                         type="button"
                         className="h-11 flex-1 text-sm!"
                         disabled={acting}
-                        onClick={() => onMoveStage(applicant.id, "Accepted")}
+                        onClick={async () => {
+                          setConfirmingAccept(false);
+                          await onMoveStage(applicant.id, "Accepted", undefined, true);
+                        }}
                       >
                         Proceed anyway
                       </Button>

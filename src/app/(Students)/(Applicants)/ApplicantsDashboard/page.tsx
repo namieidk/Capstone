@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type React from "react";
+import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSidebar } from "../../../../components/SidebarContext";
 import {
@@ -103,6 +103,12 @@ function QuickLink({ icon, label, href }: QuickLinkProps) {
 export default function DashboardPage() {
   const { toggleMobile } = useSidebar();
   const { user } = useAuth();
+
+  useEffect(() => {
+    if (user?.role === "SCHOLAR") {
+      window.location.href = "/scholardashboard";
+    }
+  }, [user?.role]);
 
   const firstName = user?.first_name?.trim() ? user.first_name : SCHOLAR.name.split(" ")[0];
 

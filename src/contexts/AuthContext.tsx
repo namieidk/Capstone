@@ -17,7 +17,7 @@ interface AuthContextValue {
     phone_number: string;
   }) => Promise<authApi.User>;
   logout: () => Promise<void>;
-  refreshUser: () => Promise<void>;
+  refreshUser: () => Promise<authApi.User | null>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -31,26 +31,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const data = await authApi.getMe();
       setUser(data);
+      return data;
     } catch {
       setUser(null);
+      return null;
     }
   }, []);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const isRemembered = localStorage.getItem("vls_remember") === "true";
-      const isSessionActive = sessionStorage.getItem("vls_session_active") === "true";
-
-      // If user did NOT choose "Keep me signed in" and this is a brand new session/window,
-      // invalidate any residual cookie so browser session restore doesn't bypass it.
-      if (!isRemembered && !isSessionActive) {
-        authApi.logout().finally(() => {
-          setUser(null);
-          setLoading(false);
-        });
-        return;
-      }
-    }
     refreshUser().finally(() => setLoading(false));
   }, [refreshUser]);
 

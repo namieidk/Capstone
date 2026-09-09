@@ -97,7 +97,7 @@ export default function AdminEmployeePage() {
     setAddError("");
     try {
       await createStaff(addFields);
-      showToast("Employee added.");
+      showToast("Employee account created successfully.");
       setShowAddModal(false);
       setAddFields(INITIAL_ADD_FIELDS);
       await fetchStaff();
@@ -115,7 +115,7 @@ export default function AdminEmployeePage() {
     setActionError("");
     try {
       await resetPassword(selected.id, newPassword);
-      showToast(`Password reset for ${selected.name}.`);
+      showToast(`Password successfully reset for ${selected.name}.`);
       setSelected(null);
     } catch (err) {
       console.error("Failed to reset password:", err);
@@ -132,7 +132,7 @@ export default function AdminEmployeePage() {
     setActionError("");
     try {
       await updateUserStatus(selected.id, target);
-      showToast(target ? "Employee activated." : "Employee deactivated.");
+      showToast(target ? "Employee account activated." : "Employee account deactivated.");
       setSelected(null);
       await fetchStaff();
     } catch (err) {

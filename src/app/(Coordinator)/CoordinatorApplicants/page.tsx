@@ -45,7 +45,9 @@ export default function ApplicantsPage() {
     setLoadError("");
     try {
       const rows = await listApplications();
-      setApplicants(rows.map(mapApplicationToApplicant));
+      const mapped = rows.map(mapApplicationToApplicant);
+      setApplicants(mapped);
+      setSelected((prev) => (prev ? (mapped.find((a) => a.id === prev.id) ?? prev) : null));
     } catch (err) {
       console.error("Failed to load applicants:", err);
       setLoadError(err instanceof ApiError ? err.message : "Failed to load applicants.");
@@ -175,6 +177,7 @@ export default function ApplicantsPage() {
         }}
         onMoveStage={moveStage}
         onStagesChanged={updateApplicantStage}
+        onMeetingScheduled={fetchApplicants}
       />
       <MeetingSafeguardDialog
         open={safeguardState.open}

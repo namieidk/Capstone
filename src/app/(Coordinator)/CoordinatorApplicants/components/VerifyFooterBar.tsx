@@ -9,6 +9,8 @@ interface VerifyFooterBarProps {
   submitting: boolean;
   requestingChanges: boolean;
   changeReason: string;
+  canVerify?: boolean;
+  verifyDisabledReason?: string;
   onReasonChange: (value: string) => void;
   onClose: () => void;
   onStartRequestChanges: () => void;
@@ -21,6 +23,8 @@ export function VerifyFooterBar({
   submitting,
   requestingChanges,
   changeReason,
+  canVerify = true,
+  verifyDisabledReason,
   onReasonChange,
   onClose,
   onStartRequestChanges,
@@ -43,7 +47,10 @@ export function VerifyFooterBar({
         <p className="text-center text-[0.7rem] text-muted-foreground sm:text-left sm:text-xs">
           {requestingChanges
             ? "The student will be asked to re-upload this document."
-            : "Confirming verifies the grades and updates the application."}
+            : !canVerify
+              ? (verifyDisabledReason ??
+                "The applicant must review and confirm this document before coordinator verification.")
+              : "Confirming verifies the grades and updates the application."}
         </p>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
           {requestingChanges ? (
@@ -93,10 +100,17 @@ export function VerifyFooterBar({
                 type="button"
                 className="col-span-2 h-9 px-3 text-xs! shadow-xs sm:col-span-1 sm:h-9.5 sm:px-5"
                 onClick={onVerify}
-                disabled={submitting}
+                disabled={submitting || !canVerify}
+                title={
+                  !canVerify
+                    ? (verifyDisabledReason ?? "Applicant must review and confirm their grades before verification.")
+                    : undefined
+                }
               >
                 <Check className="size-3.5 shrink-0" />
-                <span className="truncate">{submitting ? "Verifying..." : "Confirm & Verify"}</span>
+                <span className="truncate">
+                  {submitting ? "Verifying..." : !canVerify ? "Awaiting Student Confirmation" : "Confirm & Verify"}
+                </span>
               </Button>
             </>
           )}

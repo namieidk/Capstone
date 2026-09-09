@@ -67,7 +67,7 @@ export default function GradingSystemsPage() {
   async function handleCreate(input: SchoolGradingInput): Promise<void> {
     try {
       await createSchoolGrading(input);
-      showToast("Grading system added.");
+      showToast("Grading system added successfully.");
       setShowAdd(false);
       await fetchGradings();
     } catch (err) {
@@ -79,7 +79,7 @@ export default function GradingSystemsPage() {
   async function handleUpdate(id: number, input: Partial<SchoolGradingInput>): Promise<void> {
     try {
       await updateSchoolGrading(id, input);
-      showToast("Grading system updated.");
+      showToast("Grading system updated successfully.");
       await fetchGradings();
     } catch (err) {
       console.error("Failed to update grading system:", err);
@@ -90,8 +90,9 @@ export default function GradingSystemsPage() {
   async function handleDelete(id: number): Promise<void> {
     try {
       await deleteSchoolGrading(id);
-      showToast("Grading system removed.");
+      showToast("Grading system removed successfully.");
       setSelected(null);
+
       await fetchGradings();
     } catch (err) {
       console.error("Failed to delete grading system:", err);

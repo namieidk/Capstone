@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { formatStageLabel } from "@/lib/formatters";
 import { useAuth } from "./AuthContext";
 import { useSocket } from "./SocketContext";
 
@@ -97,14 +98,28 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     if (!socket || !user) return;
 
     const isStaff = ["ADMIN", "COORDINATOR", "GRANTOR"].includes(user.role || "");
+    const staffApplicantLink = user.role === "GRANTOR" ? "/grantApplicants" : "/CoordinatorApplicants";
+    const staffMeetingLink = user.role === "GRANTOR" ? "/grantMeeting" : "/CoordinatorMeeting";
+    const staffMessageLink = user.role === "GRANTOR" ? "/grantMessage" : "/CoordinatorMessage";
 
-    const handleRolePromoted = () => {
-      addNotification({
-        title: "Role Promoted 🎉",
-        message: "Congratulations! You have been officially promoted to Scholar!",
-        category: "system",
-        link: "/scholardashboard",
-      });
+    const handleRolePromoted = (data?: { userId?: number; studentName?: string }) => {
+      if (isStaff) {
+        addNotification({
+          title: "Applicant Promoted 🎉",
+          message: data?.studentName
+            ? `${data.studentName} has signed their scholarship agreement and is now officially a Scholar.`
+            : "An applicant has signed their scholarship agreement and is now officially a Scholar.",
+          category: "system",
+          link: staffApplicantLink,
+        });
+      } else {
+        addNotification({
+          title: "Role Promoted 🎉",
+          message: "Congratulations! You have been officially promoted to Scholar!",
+          category: "system",
+          link: "/scholardashboard",
+        });
+      }
     };
 
     const handleAppSubmitted = (data: { trackName?: string }) => {
@@ -113,7 +128,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           title: "New Application Submitted",
           message: `A new application was submitted for ${data?.trackName || "scholarship track"}.`,
           category: "application",
-          link: "/CoordinatorApplicants",
+          link: staffApplicantLink,
         });
       }
     };
@@ -122,44 +137,76 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       if (isStaff) {
         addNotification({
           title: "Documents Confirmed",
-          message: `${data?.studentName || "Applicant"} confirmed their submitted documents.`,
+          message: `${data?.studentName || "An applicant"} confirmed their document details.`,
           category: "document",
-          link: "/CoordinatorApplicants",
+          link: staffApplicantLink,
         });
       }
     };
 
     const handleDocChanges = (data: { reason?: string }) => {
-      addNotification({
-        title: "Document Revision Needed",
-        message: data?.reason || "Please review your documents and re-upload required files.",
-        category: "document",
-      });
+      if (isStaff) {
+        addNotification({
+          title: "Document Revision Requested",
+          message: "Revisions were requested for applicant documents.",
+          category: "document",
+          link: staffApplicantLink,
+        });
+      } else {
+        addNotification({
+          title: "Document Revision Needed",
+          message: data?.reason || "Please review your documents and re-upload required files.",
+          category: "document",
+          link: "/ApplicantsApplication",
+        });
+      }
     };
 
     const handleDocVerified = () => {
       addNotification({
         title: "Documents Verified",
-        message: "Your documents were verified! Application moved to Under Review.",
+        message: isStaff
+          ? "Applicant documents verified. Application moved to Under Review."
+          : "Your documents have been verified! Your application is now Under Review.",
         category: "document",
+        link: isStaff ? staffApplicantLink : "/ApplicantsApplication",
       });
     };
 
-    const handleStageUpdated = (data: { newStage?: string; status?: string }) => {
-      const label = data?.newStage || data?.status;
+    const handleStageUpdated = (data: { stage?: string; newStage?: string; status?: string; studentName?: string }) => {
+      const rawStage = data?.stage || data?.newStage;
+      if (rawStage === "Document Verification Complete") {
+        return;
+      }
+      const stageLabel = formatStageLabel(rawStage || data?.status);
       addNotification({
         title: "Milestone Updated",
-        message: `Application progress updated: ${label || "Review stage"}`,
+        message: isStaff
+          ? `${data?.studentName ? `${data.studentName}'s application` : "Application"} moved to ${stageLabel}.`
+          : `Your application has moved to ${stageLabel}.`,
         category: "application",
+        link: isStaff ? staffApplicantLink : "/ApplicantsDashboard",
       });
     };
 
-    const handleInterviewScheduled = () => {
-      addNotification({
-        title: "Interview Scheduled",
-        message: "An interview meeting has been scheduled for your application.",
-        category: "interview",
-      });
+    const handleInterviewScheduled = (data?: { studentName?: string }) => {
+      if (isStaff) {
+        addNotification({
+          title: "Interview Scheduled",
+          message: data?.studentName
+            ? `An interview meeting has been scheduled for ${data.studentName}.`
+            : "An interview meeting has been scheduled with the applicant.",
+          category: "interview",
+          link: staffMeetingLink,
+        });
+      } else {
+        addNotification({
+          title: "Interview Scheduled",
+          message: "An interview meeting has been scheduled for your application.",
+          category: "interview",
+          link: "/scholarMeeting",
+        });
+      }
     };
 
     const handleInterviewRescheduleReq = () => {
@@ -168,24 +215,49 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           title: "Interview Reschedule Requested",
           message: "A candidate requested to reschedule their interview meeting.",
           category: "interview",
+          link: staffMeetingLink,
         });
       }
     };
 
-    const handleContractCreated = () => {
-      addNotification({
-        title: "Scholarship Agreement Ready",
-        message: "Your scholarship agreement is ready for review and signing!",
-        category: "contract",
-      });
+    const handleContractCreated = (data?: { studentName?: string }) => {
+      if (isStaff) {
+        addNotification({
+          title: "Scholarship Agreement Ready",
+          message: data?.studentName
+            ? `A scholarship agreement has been prepared for ${data.studentName}.`
+            : "A scholarship agreement has been prepared for an applicant.",
+          category: "contract",
+          link: staffApplicantLink,
+        });
+      } else {
+        addNotification({
+          title: "Scholarship Agreement Ready",
+          message: "Your scholarship agreement is ready for review and signing!",
+          category: "contract",
+          link: "/ApplicantsContract",
+        });
+      }
     };
 
-    const handleContractSigned = () => {
-      addNotification({
-        title: "Agreement Signed",
-        message: "The scholarship agreement has been successfully signed.",
-        category: "contract",
-      });
+    const handleContractSigned = (data?: { studentName?: string }) => {
+      if (isStaff) {
+        addNotification({
+          title: "Agreement Signed",
+          message: data?.studentName
+            ? `${data.studentName} has signed their scholarship agreement.`
+            : "The scholarship agreement has been signed by the applicant.",
+          category: "contract",
+          link: staffApplicantLink,
+        });
+      } else {
+        addNotification({
+          title: "Agreement Signed",
+          message: "You have successfully signed your scholarship agreement!",
+          category: "contract",
+          link: "/ApplicantsContract",
+        });
+      }
     };
 
     const handleForumComment = (data: { postTitle?: string; authorName?: string }) => {
@@ -203,7 +275,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           title: "Message Access Request",
           message: "A scholar requested permission to start a direct message thread with you.",
           category: "chat",
-          link: "/grantMessage",
+          link: staffMessageLink,
         });
       }
     };

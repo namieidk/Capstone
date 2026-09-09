@@ -28,10 +28,17 @@ export interface ScholarProfileSummary {
   first_name: string;
   last_name: string;
   student_number?: string | null;
+  student_address?: string | null;
+  phone_number?: string | null;
   scholarship_track?: string | null;
   course_of_study?: string | null;
   school_name?: string | null;
+  school_address?: string | null;
+  relative_employee?: string | null;
   current_year_level?: number | null;
+  _count?: {
+    documents: number;
+  };
 }
 
 // GET /applications returns each Application with its scholar_profile

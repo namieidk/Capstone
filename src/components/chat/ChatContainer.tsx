@@ -97,7 +97,16 @@ export function ChatContainer({ title = "Messages", subtitle = "Chat directly in
     setLoadingMessages(true);
     try {
       const data = await getMessages(conversationId);
-      setMessages(data.messages || []);
+      const list = data.messages || [];
+      const seen = new Set<string>();
+      const unique = list.filter((m) => {
+        if (m.message_id === undefined || m.message_id === null) return true;
+        const id = String(m.message_id);
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      });
+      setMessages(unique);
       await markAsRead(conversationId);
       setConvos((prev) => prev.map((c) => (c.conversation_id === conversationId ? { ...c, unread_count: 0 } : c)));
     } catch (err) {
@@ -148,7 +157,10 @@ export function ChatContainer({ title = "Messages", subtitle = "Chat directly in
 
     try {
       const newMsg = await apiSendMessage(activeId, text);
-      setMessages((prev) => [...prev, newMsg]);
+      setMessages((prev) => {
+        if (prev.some((m) => String(m.message_id) === String(newMsg.message_id))) return prev;
+        return [...prev, newMsg];
+      });
       setDraft("");
       setConvos((prev) =>
         prev.map((c) =>

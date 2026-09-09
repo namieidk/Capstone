@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Eye, FileText, RefreshCw, Trash2, UploadCloud, X } from "lucide-react";
+import { Check, Eye, FileText, Loader2, RefreshCw, Sparkles, Trash2, UploadCloud, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +64,7 @@ export function DocumentsStep({
   const [reviewTarget, setReviewTarget] = useState<ScholarDocument | null>(null);
   const replaceInputRef = useRef<HTMLInputElement>(null);
   const [replaceTarget, setReplaceTarget] = useState<number | null>(null);
+  const [confirmReplaceTarget, setConfirmReplaceTarget] = useState<ScholarDocument | null>(null);
 
   function pickFiles(list: FileList | null) {
     if (!list) return;
@@ -242,6 +243,7 @@ export function DocumentsStep({
               const meta = docStatusMeta(doc.status);
               const busy = actingId === doc.document_id;
               const confirmable = CONFIRMABLE.includes(doc.status);
+              const isLocked = doc.status === "STUDENT_CONFIRMED" || doc.status === "VERIFIED";
               return (
                 <div
                   key={doc.document_id}
@@ -258,15 +260,34 @@ export function DocumentsStep({
                       ) : null}
                     </p>
                     <p className="mt-0.5 text-xs text-muted-foreground">Uploaded {formatDateTime(doc.uploaded_at)}</p>
+                    {doc.status === "PENDING" && (
+                      <p className="mt-1 flex items-center gap-1.5 text-xs text-sky-700 dark:text-sky-400">
+                        <Sparkles className="size-3 text-amber-500 animate-pulse" />
+                        <span>Extracting grades with AI (15–30s). Hang tight!</span>
+                      </p>
+                    )}
                     {doc.status === "NEEDS_REUPLOAD" && doc.rejection_reason && (
                       <p className="mt-1 text-xs font-medium text-destructive">Coordinator: {doc.rejection_reason}</p>
                     )}
                   </div>
-                  <Badge variant={meta.variant} className="h-6 px-2.5 text-xs!">
+                  <Badge variant={meta.variant} className="h-6 px-2.5 text-xs! gap-1.5">
+                    {doc.status === "PENDING" && <Loader2 className="size-3 animate-spin text-navy" />}
                     {meta.label}
                   </Badge>
                   <div className="flex items-center gap-1.5">
-                    {confirmable ? (
+                    {doc.status === "PENDING" ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-1.5 text-xs! text-navy border-sky-300 bg-sky-50/50 hover:bg-sky-100/60 dark:border-sky-800 dark:bg-sky-950/30"
+                        onClick={() => setReviewTarget(doc)}
+                        disabled={busy}
+                      >
+                        <Loader2 className="size-3.5 animate-spin text-sky-600" />
+                        Analyzing...
+                      </Button>
+                    ) : confirmable ? (
                       <Button
                         type="button"
                         size="sm"
@@ -289,7 +310,7 @@ export function DocumentsStep({
                         View Data
                       </Button>
                     )}
-                    {doc.status !== "VERIFIED" && (
+                    {!isLocked && (
                       <Button
                         type="button"
                         variant="ghost"
@@ -297,15 +318,14 @@ export function DocumentsStep({
                         aria-label={`Replace ${doc.document_type} (select file or files)`}
                         title="Replace file(s)"
                         onClick={() => {
-                          setReplaceTarget(doc.document_id);
-                          replaceInputRef.current?.click();
+                          setConfirmReplaceTarget(doc);
                         }}
                         disabled={busy}
                       >
                         <RefreshCw className="size-4" />
                       </Button>
                     )}
-                    {doc.status !== "VERIFIED" && (
+                    {!isLocked && (
                       <Button
                         type="button"
                         variant="ghost"
@@ -344,12 +364,36 @@ export function DocumentsStep({
       </div>
 
       <ConfirmDialog
+        open={confirmReplaceTarget !== null}
+        onOpenChange={(open) => !open && setConfirmReplaceTarget(null)}
+        title="Replace document?"
+        description={
+          confirmReplaceTarget
+            ? confirmReplaceTarget.status === "PASSED_PRECHECK"
+              ? `${confirmReplaceTarget.document_type} has passed AI pre-check. Uploading a new file will discard current extracted grades and restart AI extraction with the new file. Are you sure you want to replace it?`
+              : `Uploading a new file will replace ${confirmReplaceTarget.document_type}. Do you want to proceed?`
+            : "Uploading a new file will replace this document."
+        }
+        confirmLabel="Choose New File"
+        onConfirm={async () => {
+          if (!confirmReplaceTarget) return;
+          setReplaceTarget(confirmReplaceTarget.document_id);
+          setConfirmReplaceTarget(null);
+          setTimeout(() => {
+            replaceInputRef.current?.click();
+          }, 100);
+        }}
+      />
+
+      <ConfirmDialog
         open={deleteTarget !== null}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Delete document?"
+        title={deleteTarget?.status === "PASSED_PRECHECK" ? "Delete pre-checked document?" : "Delete document?"}
         description={
           deleteTarget
-            ? `${deleteTarget.document_type}${deleteTarget.file_name ? ` (${deleteTarget.file_name})` : ""} will be permanently removed.`
+            ? deleteTarget.status === "PASSED_PRECHECK"
+              ? `${deleteTarget.document_type}${deleteTarget.file_name ? ` (${deleteTarget.file_name})` : ""} has passed AI pre-check. Deleting it will permanently discard the extracted grades. You will need to upload and extract your document again.`
+              : `${deleteTarget.document_type}${deleteTarget.file_name ? ` (${deleteTarget.file_name})` : ""} will be permanently removed.`
             : "This document will be permanently removed."
         }
         confirmLabel="Delete"

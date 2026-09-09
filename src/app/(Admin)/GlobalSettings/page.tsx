@@ -43,14 +43,14 @@ export default function GlobalSettingsPage() {
   useSocketEvent<GlobalSettings>("settings:updated", (updated) => {
     if (updated) {
       setSettings(updated);
-      showToast("Global grade threshold was updated in real time.");
+      showToast("Global grade threshold has been updated in real-time.", "info");
     }
   });
 
   async function handleSave(threshold: number): Promise<void> {
     try {
       await updateSettings(threshold);
-      showToast("Grade threshold updated.");
+      showToast("Grade threshold saved successfully.");
       await fetchSettings(true);
     } catch (err) {
       console.error("Failed to update settings:", err);

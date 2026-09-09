@@ -67,7 +67,7 @@ export default function AdminProfilePage() {
       try {
         await uploadBanner(file);
         await refreshUser();
-        showToast("Banner updated.");
+        showToast("Banner image updated successfully.");
       } catch (err) {
         console.error("Banner upload failed:", err);
         showToast(err instanceof ApiError ? err.message : "Banner upload failed. Please try again.", "error");
@@ -87,7 +87,7 @@ export default function AdminProfilePage() {
       try {
         await uploadAvatar(file);
         await refreshUser();
-        showToast("Profile picture updated.");
+        showToast("Profile picture updated successfully.");
       } catch (err) {
         console.error("Avatar upload failed:", err);
         showToast(err instanceof ApiError ? err.message : "Avatar upload failed. Please try again.", "error");
@@ -107,7 +107,7 @@ export default function AdminProfilePage() {
         await updateMe(values);
         await refreshUser();
         setDrawerOpen(false);
-        showToast("Profile updated.");
+        showToast("Profile information saved successfully.");
       } catch (err) {
         console.error("Profile update failed:", err);
         setSaveError(err instanceof ApiError ? err.message : "Failed to save profile. Please try again.");

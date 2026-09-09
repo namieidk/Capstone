@@ -33,10 +33,7 @@ export default function NotFound() {
 
       {/* Header / Brand */}
       <header className="relative z-10 flex w-full max-w-5xl items-center justify-between py-4">
-        <Link
-          href="/"
-          className="flex items-center gap-2.5 transition-opacity hover:opacity-90"
-        >
+        <Link href="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-90">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-navy/10">
             <Image
               src="/logo_cropped_2656.png"
@@ -47,13 +44,9 @@ export default function NotFound() {
               className="size-6 object-contain"
             />
           </span>
-          <span className="text-lg font-bold tracking-tight text-navy">
-            ViaScholar
-          </span>
+          <span className="text-lg font-bold tracking-tight text-navy">ViaScholar</span>
         </Link>
-        <span className="text-xs font-semibold text-muted-foreground/80">
-          Status 404
-        </span>
+        <span className="text-xs font-semibold text-muted-foreground/80">Status 404</span>
       </header>
 
       {/* Center Card */}
@@ -61,12 +54,7 @@ export default function NotFound() {
         {/* Lottie Animation Display */}
         <div className="relative mb-3 flex size-60 items-center justify-center sm:size-72">
           {mounted ? (
-            <Lottie
-              src={searchAnimation}
-              loop={true}
-              autoplay={true}
-              className="size-full"
-            />
+            <Lottie src={searchAnimation} loop={true} autoplay={true} className="size-full" />
           ) : (
             <div className="size-48 animate-pulse rounded-full bg-line/40" />
           )}
@@ -78,12 +66,10 @@ export default function NotFound() {
         </span>
 
         {/* Heading & Details */}
-        <h1 className="mb-3 text-2xl font-bold tracking-tight text-navy sm:text-3xl md:text-4xl">
-          Searching in vain…
-        </h1>
+        <h1 className="mb-3 text-2xl font-bold tracking-tight text-navy sm:text-3xl md:text-4xl">Searching in vain…</h1>
         <p className="mb-8 max-w-md text-[0.92rem] leading-relaxed text-muted-foreground sm:text-[0.98rem]">
-          We searched through the records, but the page or document you&apos;re
-          looking for couldn&apos;t be found. It may have been moved or removed.
+          We searched through the records, but the page or document you&apos;re looking for couldn&apos;t be found. It
+          may have been moved or removed.
         </p>
 
         {/* Action Buttons */}
@@ -92,10 +78,7 @@ export default function NotFound() {
             asChild
             className="h-11 w-full rounded-full bg-navy px-6 text-[0.92rem] font-semibold text-white shadow-xs transition-all hover:bg-navy/90 sm:w-auto"
           >
-            <Link
-              href={homeHref}
-              className="flex items-center justify-center gap-2"
-            >
+            <Link href={homeHref} className="flex items-center justify-center gap-2">
               <Home className="size-4" />
               <span>{homeLabel}</span>
             </Link>

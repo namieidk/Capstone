@@ -7,11 +7,12 @@ import { DialogFooter } from "@/components/ui/dialog";
 interface DialogFooterBarProps {
   isReadOnly: boolean;
   submitting: boolean;
+  disabled?: boolean;
   onClose: () => void;
   onSubmit: () => void;
 }
 
-export function DialogFooterBar({ isReadOnly, submitting, onClose, onSubmit }: DialogFooterBarProps) {
+export function DialogFooterBar({ isReadOnly, submitting, disabled, onClose, onSubmit }: DialogFooterBarProps) {
   return (
     <DialogFooter className="shrink-0 border-t border-border bg-white px-4 py-3 sm:px-6 sm:py-3.5">
       <div className="flex w-full flex-col-reverse items-stretch justify-between gap-2.5 sm:flex-row sm:items-center sm:gap-3">
@@ -43,7 +44,8 @@ export function DialogFooterBar({ isReadOnly, submitting, onClose, onSubmit }: D
               type="button"
               className="h-9 px-3 text-xs! shadow-xs sm:h-9.5 sm:px-5"
               onClick={onSubmit}
-              disabled={submitting}
+              disabled={submitting || disabled}
+              title={disabled ? "Please wait for AI extraction to complete or enter grades manually" : undefined}
             >
               <Check className="size-3.5 shrink-0" />
               <span className="truncate">{submitting ? "Saving..." : "Confirm & Submit"}</span>

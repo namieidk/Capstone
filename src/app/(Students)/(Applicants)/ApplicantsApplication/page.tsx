@@ -88,12 +88,38 @@ export default function ApplicantsApplicationPage() {
   }, [fetchAll]);
 
   // Real-time lifecycle events for applicant application
+  useSocketEvent("document:ocr_completed", async () => {
+    await refreshDocuments();
+    showToast("AI extraction completed! Your grades are ready to review.");
+  });
   useSocketEvent("document:changes_requested", fetchAll);
   useSocketEvent("document:verified", fetchAll);
   useSocketEvent("application:stage_updated", fetchAll);
   useSocketEvent("interview:scheduled", fetchAll);
   useSocketEvent("interview:rescheduled", fetchAll);
   useSocketEvent("interview:cancelled", fetchAll);
+
+  // Auto-poll while any document is being analyzed by AI (status === "PENDING")
+  useEffect(() => {
+    const hasPending = documents.some((d) => d.status === "PENDING");
+    if (!hasPending) return;
+
+    let attempts = 0;
+    const interval = setInterval(async () => {
+      attempts++;
+      try {
+        const fresh = await getMyDocuments();
+        setDocuments(fresh);
+        if (!fresh.some((d) => d.status === "PENDING") || attempts >= 15) {
+          clearInterval(interval);
+        }
+      } catch {
+        // Silently retry
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [documents]);
 
   const prefill = useMemo(() => {
     const p = user?.scholar_profile;
@@ -138,28 +164,28 @@ export default function ApplicantsApplicationPage() {
       await refreshUser();
       await fetchAll();
       changeStep(2);
-    }, "Application submitted.");
+    }, "Application submitted successfully!");
   }
 
   async function handleUpload(files: File[], type: string): Promise<void> {
     await wrapAction(async () => {
       await uploadDocuments(files, type);
       await refreshDocuments();
-    }, "Documents uploaded.");
+    }, "Documents uploaded successfully!");
   }
 
   async function handleReplace(id: number, files: File[]): Promise<void> {
     await wrapAction(async () => {
       await replaceDocument(id, files);
       await refreshDocuments();
-    }, "Document replaced.");
+    }, "Document updated successfully!");
   }
 
   async function handleDelete(id: number): Promise<void> {
     await wrapAction(async () => {
       await deleteDocument(id);
       await refreshDocuments();
-    }, "Document deleted.");
+    }, "Document removed.");
   }
 
   async function handleConfirm(
@@ -173,7 +199,7 @@ export default function ApplicantsApplicationPage() {
     await wrapAction(async () => {
       await confirmDocument(id, data ?? {});
       await refreshDocuments();
-    }, "Document confirmed.");
+    }, "Document details confirmed successfully!");
   }
 
   function goTo(target: WizardStep) {

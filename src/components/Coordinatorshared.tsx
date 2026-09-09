@@ -605,6 +605,13 @@ export interface Applicant {
   profileId?: number | null;
   applied: string;
   stage: Stage;
+  studentNumber?: string | null;
+  studentAddress?: string | null;
+  phoneNumber?: string | null;
+  schoolName?: string | null;
+  schoolAddress?: string | null;
+  relativeEmployee?: string | null;
+  documentsCount?: number;
 }
 
 export interface ScheduledInterview {

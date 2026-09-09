@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Carousel, type CarouselApi, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import type { ScholarDocument } from "@/lib/api/documents";
@@ -20,7 +21,6 @@ interface DocumentPreviewCarouselProps {
 export function DocumentPreviewCarousel({
   document: doc,
   candidatePageUrls,
-  validPageUrls,
   failedPages,
   currentPage,
   carouselApi,
@@ -28,21 +28,45 @@ export function DocumentPreviewCarousel({
   onPageFailed,
   onSwitchToData,
 }: DocumentPreviewCarouselProps) {
+  const validCandidates = useMemo(() => {
+    return candidatePageUrls.map((url, index) => ({ url, index })).filter(({ index }) => !failedPages[index]);
+  }, [candidatePageUrls, failedPages]);
+
+  const hasMultiplePages = validCandidates.length > 1;
+
+  const handlePrev = () => {
+    if (!carouselApi) return;
+    if (carouselApi.canScrollPrev()) {
+      carouselApi.scrollPrev();
+    } else {
+      carouselApi.scrollTo(validCandidates.length - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (!carouselApi) return;
+    if (carouselApi.canScrollNext()) {
+      carouselApi.scrollNext();
+    } else {
+      carouselApi.scrollTo(0);
+    }
+  };
+
   return (
     <div className="flex flex-col border-b border-border bg-neutral-900/5 p-3 sm:p-4 lg:col-span-5 lg:border-r lg:border-b-0">
       <div className="mb-2.5 flex items-center justify-between">
         <span className="text-xs font-semibold text-navy">
-          Document Preview {validPageUrls.length > 1 && `(Page ${currentPage} of ${validPageUrls.length})`}
+          Document Preview {hasMultiplePages && `(Page ${currentPage} of ${validCandidates.length})`}
         </span>
-        {validPageUrls.length > 1 && (
+        {hasMultiplePages && (
           <div className="flex items-center gap-1">
             <Button
               type="button"
               variant="outline"
               size="icon-sm"
               className="size-7! rounded-full bg-white!"
-              onClick={() => carouselApi?.scrollPrev()}
-              disabled={!carouselApi?.canScrollPrev()}
+              onClick={handlePrev}
+              disabled={!hasMultiplePages}
               aria-label="Previous page"
             >
               <ChevronLeft className="size-3.5" />
@@ -52,8 +76,8 @@ export function DocumentPreviewCarousel({
               variant="outline"
               size="icon-sm"
               className="size-7! rounded-full bg-white!"
-              onClick={() => carouselApi?.scrollNext()}
-              disabled={!carouselApi?.canScrollNext()}
+              onClick={handleNext}
+              disabled={!hasMultiplePages}
               aria-label="Next page"
             >
               <ChevronRight className="size-3.5" />
@@ -64,7 +88,7 @@ export function DocumentPreviewCarousel({
 
       {/* Carousel Container */}
       <div className="relative flex flex-1 items-center justify-center overflow-hidden rounded-xl border border-border bg-white shadow-xs">
-        {validPageUrls.length === 0 ? (
+        {validCandidates.length === 0 ? (
           <div className="flex flex-col items-center gap-2 p-8 text-center text-muted-foreground">
             <FileText className="size-10 text-muted-foreground/50" />
             <p className="text-xs">Preview image unavailable.</p>
@@ -79,10 +103,9 @@ export function DocumentPreviewCarousel({
             </Button>
           </div>
         ) : (
-          <Carousel setApi={setCarouselApi} className="w-full">
+          <Carousel opts={{ loop: true }} setApi={setCarouselApi} className="w-full">
             <CarouselContent>
-              {candidatePageUrls.map((url, index) => {
-                if (failedPages[index]) return null;
+              {validCandidates.map(({ url, index }) => {
                 return (
                   <CarouselItem key={`page-${url}`}>
                     <div className="flex max-h-[50vh] min-h-65 w-full items-center justify-center overflow-auto bg-neutral-100/50 p-2 sm:max-h-[62vh] sm:min-h-95">
@@ -103,22 +126,22 @@ export function DocumentPreviewCarousel({
       </div>
 
       {/* Thumbnail / Page selection tabs if multi-page */}
-      {validPageUrls.length > 1 && (
+      {hasMultiplePages && (
         <div className="mt-2.5 flex flex-wrap items-center justify-center gap-1.5">
-          {validPageUrls.map((url, idx) => {
-            const active = currentPage === idx + 1;
+          {validCandidates.map(({ url, index }, slideIdx) => {
+            const active = currentPage === slideIdx + 1;
             return (
               <button
                 key={`page-btn-${url}`}
                 type="button"
-                onClick={() => carouselApi?.scrollTo(idx)}
+                onClick={() => carouselApi?.scrollTo(slideIdx)}
                 className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
                   active
                     ? "bg-navy text-white shadow-xs"
                     : "border border-border bg-white text-muted-foreground hover:text-navy"
                 }`}
               >
-                Page {idx + 1}
+                Page {index + 1}
               </button>
             );
           })}

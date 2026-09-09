@@ -42,7 +42,7 @@ export function useChatSocket({
     const handleNewMessage = (msg: MessageItem) => {
       if (Number(msg.conversation_id) === Number(activeIdRef.current)) {
         setMessages((prev) => {
-          if (prev.some((m) => m.message_id === msg.message_id)) return prev;
+          if (prev.some((m) => String(m.message_id) === String(msg.message_id))) return prev;
           return [...prev, msg];
         });
         void markAsRead(msg.conversation_id);

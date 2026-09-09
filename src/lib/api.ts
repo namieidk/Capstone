@@ -19,9 +19,10 @@ class ApiError extends Error {
     if (this.data && typeof this.data === "object") {
       const obj = this.data as Record<string, unknown>;
       if (obj.requires_meeting_confirmation === true) return true;
+      if (obj.code === "MEETING_CONFIRMATION_REQUIRED") return true;
       if (typeof obj.message === "string" && obj.message.includes("MEETING_CONFIRMATION_REQUIRED")) return true;
     }
-    return this.message.includes("MEETING_CONFIRMATION_REQUIRED");
+    return this.code === "MEETING_CONFIRMATION_REQUIRED" || this.message.includes("MEETING_CONFIRMATION_REQUIRED");
   }
 }
 

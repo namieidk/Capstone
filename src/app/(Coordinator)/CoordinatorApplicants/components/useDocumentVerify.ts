@@ -104,6 +104,10 @@ export function useDocumentVerify(doc: ScholarDocument | null, open: boolean, on
 
   async function handleVerify() {
     if (!doc) return;
+    if (doc.status !== "STUDENT_CONFIRMED") {
+      setFormError("Cannot verify: The applicant must review and confirm this document first.");
+      return;
+    }
     setFormError("");
     let payload: ReturnType<typeof buildPayload>;
     try {

@@ -1,10 +1,11 @@
 "use client";
 
-import { Eye, FileText } from "lucide-react";
+import { Eye, FileText, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
 import type { CarouselApi } from "@/components/ui/carousel";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import type { GradeItem } from "@/lib/api/documents";
+import { type GradeItem, syncParseur } from "@/lib/api/documents";
 import { DialogFooterBar } from "./DialogFooterBar";
 import { DialogHeaderBar } from "./DialogHeaderBar";
 import { DocumentPreviewCarousel } from "./DocumentPreviewCarousel";
@@ -32,6 +33,9 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
   const [gradeItems, setGradeItems] = useState<EditableGradeItem[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [manualBypass, setManualBypass] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState("");
 
   const rawExtracted: ExtractedDataShape = useMemo(() => {
     return (doc?.extracted_data as ExtractedDataShape) || {};
@@ -64,6 +68,9 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
     setCurrentPage(1);
     setMobileTab("preview");
     setFormError("");
+    setManualBypass(false);
+    setSyncing(false);
+    setSyncMessage("");
 
     const ay = String(rawConfirmed?.academic_year || rawExtracted?.academic_year || "");
     setAcademicYear(ay);
@@ -94,6 +101,27 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
 
     setGradeItems(initialItems);
   }, [doc, open, rawConfirmed, rawExtracted]);
+
+  const isOcrPending =
+    doc?.status === "PENDING" && !manualBypass && (!rawConfirmed?.grade_items || rawConfirmed.grade_items.length === 0);
+
+  async function handleSyncStatus() {
+    if (!doc) return;
+    setSyncing(true);
+    setSyncMessage("");
+    try {
+      const res = await syncParseur(doc.document_id);
+      if (res?.ocr_data) {
+        setSyncMessage("Extraction completed! Reloading data...");
+      } else {
+        setSyncMessage("Parseur is still analyzing the file. Please check again in a moment.");
+      }
+    } catch {
+      setSyncMessage("AI is still processing your document. Please wait a few more seconds.");
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   // Track active slide in carousel
   useEffect(() => {
@@ -274,27 +302,82 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
               </button>
             </div>
 
-            {/* Metadata and advisories */}
-            <ExtractedMetadataView extractedData={rawExtracted} isReadOnly={isReadOnly} />
+            {isOcrPending ? (
+              <div className="flex flex-col items-center justify-center rounded-xl border border-sky-200 bg-sky-50/60 p-6 text-center dark:border-sky-900/40 dark:bg-sky-950/20">
+                <div className="relative mb-3 flex size-12 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900/50">
+                  <Sparkles className="size-6 text-amber-500 animate-pulse" />
+                  <Loader2 className="absolute size-10 animate-spin text-sky-600 opacity-60" />
+                </div>
+                <h4 className="text-sm font-semibold text-navy">AI is reading your document...</h4>
+                <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-muted-foreground">
+                  Parseur AI is extracting your academic year, general average, and subject grades. This usually takes
+                  15–30 seconds.
+                </p>
+                {syncMessage && (
+                  <p className="mt-2 text-xs font-medium text-sky-800 dark:text-sky-300">{syncMessage}</p>
+                )}
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-1.5 text-xs!"
+                    disabled={syncing}
+                    onClick={handleSyncStatus}
+                  >
+                    <RefreshCw className={`size-3.5 ${syncing ? "animate-spin" : ""}`} />
+                    {syncing ? "Checking..." : "Check Status"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 text-xs! text-muted-foreground hover:text-navy"
+                    onClick={() => setManualBypass(true)}
+                  >
+                    Enter manually instead
+                  </Button>
+                </div>
+                <div className="mt-6 w-full space-y-2 border-t border-sky-200/60 pt-4 text-left dark:border-sky-900/30">
+                  <p className="text-[0.7rem] font-medium text-sky-800 dark:text-sky-300">
+                    Awaiting extracted information:
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="h-9 animate-pulse rounded-md bg-sky-100/70 dark:bg-sky-900/30" />
+                    <div className="h-9 animate-pulse rounded-md bg-sky-100/70 dark:bg-sky-900/30" />
+                  </div>
+                  <div className="h-16 animate-pulse rounded-md bg-sky-100/50 dark:bg-sky-900/20" />
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Metadata and advisories */}
+                <ExtractedMetadataView
+                  extractedData={rawExtracted}
+                  isReadOnly={isReadOnly}
+                  showConfirmedNotice={isReadOnly}
+                />
 
-            {/* Editable Document Summary */}
-            <DocumentSummaryForm
-              academicYear={academicYear}
-              generalAverage={generalAverage}
-              isReadOnly={isReadOnly}
-              onAcademicYearChange={setAcademicYear}
-              onGeneralAverageChange={setGeneralAverage}
-              onComputeAverage={handleComputeAverage}
-            />
+                {/* Editable Document Summary */}
+                <DocumentSummaryForm
+                  academicYear={academicYear}
+                  generalAverage={generalAverage}
+                  isReadOnly={isReadOnly}
+                  onAcademicYearChange={setAcademicYear}
+                  onGeneralAverageChange={setGeneralAverage}
+                  onComputeAverage={handleComputeAverage}
+                />
 
-            {/* Editable Subjects & Grades Table */}
-            <GradeItemsTable
-              gradeItems={gradeItems}
-              isReadOnly={isReadOnly}
-              onAddSubject={handleAddSubject}
-              onRemoveSubject={handleRemoveSubject}
-              onItemChange={handleItemChange}
-            />
+                {/* Editable Subjects & Grades Table */}
+                <GradeItemsTable
+                  gradeItems={gradeItems}
+                  isReadOnly={isReadOnly}
+                  onAddSubject={handleAddSubject}
+                  onRemoveSubject={handleRemoveSubject}
+                  onItemChange={handleItemChange}
+                />
+              </>
+            )}
 
             {formError && (
               <div className="rounded-lg border border-destructive/30 bg-bad-bg px-3 py-2 text-xs font-medium text-destructive">
@@ -308,6 +391,7 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
         <DialogFooterBar
           isReadOnly={isReadOnly}
           submitting={submitting}
+          disabled={isOcrPending}
           onClose={() => onOpenChange(false)}
           onSubmit={handleSubmit}
         />

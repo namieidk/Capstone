@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, CheckCheck, MessageSquare } from "lucide-react";
-import type React from "react";
+import { useMemo } from "react";
 import type { MessageItem } from "@/lib/api/chat";
 import { formatMessageTime } from "./chat-utils";
 import { MessageListSkeleton } from "./MessageListSkeleton";
@@ -15,11 +15,27 @@ interface MessageListProps {
 }
 
 export function MessageList({ messages, currentUserId, isPartnerTyping, loading, messagesEndRef }: MessageListProps) {
+  const uniqueMessages = useMemo(() => {
+    const seen = new Set<string>();
+    const result: MessageItem[] = [];
+    for (const m of messages) {
+      const id = m.message_id !== undefined && m.message_id !== null ? String(m.message_id) : null;
+      if (id && seen.has(id)) {
+        continue;
+      }
+      if (id) {
+        seen.add(id);
+      }
+      result.push(m);
+    }
+    return result;
+  }, [messages]);
+
   if (loading) {
     return <MessageListSkeleton />;
   }
 
-  if (messages.length === 0) {
+  if (uniqueMessages.length === 0) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-muted-foreground">
         <MessageSquare className="size-8 opacity-30" />
@@ -31,11 +47,12 @@ export function MessageList({ messages, currentUserId, isPartnerTyping, loading,
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-[#FAF9F7]/50">
-      {messages.map((m) => {
+      {uniqueMessages.map((m, idx) => {
         const isMe = m.sender_user_id === currentUserId;
+        const key = m.message_id !== undefined && m.message_id !== null ? `msg-${m.message_id}` : `msg-idx-${idx}`;
 
         return (
-          <div key={`msg-${m.message_id}`} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+          <div key={key} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
             <div
               className={`max-w-[78%] md:max-w-[70%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed ${
                 isMe

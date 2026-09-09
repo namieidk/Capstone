@@ -156,6 +156,13 @@ export function mapApplicationToApplicant(row: ApplicationWithProfile): Applican
     profileId: p?.profile_id ?? null,
     applied: formatAppliedDate(row.submitted_at),
     stage: resolveDisplayStage(row.status, row.stage),
+    studentNumber: p?.student_number ?? null,
+    studentAddress: p?.student_address ?? null,
+    phoneNumber: p?.phone_number ?? null,
+    schoolName: p?.school_name ?? null,
+    schoolAddress: p?.school_address ?? null,
+    relativeEmployee: p?.relative_employee ?? null,
+    documentsCount: p?._count?.documents ?? 0,
   };
 }
 

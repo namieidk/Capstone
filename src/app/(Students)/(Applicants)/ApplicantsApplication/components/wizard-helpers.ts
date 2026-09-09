@@ -44,6 +44,8 @@ export function docStatusMeta(status: DocumentStatus): { label: string; variant:
       return { label: "Needs re-upload", variant: "destructive" };
     case "REJECTED":
       return { label: "Rejected", variant: "destructive" };
+    case "PENDING":
+      return { label: "Analyzing with AI...", variant: "outline" };
     default:
       return { label: "Pending", variant: "outline" };
   }

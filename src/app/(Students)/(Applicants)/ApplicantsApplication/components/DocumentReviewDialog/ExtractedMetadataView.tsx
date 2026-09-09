@@ -5,10 +5,11 @@ import type { ExtractedDataShape } from "./types";
 
 interface ExtractedMetadataViewProps {
   extractedData: ExtractedDataShape;
-  isReadOnly: boolean;
+  isReadOnly?: boolean;
+  showConfirmedNotice?: boolean;
 }
 
-export function ExtractedMetadataView({ extractedData, isReadOnly }: ExtractedMetadataViewProps) {
+export function ExtractedMetadataView({ extractedData, showConfirmedNotice = false }: ExtractedMetadataViewProps) {
   const forensic = extractedData.forensic_analysis;
   const studentName = extractedData.student_name ? String(extractedData.student_name) : null;
   const schoolName = extractedData.school_name ? String(extractedData.school_name) : null;
@@ -27,7 +28,7 @@ export function ExtractedMetadataView({ extractedData, isReadOnly }: ExtractedMe
         </div>
       )}
 
-      {isReadOnly && (
+      {showConfirmedNotice && (
         <div className="flex items-center gap-2 rounded-xl border border-good/30 bg-good-bg/40 p-3 text-xs text-navy">
           <Check className="size-4 shrink-0 text-good" />
           <p>This document has already been confirmed and is currently being processed by scholarship coordinators.</p>

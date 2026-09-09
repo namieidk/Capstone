@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ToastProvider } from "@/components/ToastContext";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
@@ -26,15 +26,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body suppressHydrationWarning className="min-h-full flex flex-col">
+      <body suppressHydrationWarning className="flex min-h-full flex-col">
         <AuthProvider>
-          <ToastProvider>
-            <SocketProvider>
-              <NotificationProvider>
-                <TooltipProvider>{children}</TooltipProvider>
-              </NotificationProvider>
-            </SocketProvider>
-          </ToastProvider>
+          <SocketProvider>
+            <NotificationProvider>
+              <TooltipProvider>{children}</TooltipProvider>
+              <Toaster />
+            </NotificationProvider>
+          </SocketProvider>
         </AuthProvider>
       </body>
     </html>

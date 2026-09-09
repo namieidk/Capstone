@@ -247,10 +247,10 @@ export function ForumContainer({
         prev.map((p) => (p.post_id === postId ? { ...p, comments_count: (p.comments_count || 0) + 1 } : p)),
       );
       setReplyDrafts((prev) => ({ ...prev, [postId]: "" }));
-      showToast("Response posted!", "success");
+      showToast("Reply posted successfully!", "success");
     } catch (err) {
       console.error("Failed to add comment:", err);
-      showToast("Failed to post response. Please try again.", "error");
+      showToast("Failed to post reply. Please try again.", "error");
     } finally {
       setSubmittingReply((prev) => ({ ...prev, [postId]: false }));
     }
@@ -265,10 +265,10 @@ export function ForumContainer({
         const remaining = posts.filter((p) => p.post_id !== postId);
         setSelectedId(remaining.length > 0 ? remaining[0].post_id : null);
       }
-      showToast("Discussion deleted.", "success");
+      showToast("Discussion post deleted.", "success");
     } catch (err) {
       console.error("Failed to delete post:", err);
-      showToast("Failed to delete discussion.", "error");
+      showToast("Failed to delete discussion. Please try again.", "error");
     }
   };
 
@@ -279,10 +279,10 @@ export function ForumContainer({
       if (selectedPostDetails?.post_id === postId) {
         setSelectedPostDetails((prev) => (prev ? { ...prev, is_pinned: updated.is_pinned } : prev));
       }
-      showToast(updated.is_pinned ? "Thread pinned to top!" : "Thread unpinned.", "success");
+      showToast(updated.is_pinned ? "Discussion pinned to top." : "Discussion unpinned.", "success");
     } catch (err) {
       console.error("Failed to pin post:", err);
-      showToast("Failed to toggle pin.", "error");
+      showToast("Failed to update pin status. Please try again.", "error");
     }
   };
 

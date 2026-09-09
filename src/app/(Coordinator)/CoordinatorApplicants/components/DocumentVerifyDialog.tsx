@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, Eye, FileText } from "lucide-react";
+import { AlertCircle, ExternalLink, Eye, FileText } from "lucide-react";
 import { useMemo } from "react";
 import { DocumentPreviewCarousel } from "@/app/(Students)/(Applicants)/ApplicantsApplication/components/DocumentReviewDialog/DocumentPreviewCarousel";
 import { DocumentSummaryForm } from "@/app/(Students)/(Applicants)/ApplicantsApplication/components/DocumentReviewDialog/DocumentSummaryForm";
@@ -38,7 +38,10 @@ export function DocumentVerifyDialog({
   }, [doc]);
 
   if (!doc || !meta) return null;
-  const isReadOnly = doc.status === "VERIFIED";
+  const isVerified = doc.status === "VERIFIED";
+  const isStudentConfirmed = doc.status === "STUDENT_CONFIRMED";
+  const canVerify = isStudentConfirmed;
+  const isReadOnly = !isStudentConfirmed;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -126,6 +129,16 @@ export function DocumentVerifyDialog({
                 : "hidden gap-3.5 overflow-y-auto p-3.5 sm:gap-4 sm:p-5 lg:col-span-7 lg:flex lg:flex-col"
             }
           >
+            {!isStudentConfirmed && !isVerified && (
+              <div className="flex items-center gap-2.5 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+                <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                <div className="flex-1 leading-relaxed">
+                  <span className="font-semibold">Awaiting Student Confirmation:</span> This document is currently in{" "}
+                  <strong>{meta.label}</strong> status. The applicant has not reviewed and confirmed their grades yet.
+                  You can preview the document, but you cannot verify it until the applicant confirms.
+                </div>
+              </div>
+            )}
             <ExtractedMetadataView extractedData={rawExtracted} isReadOnly={isReadOnly} />
             <DocumentSummaryForm
               academicYear={v.academicYear}
@@ -150,7 +163,7 @@ export function DocumentVerifyDialog({
           </div>
         </div>
 
-        {isReadOnly ? (
+        {isVerified ? (
           <div className="flex shrink-0 justify-end border-t border-border bg-white px-4 py-3 sm:px-6 sm:py-3.5">
             <Button type="button" variant="outline" className="h-9 px-4 text-xs!" onClick={() => onOpenChange(false)}>
               Close
@@ -161,6 +174,8 @@ export function DocumentVerifyDialog({
             submitting={v.submitting}
             requestingChanges={v.requestingChanges}
             changeReason={v.changeReason}
+            canVerify={canVerify}
+            verifyDisabledReason="The applicant must review and confirm this document before coordinator verification."
             onReasonChange={v.setChangeReason}
             onClose={() => onOpenChange(false)}
             onStartRequestChanges={() => v.setRequestingChanges(true)}
