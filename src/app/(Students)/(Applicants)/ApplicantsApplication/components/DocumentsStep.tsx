@@ -1,7 +1,7 @@
 "use client";
 
-import { Check, Eye, FileText, Loader2, RefreshCw, Sparkles, Trash2, UploadCloud, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { AlertCircle, Check, Eye, FileText, Loader2, RefreshCw, Sparkles, Trash2, UploadCloud, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,15 +12,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { GradeItem, ScholarDocument } from "@/lib/api/documents";
 import { DocumentReviewDialog } from "./DocumentReviewDialog";
 import {
-  DEFAULT_DOCUMENT_TYPE,
-  DOCUMENT_TYPE_OPTIONS,
   docStatusMeta,
   formatDateTime,
+  getDefaultDocumentType,
+  getFilteredDocumentTypeOptions,
+  isHighSchoolDoc,
   validateChosenFiles,
 } from "./wizard-helpers";
 
 interface DocumentsStepProps {
   documents: ScholarDocument[];
+  currentYearLevel?: number;
   onUpload: (files: File[], type: string) => Promise<void>;
   onReplace: (id: number, files: File[]) => Promise<void>;
   onDelete: (id: number) => Promise<void>;
@@ -46,6 +48,7 @@ const CONFIRMABLE = ["PENDING", "PASSED_PRECHECK"];
 
 export function DocumentsStep({
   documents,
+  currentYearLevel = 1,
   onUpload,
   onReplace,
   onDelete,
@@ -53,7 +56,7 @@ export function DocumentsStep({
   onContinue,
   hasConfirmed,
 }: DocumentsStepProps) {
-  const [docType, setDocType] = useState<string>(DEFAULT_DOCUMENT_TYPE);
+  const [docType, setDocType] = useState<string>(() => getDefaultDocumentType(currentYearLevel));
   const [picked, setPicked] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [phase, setPhase] = useState<string | null>(null);
@@ -65,6 +68,14 @@ export function DocumentsStep({
   const replaceInputRef = useRef<HTMLInputElement>(null);
   const [replaceTarget, setReplaceTarget] = useState<number | null>(null);
   const [confirmReplaceTarget, setConfirmReplaceTarget] = useState<ScholarDocument | null>(null);
+
+  const documentOptions = getFilteredDocumentTypeOptions(currentYearLevel);
+
+  useEffect(() => {
+    if (currentYearLevel >= 2 && isHighSchoolDoc(docType)) {
+      setDocType(getDefaultDocumentType(currentYearLevel));
+    }
+  }, [currentYearLevel, docType]);
 
   function pickFiles(list: FileList | null) {
     if (!list) return;
@@ -83,6 +94,14 @@ export function DocumentsStep({
       setError("Choose at least one file to upload.");
       return;
     }
+
+    if (currentYearLevel >= 2 && isHighSchoolDoc(docType)) {
+      setError(
+        `Students in Year ${currentYearLevel} (2nd to 4th year) are required to upload a Transcript of Records (TOR) or Certified Copy of Grades instead of Senior High School Form 138 / Form 9.`,
+      );
+      return;
+    }
+
     setUploading(true);
     setError("");
     try {
@@ -105,6 +124,17 @@ export function DocumentsStep({
       setError(violation);
       return;
     }
+
+    const targetDoc = documents.find((d) => d.document_id === replaceTarget);
+    if (currentYearLevel >= 2 && targetDoc && isHighSchoolDoc(targetDoc.document_type)) {
+      setError(
+        `Students in Year ${currentYearLevel} (2nd to 4th year) cannot upload or replace Senior High School Form 138 / Form 9 documents. Please upload a Transcript of Records (TOR) instead.`,
+      );
+      setReplaceTarget(null);
+      if (replaceInputRef.current) replaceInputRef.current.value = "";
+      return;
+    }
+
     setActingId(replaceTarget);
     setError("");
     try {
@@ -134,12 +164,26 @@ export function DocumentsStep({
 
   return (
     <div className="flex flex-col gap-4">
+      {currentYearLevel >= 2 && (
+        <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-50/80 p-3.5 text-sm text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+          <AlertCircle className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400" />
+          <div className="leading-relaxed">
+            <p className="font-semibold">Year {currentYearLevel} Document Requirement</p>
+            <p className="mt-0.5 text-xs text-amber-800 dark:text-amber-300">
+              Students in Year {currentYearLevel} (2nd to 4th year) are required to upload a Transcript of Records (TOR)
+              or Certified Copy of Grades instead of Senior High School Form 138 / Form 9.
+            </p>
+          </div>
+        </div>
+      )}
+
       <Card className="rounded-[18px]! border-border bg-white shadow-xs">
         <CardHeader>
           <CardTitle className="text-lg! text-navy">Upload your grades</CardTitle>
           <CardDescription className="text-sm!">
-            Upload your Form 138, TOR, or Certificate of Grades. You can select multiple images (front & back) or PDFs —
-            the system will automatically parse and merge them into a single document on the server.
+            {currentYearLevel >= 2
+              ? "Upload your Transcript of Records (TOR) or Certificate of Grades. Select multiple images or PDFs — the system will automatically parse and merge them."
+              : "Upload your Form 138, TOR, or Certificate of Grades. Select multiple images or PDFs — the system will automatically parse and merge them."}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
@@ -157,7 +201,7 @@ export function DocumentsStep({
                 <SelectValue placeholder="Select document type" />
               </SelectTrigger>
               <SelectContent>
-                {DOCUMENT_TYPE_OPTIONS.map((o) => (
+                {documentOptions.map((o) => (
                   <SelectItem key={o.value} value={o.value} className="text-sm!">
                     {o.label}
                   </SelectItem>
@@ -318,6 +362,12 @@ export function DocumentsStep({
                         aria-label={`Replace ${doc.document_type} (select file or files)`}
                         title="Replace file(s)"
                         onClick={() => {
+                          if (currentYearLevel >= 2 && isHighSchoolDoc(doc.document_type)) {
+                            setError(
+                              `Students in Year ${currentYearLevel} (2nd to 4th year) cannot upload or replace Senior High School Form 138 / Form 9 documents. Please upload a Transcript of Records (TOR) instead.`,
+                            );
+                            return;
+                          }
                           setConfirmReplaceTarget(doc);
                         }}
                         disabled={busy}
@@ -370,7 +420,7 @@ export function DocumentsStep({
         description={
           confirmReplaceTarget
             ? confirmReplaceTarget.status === "PASSED_PRECHECK"
-              ? `${confirmReplaceTarget.document_type} has passed AI pre-check. Uploading a new file will discard current extracted grades and restart AI extraction with the new file. Are you sure you want to replace it?`
+              ? `${confirmReplaceTarget.document_type} has passed AI pre-check. Uploading a new file will discard current extracted grades and restart AI extraction with the new file. Are you sure you want to proceed?`
               : `Uploading a new file will replace ${confirmReplaceTarget.document_type}. Do you want to proceed?`
             : "Uploading a new file will replace this document."
         }

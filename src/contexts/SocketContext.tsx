@@ -13,7 +13,7 @@ interface SocketContextValue {
   isConnected: boolean;
 }
 
-const SocketContext = createContext<SocketContextValue>({
+export const SocketContext = createContext<SocketContextValue>({
   socket: null,
   isConnected: false,
 });
@@ -253,6 +253,63 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             `${data?.authorName || "Someone"} replied to your discussion: "${data?.postTitle || "Forum post"}"`,
             "info",
           );
+        });
+
+        socketInstance.on(
+          "baseline:prospectus_processed",
+          (data?: { subjectsCount?: number; studentName?: string }) => {
+            const staffRoles = ["ADMIN", "COORDINATOR", "GRANTOR"];
+            if (staffRoles.includes(userRef.current?.role || "")) {
+              const student = data?.studentName ? ` for ${data.studentName}` : "";
+              showToastRef.current(
+                `Curriculum prospectus extracted (${data?.subjectsCount ?? 0} subjects)${student}.`,
+                "success",
+              );
+            } else {
+              showToastRef.current(
+                `Your curriculum prospectus was extracted successfully with ${data?.subjectsCount ?? 0} subjects!`,
+                "success",
+              );
+            }
+          },
+        );
+
+        socketInstance.on("baseline:submitted_for_review", (data?: { studentName?: string }) => {
+          const staffRoles = ["ADMIN", "COORDINATOR", "GRANTOR"];
+          if (staffRoles.includes(userRef.current?.role || "")) {
+            const student = data?.studentName ? ` from ${data.studentName}` : "";
+            showToastRef.current(`Academic baseline submitted for review${student}.`, "info");
+          } else {
+            showToastRef.current("Your academic baseline was submitted for coordinator review.", "info");
+          }
+        });
+
+        socketInstance.on("baseline:frozen", (data?: { studentName?: string }) => {
+          const staffRoles = ["ADMIN", "COORDINATOR", "GRANTOR"];
+          if (staffRoles.includes(userRef.current?.role || "")) {
+            const student = data?.studentName ? ` for ${data.studentName}` : "";
+            showToastRef.current(`Academic baseline frozen & locked${student}.`, "success");
+          } else {
+            showToastRef.current(
+              "Your academic baseline curriculum has been verified and locked by your coordinator!",
+              "success",
+            );
+          }
+        });
+
+        socketInstance.on("baseline:unfrozen", () => {
+          showToastRef.current("Academic baseline unlocked for curriculum modifications.", "warning");
+        });
+
+        socketInstance.on("school_grading:created", (data?: { school_name?: string }) => {
+          const staffRoles = ["ADMIN", "COORDINATOR", "GRANTOR"];
+          if (staffRoles.includes(userRef.current?.role || "")) {
+            showToastRef.current(`New institution grading system created: ${data?.school_name || "School"}`, "info");
+          }
+        });
+
+        socketInstance.on("school_grading:verified", (data?: { school_name?: string }) => {
+          showToastRef.current(`Institution grading system verified: ${data?.school_name || "School"}`, "success");
         });
 
         activeSocketRef.current = socketInstance;

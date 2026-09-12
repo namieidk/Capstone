@@ -86,11 +86,11 @@ export function ApplicantDialog({
   );
   const canPassToInterview = !isDocsLoading && !hasNoDocs && hasConfirmedDocs;
   const isPastInterview =
-    applicant?.stage === "Endorsed" ||
-    applicant?.stage === "Accepted" ||
-    applicant?.stage === "Approved" ||
-    applicant?.stage === "Scholar" ||
-    applicant?.stage === "Rejected";
+    (applicant?.stage as string) === "Endorsed" ||
+    (applicant?.stage as string) === "Accepted" ||
+    (applicant?.stage as string) === "Approved" ||
+    (applicant?.stage as string) === "Scholar" ||
+    (applicant?.stage as string) === "Rejected";
   const canSchedule =
     Boolean(applicant) && !isPastInterview && (applicant?.stage === "Interview" || applicant?.stage === "Under review");
 

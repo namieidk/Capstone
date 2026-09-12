@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  BookOpen,
   Calendar,
   CreditCard,
   GraduationCap,
@@ -13,6 +14,7 @@ import type { NavItem, RoleSidebarConfig } from "./types";
 
 export const SCHOLAR_NAV_ITEMS: NavItem[] = [
   { key: "dashboard", label: "Home", icon: Home, href: "/scholardashboard" },
+  { key: "prospectus", label: "Prospectus", icon: BookOpen, href: "/scholarProspectus" },
   { key: "grade", label: "Grades", icon: GraduationCap, href: "/ScholarGrade" },
   { key: "reports", label: "Reports", icon: BarChart3, href: "/scholarReports" },
   { key: "message", label: "Messages", icon: Mail, href: "/scholarMessage" },

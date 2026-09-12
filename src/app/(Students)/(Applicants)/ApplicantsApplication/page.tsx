@@ -22,7 +22,7 @@ import { ApplicationStep } from "./components/ApplicationStep";
 import { DocumentsStep } from "./components/DocumentsStep";
 import { StatusStep } from "./components/StatusStep";
 import { WizardSkeleton } from "./components/WizardSkeleton";
-import { resolveStep, WIZARD_STEPS, type WizardStep } from "./components/wizard-helpers";
+import { getWizardSteps, resolveStep, type WizardStep } from "./components/wizard-helpers";
 
 export default function ApplicantsApplicationPage() {
   const { toggleMobile } = useSidebar();
@@ -121,6 +121,14 @@ export default function ApplicantsApplicationPage() {
     return () => clearInterval(interval);
   }, [documents]);
 
+  const currentYearLevel = useMemo(() => {
+    const raw = user?.scholar_profile?.current_year_level;
+    if (raw && !Number.isNaN(Number(raw))) return Number(raw);
+    return 1;
+  }, [user]);
+
+  const wizardSteps = useMemo(() => getWizardSteps(currentYearLevel), [currentYearLevel]);
+
   const prefill = useMemo(() => {
     const p = user?.scholar_profile;
     return {
@@ -198,7 +206,7 @@ export default function ApplicantsApplicationPage() {
   ): Promise<void> {
     await wrapAction(async () => {
       await confirmDocument(id, data ?? {});
-      await refreshDocuments();
+      await fetchAll();
     }, "Document details confirmed successfully!");
   }
 
@@ -245,7 +253,7 @@ export default function ApplicantsApplicationPage() {
         ) : (
           <>
             <ol className="flex items-start rounded-[18px]! border border-border bg-white p-4 shadow-xs">
-              {WIZARD_STEPS.map((s, i) => {
+              {wizardSteps.map((s, i) => {
                 const done = s.step < step;
                 const active = s.step === step;
                 const unlocked = s.step === 1 || application !== null;
@@ -282,7 +290,7 @@ export default function ApplicantsApplicationPage() {
                         <span className="hidden text-[0.7rem] text-muted-foreground sm:block">{s.sub}</span>
                       </span>
                     </button>
-                    {i < WIZARD_STEPS.length - 1 && (
+                    {i < wizardSteps.length - 1 && (
                       <div className="mx-1 mt-4 h-1 flex-1 overflow-hidden rounded-full bg-border/70">
                         <div
                           className="h-full bg-navy transition-all duration-500 ease-out"
@@ -309,6 +317,7 @@ export default function ApplicantsApplicationPage() {
               {step === 2 && (
                 <DocumentsStep
                   documents={documents}
+                  currentYearLevel={currentYearLevel}
                   onUpload={handleUpload}
                   onReplace={handleReplace}
                   onDelete={handleDelete}

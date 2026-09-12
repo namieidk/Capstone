@@ -72,6 +72,29 @@ export const DOCUMENT_TYPE_OPTIONS = [
 ] as const;
 export const DEFAULT_DOCUMENT_TYPE = DOCUMENT_TYPE_OPTIONS[0].value;
 
+export function isHighSchoolDoc(docType: string): boolean {
+  return /138|137|form 9|report card|high school|shs|senior high/i.test(docType || "");
+}
+
+export function getFilteredDocumentTypeOptions(yearLevel: number = 1) {
+  if (yearLevel >= 2) {
+    return DOCUMENT_TYPE_OPTIONS.filter((o) => !isHighSchoolDoc(o.value) && !isHighSchoolDoc(o.label));
+  }
+  return DOCUMENT_TYPE_OPTIONS;
+}
+
+export function getDefaultDocumentType(yearLevel: number = 1): string {
+  return yearLevel >= 2 ? "TOR" : "Form 138";
+}
+
+export function getWizardSteps(yearLevel: number = 1): Array<{ step: WizardStep; label: string; sub: string }> {
+  return [
+    { step: 1, label: "Application", sub: "Your details" },
+    { step: 2, label: "Documents", sub: yearLevel >= 2 ? "TOR / Grades" : "Form 138 / TOR" },
+    { step: 3, label: "Status", sub: "Track progress" },
+  ];
+}
+
 const ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png", "webp", "pdf"];
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
 

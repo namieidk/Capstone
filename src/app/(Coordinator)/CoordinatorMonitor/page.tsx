@@ -1,500 +1,146 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import {
-  ACTIVE_SCHOLARS,
-  type ActiveScholar,
-  AMBER,
-  ArrowRightIcon,
-  BAD,
-  BellIcon,
-  BORDER_SUBTLE,
-  ClockIcon,
-  DrawerInfoRow,
-  GOOD,
-  GRADE_STATUS_COLORS,
-  HEALTH_TAG,
-  LINE,
-  MailIcon,
-  MenuIcon,
-  MonitorIcon,
-  NAVY,
-  PAYMENT_STATUS_COLORS,
-  SearchIcon,
-  SHADOW_SM,
-  s,
-  TINT,
-  TrendDownIcon,
-  TrendUpIcon,
-  WHITE,
-  XCircleIcon,
-} from "@/components/Coordinatorshared";
-import { useSidebar } from "@/components/SidebarContext";
+import { Activity, BookOpen, Building2 } from "lucide-react";
+import { useCallback, useContext, useEffect, useState } from "react";
+import type { ActiveScholar } from "@/components/Coordinatorshared";
+import { BaselineAuditDrawer } from "@/components/coordinator/baseline/BaselineAuditDrawer";
+import { BaselinePendingQueue } from "@/components/coordinator/baseline/BaselinePendingQueue";
+import { SchoolVerificationCard } from "@/components/coordinator/baseline/SchoolVerificationCard";
+import { ActiveScholarsTable } from "@/components/coordinator/monitor/ActiveScholarsTable";
+import { ScholarMonitorDrawer } from "@/components/coordinator/monitor/ScholarMonitorDrawer";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SocketContext } from "@/contexts/SocketContext";
+import { getCoordinatorPendingBaselines, type PendingBaselineItem } from "@/lib/api/baseline";
 
-type DrawerView = "overview" | "history";
+export default function CoordinatorMonitorPage() {
+  const { socket } = useContext(SocketContext);
 
-export default function MonitorPage() {
-  const { toggleMobile } = useSidebar();
+  // Active Monitoring State
+  const [selectedScholar, setSelectedScholar] = useState<ActiveScholar | null>(null);
+  const [openMonitorDrawer, setOpenMonitorDrawer] = useState(false);
 
-  const [selected, setSelected] = useState<ActiveScholar | null>(null);
-  const [view, setView] = useState<DrawerView>("overview");
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const PAGE_SIZE = 10;
+  // Baseline Audit State
+  const [baselineItems, setBaselineItems] = useState<PendingBaselineItem[]>([]);
+  const [loadingBaselines, setLoadingBaselines] = useState(true);
+  const [selectedAuditProfileId, setSelectedAuditProfileId] = useState<number | null>(null);
+  const [openAuditDrawer, setOpenAuditDrawer] = useState(false);
 
-  const query = search.trim().toLowerCase();
+  const fetchPendingBaselines = useCallback(async () => {
+    try {
+      setLoadingBaselines(true);
+      const data = await getCoordinatorPendingBaselines();
+      setBaselineItems(data || []);
+    } catch (err) {
+      console.error("Failed to load coordinator pending baselines:", err);
+    } finally {
+      setLoadingBaselines(false);
+    }
+  }, []);
 
-  const filteredScholars = useMemo(
-    () =>
-      query
-        ? ACTIVE_SCHOLARS.filter(
-            (sch) => sch.name.toLowerCase().includes(query) || sch.course.toLowerCase().includes(query),
-          )
-        : ACTIVE_SCHOLARS,
-    [query],
-  );
+  useEffect(() => {
+    fetchPendingBaselines();
+  }, [fetchPendingBaselines]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredScholars.length / PAGE_SIZE));
-  const currentPage = Math.min(page, totalPages);
-  const paginated = filteredScholars.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  // Real-time socket event listeners
+  useEffect(() => {
+    if (!socket) return;
 
-  function openScholar(sch: ActiveScholar) {
-    setSelected(sch);
-    setView("overview");
-  }
+    const handleRefresh = () => {
+      fetchPendingBaselines();
+    };
 
-  function closeDrawer() {
-    setSelected(null);
-    setView("overview");
-  }
+    socket.on("baseline:submitted_for_review", handleRefresh);
+    socket.on("baseline:prospectus_processed", handleRefresh);
+    socket.on("baseline:frozen", handleRefresh);
+    socket.on("baseline:unfrozen", handleRefresh);
+    socket.on("school_grading:verified", handleRefresh);
 
-  function handleSearchChange(value: string) {
-    setSearch(value);
-    setPage(1);
-  }
+    return () => {
+      socket.off("baseline:submitted_for_review", handleRefresh);
+      socket.off("baseline:prospectus_processed", handleRefresh);
+      socket.off("baseline:frozen", handleRefresh);
+      socket.off("baseline:unfrozen", handleRefresh);
+      socket.off("school_grading:verified", handleRefresh);
+    };
+  }, [socket, fetchPendingBaselines]);
+
+  const handleSelectScholarForAudit = (profileId: number) => {
+    setSelectedAuditProfileId(profileId);
+    setOpenAuditDrawer(true);
+  };
+
+  const pendingAuditCount = baselineItems.filter(
+    (i) => i.academic_baseline_status === "PENDING_COORDINATOR_REVIEW",
+  ).length;
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-      <style>{`
-        .filter-select:focus { outline: none; }
-      `}</style>
-
-      {/* ---------------- Page-level navbar ---------------- */}
-      <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button type="button" className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
-          <MenuIcon />
-        </button>
-        <div>
-          <h1 style={s.topbarGreeting}>Monitor</h1>
-          <p style={s.topbarSub}>Track scholar standing, documents, and disbursement status.</p>
-        </div>
-        <div style={s.topbarRight}>
-          <div className="vc-topbar-search" style={s.searchBox}>
-            <SearchIcon />
-            <input
-              placeholder="Search scholar name or course..."
-              style={s.searchInput}
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-            />
-          </div>
-          <button type="button" style={s.bellBtn}>
-            <BellIcon />
-            <span style={{ ...s.bellDot, background: AMBER }} />
-          </button>
-        </div>
-      </header>
-
-      <div style={{ ...s.mainContent, padding: s.mainContent.padding, flexGrow: 1, minHeight: 0, overflowY: "auto" }}>
-        <div style={s.pageContentTop}>
-          {/* ---------------- Table card, same shell/header/th/td treatment as Applicants ---------------- */}
-          <div
-            style={{
-              background: WHITE,
-              border: BORDER_SUBTLE,
-              borderRadius: 18,
-              boxShadow: SHADOW_SM,
-              padding: "22px 22px 8px",
-            }}
-          >
-            <div className="vc-table-scroll" style={{ width: "100%", overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                  <tr style={{ borderBottom: `1px solid ${LINE}` }}>
-                    <th style={{ ...s.th, background: "none", padding: "14px 14px", textAlign: "center" }}>Scholar</th>
-                    <th style={{ ...s.th, background: "none", textAlign: "center" }}>GWA</th>
-                    <th style={{ ...s.th, background: "none", textAlign: "center" }}>Documents</th>
-                    <th style={{ ...s.th, background: "none", textAlign: "center" }}>Disbursement</th>
-                    <th style={{ ...s.th, background: "none", textAlign: "center" }}>Status</th>
-                    <th style={{ ...s.th, background: "none", textAlign: "center" }}>View</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginated.map((sch, i) => (
-                    <tr
-                      key={sch.id}
-                      onClick={() => openScholar(sch)}
-                      style={{
-                        borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`,
-                        cursor: "pointer",
-                        verticalAlign: "middle",
-                      }}
-                    >
-                      <td style={{ ...s.td, padding: "16px 14px", textAlign: "center" }}>
-                        <p style={s.tdName}>{sch.name}</p>
-                        <p style={s.tdSub}>{sch.course}</p>
-                      </td>
-                      <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>
-                        <span style={{ ...s.gwaTrendCell, justifyContent: "center" }}>
-                          {sch.gwa}%{" "}
-                          {sch.trend === "up" ? (
-                            <span style={{ color: GOOD }}>
-                              <TrendUpIcon />
-                            </span>
-                          ) : (
-                            <span style={{ color: BAD }}>
-                              <TrendDownIcon />
-                            </span>
-                          )}
-                        </span>
-                      </td>
-                      <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{sch.docs}</td>
-                      <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{sch.disbursement}</td>
-                      <td style={{ ...s.td, textAlign: "center" }}>
-                        <span
-                          style={{
-                            ...s.stageTag,
-                            background: HEALTH_TAG[sch.health].bg,
-                            color: HEALTH_TAG[sch.health].text,
-                            fontWeight: 600,
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 6,
-                          }}
-                        >
-                          <span
-                            style={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: "50%",
-                              background: HEALTH_TAG[sch.health].text,
-                              flexShrink: 0,
-                            }}
-                          />
-                          {HEALTH_TAG[sch.health].label}
-                        </span>
-                      </td>
-                      <td style={{ ...s.td, textAlign: "center" }}>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openScholar(sch);
-                          }}
-                          aria-label="View scholar"
-                          style={{
-                            width: 34,
-                            height: 34,
-                            borderRadius: "50%",
-                            border: `1.5px solid ${LINE}`,
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            background: WHITE,
-                            color: "#7a7a74",
-                            cursor: "pointer",
-                          }}
-                        >
-                          <EyeIcon />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {filteredScholars.length === 0 && (
-              <p style={{ textAlign: "center", padding: "40px 0", color: "#9a9a94", fontSize: "0.9rem" }}>
-                {query ? `No scholars match "${search}".` : "No active scholars yet."}
-              </p>
-            )}
-
-            {filteredScholars.length > 0 && (
-              <div
-                style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 8,
-                    border: `1px solid ${LINE}`,
-                    background: WHITE,
-                    color: currentPage === 1 ? "#c7c7c2" : "#55554f",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: currentPage === 1 ? "default" : "pointer",
-                  }}
-                  aria-label="Previous page"
-                >
-                  <ChevronLeftIcon />
-                </button>
-                {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
-                  <button
-                    type="button"
-                    key={num}
-                    onClick={() => setPage(num)}
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 8,
-                      border: `1px solid ${num === currentPage ? NAVY : LINE}`,
-                      background: num === currentPage ? NAVY : WHITE,
-                      color: num === currentPage ? WHITE : "#55554f",
-                      fontSize: "0.82rem",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                    }}
-                  >
-                    {num}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 8,
-                    border: `1px solid ${LINE}`,
-                    background: WHITE,
-                    color: currentPage === totalPages ? "#c7c7c2" : "#55554f",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: currentPage === totalPages ? "default" : "pointer",
-                  }}
-                  aria-label="Next page"
-                >
-                  <ChevronRightIcon />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
+      {/* Top Header */}
+      <div className="flex flex-col gap-1">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          Scholar Academic Monitoring & Baseline Audits
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Track active scholar standing, verify onboarding curriculum baselines, and manage university grading scales.
+        </p>
       </div>
 
-      {selected && (
-        // biome-ignore lint/a11y/useSemanticElements: overlay backdrop acts as a dismiss button; div cannot be a real button (contains block content)
-        <div
-          style={s.drawerOverlay}
-          onClick={closeDrawer}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              closeDrawer();
-            }
-          }}
-        >
-          <div
-            style={s.drawerPanel}
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.stopPropagation();
-              }
-            }}
-          >
-            <div style={s.drawerHeader}>
-              <span style={s.profileAvatar}>{selected.initials}</span>
-              <div style={{ flexGrow: 1 }}>
-                <h3 style={s.drawerName}>{selected.name}</h3>
-                <p style={s.drawerMeta}>{selected.course}</p>
-              </div>
-              <button type="button" onClick={closeDrawer} style={s.drawerCloseBtn}>
-                <XCircleIcon />
-              </button>
-            </div>
-
-            {view === "overview" ? (
-              <>
-                <p style={s.drawerSectionLabel}>Current standing</p>
-                <div style={s.drawerInfoGrid}>
-                  <DrawerInfoRow label="Current GWA" value={`${selected.gwa}%`} />
-                  <DrawerInfoRow label="Trend" value={selected.trend === "up" ? "Improving" : "Declining"} />
-                  <DrawerInfoRow label="Documents" value={selected.docs} />
-                  <DrawerInfoRow label="Disbursement" value={selected.disbursement} />
-                </div>
-
-                <p style={s.drawerSectionLabel}>This semesters payment</p>
-                <div style={s.drawerCurrentPayCard}>
-                  <div style={s.drawerCurrentPayLeft}>
-                    <span style={s.drawerCurrentPayTerm}>{selected.currentPayment.term}</span>
-                    <span style={s.drawerCurrentPayAmount}>₱{selected.currentPayment.amount.toLocaleString()}</span>
-                  </div>
-                  <span
-                    style={{
-                      ...s.stageTag,
-                      background: PAYMENT_STATUS_COLORS[selected.currentPayment.status].bg,
-                      color: PAYMENT_STATUS_COLORS[selected.currentPayment.status].text,
-                    }}
-                  >
-                    {selected.currentPayment.status}
-                  </span>
-                </div>
-
-                <div style={s.drawerHistoryBtnRow}>
-                  <button type="button" onClick={() => setView("history")} style={s.drawerHistoryBtn}>
-                    <ClockIcon /> View full history <ArrowRightIcon />
-                  </button>
-                </div>
-
-                <p style={s.drawerSectionLabel}>Status</p>
-                <div style={s.appNoteCard}>
-                  <span style={s.appNoteIcon}>
-                    <MonitorIcon />
-                  </span>
-                  <p style={s.appNoteText}>
-                    {selected.health === "good" &&
-                      "This scholar is meeting all retention requirements. No action needed."}
-                    {selected.health === "warn" && "Missing a required document. A reminder message is recommended."}
-                    {selected.health === "bad" &&
-                      "GWA trending down and documents incomplete. Disbursement is on hold pending review."}
-                  </p>
-                </div>
-
-                <div style={s.drawerStageActions}>
-                  <button type="button" style={s.continueBtnSmall}>
-                    <MailIcon small /> Message scholar
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <button type="button" onClick={() => setView("overview")} style={s.backToOverviewBtn}>
-                  ← Back to overview
-                </button>
-
-                <div style={s.historySection}>
-                  <p style={s.drawerSectionLabel}>Grade history</p>
-                  <div style={s.historyList}>
-                    {selected.gradeHistory.map((g) => (
-                      <div key={`${g.term}-${g.gwa}`} style={s.historyRow}>
-                        <div style={s.historyRowLeft}>
-                          <span style={s.historyRowTerm}>{g.term}</span>
-                          <span style={s.historyRowSub}>GWA {g.gwa}%</span>
-                        </div>
-                        <div style={s.historyRowRight}>
-                          <span
-                            style={{
-                              ...s.stageTag,
-                              background: GRADE_STATUS_COLORS[g.status].bg,
-                              color: GRADE_STATUS_COLORS[g.status].text,
-                            }}
-                          >
-                            {g.status}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div style={s.historySection}>
-                  <p style={s.drawerSectionLabel}>Payment history</p>
-                  <div style={s.historyList}>
-                    {selected.paymentHistory.map((p) => (
-                      <div key={`${p.term}-${p.date}-${p.amount}`} style={s.historyRow}>
-                        <div style={s.historyRowLeft}>
-                          <span style={s.historyRowTerm}>{p.term}</span>
-                          <span style={s.historyRowSub}>{p.date}</span>
-                        </div>
-                        <div style={s.historyRowRight}>
-                          <span style={s.historyRowValue}>₱{p.amount.toLocaleString()}</span>
-                          <span
-                            style={{
-                              ...s.stageTag,
-                              background: PAYMENT_STATUS_COLORS[p.status].bg,
-                              color: PAYMENT_STATUS_COLORS[p.status].text,
-                            }}
-                          >
-                            {p.status}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
+      {/* Main Tabs */}
+      <Tabs defaultValue="baseline-audits" className="w-full space-y-4">
+        <TabsList className="grid grid-cols-3 w-full sm:w-[540px]">
+          <TabsTrigger value="baseline-audits" className="text-xs gap-1.5">
+            <BookOpen className="w-4 h-4" />
+            Baseline Audits
+            {pendingAuditCount > 0 && (
+              <Badge className="ml-1 bg-amber-500 text-white text-[10px] px-1.5 py-0">{pendingAuditCount}</Badge>
             )}
-          </div>
-        </div>
-      )}
+          </TabsTrigger>
+          <TabsTrigger value="active-monitor" className="text-xs gap-1.5">
+            <Activity className="w-4 h-4" />
+            Active Scholars
+          </TabsTrigger>
+          <TabsTrigger value="school-scales" className="text-xs gap-1.5">
+            <Building2 className="w-4 h-4" />
+            Grading Scales
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Tab 1: Academic Baseline Audits (Phase 1) */}
+        <TabsContent value="baseline-audits" className="space-y-4">
+          <BaselinePendingQueue
+            items={baselineItems}
+            loading={loadingBaselines}
+            onSelectScholar={handleSelectScholarForAudit}
+          />
+        </TabsContent>
+
+        {/* Tab 2: Active Scholars Monitoring */}
+        <TabsContent value="active-monitor" className="space-y-4">
+          <ActiveScholarsTable
+            onSelectScholar={(sch) => {
+              setSelectedScholar(sch);
+              setOpenMonitorDrawer(true);
+            }}
+          />
+        </TabsContent>
+
+        {/* Tab 3: University Grading Scales */}
+        <TabsContent value="school-scales" className="space-y-4">
+          <SchoolVerificationCard onScaleUpdated={fetchPendingBaselines} />
+        </TabsContent>
+      </Tabs>
+
+      {/* Side Audit Drawer */}
+      <BaselineAuditDrawer
+        scholarProfileId={selectedAuditProfileId}
+        open={openAuditDrawer}
+        onOpenChange={setOpenAuditDrawer}
+        onSuccess={fetchPendingBaselines}
+      />
+
+      {/* Active Scholar Monitor Drawer */}
+      <ScholarMonitorDrawer scholar={selectedScholar} open={openMonitorDrawer} onOpenChange={setOpenMonitorDrawer} />
     </div>
-  );
-}
-
-function EyeIcon() {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
-
-function ChevronLeftIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      focusable="false"
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M15 18l-6-6 6-6" />
-    </svg>
-  );
-}
-
-function ChevronRightIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      focusable="false"
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M9 18l6-6-6-6" />
-    </svg>
   );
 }
