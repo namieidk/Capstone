@@ -88,8 +88,6 @@ export function ApplicantDialog({
   const isPastInterview =
     applicant?.stage === "Endorsed" ||
     applicant?.stage === "Accepted" ||
-    applicant?.stage === "Approved" ||
-    applicant?.stage === "Scholar" ||
     applicant?.stage === "Rejected";
   const canSchedule =
     Boolean(applicant) && !isPastInterview && (applicant?.stage === "Interview" || applicant?.stage === "Under review");

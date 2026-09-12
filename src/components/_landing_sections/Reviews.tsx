@@ -1,4 +1,5 @@
-import { Container, Eyebrow } from "./shared";
+import { Fireflies } from "./Fireflies";
+import { Container, Eyebrow, Reveal } from "./shared";
 
 interface Review {
   quote: string;
@@ -27,33 +28,48 @@ const REVIEWS: Review[] = [
   },
 ];
 
-export function Reviews() {
-  return (
-    <section id="reviews" className="bg-navy py-19">
-      <Container>
-        <div className="mb-12 flex flex-wrap items-end justify-between gap-8">
-          <div className="max-w-135">
-            <Eyebrow>FROM SCHOLARS AND COORDINATORS</Eyebrow>
-            <h2 className="mt-4 text-[2.4rem] font-bold leading-[1.18] text-white">Trusted by the people it serves.</h2>
-          </div>
-          <div className="md:text-right">
-            <span className="mb-1 block text-lg tracking-[2px] text-amber">★★★★★</span>
-            <span className="text-[0.92rem] text-white/60">4.9 average from 120+ active scholars</span>
-          </div>
-        </div>
+const MARQUEE_REVIEWS = [
+  ...REVIEWS.map((review) => ({ ...review, copy: "primary" })),
+  ...REVIEWS.map((review) => ({ ...review, copy: "duplicate" })),
+];
 
-        <div className="grid gap-5 md:grid-cols-3">
-          {REVIEWS.map((r) => (
-            <div key={r.name} className="rounded-[18px] border border-white/10 bg-white/5 p-7">
-              <span className="mb-3.5 block text-[1.6rem] text-amber">““</span>
-              <p className="mb-6 text-[0.96rem] leading-[1.7] text-[#e6e6e2]">{r.quote}</p>
-              <div className="mb-4 h-px bg-white/10" />
-              <p className="mb-0.5 text-[0.96rem] font-bold text-white">{r.name}</p>
-              <p className="text-[0.84rem] text-white/40">{r.role}</p>
+export function Reviews() {
+  const EDGE_FADE = "linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)";
+
+  return (
+    <section id="reviews" className="relative overflow-hidden bg-background py-19">
+      <Fireflies />
+      <Container>
+        <Reveal>
+          <div className="mb-12 flex flex-wrap items-end justify-between gap-8">
+            <div className="max-w-135">
+              <Eyebrow>FROM SCHOLARS AND COORDINATORS</Eyebrow>
+              <h2 className="mt-2 font-serif text-[2.4rem] font-medium leading-[1.18] text-navy">
+                Trusted by the people it serves.
+              </h2>
             </div>
-          ))}
+            <div className="md:text-right">
+              <span className="mb-1 block text-lg tracking-[2px] text-amber">★★★★★</span>
+              <span className="text-[0.92rem] text-muted-foreground">4.9 average from 120+ active scholars</span>
+            </div>
+          </div>
+        </Reveal>
+
+        <div className="overflow-hidden" style={{ maskImage: EDGE_FADE, WebkitMaskImage: EDGE_FADE }}>
+          <div className="flex w-max gap-5 px-6 [animation:vs-reviews-marquee_36s_linear_infinite] hover:[animation-play-state:paused] md:px-8">
+            {MARQUEE_REVIEWS.map((r) => (
+              <div key={`${r.name}-${r.copy}`} className="h-full w-85 shrink-0 rounded-[18px] border border-line bg-card p-7 shadow-va-sm transition-shadow duration-300 hover:shadow-va-md">
+                <span className="mb-3.5 block text-[1.6rem] text-amber">““</span>
+                <p className="mb-6 text-[0.96rem] leading-[1.7] text-foreground">{r.quote}</p>
+                <div className="mb-4 h-px bg-line" />
+                <p className="mb-0.5 text-[0.96rem] font-bold text-navy">{r.name}</p>
+                <p className="text-[0.84rem] text-muted-foreground">{r.role}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </Container>
+      <style>{`@keyframes vs-reviews-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }`}</style>
     </section>
   );
 }
