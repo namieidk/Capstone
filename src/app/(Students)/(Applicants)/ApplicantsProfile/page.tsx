@@ -1,192 +1,199 @@
 "use client";
 
-import { useState } from "react";
-import {
-  AMBER_BG,
-  APPLICATION_STAGES,
-  ApplicationIcon,
-  CameraIcon,
-  CURRENT_STAGE_INDEX,
-  DownloadIcon,
-  GOOD,
-  GOOD_BG,
-  NAVY,
-  PROFILE_DOCUMENTS,
-  SCHOLAR,
-  s,
-  WARN,
-} from "../../../../components/StudentShared";
+import type React from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useToast } from "@/components/ToastContext";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSocketEvent } from "@/contexts/SocketContext";
+import { ApiError } from "@/lib/api";
+import { type Application, getMyApplication } from "@/lib/api/applications";
+import { updateMe, uploadAvatar, uploadBanner } from "@/lib/api/auth";
+import { getMyDocuments, type ScholarDocument } from "@/lib/api/documents";
+import { EditApplicantProfileDrawer, type EditApplicantProfileValues } from "../components/EditApplicantProfileDrawer";
+import { ProfileBanner } from "./components/ProfileBanner";
+import { ProfileBioCard } from "./components/ProfileBioCard";
+import { ProfileDetailsCards } from "./components/ProfileDetailsCards";
+import { ProfileDocumentsList } from "./components/ProfileDocumentsList";
+import { ProfileHeader } from "./components/ProfileHeader";
+import { ProfileStats } from "./components/ProfileStats";
 
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "8px 0",
-        gap: 12,
-        flexWrap: "wrap",
-      }}
-    >
-      <span style={{ fontSize: "0.86rem", color: "#8a8a84" }}>{label}</span>
-      <span style={{ fontSize: "0.9rem", fontWeight: 600, color: NAVY, textAlign: "right" }}>{value}</span>
-    </div>
-  );
-}
+export default function ApplicantsProfilePage() {
+  const { user, refreshUser } = useAuth();
+  const { showToast } = useToast();
 
-function ProfilePageStyles() {
-  return (
-    <style>{`
-      .vd-profile-banner { height: 160px; }
-      .vd-profile-avatar { width: 88px; height: 88px; font-size: 1.8rem; }
-      .vd-profile-header-row { margin-top: -36px; }
-      .vd-profile-doc-row { flex-wrap: wrap; }
-      .vd-profile-doc-info { min-width: 160px; }
-      .vd-profile-doc-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; margin-left: auto; }
+  const [application, setApplication] = useState<Application | null>(null);
+  const [documents, setDocuments] = useState<ScholarDocument[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
 
-      @media (max-width: 640px) {
-        .vd-profile-banner { height: 110px; }
-        .vd-profile-avatar { width: 68px; height: 68px; font-size: 1.4rem; }
-        .vd-profile-header-row {
-          margin-top: -30px;
-          align-items: flex-start;
-          flex-wrap: wrap;
-          gap: 12px;
-        }
-        .vd-profile-header-info { min-width: 0; flex-basis: 100%; order: 2; }
-        .vd-profile-edit-btn { order: 3; }
-        .vd-profile-bio-card, .vd-profile-doc-row, .vd-profile-contact-card {
-          padding: 16px 16px !important;
-        }
-        .vd-profile-name { font-size: 1.2rem !important; }
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const [app, docs] = await Promise.all([
+        getMyApplication().catch((err: unknown) => {
+          if (err instanceof ApiError && err.status === 404) return null;
+          throw err;
+        }),
+        getMyDocuments().catch((err: unknown) => {
+          if (err instanceof ApiError && err.status === 404) return [];
+          throw err;
+        }),
+      ]);
+      setApplication(app);
+      setDocuments(docs);
+    } catch (err) {
+      console.error("Failed to load applicant profile data:", err);
+    } finally {
+      setLoadingData(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Real-time lifecycle events
+  useSocketEvent("application:stage_updated", fetchData);
+  useSocketEvent("document:verified", fetchData);
+  useSocketEvent("document:ocr_completed", fetchData);
+
+  const handleBannerUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      setUploadingBanner(true);
+      try {
+        await uploadBanner(file);
+        await refreshUser();
+        showToast("Banner image updated successfully.");
+      } catch (err) {
+        console.error("Banner upload failed:", err);
+        showToast(err instanceof ApiError ? err.message : "Banner upload failed. Please try again.", "error");
+      } finally {
+        setUploadingBanner(false);
       }
-
-      @media (max-width: 480px) {
-        .vd-profile-doc-row { align-items: center; }
-        .vd-profile-doc-info { flex-basis: 100%; min-width: 0; order: 1; }
-        .vd-profile-doc-actions { order: 2; margin-left: 0; }
-      }
-    `}</style>
+    },
+    [refreshUser, showToast],
   );
-}
 
-export default function ProfilePage() {
-  const [bio, setBio] = useState(SCHOLAR.bio);
-  const [editingBio, setEditingBio] = useState(false);
+  const handleAvatarUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      setUploadingAvatar(true);
+      try {
+        await uploadAvatar(file);
+        await refreshUser();
+        showToast("Profile picture updated successfully.");
+      } catch (err) {
+        console.error("Avatar upload failed:", err);
+        showToast(err instanceof ApiError ? err.message : "Avatar upload failed. Please try again.", "error");
+      } finally {
+        setUploadingAvatar(false);
+      }
+    },
+    [refreshUser, showToast],
+  );
 
-  const currentStage = APPLICATION_STAGES[CURRENT_STAGE_INDEX];
-  const submittedStage = APPLICATION_STAGES[0];
-  const verifiedCount = PROFILE_DOCUMENTS.filter((d) => d.status === "verified").length;
+  const handleSaveProfile = useCallback(
+    async (values: EditApplicantProfileValues) => {
+      setSavingProfile(true);
+      setSaveError("");
+      try {
+        await updateMe(values);
+        await refreshUser();
+        setDrawerOpen(false);
+        showToast("Profile information updated successfully.");
+      } catch (err) {
+        console.error("Profile update failed:", err);
+        setSaveError(err instanceof ApiError ? err.message : "Failed to update profile. Please try again.");
+      } finally {
+        setSavingProfile(false);
+      }
+    },
+    [refreshUser, showToast],
+  );
 
-  return (
-    <div style={{ maxWidth: 900, margin: "0 auto", width: "100%" }}>
-      <ProfilePageStyles />
-
-      <div className="vd-profile-banner" style={{ ...s.profileBanner, background: SCHOLAR.bannerGradient }}>
-        <button type="button" style={s.profileBannerEditBtn}>
-          <CameraIcon /> Change banner
-        </button>
-      </div>
-
-      <div className="vd-profile-header-row" style={s.profileHeaderRow}>
-        <div style={s.profileAvatarWrap}>
-          <span className="vd-profile-avatar" style={{ ...s.profileAvatar, background: SCHOLAR.avatarColor }}>
-            {SCHOLAR.initials}
-          </span>
-          <button type="button" style={s.profileAvatarEditBtn}>
-            <CameraIcon />
-          </button>
-        </div>
-        <div className="vd-profile-header-info" style={s.profileHeaderInfo}>
-          <h2 className="vd-profile-name" style={s.profileName}>
-            {SCHOLAR.name}
-          </h2>
-          <p style={s.profileMeta}>
-            {SCHOLAR.course} · {SCHOLAR.year}
-          </p>
-        </div>
-        <button type="button" className="vd-profile-edit-btn" style={s.continueBtnSmall}>
-          Edit profile
-        </button>
-      </div>
-
-      <div className="vd-profile-bio-card" style={s.profileBioCard}>
-        <div style={s.profileBioHeader}>
-          <p style={s.profileBioLabel}>Bio</p>
-          <button type="button" onClick={() => setEditingBio((v) => !v)} style={s.reviewEditLink}>
-            {editingBio ? "Save" : "Edit"}
-          </button>
-        </div>
-        {editingBio ? (
-          <textarea
-            style={{ ...s.input, height: 90, resize: "vertical" }}
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-          />
-        ) : (
-          <p style={s.profileBioText}>{bio}</p>
-        )}
-      </div>
-
-      <div className="vd-stat-row" style={s.statRow}>
-        <div style={s.statCard}>
-          <p style={s.statCardLabel}>Application stage</p>
-          <p style={s.statCardValue}>{currentStage.title}</p>
-          <p style={s.statCardCaption}>{currentStage.date}</p>
-        </div>
-        <div style={s.statCard}>
-          <p style={s.statCardLabel}>Documents verified</p>
-          <p style={s.statCardValue}>
-            {verifiedCount}/{PROFILE_DOCUMENTS.length}
-          </p>
-          <p style={s.statCardCaption}>Profile requirements</p>
-        </div>
-        <div style={s.statCard}>
-          <p style={s.statCardLabel}>Application submitted</p>
-          <p style={s.statCardValue}>{submittedStage.date}</p>
-          <p style={s.statCardCaption}>{submittedStage.desc}</p>
-        </div>
-      </div>
-
-      <div className="vd-profile-contact-card" style={s.profileBioCard}>
-        <p style={s.profileBioLabel}>Contact</p>
-        <div style={{ marginTop: 10 }}>
-          <InfoRow label="Course" value={SCHOLAR.course} />
-          <InfoRow label="Year level" value={SCHOLAR.year} />
-        </div>
-      </div>
-
-      <h3 style={{ ...s.cardHeading, marginBottom: 14 }}>Documents</h3>
-      <div style={s.profileDocList}>
-        {PROFILE_DOCUMENTS.map((doc) => (
-          <div key={doc.file} className="vd-profile-doc-row" style={s.profileDocRow}>
-            <span style={s.feedIconBox}>
-              <ApplicationIcon />
-            </span>
-            <div className="vd-profile-doc-info" style={s.profileDocInfo}>
-              <p style={s.profileDocLabel}>{doc.label}</p>
-              <p style={s.profileDocFile}>
-                {doc.file} · {doc.size}
-              </p>
-            </div>
-            <div className="vd-profile-doc-actions">
-              <span
-                style={{
-                  ...s.statusTag,
-                  background: doc.status === "verified" ? GOOD_BG : AMBER_BG,
-                  color: doc.status === "verified" ? GOOD : WARN,
-                }}
-              >
-                {doc.status}
-              </span>
-              <button type="button" style={s.profileDocDownload}>
-                <DownloadIcon />
-              </button>
-            </div>
+  if (!user || loadingData) {
+    return (
+      <div className="mx-auto w-full max-w-4xl px-4 py-6 md:px-8 space-y-6">
+        <Skeleton className="h-44 sm:h-52 w-full rounded-2xl" />
+        <div className="flex items-end gap-4 -mt-12 px-4">
+          <Skeleton className="size-24 sm:size-28 rounded-full border-4 border-white" />
+          <div className="space-y-2 flex-1 pb-2">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-32" />
           </div>
-        ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Skeleton className="h-28 rounded-xl" />
+          <Skeleton className="h-28 rounded-xl" />
+          <Skeleton className="h-28 rounded-xl" />
+        </div>
+        <Skeleton className="h-48 rounded-xl" />
       </div>
+    );
+  }
+
+  const displayName = `${user.first_name} ${user.last_name}`;
+  const displayInitials = ((user.first_name?.[0] ?? "") + (user.last_name?.[0] ?? "")).toUpperCase() || "?";
+  const scholarProfile = user.scholar_profile;
+  const courseAndYear = scholarProfile?.course_of_study
+    ? `${scholarProfile.course_of_study}${scholarProfile.current_year_level ? ` · Year ${scholarProfile.current_year_level}` : ""}`
+    : "Applicant";
+
+  return (
+    <div className="mx-auto w-full max-w-4xl px-4 py-6 md:px-8 space-y-6">
+      {/* Banner */}
+      <ProfileBanner bannerUrl={user.banner_url} uploading={uploadingBanner} onUpload={handleBannerUpload} />
+
+      {/* Avatar & Header */}
+      <ProfileHeader
+        displayName={displayName}
+        displayInitials={displayInitials}
+        courseAndYear={courseAndYear}
+        avatarUrl={user.avatar_url}
+        uploadingAvatar={uploadingAvatar}
+        onAvatarUpload={handleAvatarUpload}
+        onEditProfile={() => {
+          setSaveError("");
+          setDrawerOpen(true);
+        }}
+      />
+
+      {/* Application & Document Stats */}
+      <ProfileStats application={application} documents={documents} />
+
+      {/* Bio */}
+      <ProfileBioCard bio={user.bio} />
+
+      {/* Academic & Contact Information */}
+      <ProfileDetailsCards user={user} />
+
+      {/* Uploaded Documents List with Preview Dialog */}
+      <ProfileDocumentsList documents={documents} />
+
+      {/* Edit Profile Drawer */}
+      <EditApplicantProfileDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        initialValues={{
+          first_name: user.first_name,
+          last_name: user.last_name,
+          phone_number: scholarProfile?.phone_number ?? "",
+          student_address: scholarProfile?.student_address ?? "",
+          bio: user.bio ?? "",
+        }}
+        saving={savingProfile}
+        error={saveError}
+        onSave={handleSaveProfile}
+      />
     </div>
   );
 }

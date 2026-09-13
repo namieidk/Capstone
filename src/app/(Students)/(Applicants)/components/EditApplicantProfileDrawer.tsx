@@ -9,44 +9,45 @@ import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 
-export interface EditProfileDrawerProps {
+export interface EditApplicantProfileValues {
+  first_name: string;
+  last_name: string;
+  phone_number: string;
+  student_address: string;
+  bio: string;
+}
+
+export interface EditApplicantProfileDrawerProps {
   open: boolean;
   onClose: () => void;
-  initialValues?: {
-    first_name?: string;
-    last_name?: string;
-    title?: string;
-    department?: string;
-    bio?: string;
-    phone_number?: string;
-  };
+  initialValues?: Partial<EditApplicantProfileValues>;
   saving?: boolean;
   error?: string;
-  onSave: (values: { first_name: string; last_name: string; title: string; department: string; bio: string }) => void;
+  onSave: (values: EditApplicantProfileValues) => void;
 }
 
 const FIELD_INPUT = "mt-1.5 h-11! border-line bg-[#f7f9fb]! text-sm! md:text-sm!";
 
-export default function EditProfileDrawer({
+export function EditApplicantProfileDrawer({
   open,
   onClose,
   initialValues,
   saving = false,
   error,
   onSave,
-}: EditProfileDrawerProps) {
+}: EditApplicantProfileDrawerProps) {
   const [firstName, setFirstName] = useState(initialValues?.first_name ?? "");
   const [lastName, setLastName] = useState(initialValues?.last_name ?? "");
-  const [title, setTitle] = useState(initialValues?.title ?? "");
-  const [department, setDepartment] = useState(initialValues?.department ?? "");
+  const [phoneNumber, setPhoneNumber] = useState(initialValues?.phone_number ?? "");
+  const [studentAddress, setStudentAddress] = useState(initialValues?.student_address ?? "");
   const [bio, setBio] = useState(initialValues?.bio ?? "");
 
   useEffect(() => {
     if (open) {
       setFirstName(initialValues?.first_name ?? "");
       setLastName(initialValues?.last_name ?? "");
-      setTitle(initialValues?.title ?? "");
-      setDepartment(initialValues?.department ?? "");
+      setPhoneNumber(initialValues?.phone_number ?? "");
+      setStudentAddress(initialValues?.student_address ?? "");
       setBio(initialValues?.bio ?? "");
     }
   }, [open, initialValues]);
@@ -56,8 +57,8 @@ export default function EditProfileDrawer({
     onSave({
       first_name: firstName,
       last_name: lastName,
-      title,
-      department,
+      phone_number: phoneNumber,
+      student_address: studentAddress,
       bio,
     });
   };
@@ -75,7 +76,7 @@ export default function EditProfileDrawer({
           </span>
           <div className="min-w-0 flex-1">
             <SheetTitle className="text-xl! font-bold text-navy!">Edit profile</SheetTitle>
-            <SheetDescription className="text-sm!">Update your personal information and biography.</SheetDescription>
+            <SheetDescription className="text-sm!">Update your personal contact details and bio.</SheetDescription>
           </div>
           <Button
             type="button"
@@ -92,11 +93,11 @@ export default function EditProfileDrawer({
         <form onSubmit={handleSubmit} className="mt-6 flex flex-1 flex-col gap-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="edit-first-name" className="text-sm! font-semibold text-navy">
+              <Label htmlFor="applicant-first-name" className="text-sm! font-semibold text-navy">
                 First name <span className="text-amber">*</span>
               </Label>
               <Input
-                id="edit-first-name"
+                id="applicant-first-name"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
@@ -104,11 +105,11 @@ export default function EditProfileDrawer({
               />
             </div>
             <div>
-              <Label htmlFor="edit-last-name" className="text-sm! font-semibold text-navy">
+              <Label htmlFor="applicant-last-name" className="text-sm! font-semibold text-navy">
                 Last name <span className="text-amber">*</span>
               </Label>
               <Input
-                id="edit-last-name"
+                id="applicant-last-name"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
@@ -118,40 +119,40 @@ export default function EditProfileDrawer({
           </div>
 
           <div>
-            <Label htmlFor="edit-title" className="text-sm! font-semibold text-navy">
-              Title
+            <Label htmlFor="applicant-phone" className="text-sm! font-semibold text-navy">
+              Phone number
             </Label>
             <Input
-              id="edit-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. System Administrator"
+              id="applicant-phone"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              placeholder="e.g. 09123456789"
               className={FIELD_INPUT}
             />
           </div>
 
           <div>
-            <Label htmlFor="edit-department" className="text-sm! font-semibold text-navy">
-              Department
+            <Label htmlFor="applicant-address" className="text-sm! font-semibold text-navy">
+              Permanent address
             </Label>
             <Input
-              id="edit-department"
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-              placeholder="e.g. IT Department"
+              id="applicant-address"
+              value={studentAddress}
+              onChange={(e) => setStudentAddress(e.target.value)}
+              placeholder="e.g. 123 Main St, City, Province"
               className={FIELD_INPUT}
             />
           </div>
 
           <div>
-            <Label htmlFor="edit-bio" className="text-sm! font-semibold text-navy">
+            <Label htmlFor="applicant-bio" className="text-sm! font-semibold text-navy">
               Bio
             </Label>
             <Textarea
-              id="edit-bio"
+              id="applicant-bio"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="A brief bio about your role and responsibilities..."
+              placeholder="A brief bio about your academic goals and background..."
               rows={4}
               className="mt-1.5 min-h-24! resize-y border-line bg-[#f7f9fb]! text-sm! md:text-sm!"
             />

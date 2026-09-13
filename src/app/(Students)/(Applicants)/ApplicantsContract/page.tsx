@@ -3,6 +3,7 @@
 import { FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -63,14 +64,7 @@ export default function ApplicantsContractPage() {
 
   return (
     <div className="min-h-full bg-[#faf8f5]">
-      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-line bg-white px-5 py-3.5 md:px-8">
-        <div className="min-w-0">
-          <h1 className="truncate text-xl font-bold text-navy!">Contract</h1>
-          <p className="truncate text-sm text-muted-foreground">
-            Review, correct, and sign your scholarship agreement.
-          </p>
-        </div>
-      </header>
+      <PageHeader title="Contract" subtitle="Review, correct, and sign your scholarship agreement." />
 
       <div className="flex flex-col gap-4 px-5 pt-5 pb-24 md:px-10">
         {loading ? (

@@ -1,8 +1,8 @@
 "use client";
 
-import { Bell, Check, Menu } from "lucide-react";
+import { Check } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSidebar } from "@/components/SidebarContext";
+import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/components/ToastContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSocketEvent } from "@/contexts/SocketContext";
@@ -25,7 +25,6 @@ import { WizardSkeleton } from "./components/WizardSkeleton";
 import { getWizardSteps, resolveStep, type WizardStep } from "./components/wizard-helpers";
 
 export default function ApplicantsApplicationPage() {
-  const { toggleMobile } = useSidebar();
   const { user, refreshUser } = useAuth();
   const { showToast } = useToast();
 
@@ -220,26 +219,7 @@ export default function ApplicantsApplicationPage() {
 
   return (
     <div>
-      <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border bg-white px-5 py-3.5">
-        <div className="flex min-w-0 items-center">
-          <button
-            type="button"
-            className="vd-mobile-toggle mr-2 shrink-0 md:hidden"
-            onClick={toggleMobile}
-            aria-label="Open sidebar"
-          >
-            <Menu className="size-5" />
-          </button>
-          <div className="min-w-0">
-            <h1 className="truncate text-xl font-bold text-navy">Application</h1>
-            <p className="truncate text-sm text-muted-foreground">Apply in 3 quick steps.</p>
-          </div>
-        </div>
-        <span className="relative flex size-9 shrink-0 items-center justify-center rounded-full bg-muted">
-          <Bell className="size-4 text-navy" />
-          <span className="absolute top-2 right-2 size-1.75 rounded-full border-2 border-muted bg-amber" />
-        </span>
-      </header>
+      <PageHeader title="Application" subtitle="Apply in 3 quick steps." />
 
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-5 py-6">
         {loadError ? (

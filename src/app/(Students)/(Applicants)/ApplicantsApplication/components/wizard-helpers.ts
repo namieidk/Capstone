@@ -65,22 +65,30 @@ export function formatDateTime(iso: string): string {
 
 // Document types recognized by the backend verification engine.
 export const DOCUMENT_TYPE_OPTIONS = [
-  { value: "Form 138", label: "Form 138 / Report Card (High School)" },
+  { value: "Form 138", label: "Form 138 / Report Card (Senior High)" },
+  { value: "Form 9", label: "Form 9 / SF9 (Senior High School)" },
   { value: "TOR", label: "Transcript of Records / TOR (College)" },
-  { value: "Certificate of Grades", label: "Certificate of Grades" },
-  { value: "Form 137", label: "Form 137 (Permanent Record)" },
+  { value: "Certificate of Grades", label: "Certificate of Grades / COG" },
 ] as const;
 export const DEFAULT_DOCUMENT_TYPE = DOCUMENT_TYPE_OPTIONS[0].value;
 
 export function isHighSchoolDoc(docType: string): boolean {
-  return /138|137|form 9|report card|high school|shs|senior high/i.test(docType || "");
+  return /138|137|form\s*9|sf9|report card|high school|shs|senior high/i.test(docType || "");
 }
 
 export function getFilteredDocumentTypeOptions(yearLevel: number = 1) {
   if (yearLevel >= 2) {
-    return DOCUMENT_TYPE_OPTIONS.filter((o) => !isHighSchoolDoc(o.value) && !isHighSchoolDoc(o.label));
+    // 2nd to 4th year college: TOR or Certificate of Grades
+    return [
+      { value: "TOR", label: "Transcript of Records / TOR (College)" },
+      { value: "Certificate of Grades", label: "Certificate of Grades / COG" },
+    ];
   }
-  return DOCUMENT_TYPE_OPTIONS;
+  // 1st year applicant: Form 138 or Form 9 from Senior High School
+  return [
+    { value: "Form 138", label: "Form 138 / Report Card (Senior High)" },
+    { value: "Form 9", label: "Form 9 / SF9 (Senior High School)" },
+  ];
 }
 
 export function getDefaultDocumentType(yearLevel: number = 1): string {
@@ -90,7 +98,7 @@ export function getDefaultDocumentType(yearLevel: number = 1): string {
 export function getWizardSteps(yearLevel: number = 1): Array<{ step: WizardStep; label: string; sub: string }> {
   return [
     { step: 1, label: "Application", sub: "Your details" },
-    { step: 2, label: "Documents", sub: yearLevel >= 2 ? "TOR / Grades" : "Form 138 / TOR" },
+    { step: 2, label: "Documents", sub: yearLevel >= 2 ? "TOR / Grades" : "Form 138 / Form 9" },
     { step: 3, label: "Status", sub: "Track progress" },
   ];
 }

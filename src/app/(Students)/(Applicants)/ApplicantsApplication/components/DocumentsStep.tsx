@@ -88,6 +88,8 @@ export function DocumentsStep({
   useEffect(() => {
     if (currentYearLevel >= 2 && isHighSchoolDoc(docType)) {
       setDocType(getDefaultDocumentType(currentYearLevel));
+    } else if (currentYearLevel === 1 && !isHighSchoolDoc(docType)) {
+      setDocType(getDefaultDocumentType(currentYearLevel));
     }
   }, [currentYearLevel, docType]);
 
@@ -116,10 +118,15 @@ export function DocumentsStep({
       return;
     }
 
+    if (currentYearLevel === 1 && !isHighSchoolDoc(docType)) {
+      setError("1st-year applicants are required to upload their Senior High School Form 138 or Form 9 report card.");
+      return;
+    }
+
     setUploading(true);
     setError("");
     try {
-      setPhase(picked.length > 1 ? "Uploading files (backend merging into 1 PDF)..." : "Uploading...");
+      setPhase(picked.length > 1 ? "Uploading files (merging all pages into 1 PDF)..." : "Uploading...");
       await onUpload(picked, docType);
       setPicked([]);
     } catch (err) {
@@ -143,6 +150,15 @@ export function DocumentsStep({
     if (currentYearLevel >= 2 && targetDoc && isHighSchoolDoc(targetDoc.document_type)) {
       setError(
         `Students in Year ${currentYearLevel} (2nd to 4th year) cannot upload or replace Senior High School Form 138 / Form 9 documents. Please upload a Transcript of Records (TOR) instead.`,
+      );
+      setReplaceTarget(null);
+      if (replaceInputRef.current) replaceInputRef.current.value = "";
+      return;
+    }
+
+    if (currentYearLevel === 1 && targetDoc && !isHighSchoolDoc(targetDoc.document_type)) {
+      setError(
+        "1st-year applicants cannot upload college transcripts. Please upload your Senior High School Form 138 or Form 9 instead.",
       );
       setReplaceTarget(null);
       if (replaceInputRef.current) replaceInputRef.current.value = "";
@@ -178,7 +194,7 @@ export function DocumentsStep({
 
   return (
     <div className="flex flex-col gap-4">
-      {currentYearLevel >= 2 && (
+      {currentYearLevel >= 2 ? (
         <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-50/80 p-3.5 text-sm text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
           <AlertCircle className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400" />
           <div className="leading-relaxed">
@@ -189,6 +205,18 @@ export function DocumentsStep({
             </p>
           </div>
         </div>
+      ) : (
+        <div className="flex items-start gap-3 rounded-xl border border-sky-500/30 bg-sky-50/80 p-3.5 text-sm text-sky-900 dark:bg-sky-950/30 dark:text-sky-200">
+          <AlertCircle className="mt-0.5 size-5 shrink-0 text-sky-600 dark:text-sky-400" />
+          <div className="leading-relaxed">
+            <p className="font-semibold">1st Year Document Requirement</p>
+            <p className="mt-0.5 text-xs text-sky-800 dark:text-sky-300">
+              As a 1st-year applicant, upload your Senior High School Form 138 (Report Card) or Form 9 / SF9. If your
+              report card has multiple pages (e.g. front & back), select both files — AI will analyze all pages
+              together.
+            </p>
+          </div>
+        </div>
       )}
 
       <Card className="rounded-[18px]! border-border bg-white shadow-xs">
@@ -196,8 +224,8 @@ export function DocumentsStep({
           <CardTitle className="text-lg! text-navy">Upload your grades</CardTitle>
           <CardDescription className="text-sm!">
             {currentYearLevel >= 2
-              ? "Upload your Transcript of Records (TOR) or Certificate of Grades. Select multiple images or PDFs — the system will automatically parse and merge them."
-              : "Upload your Form 138, TOR, or Certificate of Grades. Select multiple images or PDFs — the system will automatically parse and merge them."}
+              ? "Upload your Transcript of Records (TOR) or Certificate of Grades. Select multiple images or PDFs — the system will automatically parse and merge all pages."
+              : "Upload your Senior High School Form 138 or Form 9. Select multiple images or PDFs (e.g. front and back pages) — the system will automatically parse and merge all pages."}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
