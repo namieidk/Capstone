@@ -125,6 +125,12 @@ export function syncParseur(id: number) {
   return apiPost<{ ocr_data: Record<string, unknown> }>(`${B}/${id}/sync-parseur`);
 }
 
+export function retryDocumentOcr(id: number) {
+  return apiPost<{ processed: boolean; status: string; extracted_data: Record<string, unknown> }>(
+    `${B}/${id}/retry-ocr`,
+  );
+}
+
 export function requestDocumentChanges(id: number, reason: string) {
   return apiPatch<ScholarDocument>(`${B}/${id}/request-changes`, { reason });
 }

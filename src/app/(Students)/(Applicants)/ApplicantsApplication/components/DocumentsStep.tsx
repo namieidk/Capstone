@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { GradeItem, ScholarDocument } from "@/lib/api/documents";
+import { type GradeItem, retryDocumentOcr, type ScholarDocument } from "@/lib/api/documents";
 import { DocumentReviewDialog } from "./DocumentReviewDialog";
 import {
   docStatusMeta,
@@ -44,7 +44,7 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-const CONFIRMABLE = ["PENDING", "PASSED_PRECHECK"];
+const CONFIRMABLE = ["PENDING", "PASSED_PRECHECK", "NEEDS_REUPLOAD"];
 
 export function DocumentsStep({
   documents,
@@ -68,8 +68,22 @@ export function DocumentsStep({
   const replaceInputRef = useRef<HTMLInputElement>(null);
   const [replaceTarget, setReplaceTarget] = useState<number | null>(null);
   const [confirmReplaceTarget, setConfirmReplaceTarget] = useState<ScholarDocument | null>(null);
+  const [retryingId, setRetryingId] = useState<number | null>(null);
 
   const documentOptions = getFilteredDocumentTypeOptions(currentYearLevel);
+
+  async function handleRetryOcr(docId: number) {
+    try {
+      setRetryingId(docId);
+      setError("");
+      await retryDocumentOcr(docId);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to retry AI extraction.";
+      setError(msg);
+    } finally {
+      setRetryingId(null);
+    }
+  }
 
   useEffect(() => {
     if (currentYearLevel >= 2 && isHighSchoolDoc(docType)) {
@@ -311,7 +325,10 @@ export function DocumentsStep({
                       </p>
                     )}
                     {doc.status === "NEEDS_REUPLOAD" && doc.rejection_reason && (
-                      <p className="mt-1 text-xs font-medium text-destructive">Coordinator: {doc.rejection_reason}</p>
+                      <p className="mt-1 text-xs font-medium text-destructive">
+                        {doc.rejection_reason.includes("AI") ? "Notice: " : "Coordinator: "}
+                        {doc.rejection_reason}
+                      </p>
                     )}
                   </div>
                   <Badge variant={meta.variant} className="h-6 px-2.5 text-xs! gap-1.5">
@@ -331,6 +348,35 @@ export function DocumentsStep({
                         <Loader2 className="size-3.5 animate-spin text-sky-600" />
                         Analyzing...
                       </Button>
+                    ) : doc.status === "NEEDS_REUPLOAD" ? (
+                      <>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-8 gap-1.5 text-xs! text-navy border-amber-300 bg-amber-50/60 hover:bg-amber-100/80 dark:border-amber-800 dark:bg-amber-950/30"
+                          onClick={() => handleRetryOcr(doc.document_id)}
+                          disabled={busy || retryingId === doc.document_id}
+                          title="Retry AI OCR analysis"
+                        >
+                          {retryingId === doc.document_id ? (
+                            <Loader2 className="size-3.5 animate-spin text-amber-600" />
+                          ) : (
+                            <Sparkles className="size-3.5 text-amber-600" />
+                          )}
+                          {retryingId === doc.document_id ? "Retrying..." : "Retry AI"}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="h-8 gap-1.5 text-xs!"
+                          onClick={() => setReviewTarget(doc)}
+                          disabled={busy}
+                        >
+                          <Check className="size-3.5" />
+                          Enter Manually
+                        </Button>
+                      </>
                     ) : confirmable ? (
                       <Button
                         type="button"

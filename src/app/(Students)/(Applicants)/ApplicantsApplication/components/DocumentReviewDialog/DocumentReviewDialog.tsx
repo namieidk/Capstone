@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { CarouselApi } from "@/components/ui/carousel";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { type GradeItem, syncParseur } from "@/lib/api/documents";
+import { type GradeItem, retryDocumentOcr, syncParseur } from "@/lib/api/documents";
 import { DialogFooterBar } from "./DialogFooterBar";
 import { DialogHeaderBar } from "./DialogHeaderBar";
 import { DocumentPreviewCarousel } from "./DocumentPreviewCarousel";
@@ -31,26 +31,15 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
   const [academicYear, setAcademicYear] = useState("");
   const [generalAverage, setGeneralAverage] = useState<string>("");
   const [gradeItems, setGradeItems] = useState<EditableGradeItem[]>([]);
-  const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [manualBypass, setManualBypass] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState("");
 
-  const rawExtracted: ExtractedDataShape = useMemo(() => {
-    return (doc?.extracted_data as ExtractedDataShape) || {};
-  }, [doc]);
+  const isReadOnly = doc?.status === "VERIFIED" || doc?.status === "STUDENT_CONFIRMED";
 
-  const rawConfirmed: ConfirmedDataShape | null = useMemo(() => {
-    return (doc?.confirmed_data as ConfirmedDataShape) || null;
-  }, [doc]);
-
-  const isReadOnly = useMemo(() => {
-    if (!doc) return true;
-    return doc.status === "STUDENT_CONFIRMED" || doc.status === "VERIFIED";
-  }, [doc]);
-
-  // Derive preview page URLs
+  // Parse candidate page URLs safely
   const candidatePageUrls = useMemo(() => {
     if (!doc?.file_url) return [];
     return generatePreviewPageUrls(doc.file_url, doc.file_type);
@@ -60,21 +49,37 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
     return candidatePageUrls.filter((_, idx) => !failedPages[idx]);
   }, [candidatePageUrls, failedPages]);
 
-  // Sync state whenever document changes or dialog opens
+  // Extract raw JSON blobs
+  const rawExtracted = useMemo(() => {
+    if (!doc?.extracted_data) return {} as ExtractedDataShape;
+    return (
+      typeof doc.extracted_data === "string" ? JSON.parse(doc.extracted_data) : doc.extracted_data
+    ) as ExtractedDataShape;
+  }, [doc?.extracted_data]);
+
+  const rawConfirmed = useMemo(() => {
+    if (!doc?.confirmed_data) return null;
+    return (
+      typeof doc.confirmed_data === "string" ? JSON.parse(doc.confirmed_data) : doc.confirmed_data
+    ) as ConfirmedDataShape;
+  }, [doc?.confirmed_data]);
+
+  // Sync state when dialog opens or document changes
   useEffect(() => {
-    if (!doc || !open) return;
+    if (!doc || !open) {
+      setManualBypass(false);
+      setSyncMessage("");
+      return;
+    }
 
     setFailedPages({});
-    setCurrentPage(1);
-    setMobileTab("preview");
     setFormError("");
-    setManualBypass(false);
-    setSyncing(false);
-    setSyncMessage("");
 
-    const ay = String(rawConfirmed?.academic_year || rawExtracted?.academic_year || "");
+    // Populate AY
+    const ay = rawConfirmed?.academic_year || rawExtracted?.academic_year || "";
     setAcademicYear(ay);
 
+    // Populate GA
     const ga =
       rawConfirmed?.general_average != null
         ? String(rawConfirmed.general_average)
@@ -83,6 +88,7 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
           : "";
     setGeneralAverage(ga);
 
+    // Populate Grades
     let rawList: ExtractedGradeRaw[] = [];
     if (Array.isArray(rawConfirmed?.grade_items) && rawConfirmed.grade_items.length > 0) {
       rawList = rawConfirmed.grade_items;
@@ -105,19 +111,28 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
   const isOcrPending =
     doc?.status === "PENDING" && !manualBypass && (!rawConfirmed?.grade_items || rawConfirmed.grade_items.length === 0);
 
-  async function handleSyncStatus() {
+  async function handleRetryOrSync() {
     if (!doc) return;
     setSyncing(true);
     setSyncMessage("");
     try {
-      const res = await syncParseur(doc.document_id);
-      if (res?.ocr_data) {
-        setSyncMessage("Extraction completed! Reloading data...");
+      const res = await retryDocumentOcr(doc.document_id);
+      if (res?.processed || res?.status === "PASSED_PRECHECK") {
+        setSyncMessage("AI extraction complete! Refreshing fields...");
       } else {
-        setSyncMessage("Parseur is still analyzing the file. Please check again in a moment.");
+        setSyncMessage("AI analysis dispatched. Please check again in a few seconds.");
       }
     } catch {
-      setSyncMessage("AI is still processing your document. Please wait a few more seconds.");
+      try {
+        const parseurRes = await syncParseur(doc.document_id);
+        if (parseurRes?.ocr_data) {
+          setSyncMessage("Extraction completed! Reloading data...");
+        } else {
+          setSyncMessage("Analysis still processing. You can also enter grades manually.");
+        }
+      } catch {
+        setSyncMessage("AI analysis encountered an issue. You can enter grades manually below.");
+      }
     } finally {
       setSyncing(false);
     }
@@ -186,16 +201,18 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
     if (!doc) return;
     setFormError("");
     const parsedGa = generalAverage.trim() ? Number(generalAverage) : undefined;
-    if (parsedGa !== undefined && (Number.isNaN(parsedGa) || parsedGa < 50 || parsedGa > 100)) {
-      setFormError("General Average must be a valid number between 50 and 100.");
+    if (parsedGa !== undefined && (Number.isNaN(parsedGa) || parsedGa <= 0 || parsedGa > 100)) {
+      setFormError("General Average must be a valid positive number (e.g., 1.00–5.00 or 75–100).");
       return;
     }
 
     const invalidGrade = gradeItems.find(
-      (i) => i.grade === "" || Number.isNaN(Number(i.grade)) || Number(i.grade) < 50 || Number(i.grade) > 100,
+      (i) => i.grade === "" || Number.isNaN(Number(i.grade)) || Number(i.grade) <= 0 || Number(i.grade) > 100,
     );
     if (invalidGrade) {
-      setFormError(`Grade for "${invalidGrade.subject_name || "subject"}" must be a valid number between 50 and 100.`);
+      setFormError(
+        `Grade for "${invalidGrade.subject_name || "subject"}" must be a valid positive number (e.g., 1.00–5.00 or 75–100).`,
+      );
       return;
     }
 
@@ -310,8 +327,8 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
                 </div>
                 <h4 className="text-sm font-semibold text-navy">AI is reading your document...</h4>
                 <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-muted-foreground">
-                  Parseur AI is extracting your academic year, general average, and subject grades. This usually takes
-                  15–30 seconds.
+                  Our Vision AI is extracting your academic year, general average, and subject grades (10–25s). Hang
+                  tight!
                 </p>
                 {syncMessage && (
                   <p className="mt-2 text-xs font-medium text-sky-800 dark:text-sky-300">{syncMessage}</p>
@@ -323,7 +340,7 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
                     size="sm"
                     className="h-8 gap-1.5 text-xs!"
                     disabled={syncing}
-                    onClick={handleSyncStatus}
+                    onClick={handleRetryOrSync}
                   >
                     <RefreshCw className={`size-3.5 ${syncing ? "animate-spin" : ""}`} />
                     {syncing ? "Checking..." : "Check Status"}
@@ -351,6 +368,32 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
               </div>
             ) : (
               <>
+                {doc.status === "NEEDS_REUPLOAD" && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3.5 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="size-4 shrink-0 text-amber-600" />
+                        <span className="font-semibold">AI Extraction Notice</span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs! gap-1 border-amber-300 bg-white hover:bg-amber-50 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200"
+                        onClick={handleRetryOrSync}
+                        disabled={syncing}
+                      >
+                        <RefreshCw className={`size-3 ${syncing ? "animate-spin" : ""}`} />
+                        {syncing ? "Retrying..." : "Retry AI Extraction"}
+                      </Button>
+                    </div>
+                    <p className="mt-1 text-[11px] leading-relaxed text-amber-800 dark:text-amber-300">
+                      {doc.rejection_reason ||
+                        "Automatic grade extraction could not read all fields. You can retry AI Extraction, replace the file, or enter your subjects and grades manually below."}
+                    </p>
+                  </div>
+                )}
+
                 {/* Metadata and advisories */}
                 <ExtractedMetadataView
                   extractedData={rawExtracted}
