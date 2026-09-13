@@ -74,7 +74,7 @@ export function Qualifications() {
       id="qualifications"
       ref={sectionRef}
       onMouseMove={handleMouseMove}
-      className="relative overflow-hidden bg-background py-19"
+      className="relative overflow-hidden bg-[#feffed] py-19"
     >
       <style>{`
         @keyframes vs-firefly-drift {
@@ -84,6 +84,20 @@ export function Qualifications() {
           75% { transform: translate(4px, 10px) scale(1.1); opacity: 0.85; }
         }
       `}</style>
+
+      {/* Top edge: a soft, hand-drawn horizon line instead of a hard cut —
+          echoes the meadow-at-dusk feel of the firefly field below it. */}
+      <svg
+        aria-hidden
+        viewBox="0 0 1440 72"
+        preserveAspectRatio="none"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-0 h-14 w-full text-background sm:h-18"
+      >
+        <path
+          d="M0,20 C60,6 130,30 210,24 C300,17 360,2 450,10 C540,18 600,38 690,32 C780,26 840,4 930,12 C1020,20 1080,40 1170,30 C1260,20 1320,4 1440,16 L1440,0 L0,0 Z"
+          fill="currentColor"
+        />
+      </svg>
 
       {/* Firefly field: soft amber dots that wander and flicker, and drift
           toward the cursor for a light interactive feel. */}
@@ -152,6 +166,20 @@ export function Qualifications() {
           </div>
         </div>
       </Container>
+
+      {/* Bottom edge: the same hand-drawn horizon treatment, mirrored with
+          its own irregular rhythm so it doesn't read as a copy-pasted wave. */}
+      <svg
+        aria-hidden
+        viewBox="0 0 1440 72"
+        preserveAspectRatio="none"
+        className="pointer-events-none absolute inset-x-0 bottom-0 -z-0 h-14 w-full text-background sm:h-18"
+      >
+        <path
+          d="M0,52 C70,64 140,38 220,46 C310,55 370,70 460,60 C550,50 610,30 700,38 C790,46 850,68 940,58 C1030,48 1090,26 1180,36 C1270,46 1330,64 1440,54 L1440,72 L0,72 Z"
+          fill="currentColor"
+        />
+      </svg>
     </section>
   );
 }

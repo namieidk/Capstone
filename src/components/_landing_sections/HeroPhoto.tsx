@@ -3,8 +3,6 @@
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 
-const PHOTO_MASK = "linear-gradient(to right, transparent 0%, transparent 34%, black 44%, black 100%)";
-
 export function HeroPhoto() {
   const parallaxRef = useRef<HTMLDivElement>(null);
 
@@ -38,10 +36,24 @@ export function HeroPhoto() {
           quality={100}
           unoptimized
           sizes="100vw"
-          className="object-cover"
-          style={{ maskImage: PHOTO_MASK, WebkitMaskImage: PHOTO_MASK }}
+          className="object-cover object-[80%_center]"
         />
       </div>
+
+      {/* Full-bleed brand tint over the photo — deep forest-green washing
+          into navy at the edges — instead of masking the photo off on one
+          side. This is what makes the whole section read as one dark,
+          editorial banner rather than a light page with a photo cutout. */}
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-linear-to-br from-[#123524]/78 via-[#1E3A5F]/70 to-[#0F2A1C]/78"
+      />
+      {/* Extra darkening on the left where the headline sits, so text
+          contrast holds regardless of what's in the photo underneath. */}
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-linear-to-r from-[#0F2A1C]/55 via-[#0F2A1C]/15 to-transparent"
+      />
     </div>
   );
 }
