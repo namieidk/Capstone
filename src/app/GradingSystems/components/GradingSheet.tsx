@@ -4,7 +4,6 @@ import { Pencil, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BAD, BAD_BG } from "@/components/Adminshared";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
@@ -44,6 +43,27 @@ function InfoItem({ label, value }: { label: string; value: string }) {
       <p className="text-sm font-bold text-navy tabular-nums">{value}</p>
     </div>
   );
+}
+
+function getSpecialCodeBadgeClass(status: string): string {
+  const upper = status.toUpperCase();
+  if (upper.includes("FAIL") || upper.includes("DROP") || upper.includes("WITHDRAW")) {
+    return "bg-red-50 text-red-700 border-red-200";
+  }
+  if (upper.includes("LACK") || upper.includes("INC") || upper.includes("HOLD") || upper.includes("PAYMENT")) {
+    return "bg-amber-50 text-amber-800 border-amber-200";
+  }
+  if (upper.includes("PASS") || upper === "PSD" || upper === "P") {
+    return "bg-emerald-50 text-emerald-800 border-emerald-200";
+  }
+  return "bg-[#f7f9fb] text-navy border-line";
+}
+
+function formatScaleLabel(scale: string): string {
+  if (scale === "NUMERIC_4_POINT") return "4.0 Scale (Ascending - e.g. UM)";
+  if (scale === "NUMERIC_5_POINT") return "5.0 Scale (Descending - e.g. USEP / UP)";
+  if (scale === "PERCENTAGE_100") return "100-Point Percentage (DepEd / SHS)";
+  return scale;
 }
 
 export function GradingSheet({ school, onClose, canDelete, onUpdate, onDelete }: GradingSheetProps) {
@@ -106,14 +126,16 @@ export function GradingSheet({ school, onClose, canDelete, onUpdate, onDelete }:
         <SheetContent
           side="right"
           showCloseButton={false}
-          className="w-[440px]! max-w-[92vw]! gap-0 overflow-y-auto border-line bg-white p-8 text-sm!"
+          className="w-[480px]! max-w-[92vw]! gap-0 overflow-y-auto border-line bg-white p-8 text-sm!"
         >
           {school && (
             <>
               <div className="flex items-start gap-3.5">
                 <div className="min-w-0 flex-1">
                   <SheetTitle className="text-xl! text-navy!">{school.school_name}</SheetTitle>
-                  <SheetDescription className="text-sm!">{school.grading_scale}</SheetDescription>
+                  <SheetDescription className="text-sm! font-medium text-navy/70">
+                    {formatScaleLabel(school.grading_scale)}
+                  </SheetDescription>
                 </div>
                 <Button
                   type="button"
@@ -162,15 +184,22 @@ export function GradingSheet({ school, onClose, canDelete, onUpdate, onDelete }:
                     <InfoItem label="Failing" value={school.failing_grade.toFixed(2)} />
                   </div>
 
-                  <p className="mt-6 text-xs font-bold uppercase tracking-wider text-[#9a9a94]">Special codes</p>
+                  <p className="mt-6 text-xs font-bold uppercase tracking-wider text-[#9a9a94]">Special Status Codes</p>
                   {codes.length === 0 ? (
                     <p className="mt-2 text-sm text-muted-foreground">None configured.</p>
                   ) : (
                     <div className="mt-2 flex flex-wrap gap-2">
                       {codes.map(([code, status]) => (
-                        <Badge key={code} variant="outline" className="h-6 px-2.5 text-xs! tabular-nums">
-                          {code} → {status}
-                        </Badge>
+                        <span
+                          key={code}
+                          className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold tabular-nums ${getSpecialCodeBadgeClass(
+                            String(status),
+                          )}`}
+                        >
+                          <span className="font-bold">{code}</span>
+                          <span className="text-muted-foreground">→</span>
+                          <span>{String(status)}</span>
+                        </span>
                       ))}
                     </div>
                   )}

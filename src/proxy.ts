@@ -44,13 +44,13 @@ function isPublicRoute(pathname: string): boolean {
 function isRouteAllowedForRole(pathname: string, role: string): boolean {
   const upper = role.toUpperCase();
 
+  // Shared Staff routes
+  if (pathname.startsWith("/GradingSystems")) {
+    return upper === "ADMIN" || upper === "COORDINATOR" || upper === "GRANTOR";
+  }
+
   // Admin routes
-  if (
-    pathname.startsWith("/Admin") ||
-    pathname.startsWith("/AuditLogs") ||
-    pathname.startsWith("/GlobalSettings") ||
-    pathname.startsWith("/GradingSystems")
-  ) {
+  if (pathname.startsWith("/Admin") || pathname.startsWith("/AuditLogs") || pathname.startsWith("/GlobalSettings")) {
     return upper === "ADMIN";
   }
 

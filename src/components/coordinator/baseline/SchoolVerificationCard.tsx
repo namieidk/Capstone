@@ -94,10 +94,28 @@ export function SchoolVerificationCard({ onScaleUpdated }: SchoolVerificationCar
             ) : (
               schools.map((s) => (
                 <TableRow key={s.school_id} className="text-xs hover:bg-muted/30">
-                  <TableCell className="py-2.5 px-4 font-medium text-foreground">{s.school_name}</TableCell>
+                  <TableCell className="py-2.5 px-4 font-medium text-foreground">
+                    <p className="font-bold text-navy">{s.school_name}</p>
+                    {s.special_codes && Object.keys(s.special_codes).length > 0 && (
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {Object.keys(s.special_codes).length} special code
+                        {Object.keys(s.special_codes).length === 1 ? "" : "s"} (
+                        {Object.keys(s.special_codes).slice(0, 3).join(", ")}
+                        {Object.keys(s.special_codes).length > 3 ? "..." : ""})
+                      </p>
+                    )}
+                  </TableCell>
 
                   <TableCell className="py-2.5 px-3 text-muted-foreground">
-                    <span className="font-mono text-[11px]">{s.grading_scale}</span>
+                    <Badge variant="outline" className="text-[11px] font-semibold border-line bg-white text-navy">
+                      {s.grading_scale === "NUMERIC_4_POINT"
+                        ? "4.0 Scale (UM)"
+                        : s.grading_scale === "NUMERIC_5_POINT"
+                          ? "5.0 Scale (USEP/UP)"
+                          : s.grading_scale === "PERCENTAGE_100"
+                            ? "100% (SHS/DepEd)"
+                            : s.grading_scale}
+                    </Badge>
                   </TableCell>
 
                   <TableCell className="py-2.5 px-2 text-center font-semibold text-foreground">

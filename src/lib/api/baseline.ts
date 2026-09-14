@@ -1,3 +1,4 @@
+import type { ActiveScholar } from "@/components/Coordinatorshared";
 import { apiGet, apiPatch, apiPost, apiPut } from "../api";
 
 const B = "/api/proxy/academic-baseline";
@@ -277,4 +278,9 @@ export async function listSchoolGradings(): Promise<SchoolGradingSystem[]> {
 // 13. Verify School Grading System
 export async function verifySchoolGrading(schoolId: number): Promise<SchoolGradingSystem> {
   return apiPatch<SchoolGradingSystem>(`${S}/schools/${schoolId}/verify`, {});
+}
+
+// 14. Coordinator: Get Active Scholars
+export async function getCoordinatorActiveScholars(): Promise<ActiveScholar[]> {
+  return apiGet<ActiveScholar[]>(`${B}/coordinator/active-scholars`);
 }

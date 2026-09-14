@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useContext, useEffect, useState } from "react";
+import { PageHeader } from "@/components/PageHeader";
 import { CurriculumMetricsSummary } from "@/components/scholar/prospectus/CurriculumMetricsSummary";
 import { EditSubjectsModal } from "@/components/scholar/prospectus/EditSubjectsModal";
 import { GradingSystemCard } from "@/components/scholar/prospectus/GradingSystemCard";
@@ -78,61 +79,65 @@ export default function ScholarProspectusPage() {
     }
   };
 
-  if (loading && !data) {
-    return (
-      <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-72" />
-          <Skeleton className="h-4 w-96" />
-        </div>
-        <Skeleton className="h-28 w-full rounded-xl" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Skeleton className="h-24 w-full rounded-lg" />
-          <Skeleton className="h-24 w-full rounded-lg" />
-          <Skeleton className="h-24 w-full rounded-lg" />
-          <Skeleton className="h-24 w-full rounded-lg" />
-        </div>
-        <Skeleton className="h-96 w-full rounded-xl" />
-      </div>
-    );
-  }
-
   const isFrozen = data?.metrics.is_baseline_frozen ?? false;
   const subjects = data?.prospectus?.subjects ?? [];
 
   return (
-    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
-      {/* 1. Header & Actions */}
-      <ProspectusHeader
-        baselineStatus={data?.academic_baseline_status || "PENDING_SCHOOL_SELECTION"}
-        isFrozen={isFrozen}
-        totalSubjects={subjects.length}
-        onUploadProspectus={() => setOpenProspectusModal(true)}
-        onUploadHistoricalCcg={() => setOpenHistoricalCcgModal(true)}
-        onEditSubjects={() => setOpenEditSubjectsModal(true)}
-        onSubmitForReview={handleSubmitForReview}
-        submittingReview={submittingReview}
+    <div className="flex min-h-full flex-col bg-[#FAF9F7]">
+      <PageHeader
+        title="Curriculum Prospectus"
+        subtitle="Manage your degree curriculum baseline, verify completed subjects, and track retention."
       />
 
-      {/* 2. Institution Grading Scale Banner */}
-      <GradingSystemCard
-        schoolSystem={data?.school_grading_system}
-        isFrozen={isFrozen}
-        onOpenSelection={() => setOpenSchoolModal(true)}
-      />
+      <div className="flex-1 p-4 sm:p-6 md:p-8 space-y-6 max-w-7xl mx-auto w-full">
+        {loading && !data ? (
+          <div className="space-y-6">
+            <Skeleton className="h-20 w-full rounded-xl" />
+            <Skeleton className="h-28 w-full rounded-xl" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <Skeleton className="h-24 w-full rounded-xl" />
+              <Skeleton className="h-24 w-full rounded-xl" />
+              <Skeleton className="h-24 w-full rounded-xl" />
+              <Skeleton className="h-24 w-full rounded-xl" />
+            </div>
+            <Skeleton className="h-96 w-full rounded-xl" />
+          </div>
+        ) : (
+          <>
+            {/* 1. Action Bar & Verification Status */}
+            <ProspectusHeader
+              baselineStatus={data?.academic_baseline_status || "PENDING_SCHOOL_SELECTION"}
+              isFrozen={isFrozen}
+              totalSubjects={subjects.length}
+              onUploadProspectus={() => setOpenProspectusModal(true)}
+              onUploadHistoricalCcg={() => setOpenHistoricalCcgModal(true)}
+              onEditSubjects={() => setOpenEditSubjectsModal(true)}
+              onSubmitForReview={handleSubmitForReview}
+              submittingReview={submittingReview}
+            />
 
-      {/* 3. Progress & Unit Metrics Summary */}
-      {data && (
-        <CurriculumMetricsSummary
-          courseName={data.prospectus?.course_name || data.course_of_study}
-          courseCode={data.prospectus?.course_code}
-          curriculumYear={data.prospectus?.curriculum_year}
-          metrics={data.metrics}
-        />
-      )}
+            {/* 2. Institution Grading Scale Banner */}
+            <GradingSystemCard
+              schoolSystem={data?.school_grading_system}
+              isFrozen={isFrozen}
+              onOpenSelection={() => setOpenSchoolModal(true)}
+            />
 
-      {/* 4. Curriculum Checklist Table */}
-      <ProspectusChecklistTable subjects={subjects} />
+            {/* 3. Progress & Unit Metrics Summary */}
+            {data && (
+              <CurriculumMetricsSummary
+                courseName={data.prospectus?.course_name || data.course_of_study}
+                courseCode={data.prospectus?.course_code}
+                curriculumYear={data.prospectus?.curriculum_year}
+                metrics={data.metrics}
+              />
+            )}
+
+            {/* 4. Curriculum Checklist Table */}
+            <ProspectusChecklistTable subjects={subjects} />
+          </>
+        )}
+      </div>
 
       {/* Modals */}
       <SchoolSelectionModal

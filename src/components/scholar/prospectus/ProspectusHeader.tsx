@@ -1,8 +1,9 @@
 "use client";
 
-import { BookOpen, Clock, FileUp, History, Lock, Pencil, Send } from "lucide-react";
+import { CheckCircle2, Clock, FileUp, History, Lock, Pencil, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface ProspectusHeaderProps {
   baselineStatus: string;
@@ -28,93 +29,109 @@ export function ProspectusHeader({
   const getStatusBadge = () => {
     if (isFrozen || baselineStatus === "BASELINE_FROZEN") {
       return (
-        <Badge className="bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border-emerald-600/30 gap-1.5 px-3 py-1 text-xs font-semibold">
-          <Lock className="w-3.5 h-3.5" /> Baseline Locked & Verified
+        <Badge className="bg-emerald-50 text-emerald-800 border-emerald-300 gap-1.5 px-3 py-1 text-xs font-semibold">
+          <Lock className="size-3.5 text-emerald-700" /> Baseline Locked & Verified
         </Badge>
       );
     }
     if (baselineStatus === "PENDING_COORDINATOR_REVIEW") {
       return (
-        <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 gap-1.5 px-3 py-1 text-xs font-semibold">
-          <Clock className="w-3.5 h-3.5" /> Under Coordinator Review
+        <Badge className="bg-amber-50 text-amber-900 border-amber-300 gap-1.5 px-3 py-1 text-xs font-semibold">
+          <Clock className="size-3.5 text-amber-700" /> Under Coordinator Review
         </Badge>
       );
     }
     if (baselineStatus === "PENDING_HISTORICAL_CCG") {
       return (
-        <Badge className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 gap-1.5 px-3 py-1 text-xs font-semibold">
-          <History className="w-3.5 h-3.5" /> Historical CCG Required
+        <Badge className="bg-blue-50 text-blue-800 border-blue-300 gap-1.5 px-3 py-1 text-xs font-semibold">
+          <History className="size-3.5 text-blue-700" /> Historical CCG Required
         </Badge>
       );
     }
     if (baselineStatus === "PENDING_PROSPECTUS") {
       return (
-        <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 gap-1.5 px-3 py-1 text-xs font-semibold">
-          <FileUp className="w-3.5 h-3.5" /> Prospectus Ingestion Pending
+        <Badge className="bg-amber-50 text-amber-900 border-amber-300 gap-1.5 px-3 py-1 text-xs font-semibold">
+          <FileUp className="size-3.5 text-amber-700" /> Prospectus Ingestion Pending
         </Badge>
       );
     }
     return (
-      <Badge variant="outline" className="gap-1.5 px-3 py-1 text-xs font-semibold">
-        <Clock className="w-3.5 h-3.5" /> School Selection Required
+      <Badge variant="outline" className="border-line text-muted-foreground gap-1.5 px-3 py-1 text-xs font-semibold">
+        <Clock className="size-3.5" /> School Selection Required
       </Badge>
     );
   };
 
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between pb-2 border-b border-border">
-      <div className="space-y-1">
+    <Card className="rounded-xl border border-line bg-white shadow-xs">
+      <CardContent className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10 text-primary">
-            <BookOpen className="w-6 h-6" />
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-tint text-navy">
+            <CheckCircle2 className="size-5 text-navy" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Academic Prospectus & Curriculum Checklist
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Manage your degree curriculum baseline, verify completed subjects, and maintain retention records.
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-base font-bold text-navy">Curriculum Checklist Status</h2>
+              {getStatusBadge()}
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Verify completed subjects and submit your baseline for coordinator evaluation.
             </p>
           </div>
         </div>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2.5">
-        {getStatusBadge()}
 
         {!isFrozen && (
-          <>
-            <Button variant="outline" size="sm" onClick={onUploadProspectus} className="gap-1.5 shadow-sm">
-              <FileUp className="w-4 h-4 text-primary" />
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onUploadProspectus}
+              className="h-9 gap-1.5 rounded-lg border-line text-xs font-medium text-navy hover:bg-tint"
+            >
+              <FileUp className="size-3.5 text-navy" />
               Upload Prospectus
             </Button>
 
-            <Button variant="outline" size="sm" onClick={onUploadHistoricalCcg} className="gap-1.5 shadow-sm">
-              <History className="w-4 h-4 text-primary" />
-              Upload Historical CCG
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onUploadHistoricalCcg}
+              className="h-9 gap-1.5 rounded-lg border-line text-xs font-medium text-navy hover:bg-tint"
+            >
+              <History className="size-3.5 text-navy" />
+              Upload Past CCG
             </Button>
 
             {totalSubjects > 0 && (
-              <Button variant="outline" size="sm" onClick={onEditSubjects} className="gap-1.5 shadow-sm">
-                <Pencil className="w-4 h-4" />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onEditSubjects}
+                className="h-9 gap-1.5 rounded-lg border-line text-xs font-medium text-navy hover:bg-tint"
+              >
+                <Pencil className="size-3.5 text-navy" />
                 Edit Checklist
               </Button>
             )}
 
             {totalSubjects > 0 && baselineStatus !== "PENDING_COORDINATOR_REVIEW" && (
               <Button
+                type="button"
                 size="sm"
                 onClick={onSubmitForReview}
                 disabled={submittingReview}
-                className="gap-1.5 shadow-sm bg-primary text-primary-foreground hover:bg-primary/90"
+                className="h-9 gap-1.5 rounded-lg bg-navy px-4 text-xs font-semibold text-white shadow-xs hover:bg-navy/90"
               >
-                <Send className="w-4 h-4" />
+                <Send className="size-3.5 text-white" />
                 {submittingReview ? "Submitting..." : "Submit for Review"}
               </Button>
             )}
-          </>
+          </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

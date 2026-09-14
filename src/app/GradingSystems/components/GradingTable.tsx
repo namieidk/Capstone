@@ -105,10 +105,16 @@ export function GradingTable({ schools, totalCount, loading, loadError, onRetry,
                     <TableCell className="py-4 text-center!">
                       <Badge
                         variant="outline"
-                        className="h-6 w-32 justify-center truncate px-2.5 text-xs!"
+                        className="h-6 px-2.5 text-xs font-semibold text-navy border-line bg-white"
                         title={school.grading_scale}
                       >
-                        {school.grading_scale}
+                        {school.grading_scale === "NUMERIC_4_POINT"
+                          ? "4.0 Scale (UM)"
+                          : school.grading_scale === "NUMERIC_5_POINT"
+                            ? "5.0 Scale (USEP/UP)"
+                            : school.grading_scale === "PERCENTAGE_100"
+                              ? "100% (SHS/DepEd)"
+                              : school.grading_scale}
                       </Badge>
                     </TableCell>
                     <TableCell className="whitespace-normal! py-4 text-center! text-sm tabular-nums">

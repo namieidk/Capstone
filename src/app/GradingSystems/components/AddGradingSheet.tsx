@@ -49,7 +49,7 @@ export function AddGradingSheet({ open, onOpenChange, onCreate }: AddGradingShee
       <SheetContent
         side="right"
         showCloseButton={false}
-        className="w-[440px]! max-w-[92vw]! gap-0 overflow-y-auto border-line bg-white p-8 text-sm!"
+        className="w-[480px]! max-w-[92vw]! gap-0 overflow-y-auto border-line bg-white p-8 text-sm!"
       >
         <div className="flex items-start gap-3.5">
           <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-navy text-white shadow-xs">

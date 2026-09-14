@@ -110,10 +110,12 @@ export function EditSubjectsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[720px] max-h-[85vh] flex flex-col">
+      <DialogContent className="sm:max-w-180 max-h-[85vh] flex flex-col rounded-2xl border-line bg-white p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lg font-bold">
-            <Pencil className="w-5 h-5 text-primary" />
+          <DialogTitle className="flex items-center gap-2 text-lg font-bold text-navy">
+            <span className="flex size-9 items-center justify-center rounded-lg bg-tint text-navy">
+              <Pencil className="size-5" />
+            </span>
             Edit Curriculum Checklist Subjects
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
@@ -125,47 +127,47 @@ export function EditSubjectsModal({
           {subjectsList.map((sub, idx) => (
             <div
               key={sub.subject_id ? `edit-sub-id-${sub.subject_id}` : `edit-sub-idx-${sub.subject_code}-${idx}`}
-              className="p-3 bg-muted/40 rounded-lg border border-border/60 grid grid-cols-12 gap-2.5 items-center text-xs"
+              className="p-3 bg-[#f7f9fb] rounded-xl border border-line grid grid-cols-12 gap-2.5 items-center text-xs"
             >
               <div className="col-span-3 space-y-1">
-                <Label className="text-[10px] text-muted-foreground">Subject Code</Label>
+                <Label className="text-[10px] font-bold text-navy">Subject Code</Label>
                 <Input
                   value={sub.subject_code}
                   onChange={(e) => handleFieldChange(idx, "subject_code", e.target.value)}
-                  className="h-8 text-xs font-mono"
+                  className="h-8 text-xs font-mono border-line bg-white"
                 />
               </div>
 
               <div className="col-span-4 space-y-1">
-                <Label className="text-[10px] text-muted-foreground">Descriptive Title</Label>
+                <Label className="text-[10px] font-bold text-navy">Descriptive Title</Label>
                 <Input
                   value={sub.descriptive_title}
                   onChange={(e) => handleFieldChange(idx, "descriptive_title", e.target.value)}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs border-line bg-white"
                 />
               </div>
 
               <div className="col-span-2 space-y-1">
-                <Label className="text-[10px] text-muted-foreground">Units</Label>
+                <Label className="text-[10px] font-bold text-navy">Units</Label>
                 <Input
                   type="number"
                   step="0.5"
                   value={sub.units}
                   onChange={(e) => handleFieldChange(idx, "units", parseFloat(e.target.value) || 0)}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs border-line bg-white"
                 />
               </div>
 
               <div className="col-span-2 space-y-1">
-                <Label className="text-[10px] text-muted-foreground">Year Level</Label>
+                <Label className="text-[10px] font-bold text-navy">Year Level</Label>
                 <Select
                   value={String(sub.year_level)}
                   onValueChange={(val) => handleFieldChange(idx, "year_level", Number(val))}
                 >
-                  <SelectTrigger className="h-8 text-xs">
+                  <SelectTrigger className="h-8 text-xs border-line bg-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="border-line bg-white">
                     <SelectItem value="1">1st Year</SelectItem>
                     <SelectItem value="2">2nd Year</SelectItem>
                     <SelectItem value="3">3rd Year</SelectItem>
@@ -176,43 +178,53 @@ export function EditSubjectsModal({
 
               <div className="col-span-1 flex justify-end pt-4">
                 <Button
+                  type="button"
                   variant="ghost"
                   size="icon"
                   onClick={() => handleRemoveSubject(idx)}
-                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                  className="size-8 text-muted-foreground hover:text-red-600"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="size-4" />
                 </Button>
               </div>
             </div>
           ))}
 
           <Button
+            type="button"
             variant="outline"
             size="sm"
             onClick={handleAddSubject}
-            className="w-full gap-1.5 text-xs h-9 border-dashed"
+            className="w-full gap-1.5 text-xs h-9 border-dashed border-line text-navy hover:bg-tint"
           >
-            <Plus className="w-4 h-4 text-primary" />
+            <Plus className="size-4 text-navy" />
             Add Subject Row
           </Button>
         </div>
 
-        <DialogFooter className="pt-3 border-t border-border flex justify-between sm:justify-between items-center">
+        <DialogFooter className="pt-3 border-t border-line flex justify-between sm:justify-between items-center">
           <span className="text-xs text-muted-foreground">
-            Total: <strong>{subjectsList.length}</strong> subjects
+            Total: <strong className="text-navy">{subjectsList.length}</strong> subjects
           </span>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} disabled={saving}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onOpenChange(false)}
+              disabled={saving}
+              className="h-10 rounded-lg border-line px-4 text-xs font-semibold text-navy hover:bg-tint"
+            >
               Cancel
             </Button>
             <Button
+              type="button"
               size="sm"
               onClick={handleSave}
               disabled={saving}
-              className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
+              className="h-10 gap-1.5 rounded-lg bg-navy px-5 text-xs font-semibold text-white shadow-xs hover:bg-navy/90"
             >
-              <Check className="w-4 h-4" />
+              <Check className="size-4" />
               {saving ? "Saving Changes..." : "Save Checklist"}
             </Button>
           </div>
