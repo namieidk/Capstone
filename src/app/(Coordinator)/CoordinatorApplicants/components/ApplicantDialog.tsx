@@ -1,6 +1,11 @@
 "use client";
 
-import { AlertCircle, AlertTriangle, ArrowRight, CalendarClock } from "lucide-react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  ArrowRight,
+  CalendarClock,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { ScheduleMeetingDialog } from "@/app/(Grantor)/grantMeeting/components/ScheduleMeetingDialog";
 import type { Applicant, Stage } from "@/components/Coordinatorshared";
@@ -16,14 +21,25 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import type { ScholarDocument } from "@/lib/api/documents";
 import { ApplicantDocumentsList } from "./ApplicantDocumentsList";
 import { ApplicantEligibilityBanner } from "./ApplicantEligibilityBanner";
-import { acceptWarning, formatGwa, getStageVariant, gwaSourceTitle } from "./applicant-helpers";
+import {
+  acceptWarning,
+  formatGwa,
+  getStageVariant,
+  gwaSourceTitle,
+} from "./applicant-helpers";
 import { DocumentVerifyDialog } from "./DocumentVerifyDialog";
 
 interface ApplicantDialogProps {
@@ -52,9 +68,13 @@ export function ApplicantDialog({
 }: ApplicantDialogProps) {
   const [confirmingReject, setConfirmingReject] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
-  const [acceptWarningText, setAcceptWarningText] = useState<string | null>(null);
+  const [acceptWarningText, setAcceptWarningText] = useState<string | null>(
+    null,
+  );
   const [docsToken, setDocsToken] = useState(0);
-  const [verifyingDoc, setVerifyingDoc] = useState<ScholarDocument | null>(null);
+  const [verifyingDoc, setVerifyingDoc] = useState<ScholarDocument | null>(
+    null,
+  );
   const [loadedDocs, setLoadedDocs] = useState<ScholarDocument[] | null>(null);
   const [scheduling, setScheduling] = useState(false);
 
@@ -92,9 +112,14 @@ export function ApplicantDialog({
   }
 
   const isDocsLoading = loadedDocs === null;
-  const hasNoDocs = loadedDocs !== null ? loadedDocs.length === 0 : (applicant?.documentsCount ?? 0) === 0;
+  const hasNoDocs =
+    loadedDocs !== null
+      ? loadedDocs.length === 0
+      : (applicant?.documentsCount ?? 0) === 0;
   const hasConfirmedDocs = Boolean(
-    loadedDocs?.some((d) => d.status === "STUDENT_CONFIRMED" || d.status === "VERIFIED"),
+    loadedDocs?.some(
+      (d) => d.status === "STUDENT_CONFIRMED" || d.status === "VERIFIED",
+    ),
   );
   const canPassToInterview = !isDocsLoading && !hasNoDocs && hasConfirmedDocs;
   const isPastInterview =
@@ -103,23 +128,34 @@ export function ApplicantDialog({
     (applicant?.stage as string) === "Approved" ||
     (applicant?.stage as string) === "Scholar" ||
     (applicant?.stage as string) === "Rejected";
-  const canSchedule = Boolean(applicant) && !isPastInterview && applicant?.stage === "Interview";
+  const canSchedule =
+    Boolean(applicant) && !isPastInterview && applicant?.stage === "Interview";
 
   return (
     <>
-      <Dialog open={applicant !== null} onOpenChange={(open) => !open && handleClose()}>
+      <Dialog
+        open={applicant !== null}
+        onOpenChange={(open) => !open && handleClose()}
+      >
         <DialogContent className="flex h-[90vh] max-h-[90vh] w-[95vw] max-w-3xl! flex-col gap-0 overflow-hidden p-0 rounded-2xl sm:max-w-3xl!">
           <DialogHeader className="shrink-0 border-b border-border bg-white px-5 py-4 sm:px-6">
             <div className="flex flex-wrap items-center justify-between gap-2 pr-6">
-              <DialogTitle className="text-xl! font-semibold">{applicant?.name}</DialogTitle>
+              <DialogTitle className="text-xl! font-semibold">
+                {applicant?.name}
+              </DialogTitle>
               {applicant && (
-                <Badge variant={getStageVariant(applicant.stage)} className="h-6 px-2.5 text-xs!">
+                <Badge
+                  variant={getStageVariant(applicant.stage)}
+                  className="h-6 px-2.5 text-xs!"
+                >
                   {applicant.stage}
                 </Badge>
               )}
             </div>
             <DialogDescription className="text-sm text-muted-foreground">
-              {applicant ? `${applicant.course} · ${applicant.year} · Applied on ${applicant.applied}` : ""}
+              {applicant
+                ? `${applicant.course} · ${applicant.year} · Applied on ${applicant.applied}`
+                : ""}
             </DialogDescription>
           </DialogHeader>
 
@@ -141,33 +177,57 @@ export function ApplicantDialog({
                     </h3>
                     <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 md:grid-cols-3 text-sm">
                       <div>
-                        <dt className="text-xs text-muted-foreground">Scholarship Track</dt>
-                        <dd className="font-medium text-foreground">{applicant.track || "—"}</dd>
+                        <dt className="text-xs text-muted-foreground">
+                          Scholarship Track
+                        </dt>
+                        <dd className="font-medium text-foreground">
+                          {applicant.track || "—"}
+                        </dd>
                       </div>
                       <div>
-                        <dt className="text-xs text-muted-foreground">Course of Study</dt>
-                        <dd className="font-medium text-foreground">{applicant.course || "—"}</dd>
+                        <dt className="text-xs text-muted-foreground">
+                          Course of Study
+                        </dt>
+                        <dd className="font-medium text-foreground">
+                          {applicant.course || "—"}
+                        </dd>
                       </div>
                       <div>
-                        <dt className="text-xs text-muted-foreground">Current Year Level</dt>
-                        <dd className="font-medium text-foreground">{applicant.year || "—"}</dd>
+                        <dt className="text-xs text-muted-foreground">
+                          Current Year Level
+                        </dt>
+                        <dd className="font-medium text-foreground">
+                          {applicant.year || "—"}
+                        </dd>
                       </div>
                       <div>
-                        <dt className="text-xs text-muted-foreground">General Weighted Average (GWA)</dt>
+                        <dt className="text-xs text-muted-foreground">
+                          General Weighted Average (GWA)
+                        </dt>
                         <dd
                           className="font-medium tabular-nums text-foreground"
                           title={gwaSourceTitle(applicant.gwaSource)}
                         >
-                          {applicant.gwa !== null ? formatGwa(applicant.gwa) : "—"}
+                          {applicant.gwa !== null
+                            ? formatGwa(applicant.gwa)
+                            : "—"}
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-xs text-muted-foreground">School Name</dt>
-                        <dd className="font-medium text-foreground">{applicant.schoolName || "—"}</dd>
+                        <dt className="text-xs text-muted-foreground">
+                          School Name
+                        </dt>
+                        <dd className="font-medium text-foreground">
+                          {applicant.schoolName || "—"}
+                        </dd>
                       </div>
                       <div className="sm:col-span-2 md:col-span-1">
-                        <dt className="text-xs text-muted-foreground">School Address</dt>
-                        <dd className="font-medium text-foreground">{applicant.schoolAddress || "—"}</dd>
+                        <dt className="text-xs text-muted-foreground">
+                          School Address
+                        </dt>
+                        <dd className="font-medium text-foreground">
+                          {applicant.schoolAddress || "—"}
+                        </dd>
                       </div>
                     </dl>
                   </div>
@@ -179,20 +239,36 @@ export function ApplicantDialog({
                     </h3>
                     <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 text-sm">
                       <div>
-                        <dt className="text-xs text-muted-foreground">Student Number</dt>
-                        <dd className="font-medium text-foreground">{applicant.studentNumber || "—"}</dd>
+                        <dt className="text-xs text-muted-foreground">
+                          Student Number
+                        </dt>
+                        <dd className="font-medium text-foreground">
+                          {applicant.studentNumber || "—"}
+                        </dd>
                       </div>
                       <div>
-                        <dt className="text-xs text-muted-foreground">Phone Number</dt>
-                        <dd className="font-medium text-foreground">{applicant.phoneNumber || "—"}</dd>
+                        <dt className="text-xs text-muted-foreground">
+                          Phone Number
+                        </dt>
+                        <dd className="font-medium text-foreground">
+                          {applicant.phoneNumber || "—"}
+                        </dd>
                       </div>
                       <div>
-                        <dt className="text-xs text-muted-foreground">Home Address</dt>
-                        <dd className="font-medium text-foreground">{applicant.studentAddress || "—"}</dd>
+                        <dt className="text-xs text-muted-foreground">
+                          Home Address
+                        </dt>
+                        <dd className="font-medium text-foreground">
+                          {applicant.studentAddress || "—"}
+                        </dd>
                       </div>
                       <div>
-                        <dt className="text-xs text-muted-foreground">Relative Employed By Partner</dt>
-                        <dd className="font-medium text-foreground">{applicant.relativeEmployee || "None / N/A"}</dd>
+                        <dt className="text-xs text-muted-foreground">
+                          Relative Employed By Partner
+                        </dt>
+                        <dd className="font-medium text-foreground">
+                          {applicant.relativeEmployee || "None / N/A"}
+                        </dd>
                       </div>
                     </dl>
                   </div>
@@ -202,10 +278,16 @@ export function ApplicantDialog({
                   {/* Documents Section */}
                   <div>
                     <div className="mb-2 flex items-center justify-between">
-                      <p className="text-sm font-semibold text-foreground">Documents uploaded by student</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        Documents uploaded by student
+                      </p>
                       <span className="text-xs text-muted-foreground">
                         {loadedDocs?.length ?? applicant?.documentsCount ?? 0}{" "}
-                        {(loadedDocs?.length ?? applicant?.documentsCount ?? 0) === 1 ? "document" : "documents"}
+                        {(loadedDocs?.length ??
+                          applicant?.documentsCount ??
+                          0) === 1
+                          ? "document"
+                          : "documents"}
                       </span>
                     </div>
                     <ApplicantDocumentsList
@@ -221,7 +303,9 @@ export function ApplicantDialog({
               {/* Action Buttons Footer */}
               <div className="shrink-0 border-t border-border bg-white px-5 py-3.5 sm:px-6 flex flex-col gap-2">
                 {actionError && (
-                  <p className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{actionError}</p>
+                  <p className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                    {actionError}
+                  </p>
                 )}
 
                 {/* Interview Stage Status Info */}
@@ -234,21 +318,28 @@ export function ApplicantDialog({
                           <>
                             Interview scheduled on{" "}
                             <strong>
-                              {new Date(applicant.interviewAt).toLocaleString(undefined, {
-                                dateStyle: "medium",
-                                timeStyle: "short",
-                              })}
+                              {new Date(applicant.interviewAt).toLocaleString(
+                                undefined,
+                                {
+                                  dateStyle: "medium",
+                                  timeStyle: "short",
+                                },
+                              )}
                             </strong>
                           </>
                         ) : (
                           <>
-                            Applicant is in <strong>Interview Stage</strong> (no meeting scheduled yet)
+                            Applicant is in <strong>Interview Stage</strong> (no
+                            meeting scheduled yet)
                           </>
                         )}
                       </span>
                     </div>
                     {applicant.hasInterview && (
-                      <Badge variant="outline" className="border-navy/30 bg-white text-navy text-[0.65rem]!">
+                      <Badge
+                        variant="outline"
+                        className="border-navy/30 bg-white text-navy text-[0.65rem]!"
+                      >
                         Scheduled
                       </Badge>
                     )}
@@ -265,7 +356,9 @@ export function ApplicantDialog({
                     onClick={() => setScheduling(true)}
                   >
                     <CalendarClock className="size-4" />
-                    {applicant.hasInterview ? "Reschedule meeting" : "Schedule meeting"}
+                    {applicant.hasInterview
+                      ? "Reschedule meeting"
+                      : "Schedule meeting"}
                   </Button>
                 )}
 
@@ -277,15 +370,19 @@ export function ApplicantDialog({
                       {hasNoDocs && !isDocsLoading && (
                         <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
                           <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                          <span>Cannot pass applicant to interview: No documents have been submitted yet.</span>
+                          <span>
+                            Cannot pass applicant to interview: No documents
+                            have been submitted yet.
+                          </span>
                         </div>
                       )}
                       {!hasNoDocs && !hasConfirmedDocs && !isDocsLoading && (
                         <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
                           <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
                           <span>
-                            Cannot pass applicant to interview: Submitted document(s) have not been confirmed by the
-                            applicant yet (awaiting student review).
+                            Cannot pass applicant to interview: Submitted
+                            document(s) have not been confirmed by the applicant
+                            yet (awaiting student review).
                           </span>
                         </div>
                       )}
@@ -322,7 +419,10 @@ export function ApplicantDialog({
                     className="h-10 text-sm!"
                     disabled={acting}
                     onClick={() => {
-                      const warning = acceptWarning(applicant.hasInterview, applicant.interviewAt);
+                      const warning = acceptWarning(
+                        applicant.hasInterview,
+                        applicant.interviewAt,
+                      );
                       if (warning) {
                         setAcceptWarningText(warning);
                       } else {
@@ -336,17 +436,19 @@ export function ApplicantDialog({
                 )}
 
                 {/* Reject Application */}
-                {applicant.stage !== "Rejected" && applicant.stage !== "Accepted" && applicant.stage !== "Endorsed" && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    className="h-10 text-sm!"
-                    disabled={acting}
-                    onClick={() => setConfirmingReject(true)}
-                  >
-                    Reject application
-                  </Button>
-                )}
+                {applicant.stage !== "Rejected" &&
+                  applicant.stage !== "Accepted" &&
+                  applicant.stage !== "Endorsed" && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      className="h-10 text-sm!"
+                      disabled={acting}
+                      onClick={() => setConfirmingReject(true)}
+                    >
+                      Reject application
+                    </Button>
+                  )}
               </div>
             </>
           )}
@@ -354,19 +456,27 @@ export function ApplicantDialog({
       </Dialog>
 
       {/* Accept Safeguard Alert Dialog */}
-      <AlertDialog open={acceptWarningText !== null} onOpenChange={(open) => !open && setAcceptWarningText(null)}>
+      <AlertDialog
+        open={acceptWarningText !== null}
+        onOpenChange={(open) => !open && setAcceptWarningText(null)}
+      >
         <AlertDialogContent className="max-w-md rounded-2xl p-6">
           <AlertDialogHeader className="flex flex-col items-center text-center">
             <div className="mb-2 flex size-12 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400">
               <AlertTriangle className="size-6" />
             </div>
-            <AlertDialogTitle className="text-lg font-bold text-navy">Proceed with Endorsement?</AlertDialogTitle>
+            <AlertDialogTitle className="text-lg font-bold text-navy">
+              Proceed with Endorsement?
+            </AlertDialogTitle>
             <AlertDialogDescription className="mt-1 text-sm text-muted-foreground">
-              {acceptWarningText} Are you sure you want to advance this applicant without a completed interview?
+              {acceptWarningText} Are you sure you want to advance this
+              applicant without a completed interview?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-4 flex flex-row justify-end gap-2">
-            <AlertDialogCancel className="h-10 rounded-lg text-sm!">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="h-10 rounded-lg text-sm!">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               className="h-10 rounded-lg bg-navy px-4 text-sm! font-medium text-white hover:bg-navy/90"
               onClick={async () => {
@@ -383,12 +493,18 @@ export function ApplicantDialog({
       </AlertDialog>
 
       {/* Reject Reason Modal Dialog */}
-      <Dialog open={confirmingReject} onOpenChange={(open) => !open && setConfirmingReject(false)}>
+      <Dialog
+        open={confirmingReject}
+        onOpenChange={(open) => !open && setConfirmingReject(false)}
+      >
         <DialogContent className="max-w-md rounded-2xl p-6">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-navy">Reject Application</DialogTitle>
+            <DialogTitle className="text-lg font-bold text-navy">
+              Reject Application
+            </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
-              Please provide a reason for rejecting this application. This feedback will be recorded.
+              Please provide a reason for rejecting this application. This
+              feedback will be recorded.
             </DialogDescription>
           </DialogHeader>
           <div className="py-2">

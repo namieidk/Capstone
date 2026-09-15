@@ -1,3 +1,4 @@
+import { AMBER_BG, GOOD, GOOD_BG, TINT, WARN, WARN_BG } from "@/components/Adminshared";
 import type { AuditLogEntry as AuditLog } from "@/lib/api/users";
 
 export type BadgeVariant = "default" | "secondary" | "outline" | "destructive";
@@ -23,6 +24,31 @@ export function getActionVariant(action: string): BadgeVariant {
   )
     return "outline";
   return "secondary";
+}
+
+// Same token-based color approach as EmployeeTable's RoleBadge/StatusBadge —
+// explicit { background, color } pairs pulled from Adminshared instead of
+// shadcn's generic Badge variant palette, so audit-log badges read as part
+// of the same visual system as the rest of the admin dashboard.
+export function getActionColors(action: string): { background: string; color: string } {
+  if (action === "STAFF_CREATED" || action === "SCHOLAR_REGISTERED") {
+    return { background: GOOD_BG, color: GOOD };
+  }
+  if (action.startsWith("CONTRACT_")) {
+    return { background: WARN_BG, color: WARN };
+  }
+  if (
+    action.startsWith("DOCUMENT_") ||
+    action.startsWith("APPLICATION_") ||
+    action === "PROFILE_UPDATED" ||
+    action === "AVATAR_UPLOADED" ||
+    action === "BANNER_UPLOADED"
+  ) {
+    return { background: AMBER_BG, color: "#6b5220" };
+  }
+  // USER_LOGIN and anything unmapped fall back to the same neutral tint
+  // Employee's Coordinator-adjacent badges use.
+  return { background: TINT, color: "#55554f" };
 }
 
 export function getRoleVariant(role: string): BadgeVariant {
