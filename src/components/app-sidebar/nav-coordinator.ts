@@ -1,5 +1,4 @@
 import {
-  Activity,
   Archive,
   BarChart3,
   Calendar,
@@ -18,7 +17,7 @@ export const COORDINATOR_NAV_ITEMS: NavItem[] = [
   { key: "applicants", label: "Applicants", icon: Users, href: "/CoordinatorApplicants" },
   { key: "grading-systems", label: "Grading Systems", icon: GraduationCap, href: "/GradingSystems" },
   { key: "meeting", label: "Meeting", icon: Calendar, href: "/CoordinatorMeeting" },
-  { key: "monitor", label: "Monitor", icon: Activity, href: "/CoordinatorMonitor" },
+  { key: "scholars", label: "Scholars", icon: GraduationCap, href: "/CoordinatorMonitor" },
   { key: "payment", label: "Payment", icon: CreditCard, href: "/CoordinatorPayment" },
   { key: "archive", label: "Archive", icon: Archive, href: "/CoordinatorArchive" },
   { key: "reports", label: "Reports", icon: BarChart3, href: "/CoordinatorReports" },

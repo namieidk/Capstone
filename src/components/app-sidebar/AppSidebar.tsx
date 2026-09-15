@@ -102,7 +102,13 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
                 const isActive =
                   pathname === item.href || (item.href !== config.homeHref && pathname.startsWith(item.href));
                 const itemBadge =
-                  item.key === "applicants" ? badges.applicants : item.key === "meeting" ? badges.meetings : item.badge;
+                  item.key === "applicants"
+                    ? badges.applicants
+                    : item.key === "meeting"
+                      ? badges.meetings
+                      : item.key === "scholars" || item.key === "monitor"
+                        ? badges.scholars
+                        : item.badge;
 
                 return (
                   <SidebarMenuItem key={item.key}>

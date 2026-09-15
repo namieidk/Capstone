@@ -1,11 +1,12 @@
 "use client";
 
-import { Activity, BookOpen, Building2 } from "lucide-react";
+import { ArrowRight, BookOpen, Users } from "lucide-react";
 import { useCallback, useContext, useEffect, useState } from "react";
 import type { ActiveScholar } from "@/components/Coordinatorshared";
 import { BaselineAuditDrawer } from "@/components/coordinator/baseline/BaselineAuditDrawer";
 import { ScholarMonitorDrawer } from "@/components/coordinator/monitor/ScholarMonitorDrawer";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SocketContext } from "@/contexts/SocketContext";
 import {
@@ -16,13 +17,13 @@ import {
 import { ActiveScholarsTab } from "./components/ActiveScholarsTab";
 import { BaselineAuditsTab } from "./components/BaselineAuditsTab";
 import { CoordinatorMonitorHeader } from "./components/CoordinatorMonitorHeader";
-import { GradingScalesTab } from "./components/GradingScalesTab";
 
 export default function CoordinatorMonitorPage() {
   const { socket } = useContext(SocketContext);
 
   // Search & Navigation state
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("active-scholars");
 
   // Active Monitoring State
   const [activeScholars, setActiveScholars] = useState<ActiveScholar[]>([]);
@@ -119,7 +120,7 @@ export default function CoordinatorMonitorPage() {
       <CoordinatorMonitorHeader searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
       {/* Main Content Area */}
-      <div className="px-5 pb-24 md:px-10">
+      <div className="px-5 pb-24 md:px-10 space-y-4">
         {/* Mobile Search Input */}
         <div className="mt-4 flex h-10 items-center gap-2 rounded-full border border-line bg-tint px-3.5 md:hidden">
           <input
@@ -132,30 +133,59 @@ export default function CoordinatorMonitorPage() {
           />
         </div>
 
-        {/* Main Tabs */}
-        <Tabs defaultValue="active-monitor" className="mt-5 w-full space-y-4">
-          <TabsList className="grid w-full sm:w-135 grid-cols-3">
-            <TabsTrigger value="active-monitor" className="text-xs gap-1.5">
-              <Activity className="size-4" />
+        {/* Action Callout Banner for Pending Prospectus Audits */}
+        {pendingAuditCount > 0 && activeTab !== "baseline-audits" && (
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-950 dark:text-amber-100 shadow-2xs">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+              <div className="text-xs">
+                <span className="font-bold text-amber-900 dark:text-amber-200">
+                  {pendingAuditCount} {pendingAuditCount === 1 ? "scholar is" : "scholars are"} awaiting prospectus
+                  audit.
+                </span>{" "}
+                <span className="text-muted-foreground hidden md:inline">
+                  Review submitted degree checklists and historical credits to freeze curriculum baselines.
+                </span>
+              </div>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setActiveTab("baseline-audits")}
+              className="h-7.5 px-3 rounded-lg border-amber-500/40 bg-white/90 dark:bg-amber-950/40 hover:bg-white dark:hover:bg-amber-900/40 text-amber-950 dark:text-amber-100 font-semibold text-xs shrink-0 gap-1.5 shadow-2xs self-start sm:self-auto"
+            >
+              <span>Review Audits ({pendingAuditCount})</span>
+              <ArrowRight className="size-3.5" />
+            </Button>
+          </div>
+        )}
+
+        {/* Main 2 Tabs: Active Scholars & Prospectus Audits */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-5 w-full space-y-4">
+          <TabsList className="grid w-full sm:w-110 grid-cols-2">
+            <TabsTrigger value="active-scholars" className="text-xs gap-1.5 font-semibold">
+              <Users className="size-4" />
               Active Scholars
+              {!loadingActiveScholars && activeScholars.length > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 rounded-full px-1.5 text-[10px]">
+                  {activeScholars.length}
+                </Badge>
+              )}
             </TabsTrigger>
-            <TabsTrigger value="baseline-audits" className="text-xs gap-1.5">
+            <TabsTrigger value="baseline-audits" className="text-xs gap-1.5 font-semibold">
               <BookOpen className="size-4" />
-              Baseline Audits
+              Prospectus Audits
               {pendingAuditCount > 0 && (
                 <Badge className="ml-1 h-5 rounded-full bg-amber-500 px-1.5 text-[10px] text-white">
                   {pendingAuditCount}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="school-scales" className="text-xs gap-1.5">
-              <Building2 className="size-4" />
-              Grading Scales
-            </TabsTrigger>
           </TabsList>
 
-          {/* Tab 1: Active Scholars Monitoring */}
-          <TabsContent value="active-monitor">
+          {/* Tab 1: Active Scholars Directory & Health Monitoring */}
+          <TabsContent value="active-scholars">
             <ActiveScholarsTab
               scholars={activeScholars}
               loading={loadingActiveScholars}
@@ -169,18 +199,13 @@ export default function CoordinatorMonitorPage() {
             />
           </TabsContent>
 
-          {/* Tab 2: Academic Baseline Audits */}
+          {/* Tab 2: Academic Prospectus & Baseline Audits */}
           <TabsContent value="baseline-audits">
             <BaselineAuditsTab
               items={baselineItems}
               loading={loadingBaselines}
               onSelectScholar={handleSelectScholarForAudit}
             />
-          </TabsContent>
-
-          {/* Tab 3: University Grading Scales */}
-          <TabsContent value="school-scales">
-            <GradingScalesTab onScaleUpdated={refreshAll} />
           </TabsContent>
         </Tabs>
       </div>

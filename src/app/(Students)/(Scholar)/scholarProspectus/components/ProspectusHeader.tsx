@@ -63,31 +63,31 @@ export function ProspectusHeader({
   };
 
   return (
-    <Card className="rounded-xl border border-line bg-white shadow-xs">
-      <CardContent className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-tint text-navy">
-            <CheckCircle2 className="size-5 text-navy" />
+    <Card className="rounded-xl border border-line bg-white shadow-2xs">
+      <CardContent className="p-3 sm:p-3.5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-tint text-navy">
+            <CheckCircle2 className="size-4 text-navy" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-base font-bold text-navy">Curriculum Checklist Status</h2>
+              <span className="text-xs sm:text-sm font-bold text-navy">Curriculum Status:</span>
               {getStatusBadge()}
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Verify completed subjects and submit your baseline for coordinator evaluation.
+            <p className="text-[11px] text-muted-foreground mt-0.5 hidden sm:block">
+              Verify your completed courses and submit your curriculum baseline for coordinator approval.
             </p>
           </div>
         </div>
 
         {!isFrozen && (
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={onUploadProspectus}
-              className="h-9 gap-1.5 rounded-lg border-line text-xs font-medium text-navy hover:bg-tint"
+              className="h-8 gap-1.5 rounded-lg border-line text-xs font-medium text-navy hover:bg-tint"
             >
               <FileUp className="size-3.5 text-navy" />
               Upload Prospectus
@@ -98,7 +98,7 @@ export function ProspectusHeader({
               variant="outline"
               size="sm"
               onClick={onUploadHistoricalCcg}
-              className="h-9 gap-1.5 rounded-lg border-line text-xs font-medium text-navy hover:bg-tint"
+              className="h-8 gap-1.5 rounded-lg border-line text-xs font-medium text-navy hover:bg-tint"
             >
               <History className="size-3.5 text-navy" />
               Upload Past CCG
@@ -110,10 +110,10 @@ export function ProspectusHeader({
                 variant="outline"
                 size="sm"
                 onClick={onEditSubjects}
-                className="h-9 gap-1.5 rounded-lg border-line text-xs font-medium text-navy hover:bg-tint"
+                className="h-8 gap-1.5 rounded-lg border-line text-xs font-medium text-navy hover:bg-tint"
               >
                 <Pencil className="size-3.5 text-navy" />
-                Edit Checklist
+                Edit
               </Button>
             )}
 
@@ -123,7 +123,7 @@ export function ProspectusHeader({
                 size="sm"
                 onClick={onSubmitForReview}
                 disabled={submittingReview}
-                className="h-9 gap-1.5 rounded-lg bg-navy px-4 text-xs font-semibold text-white shadow-xs hover:bg-navy/90"
+                className="h-8 gap-1.5 rounded-lg bg-navy px-3.5 text-xs font-semibold text-white shadow-xs hover:bg-navy/90"
               >
                 <Send className="size-3.5 text-white" />
                 {submittingReview ? "Submitting..." : "Submit for Review"}

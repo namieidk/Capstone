@@ -111,7 +111,7 @@ export function ProspectusChecklistTable({ subjects }: ProspectusChecklistTableP
               <span className="text-sm font-bold text-navy uppercase tracking-wider">{formatYearName(year)}</span>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="space-y-4">
               {semesters.map((sem) => {
                 const { subjects: semSubjects, totalUnits } = groupedData[year][sem];
 

@@ -1,12 +1,27 @@
 "use client";
 
-import { Clock, Eye, FileUp, GraduationCap, History, Lock, Search } from "lucide-react";
+import {
+  Clock,
+  Eye,
+  FileUp,
+  GraduationCap,
+  History,
+  Lock,
+  Search,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { PendingBaselineItem } from "@/lib/api/baseline";
 
 interface BaselinePendingQueueProps {
@@ -15,9 +30,17 @@ interface BaselinePendingQueueProps {
   onSelectScholar: (scholarProfileId: number) => void;
 }
 
-type FilterStatus = "ALL" | "PENDING_COORDINATOR_REVIEW" | "PENDING_PROSPECTUS" | "BASELINE_FROZEN";
+type FilterStatus =
+  | "ALL"
+  | "PENDING_COORDINATOR_REVIEW"
+  | "PENDING_PROSPECTUS"
+  | "BASELINE_FROZEN";
 
-export function BaselinePendingQueue({ items, loading, onSelectScholar }: BaselinePendingQueueProps) {
+export function BaselinePendingQueue({
+  items,
+  loading,
+  onSelectScholar,
+}: BaselinePendingQueueProps) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterStatus>("ALL");
 
@@ -25,7 +48,9 @@ export function BaselinePendingQueue({ items, loading, onSelectScholar }: Baseli
     let result = items;
 
     if (filter !== "ALL") {
-      result = result.filter((item) => item.academic_baseline_status === filter);
+      result = result.filter(
+        (item) => item.academic_baseline_status === filter,
+      );
     }
 
     if (search.trim()) {
@@ -77,7 +102,9 @@ export function BaselinePendingQueue({ items, loading, onSelectScholar }: Baseli
     }
   };
 
-  const pendingCount = items.filter((i) => i.academic_baseline_status === "PENDING_COORDINATOR_REVIEW").length;
+  const pendingCount = items.filter(
+    (i) => i.academic_baseline_status === "PENDING_COORDINATOR_REVIEW",
+  ).length;
 
   return (
     <div className="space-y-4">
@@ -93,7 +120,9 @@ export function BaselinePendingQueue({ items, loading, onSelectScholar }: Baseli
             All Scholars ({items.length})
           </Button>
           <Button
-            variant={filter === "PENDING_COORDINATOR_REVIEW" ? "default" : "outline"}
+            variant={
+              filter === "PENDING_COORDINATOR_REVIEW" ? "default" : "outline"
+            }
             size="sm"
             onClick={() => setFilter("PENDING_COORDINATOR_REVIEW")}
             className="text-xs h-8 gap-1.5"
@@ -143,7 +172,9 @@ export function BaselinePendingQueue({ items, loading, onSelectScholar }: Baseli
                 <TableHead className="py-3 px-4">Scholar Name</TableHead>
                 <TableHead className="py-3 px-3">Institution</TableHead>
                 <TableHead className="py-3 px-3">Degree Course</TableHead>
-                <TableHead className="py-3 px-2 text-center">Curriculum Units</TableHead>
+                <TableHead className="py-3 px-2 text-center">
+                  Curriculum Units
+                </TableHead>
                 <TableHead className="py-3 px-3 text-center">Status</TableHead>
                 <TableHead className="py-3 px-4 text-right">Action</TableHead>
               </TableRow>
@@ -159,45 +190,65 @@ export function BaselinePendingQueue({ items, loading, onSelectScholar }: Baseli
                 ))
               ) : filteredItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-32 text-center text-muted-foreground text-xs">
-                    {search ? `No scholars match "${search}".` : "No pending academic baseline records found."}
+                  <TableCell
+                    colSpan={6}
+                    className="h-32 text-center text-muted-foreground text-xs"
+                  >
+                    {search
+                      ? `No scholars match "${search}".`
+                      : "No pending academic baseline records found."}
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredItems.map((item) => {
                   const fullName = `${item.first_name} ${item.last_name}`;
-                  const initials = `${item.first_name[0] || ""}${item.last_name[0] || ""}`.toUpperCase();
+                  const initials =
+                    `${item.first_name[0] || ""}${item.last_name[0] || ""}`.toUpperCase();
                   const totalUnits = item.prospectus?.total_units || 0;
 
                   return (
-                    <TableRow key={item.profile_id} className="text-xs hover:bg-muted/40 transition-colors">
+                    <TableRow
+                      key={item.profile_id}
+                      className="text-xs hover:bg-muted/40 transition-colors"
+                    >
                       <TableCell className="py-3 px-4">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold flex items-center justify-center text-xs flex-shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold flex items-center justify-center text-xs shrink-0">
                             {initials}
                           </div>
                           <div>
-                            <div className="font-semibold text-foreground text-xs">{fullName}</div>
+                            <div className="font-semibold text-foreground text-xs">
+                              {fullName}
+                            </div>
                             <div className="text-[11px] text-muted-foreground font-mono">
-                              {item.student_number || item.user?.email || "No ID"}
+                              {item.student_number ||
+                                item.user?.email ||
+                                "No ID"}
                             </div>
                           </div>
                         </div>
                       </TableCell>
 
                       <TableCell className="py-3 px-3 text-muted-foreground">
-                        <div className="flex items-center gap-1.5 text-foreground font-medium truncate max-w-[180px]">
-                          <GraduationCap className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-                          <span className="truncate">{item.school_name || "Unassigned"}</span>
+                        <div className="flex items-center gap-1.5 text-foreground font-medium truncate max-w-45">
+                          <GraduationCap className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                          <span className="truncate">
+                            {item.school_name || "Unassigned"}
+                          </span>
                         </div>
                       </TableCell>
 
                       <TableCell className="py-3 px-3 text-muted-foreground">
-                        <div className="truncate max-w-[200px]" title={item.course_of_study || ""}>
+                        <div
+                          className="truncate max-w-50"
+                          title={item.course_of_study || ""}
+                        >
                           {item.course_of_study || "—"}
                         </div>
                         {item.current_year_level && (
-                          <div className="text-[10px] text-muted-foreground">Year Level {item.current_year_level}</div>
+                          <div className="text-[10px] text-muted-foreground">
+                            Year Level {item.current_year_level}
+                          </div>
                         )}
                       </TableCell>
 

@@ -335,38 +335,51 @@ export function BaselineAuditDrawer({ scholarProfileId, open, onOpenChange, onSu
 
               {/* Quick-Audit Metric Bar */}
               <div className="grid grid-cols-4 gap-2 text-xs">
-                <div className="p-2 rounded-md bg-card border border-border/60 text-center">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Total Subjects</span>
-                  <span className="font-bold text-foreground text-sm">{subjectsList.length}</span>
+                <div className="p-2.5 rounded-lg bg-card border border-border/60 text-center shadow-2xs">
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block tracking-wider">
+                    Total Subjects
+                  </span>
+                  <span className="font-bold text-foreground text-sm mt-0.5 block">{subjectsList.length}</span>
                 </div>
-                <div className="p-2 rounded-md bg-card border border-border/60 text-center">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Total Units</span>
-                  <span className="font-bold text-foreground text-sm">
+                <div className="p-2.5 rounded-lg bg-card border border-border/60 text-center shadow-2xs">
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block tracking-wider">
+                    Total Units
+                  </span>
+                  <span className="font-bold text-foreground text-sm mt-0.5 block">
                     {subjectsList.reduce((acc, s) => acc + (Number(s.units) || 0), 0).toFixed(1)}
                   </span>
                 </div>
-                <div className="p-2 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-center">
-                  <span className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-400 block">
-                    Credited
+                <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-center shadow-2xs">
+                  <span className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-400 block tracking-wider">
+                    Credited Units
                   </span>
-                  <span className="font-bold text-emerald-700 dark:text-emerald-400 text-sm">
+                  <span className="font-bold text-emerald-700 dark:text-emerald-400 text-sm mt-0.5 block">
                     {subjectsList
                       .filter((s) => s.status === "CREDITED" || s.status === "PASSED")
                       .reduce((acc, s) => acc + (Number(s.units) || 0), 0)
-                      .toFixed(1)}{" "}
-                    u
+                      .toFixed(1)}
                   </span>
                 </div>
-                <div className="p-2 rounded-md bg-card border border-border/60 text-center">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Remaining</span>
-                  <span className="font-bold text-amber-600 dark:text-amber-400 text-sm">
+                <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-center shadow-2xs">
+                  <span className="text-[10px] uppercase font-bold text-amber-700 dark:text-amber-400 block tracking-wider">
+                    Remaining Units
+                  </span>
+                  <span className="font-bold text-amber-700 dark:text-amber-400 text-sm mt-0.5 block">
                     {subjectsList
                       .filter((s) => s.status !== "CREDITED" && s.status !== "PASSED")
                       .reduce((acc, s) => acc + (Number(s.units) || 0), 0)
-                      .toFixed(1)}{" "}
-                    u
+                      .toFixed(1)}
                   </span>
                 </div>
+              </div>
+
+              {/* Subject Table Column Headers */}
+              <div className="grid grid-cols-12 gap-2 px-3 pt-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                <div className="col-span-3">Code</div>
+                <div className="col-span-4">Descriptive Title</div>
+                <div className="col-span-2">Status</div>
+                <div className="col-span-2">Grade</div>
+                {!isFrozen && <div className="col-span-1 text-right">Action</div>}
               </div>
 
               {/* Editable Subjects Table */}
@@ -374,13 +387,13 @@ export function BaselineAuditDrawer({ scholarProfileId, open, onOpenChange, onSu
                 {subjectsList.map((sub, idx) => (
                   <div
                     key={sub.subject_id ? `subj-id-${sub.subject_id}` : `subj-idx-${sub.subject_code}-${idx}`}
-                    className="p-2.5 bg-card rounded-md border border-border/60 grid grid-cols-12 gap-2 items-center text-xs"
+                    className="p-2.5 bg-card rounded-md border border-border/60 grid grid-cols-12 gap-2 items-center text-xs shadow-2xs"
                   >
                     <div className="col-span-3">
                       <Input
                         value={sub.subject_code}
                         onChange={(e) => handleFieldChange(idx, "subject_code", e.target.value)}
-                        className="h-7 text-xs font-mono"
+                        className="h-8 text-xs font-mono py-1"
                         disabled={isFrozen}
                       />
                     </div>
@@ -388,7 +401,7 @@ export function BaselineAuditDrawer({ scholarProfileId, open, onOpenChange, onSu
                       <Input
                         value={sub.descriptive_title}
                         onChange={(e) => handleFieldChange(idx, "descriptive_title", e.target.value)}
-                        className="h-7 text-xs"
+                        className="h-8 text-xs py-1"
                         disabled={isFrozen}
                       />
                     </div>
@@ -398,7 +411,7 @@ export function BaselineAuditDrawer({ scholarProfileId, open, onOpenChange, onSu
                         onValueChange={(val) => handleFieldChange(idx, "status", val)}
                         disabled={isFrozen}
                       >
-                        <SelectTrigger className="h-7 text-xs">
+                        <SelectTrigger size="sm" className="h-8 text-xs py-1">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -419,7 +432,7 @@ export function BaselineAuditDrawer({ scholarProfileId, open, onOpenChange, onSu
                         onChange={(e) =>
                           handleFieldChange(idx, "grade", e.target.value ? parseFloat(e.target.value) : undefined)
                         }
-                        className="h-7 text-xs font-mono"
+                        className="h-8 text-xs font-mono py-1"
                         disabled={isFrozen}
                       />
                     </div>
@@ -429,7 +442,7 @@ export function BaselineAuditDrawer({ scholarProfileId, open, onOpenChange, onSu
                           variant="ghost"
                           size="icon"
                           onClick={() => handleRemoveSubject(idx)}
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
