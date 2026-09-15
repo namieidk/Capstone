@@ -11,11 +11,15 @@ import { useAuth } from "./AuthContext";
 interface SocketContextValue {
   socket: Socket | null;
   isConnected: boolean;
+  onlineUserIds: number[];
+  isUserOnline: (userId?: number | null) => boolean;
 }
 
 export const SocketContext = createContext<SocketContextValue>({
   socket: null,
   isConnected: false,
+  onlineUserIds: [],
+  isUserOnline: () => false,
 });
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
@@ -23,8 +27,14 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const { showToast } = useToast();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [onlineUserIds, setOnlineUserIds] = useState<number[]>([]);
   const activeSocketRef = useRef<Socket | null>(null);
   const activeUserIdRef = useRef<number | null>(null);
+
+  const isUserOnline = (targetUserId?: number | null) => {
+    if (!targetUserId) return false;
+    return onlineUserIds.includes(targetUserId);
+  };
 
   const userRef = useRef(user);
   userRef.current = user;
@@ -95,6 +105,26 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
               socketInstance.emit("ping");
             }
           }, 25000);
+
+          socketInstance.emit("presence:get_online");
+        });
+
+        socketInstance.on("presence:state", (data?: { onlineUserIds?: number[] }) => {
+          if (data?.onlineUserIds) {
+            setOnlineUserIds(data.onlineUserIds);
+          }
+        });
+
+        socketInstance.on("presence:user_online", (data?: { userId?: number }) => {
+          if (data?.userId) {
+            setOnlineUserIds((prev) => (prev.includes(data.userId!) ? prev : [...prev, data.userId!]));
+          }
+        });
+
+        socketInstance.on("presence:user_offline", (data?: { userId?: number }) => {
+          if (data?.userId) {
+            setOnlineUserIds((prev) => prev.filter((id) => id !== data.userId));
+          }
         });
 
         socketInstance.on("disconnect", (reason) => {
@@ -334,7 +364,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     };
   }, [userId, userRole]);
 
-  return <SocketContext.Provider value={{ socket, isConnected }}>{children}</SocketContext.Provider>;
+  return (
+    <SocketContext.Provider value={{ socket, isConnected, onlineUserIds, isUserOnline }}>
+      {children}
+    </SocketContext.Provider>
+  );
 }
 
 export function useSocket() {

@@ -4,6 +4,7 @@ import { Shield } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useSocket } from "@/contexts/SocketContext";
 import type { CoordinatorContact } from "@/lib/api/chat";
 import { getInitials } from "./chat-utils";
 
@@ -13,6 +14,8 @@ interface CoordinatorDirectoryListProps {
 }
 
 export function CoordinatorDirectoryList({ coordinators, onStartCoordinatorChat }: CoordinatorDirectoryListProps) {
+  const { isUserOnline } = useSocket();
+
   if (coordinators.length === 0) {
     return (
       <div className="p-8 text-center text-xs text-muted-foreground">
@@ -26,6 +29,7 @@ export function CoordinatorDirectoryList({ coordinators, onStartCoordinatorChat 
   return (
     <div className="space-y-1.5">
       {coordinators.map((coord) => {
+        const isOnline = isUserOnline(coord.user_id);
         const name = `${coord.first_name} ${coord.last_name}`.trim();
         const hasExistingChat = Boolean(coord.conversation_id);
 
@@ -35,11 +39,16 @@ export function CoordinatorDirectoryList({ coordinators, onStartCoordinatorChat 
             className="flex items-center justify-between gap-3 rounded-xl border border-line/60 bg-white p-3 shadow-2xs hover:border-border transition-all"
           >
             <div className="flex items-center gap-2.5 min-w-0">
-              <Avatar className="size-9 shrink-0 ring-1 ring-blue-200">
-                <AvatarFallback className="bg-blue-50 text-blue-800 font-bold text-xs">
-                  {getInitials(name)}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative shrink-0">
+                <Avatar className="size-9 ring-1 ring-blue-200">
+                  <AvatarFallback className="bg-blue-50 text-blue-800 font-bold text-xs">
+                    {getInitials(name)}
+                  </AvatarFallback>
+                </Avatar>
+                {isOnline && (
+                  <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500 ring-2 ring-white animate-in zoom-in-50 duration-200" />
+                )}
+              </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span className="truncate text-xs font-bold text-navy">{name}</span>
