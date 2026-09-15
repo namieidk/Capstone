@@ -1,11 +1,12 @@
 "use client";
 
-import { Eye, FileText, Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { AlertCircle, Eye, FileText, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { CarouselApi } from "@/components/ui/carousel";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { type GradeItem, retryDocumentOcr, syncParseur } from "@/lib/api/documents";
+import { isInvalidOrMismatchedDoc } from "../wizard-helpers";
 import { DialogFooterBar } from "./DialogFooterBar";
 import { DialogHeaderBar } from "./DialogHeaderBar";
 import { DocumentPreviewCarousel } from "./DocumentPreviewCarousel";
@@ -21,7 +22,13 @@ import {
   generatePreviewPageUrls,
 } from "./types";
 
-export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConfirm }: DocumentReviewDialogProps) {
+export function DocumentReviewDialog({
+  document: doc,
+  currentYearLevel,
+  open,
+  onOpenChange,
+  onConfirm,
+}: DocumentReviewDialogProps) {
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [currentPage, setCurrentPage] = useState(1);
   const [failedPages, setFailedPages] = useState<Record<number, boolean>>({});
@@ -37,7 +44,9 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState("");
 
-  const isReadOnly = doc?.status === "VERIFIED" || doc?.status === "STUDENT_CONFIRMED";
+  const isMismatch = isInvalidOrMismatchedDoc(doc, currentYearLevel ?? 1);
+
+  const isReadOnly = doc?.status === "VERIFIED" || doc?.status === "STUDENT_CONFIRMED" || isMismatch;
 
   // Parse candidate page URLs safely
   const candidatePageUrls = useMemo(() => {
@@ -93,14 +102,18 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
     if (Array.isArray(rawConfirmed?.grade_items) && rawConfirmed.grade_items.length > 0) {
       rawList = rawConfirmed.grade_items;
     } else if (Array.isArray(rawExtracted?.grades) && rawExtracted.grades.length > 0) {
-      rawList = rawExtracted.grades;
+      // Auto-filter: skip in-progress or non-graded subjects with blank or 0 grades
+      rawList = rawExtracted.grades.filter((g) => {
+        const num = Number(g.grade);
+        return g.grade != null && g.grade !== "" && !Number.isNaN(num) && num > 0;
+      });
     }
 
     const initialItems: EditableGradeItem[] = rawList.map((g, idx) => ({
       id: `grade-${idx}-${Date.now()}`,
       subject_code: String(g.subject_code || ""),
       subject_name: String(g.subject_name || g.subject_code || `Subject ${idx + 1}`),
-      units: g.units != null && !Number.isNaN(Number(g.units)) ? Number(g.units) : 1,
+      units: g.units != null && !Number.isNaN(Number(g.units)) && Number(g.units) >= 0 ? Number(g.units) : 1,
       grade: g.grade != null && !Number.isNaN(Number(g.grade)) ? Number(g.grade) : "",
       semester: g.semester ? String(g.semester) : undefined,
     }));
@@ -181,12 +194,21 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
   }
 
   function handleComputeAverage() {
-    const valid = gradeItems.filter((i) => i.grade !== "" && !Number.isNaN(Number(i.grade)));
+    const valid = gradeItems.filter((i) => i.grade !== "" && !Number.isNaN(Number(i.grade)) && Number(i.grade) > 0);
     if (valid.length === 0) return;
 
-    const totalWeighted = valid.reduce((sum, i) => sum + Number(i.grade) * (i.units || 1), 0);
-    const totalUnits = valid.reduce((sum, i) => sum + (i.units || 1), 0);
-    const avg = totalUnits > 0 ? (totalWeighted / totalUnits).toFixed(2) : "0";
+    // Weight by units for credit subjects (units > 0), or compute simple average if all units are 0
+    const totalCreditUnits = valid.reduce((sum, i) => sum + (Number(i.units) > 0 ? Number(i.units) : 0), 0);
+    let avg = "0";
+    if (totalCreditUnits > 0) {
+      const totalWeighted = valid
+        .filter((i) => Number(i.units) > 0)
+        .reduce((sum, i) => sum + Number(i.grade) * Number(i.units), 0);
+      avg = (totalWeighted / totalCreditUnits).toFixed(2);
+    } else {
+      const sumGrades = valid.reduce((sum, i) => sum + Number(i.grade), 0);
+      avg = (sumGrades / valid.length).toFixed(2);
+    }
     setGeneralAverage(avg);
   }
 
@@ -198,7 +220,7 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
   }
 
   async function handleSubmit() {
-    if (!doc) return;
+    if (!doc || isMismatch) return;
     setFormError("");
     const parsedGa = generalAverage.trim() ? Number(generalAverage) : undefined;
     if (parsedGa !== undefined && (Number.isNaN(parsedGa) || parsedGa <= 0 || parsedGa > 100)) {
@@ -206,22 +228,33 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
       return;
     }
 
-    const invalidGrade = gradeItems.find(
-      (i) => i.grade === "" || Number.isNaN(Number(i.grade)) || Number(i.grade) <= 0 || Number(i.grade) > 100,
+    // Filter to only subjects with a valid completed grade (> 0)
+    const validGradedItems = gradeItems.filter(
+      (i) => i.grade !== "" && !Number.isNaN(Number(i.grade)) && Number(i.grade) > 0 && Number(i.grade) <= 100,
     );
-    if (invalidGrade) {
+
+    // If there are entered items that have negative or >100 grades
+    const invalidItem = gradeItems.find(
+      (i) => i.grade !== "" && (Number.isNaN(Number(i.grade)) || Number(i.grade) < 0 || Number(i.grade) > 100),
+    );
+    if (invalidItem) {
       setFormError(
-        `Grade for "${invalidGrade.subject_name || "subject"}" must be a valid positive number (e.g., 1.00–5.00 or 75–100).`,
+        `Grade for "${invalidItem.subject_name || "subject"}" must be a valid positive number (e.g., 1.00–5.00 or 75–100).`,
       );
+      return;
+    }
+
+    if (validGradedItems.length === 0 && parsedGa === undefined) {
+      setFormError("Please enter at least one completed subject grade or provide your General Average.");
       return;
     }
 
     setSubmitting(true);
     try {
-      const payloadGradeItems: GradeItem[] = gradeItems.map((i) => ({
+      const payloadGradeItems: GradeItem[] = validGradedItems.map((i) => ({
         subject_code: i.subject_code.trim() || i.subject_name.trim() || "N/A",
         subject_name: i.subject_name.trim() || i.subject_code.trim() || "N/A",
-        units: Number(i.units) || 1,
+        units: Number(i.units) >= 0 ? Number(i.units) : 1,
         grade: Number(i.grade),
       }));
 
@@ -319,7 +352,7 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
               </button>
             </div>
 
-            {isOcrPending ? (
+            {isOcrPending && !isMismatch ? (
               <div className="flex flex-col items-center justify-center rounded-xl border border-sky-200 bg-sky-50/60 p-6 text-center dark:border-sky-900/40 dark:bg-sky-950/20">
                 <div className="relative mb-3 flex size-12 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900/50">
                   <Sparkles className="size-6 text-amber-500 animate-pulse" />
@@ -368,7 +401,19 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
               </div>
             ) : (
               <>
-                {doc.status === "NEEDS_REUPLOAD" && (
+                {isMismatch ? (
+                  <div className="rounded-xl border border-destructive/30 bg-bad-bg p-4 text-xs text-destructive">
+                    <div className="flex items-center gap-2 font-semibold text-sm">
+                      <AlertCircle className="size-4.5 shrink-0 text-destructive" />
+                      <span>Document Requirement Mismatch</span>
+                    </div>
+                    <p className="mt-1.5 text-xs leading-relaxed text-destructive/90">
+                      {currentYearLevel && currentYearLevel >= 2
+                        ? `Students in Year ${currentYearLevel} (2nd to 4th year) are required to submit an official College Transcript of Records (TOR) or Certificate of Grades. High School Form 138 / Form 9 cannot be confirmed for your application. Please close this dialog, remove this document, and upload your TOR.`
+                        : "1st-year applicants are required to submit Senior High School Form 138 or Form 9. College transcripts cannot be confirmed for 1st-year applications. Please close this dialog, remove this document, and upload your high school report card."}
+                    </p>
+                  </div>
+                ) : doc.status === "NEEDS_REUPLOAD" ? (
                   <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3.5 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
@@ -392,13 +437,13 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
                         "Automatic grade extraction could not read all fields. You can retry AI Extraction, replace the file, or enter your subjects and grades manually below."}
                     </p>
                   </div>
-                )}
+                ) : null}
 
                 {/* Metadata and advisories */}
                 <ExtractedMetadataView
                   extractedData={rawExtracted}
                   isReadOnly={isReadOnly}
-                  showConfirmedNotice={isReadOnly}
+                  showConfirmedNotice={isReadOnly && !isMismatch}
                 />
 
                 {/* Editable Document Summary */}
@@ -433,8 +478,9 @@ export function DocumentReviewDialog({ document: doc, open, onOpenChange, onConf
         {/* Footer */}
         <DialogFooterBar
           isReadOnly={isReadOnly}
+          isMismatch={isMismatch}
           submitting={submitting}
-          disabled={isOcrPending}
+          disabled={isOcrPending || isMismatch}
           onClose={() => onOpenChange(false)}
           onSubmit={handleSubmit}
         />

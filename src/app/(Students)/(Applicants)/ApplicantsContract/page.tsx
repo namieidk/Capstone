@@ -47,12 +47,12 @@ export default function ApplicantsContractPage() {
   async function handleSigned() {
     const freshUser = await refreshUser();
     if (freshUser?.role === "SCHOLAR") {
-      window.location.href = "/scholardashboard";
+      window.location.href = "/scholar-onboarding";
     } else {
       try {
         const me = await getMe();
         if (me.role === "SCHOLAR") {
-          window.location.href = "/scholardashboard";
+          window.location.href = "/scholar-onboarding";
         } else {
           router.push("/ApplicantsDashboard");
         }

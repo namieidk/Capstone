@@ -25,6 +25,7 @@ export interface User {
     current_year_level?: number;
     scholarship_track?: string;
     relative_employee?: string;
+    academic_baseline_status?: string;
   };
   employee?: {
     employee_id: number;

@@ -76,6 +76,29 @@ export function isHighSchoolDoc(docType: string): boolean {
   return /138|137|form\s*9|sf9|report card|high school|shs|senior high/i.test(docType || "");
 }
 
+export function isInvalidOrMismatchedDoc(doc: ScholarDocument | null | undefined, yearLevel: number = 1): boolean {
+  if (!doc) return false;
+  const reason = (doc.rejection_reason || "").toLowerCase();
+  if (
+    reason.includes("document type mismatch") ||
+    reason.includes("invalid document type") ||
+    reason.includes("mismatch") ||
+    reason.includes("statement of account") ||
+    reason.includes("unsupported document") ||
+    reason.includes("form 138/sf9") ||
+    reason.includes("high school report card")
+  ) {
+    return true;
+  }
+  if (yearLevel >= 2 && isHighSchoolDoc(doc.document_type)) {
+    return true;
+  }
+  if (yearLevel === 1 && !isHighSchoolDoc(doc.document_type)) {
+    return true;
+  }
+  return false;
+}
+
 export function getFilteredDocumentTypeOptions(yearLevel: number = 1) {
   if (yearLevel >= 2) {
     // 2nd to 4th year college: TOR or Certificate of Grades

@@ -2,17 +2,17 @@
 
 import { useCallback, useContext, useEffect, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
-import { CurriculumMetricsSummary } from "@/components/scholar/prospectus/CurriculumMetricsSummary";
-import { EditSubjectsModal } from "@/components/scholar/prospectus/EditSubjectsModal";
-import { GradingSystemCard } from "@/components/scholar/prospectus/GradingSystemCard";
-import { ProspectusChecklistTable } from "@/components/scholar/prospectus/ProspectusChecklistTable";
-import { ProspectusHeader } from "@/components/scholar/prospectus/ProspectusHeader";
-import { SchoolSelectionModal } from "@/components/scholar/prospectus/SchoolSelectionModal";
-import { UploadHistoricalCcgModal } from "@/components/scholar/prospectus/UploadHistoricalCcgModal";
-import { UploadProspectusModal } from "@/components/scholar/prospectus/UploadProspectusModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SocketContext } from "@/contexts/SocketContext";
 import { getMyBaseline, type ScholarBaselineState, submitBaselineForReview } from "@/lib/api/baseline";
+import { CurriculumMetricsSummary } from "./components/CurriculumMetricsSummary";
+import { EditSubjectsModal } from "./components/EditSubjectsModal";
+import { GradingSystemCard } from "./components/GradingSystemCard";
+import { ProspectusChecklistTable } from "./components/ProspectusChecklistTable";
+import { ProspectusHeader } from "./components/ProspectusHeader";
+import { SchoolSelectionModal } from "./components/SchoolSelectionModal";
+import { UploadHistoricalCcgModal } from "./components/UploadHistoricalCcgModal";
+import { UploadProspectusModal } from "./components/UploadProspectusModal";
 
 export default function ScholarProspectusPage() {
   const { socket } = useContext(SocketContext);
@@ -104,6 +104,25 @@ export default function ScholarProspectusPage() {
           </div>
         ) : (
           <>
+            {!isFrozen && data?.academic_baseline_status !== "PENDING_COORDINATOR_REVIEW" && (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border border-[#F1B71E] bg-[#FFFDF5] text-xs">
+                <div className="space-y-0.5">
+                  <span className="font-bold text-[#14213A] text-sm flex items-center gap-1.5">
+                    Academic Baseline Setup In Progress
+                  </span>
+                  <p className="text-muted-foreground">
+                    Complete your guided 4-step onboarding wizard to establish your degree curriculum baseline.
+                  </p>
+                </div>
+                <a
+                  href="/scholar-onboarding"
+                  className="inline-flex items-center justify-center h-9 px-4 rounded-xl bg-[#14213A] text-[#F1B71E] hover:bg-[#1E3050] font-bold text-xs shrink-0 shadow-xs"
+                >
+                  Continue Guided Setup →
+                </a>
+              </div>
+            )}
+
             {/* 1. Action Bar & Verification Status */}
             <ProspectusHeader
               baselineStatus={data?.academic_baseline_status || "PENDING_SCHOOL_SELECTION"}

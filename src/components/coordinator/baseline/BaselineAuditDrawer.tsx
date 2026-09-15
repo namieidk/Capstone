@@ -242,7 +242,7 @@ export function BaselineAuditDrawer({ scholarProfileId, open, onOpenChange, onSu
         ) : (
           <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 py-2 min-h-0 overflow-hidden">
             {/* Left Pane: Original Uploaded Document Viewer */}
-            <div className="lg:col-span-5 flex flex-col bg-muted/30 rounded-xl border border-border/60 overflow-hidden p-3 min-h-[300px]">
+            <div className="lg:col-span-5 flex flex-col bg-muted/30 rounded-xl border border-border/60 overflow-hidden p-3 min-h-75">
               <div className="flex items-center justify-between pb-2 border-b border-border text-xs">
                 <div className="flex items-center gap-1.5 font-semibold text-foreground">
                   <FileText className="w-4 h-4 text-primary" />
@@ -331,6 +331,42 @@ export function BaselineAuditDrawer({ scholarProfileId, open, onOpenChange, onSu
                     )}
                   </div>
                 )}
+              </div>
+
+              {/* Quick-Audit Metric Bar */}
+              <div className="grid grid-cols-4 gap-2 text-xs">
+                <div className="p-2 rounded-md bg-card border border-border/60 text-center">
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Total Subjects</span>
+                  <span className="font-bold text-foreground text-sm">{subjectsList.length}</span>
+                </div>
+                <div className="p-2 rounded-md bg-card border border-border/60 text-center">
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Total Units</span>
+                  <span className="font-bold text-foreground text-sm">
+                    {subjectsList.reduce((acc, s) => acc + (Number(s.units) || 0), 0).toFixed(1)}
+                  </span>
+                </div>
+                <div className="p-2 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-center">
+                  <span className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-400 block">
+                    Credited
+                  </span>
+                  <span className="font-bold text-emerald-700 dark:text-emerald-400 text-sm">
+                    {subjectsList
+                      .filter((s) => s.status === "CREDITED" || s.status === "PASSED")
+                      .reduce((acc, s) => acc + (Number(s.units) || 0), 0)
+                      .toFixed(1)}{" "}
+                    u
+                  </span>
+                </div>
+                <div className="p-2 rounded-md bg-card border border-border/60 text-center">
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Remaining</span>
+                  <span className="font-bold text-amber-600 dark:text-amber-400 text-sm">
+                    {subjectsList
+                      .filter((s) => s.status !== "CREDITED" && s.status !== "PASSED")
+                      .reduce((acc, s) => acc + (Number(s.units) || 0), 0)
+                      .toFixed(1)}{" "}
+                    u
+                  </span>
+                </div>
               </div>
 
               {/* Editable Subjects Table */}

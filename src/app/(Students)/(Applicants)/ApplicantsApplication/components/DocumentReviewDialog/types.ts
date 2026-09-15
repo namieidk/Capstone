@@ -2,6 +2,7 @@ import type { GradeItem, ScholarDocument } from "@/lib/api/documents";
 
 export interface DocumentReviewDialogProps {
   document: ScholarDocument | null;
+  currentYearLevel?: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (

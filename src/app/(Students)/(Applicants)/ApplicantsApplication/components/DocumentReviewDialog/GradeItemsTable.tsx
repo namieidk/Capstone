@@ -104,7 +104,7 @@ export function GradeItemsTable({
                       <Input
                         type="number"
                         step="0.5"
-                        min="0.5"
+                        min="0"
                         max="10"
                         value={item.units}
                         disabled={isReadOnly}
@@ -119,8 +119,8 @@ export function GradeItemsTable({
                     <span className="text-[0.65rem] font-semibold text-muted-foreground uppercase">Grade</span>
                     <Input
                       type="number"
-                      step="0.1"
-                      min="50"
+                      step="0.01"
+                      min="0"
                       max="100"
                       value={item.grade}
                       disabled={isReadOnly}
@@ -159,7 +159,7 @@ export function GradeItemsTable({
                   <Input
                     type="number"
                     step="0.5"
-                    min="0.5"
+                    min="0"
                     max="10"
                     value={item.units}
                     disabled={isReadOnly}
@@ -171,8 +171,8 @@ export function GradeItemsTable({
                 )}
                 <Input
                   type="number"
-                  step="0.1"
-                  min="50"
+                  step="0.01"
+                  min="0"
                   max="100"
                   value={item.grade}
                   disabled={isReadOnly}
