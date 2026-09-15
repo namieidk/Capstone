@@ -13,6 +13,7 @@ import {
   getDefaultDocumentType,
   getFilteredDocumentTypeOptions,
   isHighSchoolDoc,
+  isInvalidOrMismatchedDoc,
   validateChosenFiles,
 } from "./wizard-helpers";
 
@@ -59,6 +60,7 @@ export function DocumentsStep({
   const [retryingId, setRetryingId] = useState<number | null>(null);
 
   const documentOptions = getFilteredDocumentTypeOptions(currentYearLevel);
+  const mismatchedDoc = documents.find((d) => isInvalidOrMismatchedDoc(d, currentYearLevel));
   const hasConfirmedDoc =
     hasConfirmed || documents.some((d) => d.status === "STUDENT_CONFIRMED" || d.status === "VERIFIED");
   const hasNeedsReupload = documents.some((d) => d.status === "NEEDS_REUPLOAD");
@@ -196,7 +198,11 @@ export function DocumentsStep({
 
   return (
     <div className="flex flex-col gap-4">
-      <DocumentStatusBanner shouldShowUploadCard={shouldShowUploadCard} currentYearLevel={currentYearLevel} />
+      <DocumentStatusBanner
+        shouldShowUploadCard={shouldShowUploadCard}
+        currentYearLevel={currentYearLevel}
+        mismatchedDoc={mismatchedDoc}
+      />
 
       {shouldShowUploadCard && (
         <DocumentUploadCard

@@ -307,7 +307,13 @@ export default function ApplicantsApplicationPage() {
                 />
               )}
               {step === 3 && (
-                <StatusStep application={application} documents={documents} onBackToDocuments={() => changeStep(2)} />
+                <StatusStep
+                  application={application}
+                  documents={documents}
+                  scholarshipTrack={user?.scholar_profile?.scholarship_track ?? undefined}
+                  currentYearLevel={currentYearLevel}
+                  onBackToDocuments={() => changeStep(2)}
+                />
               )}
             </div>
           </>

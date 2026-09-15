@@ -25,13 +25,32 @@ export default function ScholarOnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
 
-  const fetchBaseline = useCallback(async () => {
+  // Background data refresh (does NOT clobber currentStep)
+  const refreshBaselineData = useCallback(async () => {
+    try {
+      const res = await getMyBaseline();
+      setData(res);
+      if (res.academic_baseline_status === "BASELINE_FROZEN") {
+        router.replace("/scholardashboard");
+        return res;
+      }
+      if (res.academic_baseline_status === "PENDING_COORDINATOR_REVIEW") {
+        setSubmitted(true);
+      }
+      return res;
+    } catch (err) {
+      console.error("Failed to refresh baseline data:", err);
+      return null;
+    }
+  }, [router]);
+
+  // One-time initial mount resolution of current starting step
+  const initializeBaseline = useCallback(async () => {
     try {
       setLoading(true);
       const res = await getMyBaseline();
       setData(res);
 
-      // Determine starting step based on baseline status & data
       if (res.academic_baseline_status === "BASELINE_FROZEN") {
         router.replace("/scholardashboard");
         return;
@@ -48,22 +67,22 @@ export default function ScholarOnboardingPage() {
         setCurrentStep(1);
       }
     } catch (err) {
-      console.error("Failed to fetch baseline state:", err);
+      console.error("Failed to initialize baseline state:", err);
     } finally {
       setLoading(false);
     }
   }, [router]);
 
   useEffect(() => {
-    fetchBaseline();
-  }, [fetchBaseline]);
+    initializeBaseline();
+  }, [initializeBaseline]);
 
   // Real-time socket events
   useEffect(() => {
     if (!socket) return;
 
     const handleRefresh = () => {
-      fetchBaseline();
+      refreshBaselineData();
     };
 
     socket.on("baseline:prospectus_processed", handleRefresh);
@@ -77,32 +96,32 @@ export default function ScholarOnboardingPage() {
       socket.off("baseline:frozen", handleRefresh);
       socket.off("baseline:submitted_for_review", handleRefresh);
     };
-  }, [socket, fetchBaseline, router]);
+  }, [socket, refreshBaselineData, router]);
 
   // Max accessible step computation
   const hasSchool = !!data?.school_grading_system;
   const hasProspectus = !!data?.prospectus?.subjects && data.prospectus.subjects.length > 0;
   const maxAccessibleStep = hasProspectus ? 4 : hasSchool ? 2 : 1;
 
-  const handleStep1Success = () => {
-    fetchBaseline();
+  const handleStep1Success = async () => {
+    await refreshBaselineData();
     setCurrentStep(2);
   };
 
-  const handleStep2Success = () => {
-    fetchBaseline();
+  const handleStep2Success = async () => {
+    await refreshBaselineData();
     setCurrentStep(3);
   };
 
-  const handleStep3Success = () => {
-    fetchBaseline();
+  const handleStep3Success = async () => {
+    await refreshBaselineData();
     setCurrentStep(4);
   };
 
   const handleStep4Success = async () => {
     await refreshUser();
     setSubmitted(true);
-    fetchBaseline();
+    await refreshBaselineData();
   };
 
   const handleGoToDashboard = async () => {

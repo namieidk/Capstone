@@ -90,12 +90,37 @@ export function isInvalidOrMismatchedDoc(doc: ScholarDocument | null | undefined
   ) {
     return true;
   }
-  if (yearLevel >= 2 && isHighSchoolDoc(doc.document_type)) {
+
+  let detectedType: string | undefined;
+  if (doc.extracted_data) {
+    try {
+      const ext = typeof doc.extracted_data === "string" ? JSON.parse(doc.extracted_data) : doc.extracted_data;
+      detectedType = ext?.detected_document_type;
+    } catch {
+      // Ignore JSON parse error
+    }
+  }
+
+  if (detectedType === "STATEMENT_OF_ACCOUNT" || detectedType === "OTHER") {
     return true;
   }
-  if (yearLevel === 1 && !isHighSchoolDoc(doc.document_type)) {
-    return true;
+
+  if (yearLevel >= 2) {
+    if (isHighSchoolDoc(doc.document_type) || detectedType === "FORM_138") {
+      return true;
+    }
   }
+
+  if (yearLevel === 1) {
+    if (
+      (!isHighSchoolDoc(doc.document_type) && doc.document_type) ||
+      detectedType === "TRANSCRIPT_OF_RECORDS" ||
+      detectedType === "CERTIFICATE_OF_GRADES"
+    ) {
+      return true;
+    }
+  }
+
   return false;
 }
 

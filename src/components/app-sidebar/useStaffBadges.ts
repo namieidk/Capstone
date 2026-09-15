@@ -21,7 +21,10 @@ export function useStaffBadges(opts: { includeApplicants: boolean }): StaffBadge
     if (opts.includeApplicants) {
       listApplications()
         .then((rows) => {
-          if (alive) setApplicants(rows.length);
+          if (alive) {
+            const active = rows.filter((r) => r.status !== "APPROVED");
+            setApplicants(active.length);
+          }
         })
         .catch(() => undefined);
     }

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { CarouselApi } from "@/components/ui/carousel";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { type GradeItem, retryDocumentOcr, syncParseur } from "@/lib/api/documents";
 import { isInvalidOrMismatchedDoc } from "../wizard-helpers";
 import { DialogFooterBar } from "./DialogFooterBar";
@@ -274,7 +275,7 @@ export function DocumentReviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-[95dvh] max-h-[95dvh] w-[96vw] max-w-6xl! flex-col overflow-hidden p-0 rounded-2xl sm:h-auto sm:max-h-[90vh]">
+      <DialogContent className="flex h-[95dvh] max-h-[95dvh] w-[96vw] max-w-6xl! flex-col gap-0 overflow-hidden p-0 rounded-2xl sm:h-auto sm:max-h-[90vh]">
         {/* Header */}
         <DialogHeaderBar document={doc} />
 
@@ -311,167 +312,175 @@ export function DocumentReviewDialog({
         </div>
 
         {/* Content Body: Two columns on desktop, tabbed switch on mobile */}
-        <div className="grid min-h-0 flex-1 grid-cols-1 overflow-y-auto lg:grid-cols-12">
+        <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-12">
           {/* Left Column: Document Preview with Carousel */}
           <div
             className={
-              mobileTab === "preview" ? "flex flex-col lg:col-span-5" : "hidden lg:col-span-5 lg:flex lg:flex-col"
+              mobileTab === "preview"
+                ? "flex flex-col min-h-0 flex-1 lg:col-span-5"
+                : "hidden min-h-0 flex-1 lg:col-span-5 lg:flex lg:flex-col"
             }
           >
-            <DocumentPreviewCarousel
-              document={doc}
-              candidatePageUrls={candidatePageUrls}
-              validPageUrls={validPageUrls}
-              failedPages={failedPages}
-              currentPage={currentPage}
-              carouselApi={carouselApi}
-              setCarouselApi={setCarouselApi}
-              onPageFailed={handlePageFailed}
-              onSwitchToData={() => setMobileTab("data")}
-            />
+            <ScrollArea className="flex-1 min-h-0 h-full">
+              <DocumentPreviewCarousel
+                document={doc}
+                candidatePageUrls={candidatePageUrls}
+                validPageUrls={validPageUrls}
+                failedPages={failedPages}
+                currentPage={currentPage}
+                carouselApi={carouselApi}
+                setCarouselApi={setCarouselApi}
+                onPageFailed={handlePageFailed}
+                onSwitchToData={() => setMobileTab("data")}
+              />
+            </ScrollArea>
           </div>
 
           {/* Right Column: OCR Extracted Data Review & Editor */}
           <div
             className={
               mobileTab === "data"
-                ? "flex flex-col gap-3.5 overflow-y-auto p-3.5 sm:gap-4 sm:p-5 lg:col-span-7"
-                : "hidden gap-3.5 overflow-y-auto p-3.5 sm:gap-4 sm:p-5 lg:col-span-7 lg:flex lg:flex-col"
+                ? "flex flex-col min-h-0 flex-1 lg:col-span-7"
+                : "hidden min-h-0 flex-1 lg:col-span-7 lg:flex lg:flex-col"
             }
           >
-            {/* Quick link to preview on mobile */}
-            <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs lg:hidden">
-              <span className="text-muted-foreground">Checking document?</span>
-              <button
-                type="button"
-                onClick={() => setMobileTab("preview")}
-                className="flex items-center gap-1 font-semibold text-navy transition-colors hover:text-amber"
-              >
-                <Eye className="size-3.5" />
-                <span>View Document (Page {currentPage})</span>
-              </button>
-            </div>
+            <ScrollArea className="flex-1 min-h-0 h-full">
+              <div className="flex flex-col gap-3.5 p-3.5 sm:gap-4 sm:p-5">
+                {/* Quick link to preview on mobile */}
+                <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs lg:hidden">
+                  <span className="text-muted-foreground">Checking document?</span>
+                  <button
+                    type="button"
+                    onClick={() => setMobileTab("preview")}
+                    className="flex items-center gap-1 font-semibold text-navy transition-colors hover:text-amber"
+                  >
+                    <Eye className="size-3.5" />
+                    <span>View Document (Page {currentPage})</span>
+                  </button>
+                </div>
 
-            {isOcrPending && !isMismatch ? (
-              <div className="flex flex-col items-center justify-center rounded-xl border border-sky-200 bg-sky-50/60 p-6 text-center dark:border-sky-900/40 dark:bg-sky-950/20">
-                <div className="relative mb-3 flex size-12 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900/50">
-                  <Sparkles className="size-6 text-amber-500 animate-pulse" />
-                  <Loader2 className="absolute size-10 animate-spin text-sky-600 opacity-60" />
-                </div>
-                <h4 className="text-sm font-semibold text-navy">AI is reading your document...</h4>
-                <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-muted-foreground">
-                  Our Vision AI is extracting your academic year, general average, and subject grades (10–25s). Hang
-                  tight!
-                </p>
-                {syncMessage && (
-                  <p className="mt-2 text-xs font-medium text-sky-800 dark:text-sky-300">{syncMessage}</p>
-                )}
-                <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-8 gap-1.5 text-xs!"
-                    disabled={syncing}
-                    onClick={handleRetryOrSync}
-                  >
-                    <RefreshCw className={`size-3.5 ${syncing ? "animate-spin" : ""}`} />
-                    {syncing ? "Checking..." : "Check Status"}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 text-xs! text-muted-foreground hover:text-navy"
-                    onClick={() => setManualBypass(true)}
-                  >
-                    Enter manually instead
-                  </Button>
-                </div>
-                <div className="mt-6 w-full space-y-2 border-t border-sky-200/60 pt-4 text-left dark:border-sky-900/30">
-                  <p className="text-[0.7rem] font-medium text-sky-800 dark:text-sky-300">
-                    Awaiting extracted information:
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="h-9 animate-pulse rounded-md bg-sky-100/70 dark:bg-sky-900/30" />
-                    <div className="h-9 animate-pulse rounded-md bg-sky-100/70 dark:bg-sky-900/30" />
-                  </div>
-                  <div className="h-16 animate-pulse rounded-md bg-sky-100/50 dark:bg-sky-900/20" />
-                </div>
-              </div>
-            ) : (
-              <>
-                {isMismatch ? (
-                  <div className="rounded-xl border border-destructive/30 bg-bad-bg p-4 text-xs text-destructive">
-                    <div className="flex items-center gap-2 font-semibold text-sm">
-                      <AlertCircle className="size-4.5 shrink-0 text-destructive" />
-                      <span>Document Requirement Mismatch</span>
+                {isOcrPending && !isMismatch ? (
+                  <div className="flex flex-col items-center justify-center rounded-xl border border-sky-200 bg-sky-50/60 p-6 text-center dark:border-sky-900/40 dark:bg-sky-950/20">
+                    <div className="relative mb-3 flex size-12 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900/50">
+                      <Sparkles className="size-6 text-amber-500 animate-pulse" />
+                      <Loader2 className="absolute size-10 animate-spin text-sky-600 opacity-60" />
                     </div>
-                    <p className="mt-1.5 text-xs leading-relaxed text-destructive/90">
-                      {currentYearLevel && currentYearLevel >= 2
-                        ? `Students in Year ${currentYearLevel} (2nd to 4th year) are required to submit an official College Transcript of Records (TOR) or Certificate of Grades. High School Form 138 / Form 9 cannot be confirmed for your application. Please close this dialog, remove this document, and upload your TOR.`
-                        : "1st-year applicants are required to submit Senior High School Form 138 or Form 9. College transcripts cannot be confirmed for 1st-year applications. Please close this dialog, remove this document, and upload your high school report card."}
+                    <h4 className="text-sm font-semibold text-navy">AI is reading your document...</h4>
+                    <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-muted-foreground">
+                      Our Vision AI is extracting your academic year, general average, and subject grades (10–25s). Hang
+                      tight!
                     </p>
-                  </div>
-                ) : doc.status === "NEEDS_REUPLOAD" ? (
-                  <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3.5 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="size-4 shrink-0 text-amber-600" />
-                        <span className="font-semibold">AI Extraction Notice</span>
-                      </div>
+                    {syncMessage && (
+                      <p className="mt-2 text-xs font-medium text-sky-800 dark:text-sky-300">{syncMessage}</p>
+                    )}
+                    <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="h-7 text-xs! gap-1 border-amber-300 bg-white hover:bg-amber-50 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200"
-                        onClick={handleRetryOrSync}
+                        className="h-8 gap-1.5 text-xs!"
                         disabled={syncing}
+                        onClick={handleRetryOrSync}
                       >
-                        <RefreshCw className={`size-3 ${syncing ? "animate-spin" : ""}`} />
-                        {syncing ? "Retrying..." : "Retry AI Extraction"}
+                        <RefreshCw className={`size-3.5 ${syncing ? "animate-spin" : ""}`} />
+                        {syncing ? "Checking..." : "Check Status"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 text-xs! text-muted-foreground hover:text-navy"
+                        onClick={() => setManualBypass(true)}
+                      >
+                        Enter manually instead
                       </Button>
                     </div>
-                    <p className="mt-1 text-[11px] leading-relaxed text-amber-800 dark:text-amber-300">
-                      {doc.rejection_reason ||
-                        "Automatic grade extraction could not read all fields. You can retry AI Extraction, replace the file, or enter your subjects and grades manually below."}
-                    </p>
+                    <div className="mt-6 w-full space-y-2 border-t border-sky-200/60 pt-4 text-left dark:border-sky-900/30">
+                      <p className="text-[0.7rem] font-medium text-sky-800 dark:text-sky-300">
+                        Awaiting extracted information:
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="h-9 animate-pulse rounded-md bg-sky-100/70 dark:bg-sky-900/30" />
+                        <div className="h-9 animate-pulse rounded-md bg-sky-100/70 dark:bg-sky-900/30" />
+                      </div>
+                      <div className="h-16 animate-pulse rounded-md bg-sky-100/50 dark:bg-sky-900/20" />
+                    </div>
                   </div>
-                ) : null}
+                ) : (
+                  <>
+                    {isMismatch ? (
+                      <div className="rounded-xl border border-destructive/30 bg-bad-bg p-4 text-xs text-destructive">
+                        <div className="flex items-center gap-2 font-semibold text-sm">
+                          <AlertCircle className="size-4.5 shrink-0 text-destructive" />
+                          <span>Document Requirement Mismatch</span>
+                        </div>
+                        <p className="mt-1.5 text-xs leading-relaxed text-destructive/90">
+                          {currentYearLevel && currentYearLevel >= 2
+                            ? `Students in Year ${currentYearLevel} (2nd to 4th year) are required to submit an official College Transcript of Records (TOR) or Certificate of Grades. High School Form 138 / Form 9 cannot be confirmed for your application. Please close this dialog, remove this document, and upload your TOR.`
+                            : "1st-year applicants are required to submit Senior High School Form 138 or Form 9. College transcripts cannot be confirmed for 1st-year applications. Please close this dialog, remove this document, and upload your high school report card."}
+                        </p>
+                      </div>
+                    ) : doc.status === "NEEDS_REUPLOAD" ? (
+                      <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3.5 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="size-4 shrink-0 text-amber-600" />
+                            <span className="font-semibold">AI Extraction Notice</span>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs! gap-1 border-amber-300 bg-white hover:bg-amber-50 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200"
+                            onClick={handleRetryOrSync}
+                            disabled={syncing}
+                          >
+                            <RefreshCw className={`size-3 ${syncing ? "animate-spin" : ""}`} />
+                            {syncing ? "Retrying..." : "Retry AI Extraction"}
+                          </Button>
+                        </div>
+                        <p className="mt-1 text-[11px] leading-relaxed text-amber-800 dark:text-amber-300">
+                          {doc.rejection_reason ||
+                            "Automatic grade extraction could not read all fields. You can retry AI Extraction, replace the file, or enter your subjects and grades manually below."}
+                        </p>
+                      </div>
+                    ) : null}
 
-                {/* Metadata and advisories */}
-                <ExtractedMetadataView
-                  extractedData={rawExtracted}
-                  isReadOnly={isReadOnly}
-                  showConfirmedNotice={isReadOnly && !isMismatch}
-                />
+                    {/* Metadata and advisories */}
+                    <ExtractedMetadataView
+                      extractedData={rawExtracted}
+                      isReadOnly={isReadOnly}
+                      showConfirmedNotice={isReadOnly && !isMismatch}
+                    />
 
-                {/* Editable Document Summary */}
-                <DocumentSummaryForm
-                  academicYear={academicYear}
-                  generalAverage={generalAverage}
-                  isReadOnly={isReadOnly}
-                  onAcademicYearChange={setAcademicYear}
-                  onGeneralAverageChange={setGeneralAverage}
-                  onComputeAverage={handleComputeAverage}
-                />
+                    {/* Editable Document Summary */}
+                    <DocumentSummaryForm
+                      academicYear={academicYear}
+                      generalAverage={generalAverage}
+                      isReadOnly={isReadOnly}
+                      onAcademicYearChange={setAcademicYear}
+                      onGeneralAverageChange={setGeneralAverage}
+                      onComputeAverage={handleComputeAverage}
+                    />
 
-                {/* Editable Subjects & Grades Table */}
-                <GradeItemsTable
-                  gradeItems={gradeItems}
-                  isReadOnly={isReadOnly}
-                  onAddSubject={handleAddSubject}
-                  onRemoveSubject={handleRemoveSubject}
-                  onItemChange={handleItemChange}
-                />
-              </>
-            )}
+                    {/* Editable Subjects & Grades Table */}
+                    <GradeItemsTable
+                      gradeItems={gradeItems}
+                      isReadOnly={isReadOnly}
+                      onAddSubject={handleAddSubject}
+                      onRemoveSubject={handleRemoveSubject}
+                      onItemChange={handleItemChange}
+                    />
+                  </>
+                )}
 
-            {formError && (
-              <div className="rounded-lg border border-destructive/30 bg-bad-bg px-3 py-2 text-xs font-medium text-destructive">
-                {formError}
+                {formError && (
+                  <div className="rounded-lg border border-destructive/30 bg-bad-bg px-3 py-2 text-xs font-medium text-destructive">
+                    {formError}
+                  </div>
+                )}
               </div>
-            )}
+            </ScrollArea>
           </div>
         </div>
 

@@ -11,7 +11,9 @@ import type { Stage } from "@/components/Coordinatorshared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ScholarDocument } from "@/lib/api/documents";
+import { AcademicEvaluationCard } from "./AcademicEvaluationCard";
 import { getDocStatusMeta } from "./document-helpers";
 import { useDocumentVerify } from "./useDocumentVerify";
 import { VerifyFooterBar } from "./VerifyFooterBar";
@@ -45,7 +47,7 @@ export function DocumentVerifyDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-[95dvh] max-h-[95dvh] w-[96vw] max-w-6xl! flex-col overflow-hidden p-0 rounded-2xl sm:h-auto sm:max-h-[90vh]">
+      <DialogContent className="flex h-[95dvh] max-h-[95dvh] w-[96vw] max-w-6xl! flex-col gap-0 overflow-hidden p-0 rounded-2xl sm:h-auto sm:max-h-[90vh]">
         <DialogHeader className="shrink-0 border-b border-border bg-white px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex flex-wrap items-center justify-between gap-2.5 pr-8 sm:pr-6">
             <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
@@ -104,62 +106,75 @@ export function DocumentVerifyDialog({
           </button>
         </div>
 
-        <div className="grid min-h-0 flex-1 grid-cols-1 overflow-y-auto lg:grid-cols-12">
+        <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-12">
           <div
             className={
-              v.mobileTab === "preview" ? "flex flex-col lg:col-span-5" : "hidden lg:col-span-5 lg:flex lg:flex-col"
+              v.mobileTab === "preview"
+                ? "flex flex-col min-h-0 flex-1 lg:col-span-5"
+                : "hidden min-h-0 flex-1 lg:col-span-5 lg:flex lg:flex-col"
             }
           >
-            <DocumentPreviewCarousel
-              document={doc}
-              candidatePageUrls={v.candidatePageUrls}
-              validPageUrls={v.validPageUrls}
-              failedPages={v.failedPages}
-              currentPage={v.currentPage}
-              carouselApi={v.carouselApi}
-              setCarouselApi={v.setCarouselApi}
-              onPageFailed={(idx) => v.setFailedPages((prev) => ({ ...prev, [idx]: true }))}
-              onSwitchToData={() => v.setMobileTab("data")}
-            />
+            <ScrollArea className="flex-1 min-h-0 h-full">
+              <DocumentPreviewCarousel
+                document={doc}
+                candidatePageUrls={v.candidatePageUrls}
+                validPageUrls={v.validPageUrls}
+                failedPages={v.failedPages}
+                currentPage={v.currentPage}
+                carouselApi={v.carouselApi}
+                setCarouselApi={v.setCarouselApi}
+                onPageFailed={(idx) => v.setFailedPages((prev) => ({ ...prev, [idx]: true }))}
+                onSwitchToData={() => v.setMobileTab("data")}
+              />
+            </ScrollArea>
           </div>
           <div
             className={
               v.mobileTab === "data"
-                ? "flex flex-col gap-3.5 overflow-y-auto p-3.5 sm:gap-4 sm:p-5 lg:col-span-7"
-                : "hidden gap-3.5 overflow-y-auto p-3.5 sm:gap-4 sm:p-5 lg:col-span-7 lg:flex lg:flex-col"
+                ? "flex flex-col min-h-0 flex-1 lg:col-span-7"
+                : "hidden min-h-0 flex-1 lg:col-span-7 lg:flex lg:flex-col"
             }
           >
-            {!isStudentConfirmed && !isVerified && (
-              <div className="flex items-center gap-2.5 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
-                <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                <div className="flex-1 leading-relaxed">
-                  <span className="font-semibold">Awaiting Student Confirmation:</span> This document is currently in{" "}
-                  <strong>{meta.label}</strong> status. The applicant has not reviewed and confirmed their grades yet.
-                  You can preview the document, but you cannot verify it until the applicant confirms.
-                </div>
+            <ScrollArea className="flex-1 min-h-0 h-full">
+              <div className="flex flex-col gap-3.5 p-3.5 sm:gap-4 sm:p-5">
+                {!isStudentConfirmed && !isVerified && (
+                  <div className="flex items-center gap-2.5 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+                    <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                    <div className="flex-1 leading-relaxed">
+                      <span className="font-semibold">Awaiting Student Confirmation:</span> This document is currently
+                      in <strong>{meta.label}</strong> status. The applicant has not reviewed and confirmed their grades
+                      yet. You can preview the document, but you cannot verify it until the applicant confirms.
+                    </div>
+                  </div>
+                )}
+                <ExtractedMetadataView extractedData={rawExtracted} isReadOnly={isReadOnly} />
+                <AcademicEvaluationCard
+                  generalAverage={v.generalAverage}
+                  extractedData={rawExtracted}
+                  globalThreshold={90}
+                />
+                <DocumentSummaryForm
+                  academicYear={v.academicYear}
+                  generalAverage={v.generalAverage}
+                  isReadOnly={isReadOnly}
+                  onAcademicYearChange={v.setAcademicYear}
+                  onGeneralAverageChange={v.setGeneralAverage}
+                  onComputeAverage={v.handleComputeAverage}
+                />
+                <GradeItemsTable
+                  gradeItems={v.gradeItems}
+                  isReadOnly={isReadOnly}
+                  onAddSubject={v.handleAddSubject}
+                  onRemoveSubject={v.handleRemoveSubject}
+                  onItemChange={v.handleItemChange}
+                />
+                {v.formError && (
+                  <div className="rounded-lg border border-destructive/30 bg-bad-bg px-3 py-2 text-xs font-medium text-destructive">
+                    {v.formError}
+                  </div>
+                )}
               </div>
-            )}
-            <ExtractedMetadataView extractedData={rawExtracted} isReadOnly={isReadOnly} />
-            <DocumentSummaryForm
-              academicYear={v.academicYear}
-              generalAverage={v.generalAverage}
-              isReadOnly={isReadOnly}
-              onAcademicYearChange={v.setAcademicYear}
-              onGeneralAverageChange={v.setGeneralAverage}
-              onComputeAverage={v.handleComputeAverage}
-            />
-            <GradeItemsTable
-              gradeItems={v.gradeItems}
-              isReadOnly={isReadOnly}
-              onAddSubject={v.handleAddSubject}
-              onRemoveSubject={v.handleRemoveSubject}
-              onItemChange={v.handleItemChange}
-            />
-            {v.formError && (
-              <div className="rounded-lg border border-destructive/30 bg-bad-bg px-3 py-2 text-xs font-medium text-destructive">
-                {v.formError}
-              </div>
-            )}
+            </ScrollArea>
           </div>
         </div>
 

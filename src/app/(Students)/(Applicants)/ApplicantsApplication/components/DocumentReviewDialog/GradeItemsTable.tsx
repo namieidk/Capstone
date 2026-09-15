@@ -3,6 +3,7 @@
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { EditableGradeItem } from "./types";
 
 interface GradeItemsTableProps {
@@ -54,27 +55,136 @@ export function GradeItemsTable({
           General Average above.
         </div>
       ) : (
-        <div className="flex max-h-72 flex-col gap-2 overflow-y-auto pr-1 sm:max-h-80">
-          {gradeItems.map((item, index) => (
-            <div key={item.id}>
-              {/* Mobile Card View (< sm) */}
-              <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 p-2.5 sm:hidden">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex min-w-0 flex-1 items-center gap-2">
-                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full border border-border bg-white text-[0.65rem] font-bold text-navy">
-                      {index + 1}
-                    </span>
-                    {(hasCodes || !isReadOnly) && (
-                      <Input
-                        value={item.subject_code}
-                        disabled={isReadOnly}
-                        onChange={(e) => onItemChange(item.id, "subject_code", e.target.value)}
-                        placeholder="Code (e.g. MATH 101)"
-                        className="h-8! w-32! shrink-0 bg-white! text-xs!"
-                        title="Subject Code"
-                      />
+        <ScrollArea className="h-72 sm:h-80 w-full pr-2">
+          <div className="flex flex-col gap-2">
+            {gradeItems.map((item, index) => (
+              <div key={item.id}>
+                {/* Mobile Card View (< sm) */}
+                <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 p-2.5 sm:hidden">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                      <span className="flex size-5 shrink-0 items-center justify-center rounded-full border border-border bg-white text-[0.65rem] font-bold text-navy">
+                        {index + 1}
+                      </span>
+                      {(hasCodes || !isReadOnly) && (
+                        <Input
+                          value={item.subject_code}
+                          disabled={isReadOnly}
+                          onChange={(e) => onItemChange(item.id, "subject_code", e.target.value)}
+                          placeholder="Code (e.g. MATH 101)"
+                          className="h-8! w-32! shrink-0 bg-white! text-xs!"
+                          title="Subject Code"
+                        />
+                      )}
+                    </div>
+                    {!isReadOnly && (
+                      <button
+                        type="button"
+                        onClick={() => onRemoveSubject(item.id)}
+                        className="shrink-0 p-1 text-muted-foreground transition-colors hover:text-destructive"
+                        aria-label={`Remove ${item.subject_name || "subject"}`}
+                        title="Remove subject"
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
                     )}
                   </div>
+
+                  <Input
+                    value={item.subject_name}
+                    disabled={isReadOnly}
+                    onChange={(e) => onItemChange(item.id, "subject_name", e.target.value)}
+                    placeholder="Subject descriptive title"
+                    className="h-8! w-full bg-white! text-xs!"
+                    title="Subject Title"
+                  />
+
+                  <div className={`grid ${hasUnits ? "grid-cols-2" : "grid-cols-1"} gap-2`}>
+                    {hasUnits && (
+                      <div className="flex items-center justify-between rounded-md border border-border bg-white px-2.5 py-1">
+                        <span className="text-[0.65rem] font-semibold text-muted-foreground uppercase">Units</span>
+                        <Input
+                          type="number"
+                          step="0.5"
+                          min="0"
+                          max="10"
+                          value={item.units}
+                          disabled={isReadOnly}
+                          onChange={(e) => onItemChange(item.id, "units", Number(e.target.value))}
+                          placeholder="Units"
+                          className="h-6! w-16! border-0! bg-transparent! p-0! text-right font-medium text-navy text-xs! focus-visible:ring-0!"
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between rounded-md border border-border bg-white px-2.5 py-1">
+                      <span className="text-[0.65rem] font-semibold text-muted-foreground uppercase">Grade</span>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        value={item.grade}
+                        disabled={isReadOnly}
+                        onChange={(e) =>
+                          onItemChange(item.id, "grade", e.target.value === "" ? "" : Number(e.target.value))
+                        }
+                        placeholder="0.0"
+                        className="h-6! w-16! border-0! bg-transparent! p-0! text-right font-bold text-navy text-xs! focus-visible:ring-0!"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Desktop Row View (sm and up) */}
+                <div className="hidden items-center gap-2 rounded-lg border border-border bg-muted/40 p-2 text-xs sm:flex">
+                  <span className="w-5 text-center text-[0.7rem] font-semibold text-muted-foreground">{index + 1}</span>
+                  {(hasCodes || !isReadOnly) && (
+                    <Input
+                      value={item.subject_code}
+                      disabled={isReadOnly}
+                      onChange={(e) => onItemChange(item.id, "subject_code", e.target.value)}
+                      placeholder="Code"
+                      className="h-8! w-24! shrink-0 bg-white! text-xs! sm:text-xs!"
+                      title="Subject Code"
+                    />
+                  )}
+                  <Input
+                    value={item.subject_name}
+                    disabled={isReadOnly}
+                    onChange={(e) => onItemChange(item.id, "subject_name", e.target.value)}
+                    placeholder="Subject descriptive title"
+                    className="h-8! min-w-0 flex-1 bg-white! text-xs! sm:text-xs!"
+                    title="Subject Title"
+                  />
+                  {hasUnits && (
+                    <Input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      max="10"
+                      value={item.units}
+                      disabled={isReadOnly}
+                      onChange={(e) => onItemChange(item.id, "units", Number(e.target.value))}
+                      placeholder="Units"
+                      className="h-8! w-16! shrink-0 bg-white! text-center text-xs! sm:text-xs!"
+                      title="Credits / Units"
+                    />
+                  )}
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    value={item.grade}
+                    disabled={isReadOnly}
+                    onChange={(e) =>
+                      onItemChange(item.id, "grade", e.target.value === "" ? "" : Number(e.target.value))
+                    }
+                    placeholder="Grade"
+                    className="h-8! w-20! shrink-0 bg-white! text-center font-semibold text-navy text-xs! sm:text-xs!"
+                    title="Grade"
+                  />
                   {!isReadOnly && (
                     <button
                       type="button"
@@ -83,119 +193,14 @@ export function GradeItemsTable({
                       aria-label={`Remove ${item.subject_name || "subject"}`}
                       title="Remove subject"
                     >
-                      <Trash2 className="size-4" />
+                      <Trash2 className="size-3.5" />
                     </button>
                   )}
                 </div>
-
-                <Input
-                  value={item.subject_name}
-                  disabled={isReadOnly}
-                  onChange={(e) => onItemChange(item.id, "subject_name", e.target.value)}
-                  placeholder="Subject descriptive title"
-                  className="h-8! w-full bg-white! text-xs!"
-                  title="Subject Title"
-                />
-
-                <div className={`grid ${hasUnits ? "grid-cols-2" : "grid-cols-1"} gap-2`}>
-                  {hasUnits && (
-                    <div className="flex items-center justify-between rounded-md border border-border bg-white px-2.5 py-1">
-                      <span className="text-[0.65rem] font-semibold text-muted-foreground uppercase">Units</span>
-                      <Input
-                        type="number"
-                        step="0.5"
-                        min="0"
-                        max="10"
-                        value={item.units}
-                        disabled={isReadOnly}
-                        onChange={(e) => onItemChange(item.id, "units", Number(e.target.value))}
-                        placeholder="Units"
-                        className="h-6! w-16! border-0! bg-transparent! p-0! text-right font-medium text-navy text-xs! focus-visible:ring-0!"
-                      />
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between rounded-md border border-border bg-white px-2.5 py-1">
-                    <span className="text-[0.65rem] font-semibold text-muted-foreground uppercase">Grade</span>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      max="100"
-                      value={item.grade}
-                      disabled={isReadOnly}
-                      onChange={(e) =>
-                        onItemChange(item.id, "grade", e.target.value === "" ? "" : Number(e.target.value))
-                      }
-                      placeholder="0.0"
-                      className="h-6! w-16! border-0! bg-transparent! p-0! text-right font-bold text-navy text-xs! focus-visible:ring-0!"
-                    />
-                  </div>
-                </div>
               </div>
-
-              {/* Desktop Row View (sm and up) */}
-              <div className="hidden items-center gap-2 rounded-lg border border-border bg-muted/40 p-2 text-xs sm:flex">
-                <span className="w-5 text-center text-[0.7rem] font-semibold text-muted-foreground">{index + 1}</span>
-                {(hasCodes || !isReadOnly) && (
-                  <Input
-                    value={item.subject_code}
-                    disabled={isReadOnly}
-                    onChange={(e) => onItemChange(item.id, "subject_code", e.target.value)}
-                    placeholder="Code"
-                    className="h-8! w-24! shrink-0 bg-white! text-xs! sm:text-xs!"
-                    title="Subject Code"
-                  />
-                )}
-                <Input
-                  value={item.subject_name}
-                  disabled={isReadOnly}
-                  onChange={(e) => onItemChange(item.id, "subject_name", e.target.value)}
-                  placeholder="Subject descriptive title"
-                  className="h-8! min-w-0 flex-1 bg-white! text-xs! sm:text-xs!"
-                  title="Subject Title"
-                />
-                {hasUnits && (
-                  <Input
-                    type="number"
-                    step="0.5"
-                    min="0"
-                    max="10"
-                    value={item.units}
-                    disabled={isReadOnly}
-                    onChange={(e) => onItemChange(item.id, "units", Number(e.target.value))}
-                    placeholder="Units"
-                    className="h-8! w-16! shrink-0 bg-white! text-center text-xs! sm:text-xs!"
-                    title="Credits / Units"
-                  />
-                )}
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="100"
-                  value={item.grade}
-                  disabled={isReadOnly}
-                  onChange={(e) => onItemChange(item.id, "grade", e.target.value === "" ? "" : Number(e.target.value))}
-                  placeholder="Grade"
-                  className="h-8! w-20! shrink-0 bg-white! text-center font-semibold text-navy text-xs! sm:text-xs!"
-                  title="Grade"
-                />
-                {!isReadOnly && (
-                  <button
-                    type="button"
-                    onClick={() => onRemoveSubject(item.id)}
-                    className="shrink-0 p-1 text-muted-foreground transition-colors hover:text-destructive"
-                    aria-label={`Remove ${item.subject_name || "subject"}`}
-                    title="Remove subject"
-                  >
-                    <Trash2 className="size-3.5" />
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </ScrollArea>
       )}
     </div>
   );
