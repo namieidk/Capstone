@@ -87,8 +87,8 @@ export function Contact() {
             <Eyebrow>GET IN TOUCH</Eyebrow>
             <SectionHeading>Still have questions?</SectionHeading>
             <p className="mb-8 max-w-110 text-[1.02rem] leading-[1.75] text-muted-foreground">
-              Our coordinators are based in Davao City and usually respond within one business day. Reach out however
-              is easiest for you.
+              Our coordinators are based in Davao City and usually respond within one business day. Reach out however is
+              easiest for you.
             </p>
 
             <div className="flex flex-col gap-4.5">

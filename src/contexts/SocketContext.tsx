@@ -116,14 +116,16 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         });
 
         socketInstance.on("presence:user_online", (data?: { userId?: number }) => {
-          if (data?.userId) {
-            setOnlineUserIds((prev) => (prev.includes(data.userId!) ? prev : [...prev, data.userId!]));
+          const userId = data?.userId;
+          if (typeof userId === "number") {
+            setOnlineUserIds((prev) => (prev.includes(userId) ? prev : [...prev, userId]));
           }
         });
 
         socketInstance.on("presence:user_offline", (data?: { userId?: number }) => {
-          if (data?.userId) {
-            setOnlineUserIds((prev) => prev.filter((id) => id !== data.userId));
+          const userId = data?.userId;
+          if (typeof userId === "number") {
+            setOnlineUserIds((prev) => prev.filter((id) => id !== userId));
           }
         });
 

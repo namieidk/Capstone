@@ -74,7 +74,10 @@ export function Faq() {
                       <AccordionPrimitive.Trigger className="group flex w-full items-center justify-between gap-5 px-7 py-5 text-left text-[0.98rem] font-semibold text-white transition-colors duration-300 data-[state=open]:bg-white/[0.06]">
                         <span>{item.q}</span>
                         <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-amber/30 bg-amber/10 text-amber backdrop-blur-md transition-all duration-300 group-data-[state=open]:scale-110 group-data-[state=open]:border-amber/60 group-data-[state=open]:bg-amber/25">
-                          <ChevronDown className="size-4 transition-transform duration-300 group-data-[state=open]:rotate-180" strokeWidth={2.5} />
+                          <ChevronDown
+                            className="size-4 transition-transform duration-300 group-data-[state=open]:rotate-180"
+                            strokeWidth={2.5}
+                          />
                         </span>
                       </AccordionPrimitive.Trigger>
                     </AccordionPrimitive.Header>

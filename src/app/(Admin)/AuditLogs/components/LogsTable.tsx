@@ -79,7 +79,9 @@ function FilterDropdown({ label, icon: Icon, value, options, formatOption, onCha
           aria-label={label}
         >
           <Icon className="size-4 text-navy" />
-          {isActive && <span className="absolute -top-0.5 -right-0.5 size-2.25 rounded-full border-2 border-white bg-navy" />}
+          {isActive && (
+            <span className="absolute -top-0.5 -right-0.5 size-2.25 rounded-full border-2 border-white bg-navy" />
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56!">

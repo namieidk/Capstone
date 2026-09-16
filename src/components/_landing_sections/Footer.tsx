@@ -32,18 +32,29 @@ export function Footer() {
           <div>
             <span className="font-serif text-[1.3rem] font-medium text-white">ViaScholar</span>
             <p className="mt-3 max-w-80 text-[0.92rem] leading-[1.7] text-white/60">
-              A web-based scholarship management system built for CRDC&apos;s private grant program — from application to disbursement, all in one place.
+              A web-based scholarship management system built for CRDC&apos;s private grant program — from application
+              to disbursement, all in one place.
             </p>
           </div>
           <div>
             <h4 className="mb-3 font-serif text-lg font-medium text-white">Explore</h4>
             <ul className="flex flex-col gap-2.5">
-              {EXPLORE_LINKS.map((link) => <li key={link}><a href={`#${link.toLowerCase()}`} className="text-[0.92rem] text-white/60 hover:text-amber">{link}</a></li>)}
+              {EXPLORE_LINKS.map((link) => (
+                <li key={link}>
+                  <a href={`#${link.toLowerCase()}`} className="text-[0.92rem] text-white/60 hover:text-amber">
+                    {link}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
           <div>
             <h4 className="mb-3 font-serif text-lg font-medium text-white">Contact</h4>
-            <ul className="flex flex-col gap-2.5 text-[0.92rem] text-white/60"><li>gdacaac.plf@gmail.com</li><li>(082) 555 0142</li><li>2F Matina Pavilion Bldg, Davao City</li></ul>
+            <ul className="flex flex-col gap-2.5 text-[0.92rem] text-white/60">
+              <li>gdacaac.plf@gmail.com</li>
+              <li>(082) 555 0142</li>
+              <li>2F Matina Pavilion Bldg, Davao City</li>
+            </ul>
           </div>
         </div>
 
