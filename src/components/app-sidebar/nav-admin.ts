@@ -18,6 +18,7 @@ import type { NavItem, RoleSidebarConfig } from "./types";
 
 export const ADMIN_NAV_ITEMS: NavItem[] = [
   { key: "dashboard", label: "Dashboard", icon: Home, href: "/AdminDashboard" },
+  { key: "students", label: "Students", icon: GraduationCap, href: "/AdminStudents" },
   { key: "employee", label: "Employee", icon: Users, href: "/AdminEmployee" },
   {
     key: "audit-logs",

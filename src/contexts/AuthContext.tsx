@@ -9,6 +9,7 @@ interface AuthContextValue {
   user: authApi.User | null;
   loading: boolean;
   login: (email: string, password: string, remember?: boolean) => Promise<authApi.User>;
+  loginWithGoogle: (credential: string) => Promise<authApi.User>;
   register: (data: {
     email: string;
     password: string;
@@ -60,6 +61,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [refreshUser],
   );
 
+  const loginWithGoogle = useCallback(
+    async (credential: string) => {
+      const data = await authApi.googleLogin(credential);
+      setUser(data.user);
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("vls_session_active", "true");
+      }
+      refreshUser();
+      return data.user;
+    },
+    [refreshUser],
+  );
+
   const register = useCallback(
     async (data: { email: string; password: string; first_name: string; last_name: string; phone_number: string }) => {
       const res = await authApi.register(data);
@@ -84,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

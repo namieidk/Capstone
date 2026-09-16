@@ -49,51 +49,52 @@ export function AddGradingSheet({ open, onOpenChange, onCreate }: AddGradingShee
       <SheetContent
         side="right"
         showCloseButton={false}
-        className="w-[480px]! max-w-[92vw]! gap-0 overflow-y-auto border-line bg-white p-8 text-sm!"
+        className="w-full sm:max-w-lg flex flex-col gap-0 p-0 overflow-hidden border-l border-border bg-background"
       >
-        <div className="flex items-start gap-3.5">
-          <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-navy text-white shadow-xs">
-            <GraduationCap className="size-6" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <SheetTitle className="text-xl! text-navy!">Add grading system</SheetTitle>
-            <SheetDescription className="text-sm!">Configure how grades are interpreted for a school.</SheetDescription>
+        <div className="flex items-center justify-between border-b border-border p-6 bg-card">
+          <div className="flex items-center gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs">
+              <GraduationCap className="size-5" />
+            </span>
+            <div className="min-w-0">
+              <SheetTitle className="text-lg font-semibold text-foreground">Add Grading System</SheetTitle>
+              <SheetDescription className="text-xs text-muted-foreground">
+                Configure scale bounds & status interpretations for a school.
+              </SheetDescription>
+            </div>
           </div>
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="size-9 shrink-0"
+            className="size-8 text-muted-foreground hover:text-foreground"
             onClick={() => onOpenChange(false)}
             aria-label="Close"
           >
-            <X className="size-5 text-[#9a9a94]" />
+            <X className="size-4" />
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-6">
-          <GradingFields values={values} onChange={setValues} idPrefix="add-grading" />
+        <div className="flex-1 overflow-y-auto p-6">
+          <form id="add-grading-form" onSubmit={handleSubmit}>
+            <GradingFields values={values} onChange={setValues} idPrefix="add-grading" />
 
-          {error && (
-            <div className="mt-4 rounded-[10px] border border-[#f5c2c0] bg-[#fdebec] px-3.5 py-3 text-sm leading-relaxed text-[#b3261e]">
-              {error}
-            </div>
-          )}
+            {error && (
+              <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs font-medium leading-relaxed text-destructive">
+                {error}
+              </div>
+            )}
+          </form>
+        </div>
 
-          <div className="mt-4 flex justify-end gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="h-11 text-sm! text-navy"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" className="h-11 px-6 text-sm!" disabled={saving}>
-              {saving ? "Adding..." : "Add system"}
-            </Button>
-          </div>
-        </form>
+        <div className="flex items-center justify-end gap-2.5 border-t border-border p-4 bg-card/60">
+          <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button type="submit" form="add-grading-form" size="sm" className="px-5 font-semibold" disabled={saving}>
+            {saving ? "Adding..." : "Add System"}
+          </Button>
+        </div>
       </SheetContent>
     </Sheet>
   );

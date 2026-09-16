@@ -132,13 +132,19 @@ const toNum = (v: string): number => (v.trim() === "" ? Number.NaN : Number(v));
 
 // Validates the form and converts it to the backend input shape.
 // Returns { error } (first unmet rule) instead of throwing.
-export function gradingFormToInput(values: GradingFormValues): { input?: SchoolGradingInput; error?: string } {
+export function gradingFormToInput(values: GradingFormValues): {
+  input?: SchoolGradingInput;
+  error?: string;
+} {
   const special_codes: Record<string, string> = {};
   for (const { code, status } of values.codes) {
     const c = code.trim();
     const s = status.trim();
     if (!c && !s) continue;
-    if (!c || !s) return { error: "Each special code needs both a grade value and a status." };
+    if (!c || !s)
+      return {
+        error: "Each special code needs both a grade value and a status.",
+      };
     special_codes[c] = s;
   }
   const parsed = schoolGradingSchema.safeParse({
@@ -151,17 +157,17 @@ export function gradingFormToInput(values: GradingFormValues): { input?: SchoolG
     special_codes: Object.keys(special_codes).length > 0 ? special_codes : undefined,
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid grading configuration." };
+    return {
+      error: parsed.error.issues[0]?.message ?? "Invalid grading configuration.",
+    };
   }
   return { input: parsed.data };
 }
 
-const FIELD_INPUT = "mt-2 h-11! border-line bg-[#f7f9fb]! text-sm! md:text-sm!";
-
 function FieldLabel({ htmlFor, children, required }: { htmlFor: string; children: string; required?: boolean }) {
   return (
-    <Label htmlFor={htmlFor} className="text-sm! font-semibold text-navy">
-      {children} {required && <span className="text-amber">*</span>}
+    <Label htmlFor={htmlFor} className="text-xs font-semibold text-foreground tracking-tight flex items-center gap-1">
+      {children} {required && <span className="text-destructive">*</span>}
     </Label>
   );
 }
@@ -219,17 +225,19 @@ export function GradingFields({ values, onChange, idPrefix }: GradingFieldsProps
   }
 
   function setCode(id: string, patch: Partial<{ code: string; status: string }>) {
-    set({ codes: values.codes.map((c) => (c.id === id ? { ...c, ...patch } : c)) });
+    set({
+      codes: values.codes.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+    });
   }
 
   const selectedPreset =
     SCALE_PRESETS.find((p) => p.id === values.grading_scale) ?? (customScaleMode ? SCALE_PRESETS[3] : null);
 
   return (
-    <div className="flex flex-col gap-4">
-      <div>
+    <div className="flex flex-col gap-4.5">
+      <div className="space-y-1.5">
         <FieldLabel htmlFor={`${idPrefix}-school-name`} required>
-          School name
+          School Name
         </FieldLabel>
         <Input
           id={`${idPrefix}-school-name`}
@@ -237,64 +245,60 @@ export function GradingFields({ values, onChange, idPrefix }: GradingFieldsProps
           value={values.school_name}
           onChange={(e) => set({ school_name: e.target.value })}
           required
-          className={FIELD_INPUT}
+          className="h-10"
         />
       </div>
 
-      <div>
+      <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <FieldLabel htmlFor={`${idPrefix}-grading-scale`} required>
-            Grading scale type
+            Grading Scale Type
           </FieldLabel>
-          <span className="text-[11px] text-muted-foreground">Determines passing & threshold direction</span>
+          <span className="text-[11px] text-muted-foreground">Evaluation model</span>
         </div>
 
-        <div className="mt-2">
-          <Select
-            value={customScaleMode ? "CUSTOM" : values.grading_scale || "NUMERIC_4_POINT"}
-            onValueChange={handlePresetSelect}
-          >
-            <SelectTrigger className="h-11 border-line bg-[#f7f9fb] text-sm text-navy">
-              <SelectValue placeholder="Choose grading scale" />
-            </SelectTrigger>
-            <SelectContent className="border-line bg-white">
-              {SCALE_PRESETS.map((p) => (
-                <SelectItem key={p.id} value={p.id} className="text-sm py-2">
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-navy">{p.label}</span>
-                    <span className="text-xs text-muted-foreground">{p.description}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <Select
+          value={customScaleMode ? "CUSTOM" : values.grading_scale || "NUMERIC_4_POINT"}
+          onValueChange={handlePresetSelect}
+        >
+          <SelectTrigger id={`${idPrefix}-grading-scale`} className="h-10 w-full">
+            <SelectValue placeholder="Choose grading scale" />
+          </SelectTrigger>
+          <SelectContent>
+            {SCALE_PRESETS.map((p) => (
+              <SelectItem key={p.id} value={p.id} className="py-2">
+                <div className="flex flex-col text-left">
+                  <span className="font-medium text-sm text-foreground">{p.label}</span>
+                  <span className="text-xs text-muted-foreground">{p.description}</span>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {customScaleMode && (
-          <div className="mt-2">
+          <div className="pt-1">
             <Input
               id={`${idPrefix}-grading-scale-custom`}
               placeholder="Enter custom scale identifier (e.g. UM_SCALE or GPA_4)"
               value={values.grading_scale}
               onChange={(e) => set({ grading_scale: e.target.value })}
               required
-              className={FIELD_INPUT}
+              className="h-10"
             />
           </div>
         )}
 
         {selectedPreset && (
-          <div className="mt-2 flex items-start gap-2 rounded-lg bg-tint/60 p-2.5 text-xs text-navy border border-line">
-            <Info className="size-4 shrink-0 text-navy mt-0.5" />
-            <div>
-              <p className="font-medium">{selectedPreset.description}</p>
-            </div>
+          <div className="flex items-start gap-2.5 rounded-lg bg-muted/60 p-3 text-xs text-foreground border border-border">
+            <Info className="size-4 shrink-0 text-primary mt-0.5" />
+            <p className="font-medium leading-relaxed">{selectedPreset.description}</p>
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="space-y-1.5">
           <FieldLabel htmlFor={`${idPrefix}-passing`} required>
             Passing Grade
           </FieldLabel>
@@ -306,11 +310,11 @@ export function GradingFields({ values, onChange, idPrefix }: GradingFieldsProps
             value={values.passing_grade}
             onChange={(e) => set({ passing_grade: e.target.value })}
             required
-            className={FIELD_INPUT}
+            className="h-10 text-center font-semibold"
           />
-          <p className="mt-1 text-[11px] text-muted-foreground">Minimum mark to pass</p>
+          <p className="text-[11px] text-muted-foreground">Min pass mark</p>
         </div>
-        <div>
+        <div className="space-y-1.5">
           <FieldLabel htmlFor={`${idPrefix}-highest`} required>
             Highest Grade
           </FieldLabel>
@@ -322,11 +326,11 @@ export function GradingFields({ values, onChange, idPrefix }: GradingFieldsProps
             value={values.highest_grade}
             onChange={(e) => set({ highest_grade: e.target.value })}
             required
-            className={FIELD_INPUT}
+            className="h-10 text-center font-semibold"
           />
-          <p className="mt-1 text-[11px] text-muted-foreground">Top academic mark</p>
+          <p className="text-[11px] text-muted-foreground">Top academic mark</p>
         </div>
-        <div>
+        <div className="space-y-1.5">
           <FieldLabel htmlFor={`${idPrefix}-failing`} required>
             Failing Grade
           </FieldLabel>
@@ -338,19 +342,18 @@ export function GradingFields({ values, onChange, idPrefix }: GradingFieldsProps
             value={values.failing_grade}
             onChange={(e) => set({ failing_grade: e.target.value })}
             required
-            className={FIELD_INPUT}
+            className="h-10 text-center font-semibold"
           />
-          <p className="mt-1 text-[11px] text-muted-foreground">Disqualifying mark</p>
+          <p className="text-[11px] text-muted-foreground">Disqualifying mark</p>
         </div>
       </div>
 
-      <div className="rounded-xl border border-line bg-white p-3.5 shadow-xs">
+      <div className="rounded-xl border border-border bg-card p-4 shadow-xs space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <p className="text-sm! font-semibold text-navy">Special Status Codes</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              Transcript marks representing non-standard marks (e.g. 9.0 → DROPPED, 7.1 → LACKING_PAYMENT, PSD →
-              PASSED).
+            <p className="text-xs font-semibold text-foreground">Special Status Codes</p>
+            <p className="text-[11px] text-muted-foreground">
+              Transcript symbols representing non-numeric status (e.g. 9.0 → DROPPED, INC → INCOMPLETE).
             </p>
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -358,27 +361,27 @@ export function GradingFields({ values, onChange, idPrefix }: GradingFieldsProps
               type="button"
               variant="outline"
               size="sm"
-              className="h-7 px-2.5 text-xs font-semibold text-navy border-line hover:bg-tint"
+              className="h-7 px-2.5 text-xs font-medium"
               onClick={loadUmSpecialCodes}
             >
-              <Sparkles className="size-3 text-amber mr-1" />+ Load UM Codes
+              <Sparkles className="size-3 text-amber-500 mr-1" />+ UM Codes
             </Button>
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="h-7 px-2.5 text-xs font-semibold text-navy border-line hover:bg-tint"
+              className="h-7 px-2.5 text-xs font-medium"
               onClick={loadStandardSpecialCodes}
             >
-              + Load Standard Codes
+              + Standard Codes
             </Button>
           </div>
         </div>
 
-        <div className="mt-3 flex flex-col gap-2">
+        <div className="space-y-2">
           {values.codes.length === 0 && (
-            <p className="text-xs text-muted-foreground py-2 text-center bg-[#f7f9fb] rounded-lg border border-dashed border-line">
-              No special codes added. Click &quot;+ Load UM Codes&quot; or &quot;Add code&quot; below.
+            <p className="text-xs text-muted-foreground py-3 text-center bg-muted/30 rounded-lg border border-dashed border-border">
+              No special codes configured. Click a preset above or add a custom code.
             </p>
           )}
 
@@ -389,21 +392,21 @@ export function GradingFields({ values, onChange, idPrefix }: GradingFieldsProps
                 value={c.code}
                 onChange={(e) => setCode(c.id, { code: e.target.value })}
                 aria-label={`Special code mark ${i + 1}`}
-                className="h-10! w-28 border-line bg-[#f7f9fb]! text-xs! font-bold text-navy md:text-xs!"
+                className="h-9 w-28 font-mono text-xs font-bold"
               />
               <Input
-                placeholder="DROPPED or PASSED"
+                placeholder="e.g. DROPPED, PASSED"
                 value={c.status}
                 onChange={(e) => setCode(c.id, { status: e.target.value })}
                 aria-label={`Special code status ${i + 1}`}
-                className="h-10! flex-1 border-line bg-[#f7f9fb]! text-xs! font-semibold text-navy md:text-xs!"
+                className="h-9 flex-1 text-xs font-medium uppercase"
               />
               <Button
                 type="button"
                 variant="ghost"
-                size="icon-sm"
+                size="icon"
                 aria-label={`Remove special code ${i + 1}`}
-                className="size-8 text-muted-foreground hover:text-red-600"
+                className="size-8 text-muted-foreground hover:text-destructive shrink-0"
                 onClick={() => set({ codes: values.codes.filter((row) => row.id !== c.id) })}
               >
                 <X className="size-4" />
@@ -415,8 +418,12 @@ export function GradingFields({ values, onChange, idPrefix }: GradingFieldsProps
             type="button"
             variant="outline"
             size="sm"
-            className="h-8 self-start text-xs! border-line mt-1"
-            onClick={() => set({ codes: [...values.codes, { id: `code-${Date.now()}`, code: "", status: "" }] })}
+            className="h-8 text-xs font-medium"
+            onClick={() =>
+              set({
+                codes: [...values.codes, { id: `code-${Date.now()}`, code: "", status: "" }],
+              })
+            }
           >
             <Plus className="size-3.5 mr-1" />
             Add code
@@ -424,14 +431,14 @@ export function GradingFields({ values, onChange, idPrefix }: GradingFieldsProps
         </div>
       </div>
 
-      <div>
+      <div className="space-y-1.5">
         <FieldLabel htmlFor={`${idPrefix}-notes`}>Grading System Notes & Breakdown</FieldLabel>
         <Textarea
           id={`${idPrefix}-notes`}
           placeholder="e.g. 4.0 = 96-100, 3.5 = 90-95, 3.0 = 85-89, 2.5 = 80-84, 2.0 = 75-79 (Passing), 1.0 = Failed."
           value={values.notes}
           onChange={(e) => set({ notes: e.target.value })}
-          className="mt-2 min-h-20 border-line bg-[#f7f9fb]! text-sm! md:text-sm!"
+          className="min-h-20 text-sm resize-none"
         />
       </div>
     </div>

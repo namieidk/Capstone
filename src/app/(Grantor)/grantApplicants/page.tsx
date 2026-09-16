@@ -45,7 +45,10 @@ export default function GrantApplicantsPage() {
     setLoadError("");
     try {
       const rows = await listApplications();
-      setApplicants(rows.map(mapApplicationToApplicant));
+      const activeRows = rows.filter((r) => r.status !== "APPROVED");
+      const mapped = activeRows.map(mapApplicationToApplicant);
+      setApplicants(mapped);
+      setSelected((prev) => (prev ? (mapped.find((a) => a.id === prev.id) ?? prev) : null));
     } catch (err) {
       console.error("Failed to load applicants:", err);
       setLoadError(err instanceof ApiError ? err.message : "Failed to load applicants.");

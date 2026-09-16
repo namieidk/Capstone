@@ -28,9 +28,10 @@ export interface AuditLogsResponse {
   limit: number;
 }
 
-export function listUsers(params?: { role?: string; search?: string }) {
+export function listUsers(params?: { role?: string; roles?: string; search?: string }) {
   const qs = new URLSearchParams();
   if (params?.role) qs.set("role", params.role);
+  if (params?.roles) qs.set("roles", params.roles);
   if (params?.search) qs.set("search", params.search);
   const query = qs.toString();
   return apiGet<import("./auth").User[]>(`${B}${query ? `?${query}` : ""}`);

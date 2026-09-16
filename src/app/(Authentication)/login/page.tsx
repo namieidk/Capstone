@@ -107,12 +107,12 @@ function SignInForm() {
           onCheckedChange={(v) => setRemember(v === true)}
           label="Keep me signed in"
         />
-        <button
-          type="button"
+        <Link
+          href="/forgot-password"
           className="text-[0.88rem] font-medium text-muted-foreground underline underline-offset-2 hover:text-navy"
         >
           Forgot password?
-        </button>
+        </Link>
       </div>
 
       <Button type="submit" disabled={loading} className="mt-1 h-11 w-full rounded-full text-[0.96rem] font-semibold">

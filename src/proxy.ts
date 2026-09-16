@@ -5,9 +5,14 @@ const PUBLIC_ROUTES = [
   "/login",
   "/signup",
   "/stafflogin",
+  "/forgot-password",
+  "/reset-password",
   "/api/auth/login",
   "/api/auth/register",
   "/api/auth/logout",
+  "/api/auth/google",
+  "/api/auth/forgot-password",
+  "/api/auth/reset-password",
 ];
 
 const ROLE_DASHBOARDS: Record<string, string> = {

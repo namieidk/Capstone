@@ -16,6 +16,8 @@ export interface User {
   updated_at: string;
   scholar_profile?: {
     profile_id: number;
+    first_name?: string;
+    last_name?: string;
     phone_number?: string;
     student_address?: string;
     school_address?: string;
@@ -23,6 +25,7 @@ export interface User {
     course_of_study?: string;
     school_name?: string;
     current_year_level?: number;
+    year_level?: number;
     scholarship_track?: string;
     relative_employee?: string;
     academic_baseline_status?: string;
@@ -97,4 +100,19 @@ export function uploadBanner(file: File) {
 
 export function logout() {
   return apiPost<{ ok: boolean }>(`${B}/logout`);
+}
+
+export function requestPasswordReset(email: string) {
+  return apiPost<{ message: string }>(`${B}/forgot-password`, { email });
+}
+
+export function executePasswordReset(token: string, new_password: string) {
+  return apiPost<{ message: string }>(`${B}/reset-password`, {
+    token,
+    new_password,
+  });
+}
+
+export function googleLogin(credential: string) {
+  return apiPost<LoginResponse>(`${B}/google`, { credential });
 }

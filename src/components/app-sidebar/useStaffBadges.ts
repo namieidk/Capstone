@@ -41,9 +41,11 @@ export function useStaffBadges(opts: { includeApplicants: boolean }): StaffBadge
         .catch(() => undefined);
     }
     // limit: 1 keeps payloads tiny — only `total` is used.
+    // Query only upcoming meetings from current time onwards
+    const nowIso = new Date().toISOString();
     Promise.all([
-      listMeetings({ status: "SCHEDULED", limit: 1, page: 1 }),
-      listMeetings({ status: "RESCHEDULED", limit: 1, page: 1 }),
+      listMeetings({ status: "SCHEDULED", from: nowIso, limit: 1, page: 1 }),
+      listMeetings({ status: "RESCHEDULED", from: nowIso, limit: 1, page: 1 }),
     ])
       .then(([scheduled, rescheduled]) => {
         if (alive) setMeetings(scheduled.total + rescheduled.total);
