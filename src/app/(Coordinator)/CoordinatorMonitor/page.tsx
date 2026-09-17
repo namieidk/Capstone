@@ -1,9 +1,10 @@
 "use client";
 
-import { ArrowRight, BookOpen, Users } from "lucide-react";
+import { ArrowRight, BookOpen, FileCheck, Users } from "lucide-react";
 import { useCallback, useContext, useEffect, useState } from "react";
 import type { ActiveScholar } from "@/components/Coordinatorshared";
 import { BaselineAuditDrawer } from "@/components/coordinator/baseline/BaselineAuditDrawer";
+import { EnrollmentAuditDrawer } from "@/components/coordinator/enrollment/EnrollmentAuditDrawer";
 import { ScholarMonitorDrawer } from "@/components/coordinator/monitor/ScholarMonitorDrawer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,9 +15,11 @@ import {
   getCoordinatorPendingBaselines,
   type PendingBaselineItem,
 } from "@/lib/api/baseline";
+import { getCoordinatorPendingEnrollments, type TermEnrollment } from "@/lib/api/enrollment";
 import { ActiveScholarsTab } from "./components/ActiveScholarsTab";
 import { BaselineAuditsTab } from "./components/BaselineAuditsTab";
 import { CoordinatorMonitorHeader } from "./components/CoordinatorMonitorHeader";
+import { EnrollmentAuditsTab } from "./components/EnrollmentAuditsTab";
 
 export default function CoordinatorMonitorPage() {
   const { socket } = useContext(SocketContext);
@@ -37,6 +40,12 @@ export default function CoordinatorMonitorPage() {
   const [loadingBaselines, setLoadingBaselines] = useState(true);
   const [selectedAuditProfileId, setSelectedAuditProfileId] = useState<number | null>(null);
   const [openAuditDrawer, setOpenAuditDrawer] = useState(false);
+
+  // Term Enrollment Audit State
+  const [enrollmentItems, setEnrollmentItems] = useState<TermEnrollment[]>([]);
+  const [loadingEnrollments, setLoadingEnrollments] = useState(true);
+  const [selectedEnrollmentId, setSelectedEnrollmentId] = useState<number | null>(null);
+  const [openEnrollmentDrawer, setOpenEnrollmentDrawer] = useState(false);
 
   const fetchActiveScholars = useCallback(async () => {
     try {
@@ -65,10 +74,23 @@ export default function CoordinatorMonitorPage() {
     }
   }, []);
 
+  const fetchPendingEnrollments = useCallback(async () => {
+    try {
+      setLoadingEnrollments(true);
+      const data = await getCoordinatorPendingEnrollments();
+      setEnrollmentItems(data || []);
+    } catch (err) {
+      console.error("Failed to load pending enrollments:", err);
+    } finally {
+      setLoadingEnrollments(false);
+    }
+  }, []);
+
   const refreshAll = useCallback(() => {
     fetchActiveScholars();
     fetchPendingBaselines();
-  }, [fetchActiveScholars, fetchPendingBaselines]);
+    fetchPendingEnrollments();
+  }, [fetchActiveScholars, fetchPendingBaselines, fetchPendingEnrollments]);
 
   useEffect(() => {
     refreshAll();
@@ -87,6 +109,9 @@ export default function CoordinatorMonitorPage() {
     socket.on("baseline:frozen", handleRefresh);
     socket.on("baseline:unfrozen", handleRefresh);
     socket.on("school_grading:verified", handleRefresh);
+    socket.on("enrollment:submitted_for_review", handleRefresh);
+    socket.on("enrollment:approved", handleRefresh);
+    socket.on("enrollment:changes_requested", handleRefresh);
     socket.on("application:stage_updated", handleRefresh);
     socket.on("contract:signed", handleRefresh);
     socket.on("disbursement:updated", handleRefresh);
@@ -98,6 +123,9 @@ export default function CoordinatorMonitorPage() {
       socket.off("baseline:frozen", handleRefresh);
       socket.off("baseline:unfrozen", handleRefresh);
       socket.off("school_grading:verified", handleRefresh);
+      socket.off("enrollment:submitted_for_review", handleRefresh);
+      socket.off("enrollment:approved", handleRefresh);
+      socket.off("enrollment:changes_requested", handleRefresh);
       socket.off("application:stage_updated", handleRefresh);
       socket.off("contract:signed", handleRefresh);
       socket.off("disbursement:updated", handleRefresh);
@@ -110,9 +138,16 @@ export default function CoordinatorMonitorPage() {
     setOpenAuditDrawer(true);
   };
 
+  const handleSelectEnrollmentForAudit = (enrollmentId: number) => {
+    setSelectedEnrollmentId(enrollmentId);
+    setOpenEnrollmentDrawer(true);
+  };
+
   const pendingAuditCount = baselineItems.filter(
     (i) => i.academic_baseline_status === "PENDING_COORDINATOR_REVIEW",
   ).length;
+
+  const pendingEnrollmentCount = enrollmentItems.filter((i) => i.status === "PENDING_REVIEW").length;
 
   return (
     <div className="min-h-full bg-[#faf8f5]">
@@ -161,9 +196,37 @@ export default function CoordinatorMonitorPage() {
           </div>
         )}
 
-        {/* Main 2 Tabs: Active Scholars & Prospectus Audits */}
+        {/* Action Callout Banner for Pending Enrollment Audits */}
+        {pendingEnrollmentCount > 0 && activeTab !== "enrollment-audits" && (
+          <div className="mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 rounded-xl border border-teal-500/30 bg-teal-500/10 text-teal-950 dark:text-teal-100 shadow-2xs">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-2.5 w-2.5 rounded-full bg-[#0a4f42] animate-pulse shrink-0" />
+              <div className="text-xs">
+                <span className="font-bold text-teal-900 dark:text-teal-200">
+                  {pendingEnrollmentCount} {pendingEnrollmentCount === 1 ? "enrollment is" : "enrollments are"} awaiting
+                  start-of-term audit & endorsement.
+                </span>{" "}
+                <span className="text-muted-foreground hidden md:inline">
+                  Validate enrolled courses & tuition ledger to auto-create Grantor disbursements.
+                </span>
+              </div>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setActiveTab("enrollment-audits")}
+              className="h-7.5 px-3 rounded-lg border-teal-500/40 bg-white/90 dark:bg-teal-950/40 hover:bg-white text-[#0a4f42] font-semibold text-xs shrink-0 gap-1.5 shadow-2xs self-start sm:self-auto"
+            >
+              <span>Quick Audit ({pendingEnrollmentCount})</span>
+              <ArrowRight className="size-3.5" />
+            </Button>
+          </div>
+        )}
+
+        {/* Main 3 Tabs: Active Scholars, Prospectus Audits, & Term Enrollments */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-5 w-full space-y-4">
-          <TabsList className="grid w-full sm:w-110 grid-cols-2">
+          <TabsList className="grid w-full sm:w-160 grid-cols-3">
             <TabsTrigger value="active-scholars" className="text-xs gap-1.5 font-semibold">
               <Users className="size-4" />
               Active Scholars
@@ -179,6 +242,15 @@ export default function CoordinatorMonitorPage() {
               {pendingAuditCount > 0 && (
                 <Badge className="ml-1 h-5 rounded-full bg-amber-500 px-1.5 text-[10px] text-white">
                   {pendingAuditCount}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="enrollment-audits" className="text-xs gap-1.5 font-semibold">
+              <FileCheck className="size-4" />
+              Term Enrollments
+              {pendingEnrollmentCount > 0 && (
+                <Badge className="ml-1 h-5 rounded-full bg-[#0a4f42] px-1.5 text-[10px] text-white">
+                  {pendingEnrollmentCount}
                 </Badge>
               )}
             </TabsTrigger>
@@ -207,15 +279,32 @@ export default function CoordinatorMonitorPage() {
               onSelectScholar={handleSelectScholarForAudit}
             />
           </TabsContent>
+
+          {/* Tab 3: Start-of-Term Enrollment & SOA Audits */}
+          <TabsContent value="enrollment-audits">
+            <EnrollmentAuditsTab
+              items={enrollmentItems}
+              loading={loadingEnrollments}
+              onSelectAudit={handleSelectEnrollmentForAudit}
+            />
+          </TabsContent>
         </Tabs>
       </div>
 
-      {/* Side Audit Drawer */}
+      {/* Side Baseline Audit Drawer */}
       <BaselineAuditDrawer
         scholarProfileId={selectedAuditProfileId}
         open={openAuditDrawer}
         onOpenChange={setOpenAuditDrawer}
         onSuccess={refreshAll}
+      />
+
+      {/* Side Term Enrollment Audit Drawer */}
+      <EnrollmentAuditDrawer
+        enrollmentId={selectedEnrollmentId}
+        open={openEnrollmentDrawer}
+        onClose={() => setOpenEnrollmentDrawer(false)}
+        onReviewed={refreshAll}
       />
 
       {/* Active Scholar Monitor Drawer */}
