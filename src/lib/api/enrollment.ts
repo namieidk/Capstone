@@ -117,6 +117,7 @@ export interface CurrentEnrollmentState {
     school_grading_system?: SchoolGradingSystem | null;
   };
   enrollment?: TermEnrollment | null;
+  completed_previous_enrollment?: TermEnrollment | null;
   prospectus_frozen: boolean;
 }
 

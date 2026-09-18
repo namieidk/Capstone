@@ -5,6 +5,7 @@ import { useSocketEvent } from "@/contexts/SocketContext";
 import { listApplications } from "@/lib/api/applications";
 import { getCoordinatorPendingBaselines } from "@/lib/api/baseline";
 import { getDisbursementsQueue } from "@/lib/api/disbursements";
+import { getPendingAcademicAppeals, getPendingDocuments } from "@/lib/api/documents";
 import { getCoordinatorPendingEnrollments } from "@/lib/api/enrollment";
 import { listMeetings } from "@/lib/api/meetings";
 
@@ -41,8 +42,10 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
         getCoordinatorPendingBaselines().catch(() => []),
         getCoordinatorPendingEnrollments().catch(() => []),
         getDisbursementsQueue().catch(() => []),
+        getPendingDocuments().catch(() => []),
+        getPendingAcademicAppeals().catch(() => []),
       ])
-        .then(([baselines, enrollments, disbList]) => {
+        .then(([baselines, enrollments, disbList, gradeDocs, appeals]) => {
           if (alive) {
             const pendingBaselines = baselines.filter(
               (i) => i.academic_baseline_status === "PENDING_COORDINATOR_REVIEW",
@@ -50,6 +53,8 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
 
             let pendingEnrollments = 0;
             let pendingDisbursements = 0;
+            let pendingGradeAudits = 0;
+            let pendingAppeals = 0;
 
             if (opts.role === "grantor") {
               // For Grantor: count Coordinator-endorsed enrollments awaiting authorization
@@ -58,12 +63,18 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
               ).length;
               // For Grantor: count disbursements pending batch authorization
               pendingDisbursements = disbList.filter((d) => d.status === "PENDING").length;
+              // For Grantor: count pending academic second-chance appeals
+              pendingAppeals = appeals.filter((a) => a.appeal_status === "PENDING_GRANTOR").length;
             } else if (opts.role === "coordinator") {
               // For Coordinator: count enrollments awaiting coordinator audit
               pendingEnrollments = enrollments.filter((e) => e.status === "PENDING_REVIEW").length;
               // For Coordinator: count items ready for check issuance + ORs submitted awaiting audit
               pendingDisbursements = disbList.filter(
                 (d) => d.status === "AUTHORIZED" || d.status === "RELEASED" || d.status === "OR_SUBMITTED",
+              ).length;
+              // For Coordinator: count CCG/grade docs awaiting review
+              pendingGradeAudits = gradeDocs.filter(
+                (g) => g.status === "PENDING" || g.status === "STUDENT_CONFIRMED" || g.status === "PASSED_PRECHECK",
               ).length;
             } else {
               // For Admin
@@ -75,9 +86,13 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
               pendingDisbursements = disbList.filter(
                 (d) => d.status === "PENDING" || d.status === "AUTHORIZED" || d.status === "OR_SUBMITTED",
               ).length;
+              pendingGradeAudits = gradeDocs.filter(
+                (g) => g.status === "PENDING" || g.status === "STUDENT_CONFIRMED",
+              ).length;
+              pendingAppeals = appeals.filter((a) => a.appeal_status === "PENDING_GRANTOR").length;
             }
 
-            setScholars(pendingBaselines + pendingEnrollments);
+            setScholars(pendingBaselines + pendingEnrollments + pendingGradeAudits + pendingAppeals);
             setDisbursements(pendingDisbursements);
           }
         })
@@ -120,6 +135,9 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
   useSocketEvent("disbursement:authorized", refreshBadges);
   useSocketEvent("disbursement:updated", refreshBadges);
   useSocketEvent("disbursement:or_submitted", refreshBadges);
+  useSocketEvent("grade_report:submitted", refreshBadges);
+  useSocketEvent("academic_appeal:submitted", refreshBadges);
+  useSocketEvent("academic_appeal:reviewed", refreshBadges);
 
   return {
     applicants: applicants != null && applicants > 0 ? applicants : undefined,

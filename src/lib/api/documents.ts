@@ -27,26 +27,77 @@ export interface ScholarDocument {
   confirmed_data?: Record<string, unknown> | null;
   uploaded_at: string;
   verified_at?: string | null;
+  scholar_profile?: {
+    profile_id?: number;
+    first_name?: string;
+    last_name?: string;
+    student_number?: string;
+    course_of_study?: string;
+    school_name?: string;
+    school_id?: number | null;
+    school_grading_system?: {
+      school_name: string;
+      grading_scale: string;
+      passing_grade: number;
+      highest_grade: number;
+      failing_grade: number;
+    } | null;
+  } | null;
 }
 
 export interface GradeItem {
+  item_id?: number;
   subject_code?: string;
   subject_name?: string;
   units?: number;
   grade: number;
+  raw_status?: string | null;
 }
 
 export interface GradeReport {
-  id: number;
+  report_id: number;
+  id?: number;
+  scholar_profile_id: number;
+  document_id?: number | null;
   academic_year: string;
-  semester?: string;
-  general_average: number;
+  semester: string;
+  term?: string | null;
+  gpa: number;
+  general_average?: number;
   status: GradeReportStatus;
-  remarks?: string;
+  evaluation_flag?: "CLEARED" | "BELOW_PASSING_MARK" | "ACADEMIC_FAILURE" | string | null;
+  is_eligible: boolean;
+  appeal_status?: "NONE" | "PENDING_GRANTOR" | "APPROVED" | "DENIED" | string;
+  appeal_notes?: string | null;
+  appeal_document_id?: number | null;
+  appeal_submitted_at?: string | null;
+  appeal_reviewed_at?: string | null;
+  appeal_decision_notes?: string | null;
+  remarks?: string | null;
+  submitted_at: string;
+  reviewed_at?: string | null;
   grade_items: GradeItem[];
-  scholar?: import("./auth").User;
-  created_at: string;
-  updated_at: string;
+  document?: ScholarDocument | null;
+  appeal_document?: ScholarDocument | null;
+  scholar_profile?: {
+    profile_id: number;
+    first_name: string;
+    last_name: string;
+    student_number?: string;
+    school_name?: string;
+    course_of_study?: string;
+    school_grading_system?: {
+      school_name: string;
+      grading_scale: string;
+      passing_grade: number;
+      highest_grade: number;
+      failing_grade: number;
+    } | null;
+    user?: {
+      user_id: number;
+      email: string;
+    } | null;
+  } | null;
 }
 
 export function uploadDocuments(files: File[], documentType: string) {
@@ -98,14 +149,40 @@ export function updateGradeReportStatus(id: number, data: { status: GradeReportS
   return apiPatch<GradeReport>(`${B}/grade-reports/${id}/status`, data);
 }
 
+export function submitAcademicAppeal(
+  reportId: number,
+  data: {
+    appeal_notes: string;
+    appeal_document_id?: number;
+  },
+) {
+  return apiPost<GradeReport>(`${B}/grade-reports/${reportId}/appeal`, data);
+}
+
+export function reviewAcademicAppeal(
+  reportId: number,
+  data: {
+    decision: "APPROVED" | "DENIED";
+    decision_notes?: string;
+    grant_probation?: boolean;
+  },
+) {
+  return apiPatch<GradeReport>(`${B}/grade-reports/${reportId}/appeal`, data);
+}
+
+export function getPendingAcademicAppeals() {
+  return apiGet<GradeReport[]>(`${B}/grade-reports/appeals`);
+}
+
 export function getExtractedData(id: number) {
-  return apiGet<{ ocr_data: Record<string, unknown> }>(`${B}/${id}/extracted-data`);
+  return apiGet<ScholarDocument & { smart_warnings?: string[] }>(`${B}/${id}/extracted-data`);
 }
 
 export function confirmDocument(
   id: number,
   data: {
     academic_year?: string;
+    semester?: string;
     general_average?: number;
     grade_items?: GradeItem[];
   },
@@ -139,6 +216,7 @@ export function verifyDocument(
   id: number,
   data: {
     academic_year?: string;
+    semester?: string;
     general_average?: number;
     grade_items?: GradeItem[];
     notes?: string;
@@ -147,9 +225,6 @@ export function verifyDocument(
   return apiPatch<VerifyDocumentResult>(`${B}/${id}/verify`, data);
 }
 
-// PATCH /documents/:id/verify — coordinator confirms grades, the backend
-// creates the grade report, marks the document VERIFIED, and (for APPLICANT
-// users with a pending application) moves the application to UNDER_REVIEW.
 export interface VerifyDocumentResult {
   report: {
     report_id: number;

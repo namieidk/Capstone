@@ -56,6 +56,8 @@ export default function ScholarProspectusPage() {
     socket.on("baseline:unfrozen", handleRefresh);
     socket.on("baseline:school_selected", handleRefresh);
     socket.on("school_grading:verified", handleRefresh);
+    socket.on("document:verified", handleRefresh);
+    socket.on("grade_report:verified", handleRefresh);
 
     return () => {
       socket.off("baseline:prospectus_processed", handleRefresh);
@@ -64,6 +66,8 @@ export default function ScholarProspectusPage() {
       socket.off("baseline:unfrozen", handleRefresh);
       socket.off("baseline:school_selected", handleRefresh);
       socket.off("school_grading:verified", handleRefresh);
+      socket.off("document:verified", handleRefresh);
+      socket.off("grade_report:verified", handleRefresh);
     };
   }, [socket, fetchBaseline]);
 

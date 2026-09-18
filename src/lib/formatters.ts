@@ -52,3 +52,40 @@ export function formatRoleLabel(raw?: string | null): string {
   };
   return map[trimmed] || formatStageLabel(raw);
 }
+
+export function formatRetentionThreshold(
+  thresholdPercent = 90,
+  schoolGrading?: {
+    grading_scale?: string;
+    passing_grade?: number;
+    highest_grade?: number;
+    failing_grade?: number;
+  } | null,
+): string {
+  const norm = Math.max(75, Math.min(100, Number(thresholdPercent) || 90));
+  const highest = schoolGrading?.highest_grade != null ? Number(schoolGrading.highest_grade) : 1.0;
+  const passing = schoolGrading?.passing_grade != null ? Number(schoolGrading.passing_grade) : 3.0;
+  const failing = schoolGrading?.failing_grade != null ? Number(schoolGrading.failing_grade) : 5.0;
+
+  const isPercentage = schoolGrading?.grading_scale === "PERCENTAGE_100" || (highest > 10 && highest >= 100);
+  const isFourPoint = schoolGrading?.grading_scale === "NUMERIC_4_POINT" || (highest === 4.0 && passing === 2.0);
+
+  if (isPercentage) {
+    return `${norm.toFixed(0)}%`;
+  }
+
+  if (highest < failing) {
+    // 5-point inverted scale (e.g. 1.00 highest, 3.00 passing at 75%)
+    const thresholdGwa = passing - ((norm - 75) / 25) * (passing - highest);
+    return `${thresholdGwa.toFixed(2)} (${norm.toFixed(0)}%)`;
+  }
+
+  if (isFourPoint) {
+    // 4.0 ascending scale (e.g. 4.00 highest, 2.00 passing at 75%)
+    const thresholdGwa = passing + ((norm - 75) / 25) * (highest - passing);
+    return `${thresholdGwa.toFixed(2)} (${norm.toFixed(0)}%)`;
+  }
+
+  const thresholdGwa = passing - ((norm - 75) / 25) * (passing - highest);
+  return `${thresholdGwa.toFixed(2)} (${norm.toFixed(0)}%)`;
+}
