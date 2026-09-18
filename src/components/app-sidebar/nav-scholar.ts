@@ -22,7 +22,7 @@ export const SCHOLAR_NAV_ITEMS: NavItem[] = [
   { key: "message", label: "Messages", icon: Mail, href: "/scholarMessage" },
   { key: "meeting", label: "Meetings", icon: Calendar, href: "/scholarMeeting" },
   { key: "forum", label: "Forum", icon: MessageSquare, href: "/SchoForum" },
-  { key: "payment", label: "Payment", icon: CreditCard, href: "/ScholarPayment" },
+  { key: "payment", label: "Disbursements", icon: CreditCard, href: "/ScholarPayment" },
   { key: "settings", label: "Settings", icon: Settings, href: "/scholarSettings" },
   { key: "profile", label: "Profile", icon: User, href: "/schoProfile" },
 ];

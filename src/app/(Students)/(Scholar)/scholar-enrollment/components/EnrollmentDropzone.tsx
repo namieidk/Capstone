@@ -3,6 +3,9 @@
 import { CheckCircle2, FileText, Loader2, UploadCloud, X } from "lucide-react";
 import type React from "react";
 import { useRef, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface EnrollmentDropzoneProps {
   title: string;
@@ -68,49 +71,60 @@ export function EnrollmentDropzone({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between h-full">
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-[#0a4f42]" />
+    <Card className="shadow-xs border-border/80 flex flex-col justify-between h-full">
+      <CardHeader className="p-4 pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-bold flex items-center gap-2">
+            <FileText className="size-4 text-emerald-700" />
             {title}
-          </h3>
-          <span className="text-[11px] font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">
+          </CardTitle>
+          <Badge
+            variant="outline"
+            className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 border-emerald-200"
+          >
             {fileTypeLabel}
-          </span>
+          </Badge>
         </div>
-        <p className="text-xs text-slate-500 mb-4">{subtitle}</p>
+        <CardDescription className="text-xs text-muted-foreground">{subtitle}</CardDescription>
+      </CardHeader>
 
+      <CardContent className="p-4 pt-2 flex-1 flex flex-col justify-center">
         {uploadedFile ? (
           <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-xl p-3.5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 overflow-hidden">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <CheckCircle2 className="size-5 text-emerald-600 shrink-0" />
               <div className="overflow-hidden">
-                <p className="text-xs font-semibold text-slate-900 truncate">{uploadedFile.name}</p>
-                {uploadedFile.size && <p className="text-[10px] text-slate-500 font-medium">{uploadedFile.size}</p>}
+                <p className="text-xs font-semibold text-foreground truncate">{uploadedFile.name}</p>
+                {uploadedFile.size && (
+                  <p className="text-[10px] text-muted-foreground font-medium">{uploadedFile.size}</p>
+                )}
               </div>
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
               {uploadedFile.url && (
-                <a
-                  href={uploadedFile.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 underline px-2 py-1"
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  className="h-7 px-2 text-xs font-semibold text-emerald-700 hover:text-emerald-800"
                 >
-                  View
-                </a>
+                  <a href={uploadedFile.url} target="_blank" rel="noreferrer">
+                    View
+                  </a>
+                </Button>
               )}
               {onClearFile && !disabled && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={onClearFile}
-                  className="p-1 hover:bg-emerald-100/60 rounded-md text-slate-500 hover:text-slate-700 cursor-pointer"
+                  className="size-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                   title="Remove document"
                 >
-                  <X className="w-4 h-4" />
-                </button>
+                  <X className="size-4" />
+                </Button>
               )}
             </div>
           </div>
@@ -123,10 +137,10 @@ export function EnrollmentDropzone({
             onDragOver={handleDragOver}
             onDrop={handleDrop}
             onClick={handleClick}
-            className={`w-full border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-35 focus:outline-none focus:ring-2 focus:ring-[#0a4f42]/30 ${
+            className={`w-full border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-35 focus:outline-none focus:ring-2 focus:ring-emerald-600/30 ${
               isDragOver
-                ? "border-[#0a4f42] bg-teal-50/50"
-                : "border-slate-200 hover:border-teal-600/50 hover:bg-slate-50/60"
+                ? "border-emerald-600 bg-emerald-50/50"
+                : "border-border hover:border-emerald-600/50 hover:bg-muted/40"
             } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <input
@@ -140,22 +154,22 @@ export function EnrollmentDropzone({
 
             {isUploading ? (
               <div className="flex flex-col items-center gap-2">
-                <Loader2 className="w-7 h-7 text-[#0a4f42] animate-spin" />
-                <p className="text-xs font-semibold text-slate-700">Ingesting and running OCR extraction...</p>
-                <p className="text-[11px] text-slate-400">Extracting courses, units, schedule & fee balances</p>
+                <Loader2 className="size-7 text-emerald-700 animate-spin" />
+                <p className="text-xs font-semibold text-foreground">Ingesting and running OCR extraction...</p>
+                <p className="text-[11px] text-muted-foreground">Extracting courses, units, schedule & fee balances</p>
               </div>
             ) : (
               <>
-                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 mb-2">
-                  <UploadCloud className="w-5 h-5 text-[#0a4f42]" />
+                <div className="size-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground mb-2">
+                  <UploadCloud className="size-5 text-emerald-700" />
                 </div>
-                <p className="text-xs font-semibold text-slate-800">Click to upload or drag & drop</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">PDF, PNG, JPG, or WEBP (up to 15 MB)</p>
+                <p className="text-xs font-semibold text-foreground">Click to upload or drag & drop</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">PDF, PNG, JPG, or WEBP (up to 15 MB)</p>
               </>
             )}
           </button>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

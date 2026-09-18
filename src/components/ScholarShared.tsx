@@ -115,7 +115,7 @@ export const NAV_ITEMS: NavItem[] = [
   { key: "message", label: "Messages", icon: <MailIcon />, href: "/scholarMessage" },
   { key: "meeting", label: "Meetings", icon: <CalendarIcon />, href: "/scholarMeeting" },
   { key: "forum", label: "Forum", icon: <ForumIcon />, href: "/SchoForum" },
-  { key: "payment", label: "Payment", icon: <PaymentIcon />, href: "/ScholarPayment" },
+  { key: "payment", label: "Disbursements", icon: <PaymentIcon />, href: "/ScholarPayment" },
   { key: "settings", label: "Settings", icon: <SettingsIcon />, href: "/scholarSettings" },
   { key: "profile", label: "Profile", icon: <ProfileIcon />, href: "/schoProfile" },
 ];

@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from "../api";
+import { apiDelete, apiGet, apiPost } from "../api";
 import type { ScholarProspectus, SchoolGradingSystem } from "./baseline";
 
 const E = "/api/proxy/term-enrollment";
@@ -56,6 +56,17 @@ export interface TermEnrollment {
   reviewed_at?: string | null;
   coordinator_notes?: string | null;
   disbursement_id?: number | null;
+  disbursement?: {
+    disbursement_id: number;
+    amount: number;
+    status: "PENDING" | "RELEASED" | "CLAIMED" | "CANCELLED" | string;
+    check_number?: string | null;
+    check_payee?: string | null;
+    payment_method?: string | null;
+    date_issued?: string | null;
+    date_claimed?: string | null;
+    remarks?: string | null;
+  } | null;
   cor_document?: {
     document_id: number;
     file_url: string;
@@ -146,6 +157,8 @@ export interface ExtractedEnrollmentResponse {
     net_balance_due?: number;
     subjects?: EnrolledSubjectItem[];
   };
+  draft_enrollment?: TermEnrollment;
+  audit_result?: EnrollmentAuditResult;
 }
 
 // 1. Get current scholar enrollment state
@@ -210,7 +223,29 @@ export async function runPreAudit(payload: SubmitEnrollmentPayload): Promise<Enr
   return apiPost<EnrollmentAuditResult>(`${E}/pre-audit`, payload);
 }
 
-// 6. Submit final enrollment
+// 6. Save or update draft enrollment
+export async function saveEnrollmentDraft(
+  payload: SubmitEnrollmentPayload,
+): Promise<{ message: string; enrollment: TermEnrollment; audit_result: EnrollmentAuditResult }> {
+  return apiPost<{ message: string; enrollment: TermEnrollment; audit_result: EnrollmentAuditResult }>(
+    `${E}/draft`,
+    payload,
+  );
+}
+
+// 7. Discard draft enrollment
+export async function discardEnrollmentDraft(
+  academicYear?: string,
+  semester?: string,
+): Promise<{ message: string; count: number }> {
+  const query = new URLSearchParams();
+  if (academicYear) query.set("academic_year", academicYear);
+  if (semester) query.set("semester", semester);
+  const qStr = query.toString();
+  return apiDelete<{ message: string; count: number }>(`${E}/draft${qStr ? `?${qStr}` : ""}`);
+}
+
+// 8. Submit final enrollment
 export async function submitTermEnrollment(
   payload: SubmitEnrollmentPayload,
 ): Promise<{ message: string; enrollment: TermEnrollment; audit_result: EnrollmentAuditResult }> {
@@ -247,5 +282,20 @@ export async function reviewCoordinatorEnrollment(
   return apiPost<{ message: string; enrollment: TermEnrollment; disbursement?: Record<string, unknown> }>(
     `${E}/coordinator/${enrollmentId}/review`,
     payload,
+  );
+}
+
+// 10. Grantor: Authorize and release disbursement for approved enrollment
+export async function authorizeGrantorDisbursement(
+  enrollmentId: number,
+  payload?: {
+    remarks?: string;
+    check_number?: string;
+    payment_method?: string;
+  },
+): Promise<{ message: string; disbursement: Record<string, unknown> }> {
+  return apiPost<{ message: string; disbursement: Record<string, unknown> }>(
+    `${E}/grantor/${enrollmentId}/authorize-disbursement`,
+    payload || {},
   );
 }

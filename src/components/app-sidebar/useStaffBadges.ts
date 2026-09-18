@@ -4,20 +4,26 @@ import { useCallback, useEffect, useState } from "react";
 import { useSocketEvent } from "@/contexts/SocketContext";
 import { listApplications } from "@/lib/api/applications";
 import { getCoordinatorPendingBaselines } from "@/lib/api/baseline";
+import { getDisbursementsQueue } from "@/lib/api/disbursements";
+import { getCoordinatorPendingEnrollments } from "@/lib/api/enrollment";
 import { listMeetings } from "@/lib/api/meetings";
+
+import type { SidebarRole } from "./types";
 
 export interface StaffBadges {
   applicants?: number;
   meetings?: number;
   scholars?: number;
+  disbursements?: number;
 }
 
 // Live sidebar counts. Badges stay hidden while loading (or on error) so
 // the sidebar never flashes stale mock numbers — undefined means no badge.
-export function useStaffBadges(opts: { includeApplicants: boolean }): StaffBadges {
+export function useStaffBadges(opts: { includeApplicants: boolean; role?: SidebarRole }): StaffBadges {
   const [applicants, setApplicants] = useState<number | null>(null);
   const [meetings, setMeetings] = useState<number | null>(null);
   const [scholars, setScholars] = useState<number | null>(null);
+  const [disbursements, setDisbursements] = useState<number | null>(null);
 
   const refreshBadges = useCallback(() => {
     let alive = true;
@@ -31,11 +37,48 @@ export function useStaffBadges(opts: { includeApplicants: boolean }): StaffBadge
         })
         .catch(() => undefined);
 
-      getCoordinatorPendingBaselines()
-        .then((items) => {
+      Promise.all([
+        getCoordinatorPendingBaselines().catch(() => []),
+        getCoordinatorPendingEnrollments().catch(() => []),
+        getDisbursementsQueue().catch(() => []),
+      ])
+        .then(([baselines, enrollments, disbList]) => {
           if (alive) {
-            const pending = items.filter((i) => i.academic_baseline_status === "PENDING_COORDINATOR_REVIEW").length;
-            setScholars(pending);
+            const pendingBaselines = baselines.filter(
+              (i) => i.academic_baseline_status === "PENDING_COORDINATOR_REVIEW",
+            ).length;
+
+            let pendingEnrollments = 0;
+            let pendingDisbursements = 0;
+
+            if (opts.role === "grantor") {
+              // For Grantor: count Coordinator-endorsed enrollments awaiting authorization
+              pendingEnrollments = enrollments.filter(
+                (e) => e.status === "APPROVED" && (!e.disbursement || e.disbursement.status === "PENDING"),
+              ).length;
+              // For Grantor: count disbursements pending batch authorization
+              pendingDisbursements = disbList.filter((d) => d.status === "PENDING").length;
+            } else if (opts.role === "coordinator") {
+              // For Coordinator: count enrollments awaiting coordinator audit
+              pendingEnrollments = enrollments.filter((e) => e.status === "PENDING_REVIEW").length;
+              // For Coordinator: count items ready for check issuance + ORs submitted awaiting audit
+              pendingDisbursements = disbList.filter(
+                (d) => d.status === "AUTHORIZED" || d.status === "RELEASED" || d.status === "OR_SUBMITTED",
+              ).length;
+            } else {
+              // For Admin
+              pendingEnrollments = enrollments.filter(
+                (e) =>
+                  e.status === "PENDING_REVIEW" ||
+                  (e.status === "APPROVED" && (!e.disbursement || e.disbursement.status === "PENDING")),
+              ).length;
+              pendingDisbursements = disbList.filter(
+                (d) => d.status === "PENDING" || d.status === "AUTHORIZED" || d.status === "OR_SUBMITTED",
+              ).length;
+            }
+
+            setScholars(pendingBaselines + pendingEnrollments);
+            setDisbursements(pendingDisbursements);
           }
         })
         .catch(() => undefined);
@@ -54,7 +97,7 @@ export function useStaffBadges(opts: { includeApplicants: boolean }): StaffBadge
     return () => {
       alive = false;
     };
-  }, [opts.includeApplicants]);
+  }, [opts.includeApplicants, opts.role]);
 
   useEffect(() => {
     return refreshBadges();
@@ -69,10 +112,19 @@ export function useStaffBadges(opts: { includeApplicants: boolean }): StaffBadge
   useSocketEvent("baseline:submitted_for_review", refreshBadges);
   useSocketEvent("baseline:frozen", refreshBadges);
   useSocketEvent("baseline:unfrozen", refreshBadges);
+  useSocketEvent("enrollment:submitted_for_review", refreshBadges);
+  useSocketEvent("enrollment:approved", refreshBadges);
+  useSocketEvent("enrollment:changes_requested", refreshBadges);
+  useSocketEvent("enrollment:rejected", refreshBadges);
+  useSocketEvent("disbursement:created", refreshBadges);
+  useSocketEvent("disbursement:authorized", refreshBadges);
+  useSocketEvent("disbursement:updated", refreshBadges);
+  useSocketEvent("disbursement:or_submitted", refreshBadges);
 
   return {
     applicants: applicants != null && applicants > 0 ? applicants : undefined,
     meetings: meetings != null && meetings > 0 ? meetings : undefined,
     scholars: scholars != null && scholars > 0 ? scholars : undefined,
+    disbursements: disbursements != null && disbursements > 0 ? disbursements : undefined,
   };
 }

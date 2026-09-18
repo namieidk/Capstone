@@ -53,7 +53,7 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
   },
   {
     key: "payments",
-    label: "Payments",
+    label: "Disbursements",
     icon: CreditCard,
     href: "/AdminPayment",
     badge: 3,

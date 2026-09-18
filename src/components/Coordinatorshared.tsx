@@ -723,7 +723,7 @@ export const NAV_ITEMS: NavItem[] = [
   { key: "applicants", label: "Applicants", icon: <PeopleIcon />, href: "/CoordinatorApplicants", badge: 12 },
   { key: "meeting", label: "Meeting", icon: <InterviewIcon />, href: "/CoordinatorMeeting", badge: 4 },
   { key: "monitor", label: "Monitor", icon: <MonitorIcon />, href: "/CoordinatorMonitor" },
-  { key: "payment", label: "Payment", icon: <PaymentsIcon />, href: "/CoordinatorPayment", badge: 2 },
+  { key: "payment", label: "Disbursements", icon: <PaymentsIcon />, href: "/CoordinatorPayment", badge: 2 },
   { key: "archive", label: "Archive", icon: <ArchiveIcon />, href: "/CoordinatorArchive" },
   { key: "reports", label: "Reports", icon: <ReportsIcon />, href: "/CoordinatorReports" },
   { key: "message", label: "Message", icon: <MailIcon />, href: "/CoordinatorMessage", badge: 3 },

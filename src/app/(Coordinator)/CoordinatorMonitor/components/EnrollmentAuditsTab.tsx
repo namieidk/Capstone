@@ -1,35 +1,59 @@
 "use client";
 
-import { AlertTriangle, Banknote, BookOpen, Calendar, CheckCircle2, Clock, Eye, FileCheck, Search } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Clock, Eye, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { TermEnrollment } from "@/lib/api/enrollment";
 
 interface EnrollmentAuditsTabProps {
   items: TermEnrollment[];
   loading: boolean;
   onSelectAudit: (enrollmentId: number) => void;
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
 }
 
-export function EnrollmentAuditsTab({ items, loading, onSelectAudit }: EnrollmentAuditsTabProps) {
-  const [search, setSearch] = useState("");
+const PAGE_SIZE = 8;
+const SKELETON_ROWS = ["sk-1", "sk-2", "sk-3", "sk-4", "sk-5"];
+
+export function EnrollmentAuditsTab({
+  items,
+  loading,
+  onSelectAudit,
+  searchQuery = "",
+  onSearchChange,
+}: EnrollmentAuditsTabProps) {
+  const [page, setPage] = useState(1);
   const [filter, setFilter] = useState<string>("ALL");
+
+  const q = searchQuery.trim().toLowerCase();
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
       const name = `${item.scholar_profile?.first_name || ""} ${item.scholar_profile?.last_name || ""}`.toLowerCase();
       const school = (item.scholar_profile?.school_name || "").toLowerCase();
       const studentNum = (item.scholar_profile?.student_number || "").toLowerCase();
-      const q = search.toLowerCase();
+      const course = (item.scholar_profile?.course_of_study || "").toLowerCase();
 
-      const matchesSearch = !search || name.includes(q) || school.includes(q) || studentNum.includes(q);
+      const matchesSearch =
+        !q || name.includes(q) || school.includes(q) || studentNum.includes(q) || course.includes(q);
 
       if (filter === "PENDING") return matchesSearch && item.status === "PENDING_REVIEW";
       if (filter === "CHANGES_REQUESTED") return matchesSearch && item.status === "CHANGES_REQUESTED";
       if (filter === "APPROVED") return matchesSearch && item.status === "APPROVED";
       return matchesSearch;
     });
-  }, [items, search, filter]);
+  }, [items, q, filter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filteredItems.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat("en-PH", {
@@ -42,148 +66,251 @@ export function EnrollmentAuditsTab({ items, loading, onSelectAudit }: Enrollmen
     switch (status) {
       case "APPROVED":
         return (
-          <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px] gap-1 font-medium">
-            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-            Approved
+          <Badge className="bg-emerald-50 text-emerald-800 border-emerald-300 text-xs gap-1 font-semibold py-0.5">
+            <CheckCircle2 className="size-3 text-emerald-600" />
+            Approved & Endorsed
           </Badge>
         );
       case "CHANGES_REQUESTED":
         return (
-          <Badge className="bg-orange-50 text-orange-700 border-orange-200 text-[11px] gap-1 font-medium">
-            <AlertTriangle className="w-3 h-3 text-orange-600" />
+          <Badge className="bg-orange-50 text-orange-900 border-orange-300 text-xs gap-1 font-semibold py-0.5">
+            <AlertTriangle className="size-3 text-orange-600" />
             Changes Requested
           </Badge>
         );
       default:
         return (
-          <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-[11px] gap-1 font-medium animate-pulse">
-            <Clock className="w-3 h-3 text-amber-600" />
-            Pending Audit
+          <Badge className="bg-amber-50 text-amber-900 border-amber-300 text-xs gap-1 font-semibold py-0.5">
+            <Clock className="size-3 text-amber-600" />
+            Pending Review
           </Badge>
         );
     }
   };
 
+  const pendingCount = items.filter((i) => i.status === "PENDING_REVIEW").length;
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by scholar, ID, or school..."
-            className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-[#0a4f42] bg-white"
-          />
-        </div>
+      {/* Top Filter & Search Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {onSearchChange ? (
+          <div className="relative w-full sm:w-72 md:w-80">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search scholar, course, or school..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="h-9 w-full rounded-xl border-line bg-white pl-9 pr-8 text-xs placeholder:text-muted-foreground"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => onSearchChange("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="size-3.5" />
+              </button>
+            )}
+          </div>
+        ) : (
+          <div />
+        )}
 
-        <div className="flex items-center gap-1.5 self-start sm:self-auto overflow-x-auto w-full sm:w-auto">
-          {[
-            { id: "ALL", label: `All (${items.length})` },
-            { id: "PENDING", label: `Pending (${items.filter((i) => i.status === "PENDING_REVIEW").length})` },
-            {
-              id: "CHANGES_REQUESTED",
-              label: `Changes (${items.filter((i) => i.status === "CHANGES_REQUESTED").length})`,
-            },
-            { id: "APPROVED", label: `Approved (${items.filter((i) => i.status === "APPROVED").length})` },
-          ].map((pill) => (
-            <button
-              key={pill.id}
-              type="button"
-              onClick={() => setFilter(pill.id)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
-                filter === pill.id ? "bg-[#0a4f42] text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
-            >
-              {pill.label}
-            </button>
-          ))}
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="h-9 w-48 sm:w-52 rounded-xl border-line bg-white text-xs font-semibold">
+              <SelectValue placeholder="Filter Term Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Enrollments ({items.length})</SelectItem>
+              <SelectItem value="PENDING">Pending Review ({pendingCount})</SelectItem>
+              <SelectItem value="CHANGES_REQUESTED">Changes Requested</SelectItem>
+              <SelectItem value="APPROVED">Approved & Endorsed</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-44 bg-slate-100 rounded-2xl animate-pulse" />
-          ))}
-        </div>
-      ) : filteredItems.length === 0 ? (
-        <div className="border border-dashed border-slate-200 rounded-2xl p-12 text-center bg-slate-50/50">
-          <FileCheck className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-          <p className="text-xs font-bold text-slate-700">No Start-of-Term Audits Found</p>
-          <p className="text-[11px] text-slate-400 mt-0.5">
-            Scholars' start-of-term enrollment submissions will appear here for 60-second review.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredItems.map((item) => {
-            const hasFlags = item.audit_flags && item.audit_flags.length > 0;
-            return (
-              <div
-                key={item.enrollment_id}
-                className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs hover:border-teal-500/40 transition-all flex flex-col justify-between gap-4"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900 leading-tight">
-                        {item.scholar_profile?.first_name} {item.scholar_profile?.last_name}
-                      </h4>
-                      <p className="text-[11px] text-slate-500 font-medium">
-                        ID: {item.scholar_profile?.student_number || "—"} • {item.scholar_profile?.school_name}
-                      </p>
-                    </div>
-                    {getStatusBadge(item.status)}
+      {/* Main Table Card */}
+      <Card className="rounded-[18px]! border-line bg-white shadow-va-sm">
+        <CardContent className="px-0!">
+          {loading ? (
+            <div className="divide-y divide-line px-6 py-2">
+              {SKELETON_ROWS.map((key) => (
+                <div key={key} className="flex items-center gap-4 py-4">
+                  <div className="w-48 shrink-0">
+                    <Skeleton className="mb-2 h-3.5" />
+                    <Skeleton className="h-3 w-2/3" />
                   </div>
-
-                  <div className="space-y-1.5 text-xs text-slate-600 bg-slate-50/70 p-3 rounded-xl border border-slate-100 mb-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500 flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5 text-slate-400" /> Term:
-                      </span>
-                      <span className="font-semibold text-slate-800">
-                        {item.academic_year} • {item.semester}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500 flex items-center gap-1.5">
-                        <BookOpen className="w-3.5 h-3.5 text-slate-400" /> Units:
-                      </span>
-                      <span className="font-bold text-slate-800">{Number(item.total_units).toFixed(1)} Units</span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500 flex items-center gap-1.5">
-                        <Banknote className="w-3.5 h-3.5 text-emerald-600" /> Tuition Due:
-                      </span>
-                      <span className="font-black text-[#0a4f42]">{formatCurrency(Number(item.total_assessment))}</span>
-                    </div>
-                  </div>
-
-                  {hasFlags && (
-                    <div className="flex items-center gap-1 text-[11px] text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200/60 font-medium">
-                      <AlertTriangle className="w-3 h-3 shrink-0" />
-                      <span className="truncate">{item.audit_flags?.length} advisory flag(s) detected</span>
-                    </div>
-                  )}
+                  <Skeleton className="h-4 w-28 shrink-0" />
+                  <Skeleton className="h-4 w-24 shrink-0" />
+                  <Skeleton className="h-4 w-28 shrink-0" />
+                  <Skeleton className="h-6 w-28 shrink-0 rounded-full" />
+                  <Skeleton className="ml-auto size-9 shrink-0 rounded-full" />
                 </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              <Table className="text-sm!">
+                <TableHeader>
+                  <TableRow className="border-b border-line hover:bg-transparent">
+                    <TableHead className="pl-6 text-center! text-xs font-bold! uppercase tracking-wider text-[#8a8a84]!">
+                      Scholar
+                    </TableHead>
+                    <TableHead className="text-center! text-xs font-bold! uppercase tracking-wider text-[#8a8a84]!">
+                      Academic Term
+                    </TableHead>
+                    <TableHead className="text-center! text-xs font-bold! uppercase tracking-wider text-[#8a8a84]!">
+                      Enrolled Units
+                    </TableHead>
+                    <TableHead className="text-center! text-xs font-bold! uppercase tracking-wider text-[#8a8a84]!">
+                      Tuition Balance
+                    </TableHead>
+                    <TableHead className="text-center! text-xs font-bold! uppercase tracking-wider text-[#8a8a84]!">
+                      Audit Status
+                    </TableHead>
+                    <TableHead className="pr-6 text-center! text-xs font-bold! uppercase tracking-wider text-[#8a8a84]!">
+                      Action
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginated.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-36 text-center text-sm text-muted-foreground">
+                        {q ? `No enrollments match "${searchQuery}".` : "No term enrollment submissions found."}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    paginated.map((item) => {
+                      const fullName = `${item.scholar_profile?.first_name || ""} ${item.scholar_profile?.last_name || ""}`;
+                      const hasFlags = item.audit_flags && item.audit_flags.length > 0;
 
-                <button
-                  type="button"
-                  onClick={() => onSelectAudit(item.enrollment_id)}
-                  className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-[#0a4f42] bg-teal-50 hover:bg-teal-100/70 border border-teal-200 rounded-xl transition-colors cursor-pointer"
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>Open Quick-Audit Drawer</span>
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      )}
+                      return (
+                        <TableRow
+                          key={item.enrollment_id}
+                          onClick={() => onSelectAudit(item.enrollment_id)}
+                          className="cursor-pointer transition-colors hover:bg-[#faf8f5]"
+                        >
+                          <TableCell className="whitespace-normal! py-4 pl-6 text-center!">
+                            <p className="text-[0.92rem] font-bold text-navy">{fullName}</p>
+                            <p className="mt-0.5 text-xs text-[#9a9a94]">
+                              ID: {item.scholar_profile?.student_number || "—"} • {item.scholar_profile?.school_name}
+                            </p>
+                          </TableCell>
+
+                          <TableCell className="py-4 text-center!">
+                            <p className="text-xs font-semibold text-navy">
+                              AY {item.academic_year} • {item.semester}
+                            </p>
+                            <p className="mt-0.5 text-[10px] text-[#9a9a94]">Year Level {item.year_level}</p>
+                          </TableCell>
+
+                          <TableCell className="py-4 text-center!">
+                            <span className="font-semibold text-navy tabular-nums">
+                              {Number(item.total_units).toFixed(1)} Units
+                            </span>
+                            <p className="mt-0.5 text-[10px] text-[#9a9a94]">
+                              {item.enrolled_subjects?.length || 0} enrolled courses
+                            </p>
+                          </TableCell>
+
+                          <TableCell className="py-4 text-center!">
+                            <span className="font-black text-[#0a4f42] tabular-nums">
+                              {formatCurrency(Number(item.total_assessment))}
+                            </span>
+                            {item.assessment_date && (
+                              <p className="mt-0.5 text-[10px] text-[#9a9a94]">
+                                {new Date(item.assessment_date).toLocaleDateString()}
+                              </p>
+                            )}
+                          </TableCell>
+
+                          <TableCell className="py-4 text-center!">
+                            <div className="flex flex-col items-center gap-1">
+                              {getStatusBadge(item.status)}
+                              {hasFlags && (
+                                <Badge
+                                  variant="outline"
+                                  className="bg-amber-50 text-amber-900 border-amber-300 text-[10px] gap-1 font-medium"
+                                >
+                                  <AlertTriangle className="size-2.5 text-amber-600" />
+                                  {item.audit_flags?.length} advisory
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="py-4 pr-6 text-center!">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="size-9 rounded-full border-line bg-white hover:bg-tint"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onSelectAudit(item.enrollment_id);
+                              }}
+                              aria-label={`Audit ${fullName}`}
+                            >
+                              <Eye className="size-4 text-[#7a7a74]" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+
+              {filteredItems.length > 0 && (
+                <div className="flex items-center justify-between border-t border-line px-6 py-3.5 text-xs text-muted-foreground">
+                  <span>
+                    Showing {(currentPage - 1) * PAGE_SIZE + 1} to{" "}
+                    {Math.min(currentPage * PAGE_SIZE, filteredItems.length)} of {filteredItems.length} term enrollments
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="size-8 rounded-lg"
+                    >
+                      <ChevronLeft className="size-4" />
+                    </Button>
+                    {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
+                      <Button
+                        key={num}
+                        variant={num === currentPage ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setPage(num)}
+                        className={`size-8 p-0 text-xs ${
+                          num === currentPage ? "bg-navy text-white hover:bg-navy/90" : ""
+                        }`}
+                      >
+                        {num}
+                      </Button>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="size-8 rounded-lg"
+                    >
+                      <ChevronRight className="size-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

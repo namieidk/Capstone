@@ -152,27 +152,15 @@ export default function CoordinatorMonitorPage() {
   return (
     <div className="min-h-full bg-[#faf8f5]">
       {/* Page Header */}
-      <CoordinatorMonitorHeader searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+      <CoordinatorMonitorHeader />
 
       {/* Main Content Area */}
       <div className="px-5 pb-24 md:px-10 space-y-4">
-        {/* Mobile Search Input */}
-        <div className="mt-4 flex h-10 items-center gap-2 rounded-full border border-line bg-tint px-3.5 md:hidden">
-          <input
-            type="text"
-            placeholder="Search scholar or course..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-transparent text-[0.82rem] outline-none placeholder:text-[#9a9a94]"
-            aria-label="Search scholars"
-          />
-        </div>
-
         {/* Action Callout Banner for Pending Prospectus Audits */}
         {pendingAuditCount > 0 && activeTab !== "baseline-audits" && (
           <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-950 dark:text-amber-100 shadow-2xs">
             <div className="flex items-center gap-2.5">
-              <span className="flex h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+              <span className="flex h-2.5 w-2.5 rounded-full bg-amber-500 shrink-0" />
               <div className="text-xs">
                 <span className="font-bold text-amber-900 dark:text-amber-200">
                   {pendingAuditCount} {pendingAuditCount === 1 ? "scholar is" : "scholars are"} awaiting prospectus
@@ -200,7 +188,7 @@ export default function CoordinatorMonitorPage() {
         {pendingEnrollmentCount > 0 && activeTab !== "enrollment-audits" && (
           <div className="mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 rounded-xl border border-teal-500/30 bg-teal-500/10 text-teal-950 dark:text-teal-100 shadow-2xs">
             <div className="flex items-center gap-2.5">
-              <span className="flex h-2.5 w-2.5 rounded-full bg-[#0a4f42] animate-pulse shrink-0" />
+              <span className="flex h-2.5 w-2.5 rounded-full bg-[#0a4f42] shrink-0" />
               <div className="text-xs">
                 <span className="font-bold text-teal-900 dark:text-teal-200">
                   {pendingEnrollmentCount} {pendingEnrollmentCount === 1 ? "enrollment is" : "enrollments are"} awaiting
@@ -218,7 +206,7 @@ export default function CoordinatorMonitorPage() {
               onClick={() => setActiveTab("enrollment-audits")}
               className="h-7.5 px-3 rounded-lg border-teal-500/40 bg-white/90 dark:bg-teal-950/40 hover:bg-white text-[#0a4f42] font-semibold text-xs shrink-0 gap-1.5 shadow-2xs self-start sm:self-auto"
             >
-              <span>Quick Audit ({pendingEnrollmentCount})</span>
+              <span>Review Enrollments ({pendingEnrollmentCount})</span>
               <ArrowRight className="size-3.5" />
             </Button>
           </div>
@@ -264,6 +252,7 @@ export default function CoordinatorMonitorPage() {
               loadError={activeScholarsError}
               onRetry={fetchActiveScholars}
               searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
               onSelectScholar={(sch) => {
                 setSelectedScholar(sch);
                 setOpenMonitorDrawer(true);
@@ -276,6 +265,8 @@ export default function CoordinatorMonitorPage() {
             <BaselineAuditsTab
               items={baselineItems}
               loading={loadingBaselines}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
               onSelectScholar={handleSelectScholarForAudit}
             />
           </TabsContent>
@@ -285,6 +276,8 @@ export default function CoordinatorMonitorPage() {
             <EnrollmentAuditsTab
               items={enrollmentItems}
               loading={loadingEnrollments}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
               onSelectAudit={handleSelectEnrollmentForAudit}
             />
           </TabsContent>

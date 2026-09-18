@@ -2,19 +2,11 @@
 
 import { PageHeader } from "@/components/PageHeader";
 
-interface CoordinatorMonitorHeaderProps {
-  searchQuery: string;
-  onSearchChange: (value: string) => void;
-}
-
-export function CoordinatorMonitorHeader({ searchQuery, onSearchChange }: CoordinatorMonitorHeaderProps) {
+export function CoordinatorMonitorHeader() {
   return (
     <PageHeader
       title="Scholars"
       subtitle="Track active scholar academic performance, retention standing, and audit curriculum baseline prospectuses."
-      searchValue={searchQuery}
-      onSearchChange={onSearchChange}
-      searchPlaceholder="Search scholar or course..."
     />
   );
 }

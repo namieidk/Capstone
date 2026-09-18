@@ -55,7 +55,7 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
   const { user, logout } = useAuth();
   const config = ROLE_CONFIG[role];
   const isStaffRole = role === "admin" || role === "coordinator" || role === "grantor";
-  const badges = useStaffBadges({ includeApplicants: isStaffRole });
+  const badges = useStaffBadges({ includeApplicants: isStaffRole, role });
 
   const displayName = user ? `${user.first_name} ${user.last_name}` : "Guest";
   const displayInitials = user ? getInitials(user.first_name, user.last_name) : "G";
@@ -108,7 +108,9 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
                       ? badges.meetings
                       : item.key === "scholars" || item.key === "monitor"
                         ? badges.scholars
-                        : item.badge;
+                        : item.key === "disbursements" || item.key === "payments" || item.key === "payment"
+                          ? badges.disbursements
+                          : item.badge;
 
                 return (
                   <SidebarMenuItem key={item.key}>

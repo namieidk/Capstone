@@ -18,7 +18,7 @@ export const COORDINATOR_NAV_ITEMS: NavItem[] = [
   { key: "grading-systems", label: "Grading Systems", icon: GraduationCap, href: "/GradingSystems" },
   { key: "meeting", label: "Meeting", icon: Calendar, href: "/CoordinatorMeeting" },
   { key: "scholars", label: "Scholars", icon: GraduationCap, href: "/CoordinatorMonitor" },
-  { key: "payment", label: "Payment", icon: CreditCard, href: "/CoordinatorPayment" },
+  { key: "payment", label: "Disbursements", icon: CreditCard, href: "/CoordinatorPayment" },
   { key: "archive", label: "Archive", icon: Archive, href: "/CoordinatorArchive" },
   { key: "reports", label: "Reports", icon: BarChart3, href: "/CoordinatorReports" },
   { key: "message", label: "Message", icon: Mail, href: "/CoordinatorMessage" },

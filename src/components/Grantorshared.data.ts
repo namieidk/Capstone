@@ -146,7 +146,7 @@ export const NAV_KEYS: Omit<NavItem, "icon">[] = [
   { key: "monitor", label: "Monitor", href: "/grantMonitor" },
   { key: "reports", label: "Reports", href: "/grantReports" },
   { key: "message", label: "Message", href: "/grantMessage", badge: 3 },
-  { key: "payments", label: "Payments", href: "/grantPayment", badge: 1 },
+  { key: "payments", label: "Disbursements", href: "/grantPayment", badge: 1 },
   { key: "settings", label: "Settings", href: "/grantSettings" },
   { key: "profile", label: "Profile", href: "/grantProfile" },
 ];
@@ -157,7 +157,7 @@ export const TITLES: Record<string, [string, string]> = {
   "/grantMonitor": ["Monitor", "Scholars funded by your company and their current standing."],
   "/grantReports": ["Reports", "Budget allocation and disbursement analytics for your scholarship fund."],
   "/grantMessage": ["Messages", "Conversations with your ViaScholar coordinator."],
-  "/grantPayment": ["Payments", "Review and approve scholar disbursements."],
+  "/grantPayment": ["Disbursements", "Review and approve scholar disbursements."],
   "/grantSettings": ["Settings", "Manage your notifications, approvals, and security."],
   "/grantProfile": ["Profile", "Your company profile and partnership activity."],
 };
