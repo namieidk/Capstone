@@ -62,6 +62,8 @@ export interface TermEnrollment {
     status: "PENDING" | "RELEASED" | "CLAIMED" | "CANCELLED" | string;
     check_number?: string | null;
     check_payee?: string | null;
+    voucher_number?: string | null;
+    bank_name?: string | null;
     payment_method?: string | null;
     date_issued?: string | null;
     date_claimed?: string | null;

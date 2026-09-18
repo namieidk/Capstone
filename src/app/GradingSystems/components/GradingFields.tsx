@@ -261,8 +261,15 @@ export function GradingFields({ values, onChange, idPrefix }: GradingFieldsProps
           value={customScaleMode ? "CUSTOM" : values.grading_scale || "NUMERIC_4_POINT"}
           onValueChange={handlePresetSelect}
         >
-          <SelectTrigger id={`${idPrefix}-grading-scale`} className="h-10 w-full">
-            <SelectValue placeholder="Choose grading scale" />
+          <SelectTrigger
+            id={`${idPrefix}-grading-scale`}
+            className="h-10 w-full min-w-0 *:data-[slot=select-value]:truncate *:data-[slot=select-value]:block *:data-[slot=select-value]:w-full"
+          >
+            <SelectValue placeholder="Choose grading scale">
+              {selectedPreset ? (
+                <span className="truncate block font-medium text-sm text-foreground">{selectedPreset.label}</span>
+              ) : undefined}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {SCALE_PRESETS.map((p) => (
@@ -356,21 +363,19 @@ export function GradingFields({ values, onChange, idPrefix }: GradingFieldsProps
               Transcript symbols representing non-numeric status (e.g. 9.0 → DROPPED, INC → INCOMPLETE).
             </p>
           </div>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             <Button
               type="button"
               variant="outline"
-              size="sm"
-              className="h-7 px-2.5 text-xs font-medium"
+              className="h-8.5 px-3 text-xs font-medium"
               onClick={loadUmSpecialCodes}
             >
-              <Sparkles className="size-3 text-amber-500 mr-1" />+ UM Codes
+              <Sparkles className="size-3.5 text-amber-500 mr-1" />+ UM Codes
             </Button>
             <Button
               type="button"
               variant="outline"
-              size="sm"
-              className="h-7 px-2.5 text-xs font-medium"
+              className="h-8.5 px-3 text-xs font-medium"
               onClick={loadStandardSpecialCodes}
             >
               + Standard Codes
@@ -406,7 +411,7 @@ export function GradingFields({ values, onChange, idPrefix }: GradingFieldsProps
                 variant="ghost"
                 size="icon"
                 aria-label={`Remove special code ${i + 1}`}
-                className="size-8 text-muted-foreground hover:text-destructive shrink-0"
+                className="size-9 text-muted-foreground hover:text-destructive shrink-0"
                 onClick={() => set({ codes: values.codes.filter((row) => row.id !== c.id) })}
               >
                 <X className="size-4" />
@@ -417,8 +422,7 @@ export function GradingFields({ values, onChange, idPrefix }: GradingFieldsProps
           <Button
             type="button"
             variant="outline"
-            size="sm"
-            className="h-8 text-xs font-medium"
+            className="h-9 px-3.5 text-xs font-medium"
             onClick={() =>
               set({
                 codes: [...values.codes, { id: `code-${Date.now()}`, code: "", status: "" }],

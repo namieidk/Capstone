@@ -60,7 +60,7 @@ export function ContractCard({ contract, onChanged, onSigned }: ContractCardProp
               <iframe
                 src={contract.document_url}
                 title={`Contract ${contract.contract_number} draft`}
-                className="h-96 w-full rounded-xl border border-border bg-white"
+                className="w-full min-h-170 h-[75vh] max-h-262.5 rounded-xl border border-border bg-white shadow-xs"
               />
               <div className="flex flex-wrap gap-2">
                 <Button

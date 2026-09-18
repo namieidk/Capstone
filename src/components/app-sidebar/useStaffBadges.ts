@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSocketEvent } from "@/contexts/SocketContext";
 import { listApplications } from "@/lib/api/applications";
 import { getCoordinatorPendingBaselines } from "@/lib/api/baseline";
-import { getDisbursementsQueue } from "@/lib/api/disbursements";
+import { getDisbursementsQueue, getMyScholarDisbursements } from "@/lib/api/disbursements";
 import { getPendingAcademicAppeals, getPendingDocuments } from "@/lib/api/documents";
 import { getCoordinatorPendingEnrollments } from "@/lib/api/enrollment";
 import { listMeetings } from "@/lib/api/meetings";
@@ -15,7 +15,7 @@ export interface StaffBadges {
   applicants?: number;
   meetings?: number;
   scholars?: number;
-  disbursements?: number;
+  disbursements?: number | string;
 }
 
 // Live sidebar counts. Badges stay hidden while loading (or on error) so
@@ -24,7 +24,7 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
   const [applicants, setApplicants] = useState<number | null>(null);
   const [meetings, setMeetings] = useState<number | null>(null);
   const [scholars, setScholars] = useState<number | null>(null);
-  const [disbursements, setDisbursements] = useState<number | null>(null);
+  const [disbursements, setDisbursements] = useState<number | string | null>(null);
 
   const refreshBadges = useCallback(() => {
     let alive = true;
@@ -98,6 +98,21 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
         })
         .catch(() => undefined);
     }
+
+    if (opts.role === "scholar") {
+      getMyScholarDisbursements()
+        .then((items) => {
+          if (alive) {
+            const needsAction = items.some(
+              (d) =>
+                (d.status === "CHECK_ISSUED" || d.status === "CLAIMED" || d.status === "RELEASED") && !d.or_document_id,
+            );
+            setDisbursements(needsAction ? "!" : null);
+          }
+        })
+        .catch(() => undefined);
+    }
+
     // limit: 1 keeps payloads tiny — only `total` is used.
     // Query only upcoming meetings from current time onwards
     const nowIso = new Date().toISOString();
@@ -136,6 +151,11 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
   useSocketEvent("disbursement:updated", refreshBadges);
   useSocketEvent("disbursement:or_submitted", refreshBadges);
   useSocketEvent("grade_report:submitted", refreshBadges);
+  useSocketEvent("grade_report:verified", refreshBadges);
+  useSocketEvent("document:confirmed_by_applicant", refreshBadges);
+  useSocketEvent("document:ocr_completed", refreshBadges);
+  useSocketEvent("document:verified", refreshBadges);
+  useSocketEvent("document:changes_requested", refreshBadges);
   useSocketEvent("academic_appeal:submitted", refreshBadges);
   useSocketEvent("academic_appeal:reviewed", refreshBadges);
 
@@ -143,6 +163,7 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
     applicants: applicants != null && applicants > 0 ? applicants : undefined,
     meetings: meetings != null && meetings > 0 ? meetings : undefined,
     scholars: scholars != null && scholars > 0 ? scholars : undefined,
-    disbursements: disbursements != null && disbursements > 0 ? disbursements : undefined,
+    disbursements:
+      disbursements != null && (typeof disbursements === "string" || disbursements > 0) ? disbursements : undefined,
   };
 }

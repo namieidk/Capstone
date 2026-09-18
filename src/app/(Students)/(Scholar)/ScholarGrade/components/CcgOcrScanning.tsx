@@ -14,7 +14,7 @@ export function CcgOcrScanning({ fileName, discarding, onDiscard }: CcgOcrScanni
     <div className="p-8 rounded-2xl border border-teal-200 bg-teal-50/70 text-center space-y-3">
       <Loader2 className="size-8 text-[#0a4f42] animate-spin mx-auto" />
       <div className="space-y-1">
-        <h4 className="text-sm font-bold text-navy">AI OCR is Extracting Grades & Academic Period</h4>
+        <h4 className="text-sm font-bold text-navy">Extracting Grades & Academic Period...</h4>
         <p className="text-xs text-muted-foreground max-w-md mx-auto">
           Parsing course codes, credit units, numerical ratings, and semester details from {fileName || "your CCG"}.
           This usually takes a few seconds.

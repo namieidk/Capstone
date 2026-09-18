@@ -67,7 +67,7 @@ export function AddGradingSheet({ open, onOpenChange, onCreate }: AddGradingShee
             type="button"
             variant="ghost"
             size="icon"
-            className="size-8 text-muted-foreground hover:text-foreground"
+            className="size-9 rounded-full text-muted-foreground hover:text-foreground"
             onClick={() => onOpenChange(false)}
             aria-label="Close"
           >
@@ -87,11 +87,21 @@ export function AddGradingSheet({ open, onOpenChange, onCreate }: AddGradingShee
           </form>
         </div>
 
-        <div className="flex items-center justify-end gap-2.5 border-t border-border p-4 bg-card/60">
-          <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)}>
+        <div className="flex items-center justify-end gap-3 border-t border-border p-4 bg-card/60">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-10 px-4 text-sm font-medium"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
-          <Button type="submit" form="add-grading-form" size="sm" className="px-5 font-semibold" disabled={saving}>
+          <Button
+            type="submit"
+            form="add-grading-form"
+            className="h-10 px-5 text-sm font-semibold shadow-xs"
+            disabled={saving}
+          >
             {saving ? "Adding..." : "Add System"}
           </Button>
         </div>

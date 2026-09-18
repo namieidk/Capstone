@@ -71,7 +71,7 @@ export default function ApplicantsContractPage() {
           <Card className="rounded-[18px]! shadow-va-sm">
             <CardContent className="flex flex-col gap-3 px-6 py-6">
               <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-96 w-full rounded-xl" />
+              <Skeleton className="w-full min-h-170 h-[75vh] max-h-262.5 rounded-xl" />
               <div className="flex gap-2">
                 <Skeleton className="h-10 flex-1" />
                 <Skeleton className="h-10 flex-1" />

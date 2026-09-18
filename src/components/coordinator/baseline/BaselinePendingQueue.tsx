@@ -54,14 +54,27 @@ export function BaselinePendingQueue({
   const currentPage = Math.min(page, totalPages);
   const paginated = filteredItems.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, item?: PendingBaselineItem) => {
     switch (status) {
-      case "BASELINE_FROZEN":
+      case "BASELINE_FROZEN": {
+        const frozenBy = item?.prospectus?.frozen_by_employee;
+        const roleLabel = frozenBy?.user?.role
+          ? ` (${frozenBy.user.role.charAt(0) + frozenBy.user.role.slice(1).toLowerCase()})`
+          : "";
         return (
-          <Badge className="bg-emerald-50 text-emerald-800 border-emerald-300 gap-1 text-xs font-semibold py-0.5">
-            <Lock className="w-3 h-3 text-emerald-600" /> Frozen & Verified
-          </Badge>
+          <div className="flex flex-col items-center">
+            <Badge className="bg-emerald-50 text-emerald-800 border-emerald-300 gap-1 text-xs font-semibold py-0.5">
+              <Lock className="w-3 h-3 text-emerald-600" /> Frozen & Verified
+            </Badge>
+            {frozenBy && (
+              <span className="text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">
+                by {frozenBy.first_name} {frozenBy.last_name}
+                {roleLabel}
+              </span>
+            )}
+          </div>
         );
+      }
       case "PENDING_COORDINATOR_REVIEW":
         return (
           <Badge className="bg-amber-50 text-amber-900 border-amber-300 gap-1 text-xs font-semibold py-0.5 animate-pulse">
@@ -219,7 +232,7 @@ export function BaselinePendingQueue({
                           </TableCell>
 
                           <TableCell className="py-4 text-center!">
-                            {getStatusBadge(item.academic_baseline_status)}
+                            {getStatusBadge(item.academic_baseline_status, item)}
                           </TableCell>
 
                           <TableCell className="py-4 pr-6 text-center!">

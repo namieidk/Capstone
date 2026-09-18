@@ -184,7 +184,7 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
                 {uploading ? (
                   <>
                     <Loader2 className="size-6 animate-spin text-[#0a4f42]" />
-                    <p className="text-xs font-semibold text-slate-700">Scanning receipt with AI OCR...</p>
+                    <p className="text-xs font-semibold text-slate-700">Scanning Receipt...</p>
                     <p className="text-[11px] text-muted-foreground">Detecting OR #, student ID, and cashier marks</p>
                   </>
                 ) : (
@@ -200,12 +200,12 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
             )}
           </div>
 
-          {/* AI Extracted OCR Summary Card */}
+          {/* Extracted Receipt Summary Card */}
           {extractedData && (
             <div className="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-900">
                 <Sparkles className="size-3.5 text-emerald-600" />
-                <span>AI OCR Extracted Details</span>
+                <span>Extracted Receipt Details</span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-[11px]">
                 {extractedData.student_id && (

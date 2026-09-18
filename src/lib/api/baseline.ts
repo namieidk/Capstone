@@ -61,10 +61,13 @@ export interface ScholarProspectus {
     uploaded_at: string;
   } | null;
   frozen_by_employee?: {
-    employee_id: number;
+    employee_id?: number;
     first_name: string;
     last_name: string;
-    title?: string;
+    title?: string | null;
+    user?: {
+      role: string;
+    } | null;
   } | null;
 }
 

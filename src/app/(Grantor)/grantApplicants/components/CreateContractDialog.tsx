@@ -2,6 +2,7 @@
 
 import { AlertCircle, CheckCircle2, FileSignature, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import type { Applicant } from "@/components/Coordinatorshared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -106,10 +107,15 @@ export function CreateContractDialog({
         effective_date: effectiveDate || undefined,
         expiry_date: expiryDate || undefined,
       });
-      setCreatedContract(contract);
+      toast.success(
+        existingContract
+          ? `Scholarship contract ${contract.contract_number} re-issued successfully!`
+          : `Scholarship contract ${contract.contract_number} issued and sent successfully!`,
+      );
       if (onContractCreated) {
         onContractCreated(contract);
       }
+      handleClose();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to generate scholarship contract.");
     } finally {

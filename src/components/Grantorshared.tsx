@@ -39,7 +39,7 @@ export interface PaymentRecord {
   term: string;
   amount: number;
   date: string;
-  status: "Paid" | "Pending" | "On hold";
+  status: "Paid" | "Pending" | "On hold" | "Settled";
 }
 
 export interface FundedScholar {
@@ -55,7 +55,7 @@ export interface FundedScholar {
   currentPayment: {
     term: string;
     amount: number;
-    status: "Paid" | "Pending" | "On hold";
+    status: "Paid" | "Pending" | "On hold" | "Settled";
   };
   gradeHistory: GradeRecord[];
   paymentHistory: PaymentRecord[];
@@ -311,6 +311,7 @@ export const PAYMENT_STATUS_COLORS: Record<
   "Pending approval": { bg: WARN_BG, text: WARN },
   "On hold": { bg: BAD_BG, text: BAD },
   Paid: { bg: GOOD_BG, text: GOOD },
+  Settled: { bg: GOOD_BG, text: GOOD },
   Pending: { bg: WARN_BG, text: WARN },
 };
 

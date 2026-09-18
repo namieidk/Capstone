@@ -134,7 +134,11 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
                     {itemBadge !== undefined && (
                       <SidebarMenuBadge
                         className={`top-1/2! right-2! -translate-y-1/2 font-bold text-[0.7rem] px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden transition-colors ${
-                          isActive ? "bg-navy! text-white/80!" : "bg-amber text-navy"
+                          itemBadge === "!"
+                            ? "bg-amber-400! text-navy! font-black! animate-pulse shadow-xs"
+                            : isActive
+                              ? "bg-navy! text-white/80!"
+                              : "bg-amber text-navy"
                         }`}
                       >
                         {itemBadge}

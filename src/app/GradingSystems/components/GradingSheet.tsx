@@ -142,7 +142,7 @@ export function GradingSheet({ school, onClose, canDelete, onUpdate, onDelete }:
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="size-8 text-muted-foreground hover:text-foreground shrink-0"
+                  className="size-9 rounded-full text-muted-foreground hover:text-foreground shrink-0"
                   onClick={onClose}
                   aria-label="Close details"
                 >
@@ -234,11 +234,11 @@ export function GradingSheet({ school, onClose, canDelete, onUpdate, onDelete }:
               </div>
 
               {editing && (
-                <div className="flex items-center justify-end gap-2.5 border-t border-border p-4 bg-card/60">
+                <div className="flex items-center justify-end gap-3 border-t border-border p-4 bg-card/60">
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
+                    className="h-10 px-4 text-sm font-medium"
                     onClick={() => {
                       setEditing(false);
                       setError("");
@@ -248,7 +248,12 @@ export function GradingSheet({ school, onClose, canDelete, onUpdate, onDelete }:
                   >
                     Cancel
                   </Button>
-                  <Button type="button" size="sm" className="px-5 font-semibold" onClick={handleSave} disabled={saving}>
+                  <Button
+                    type="button"
+                    className="h-10 px-5 text-sm font-semibold shadow-xs"
+                    onClick={handleSave}
+                    disabled={saving}
+                  >
                     {saving ? "Saving..." : "Save Changes"}
                   </Button>
                 </div>

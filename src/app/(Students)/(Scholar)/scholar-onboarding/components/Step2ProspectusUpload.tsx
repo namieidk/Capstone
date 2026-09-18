@@ -195,7 +195,7 @@ export function Step2ProspectusUpload({ existingProspectus, onSuccess, onBack }:
           >
             {uploading ? (
               <>
-                <Loader2 className="size-4 animate-spin mr-2" /> Running OCR Ingestion...
+                <Loader2 className="size-4 animate-spin mr-2" /> Processing Document...
               </>
             ) : (
               <>

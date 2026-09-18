@@ -141,6 +141,9 @@ function getRoleTarget(
     }
     return "/scholardashboard";
   }
+  if (user.role === "APPLICANT") {
+    return "/ApplicantsApplication";
+  }
   return DASHBOARD_MAP[user.role] ?? "/";
 }
 

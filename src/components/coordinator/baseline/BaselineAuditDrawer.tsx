@@ -19,6 +19,7 @@ import {
   freezeBaseline,
   getCoordinatorBaselineReview,
   type ProspectusSubject,
+  type ScholarProspectus,
   type SchoolGradingSystem,
   type UpdateProspectusSubjectInput,
   unfreezeBaseline,
@@ -55,18 +56,7 @@ interface BaselineReviewResponse {
     academic_baseline_status: string;
   };
   school_grading_system?: SchoolGradingSystem | null;
-  prospectus?: {
-    prospectus_id: number;
-    scholar_profile_id: number;
-    curriculum_year: string;
-    course_code?: string | null;
-    course_name: string;
-    total_units?: number | null;
-    is_frozen: boolean;
-    frozen_at?: string | null;
-    status: string;
-    subjects?: ProspectusSubject[];
-  } | null;
+  prospectus?: ScholarProspectus | null;
   documents?: ReviewDocument[];
   metrics: {
     total_subjects: number;
@@ -220,9 +210,19 @@ export function BaselineAuditDrawer({ scholarProfileId, open, onOpenChange, onSu
 
           <div className="flex items-center gap-2">
             {isFrozen ? (
-              <Badge className="bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border-emerald-600/30 gap-1 text-xs py-1">
-                <Lock className="w-3.5 h-3.5" /> Baseline Locked
-              </Badge>
+              <div className="flex flex-col items-end">
+                <Badge className="bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border-emerald-600/30 gap-1 text-xs py-1">
+                  <Lock className="w-3.5 h-3.5" /> Baseline Locked
+                </Badge>
+                {data?.prospectus?.frozen_by_employee && (
+                  <span className="text-[11px] text-muted-foreground mt-0.5">
+                    by {data.prospectus.frozen_by_employee.first_name} {data.prospectus.frozen_by_employee.last_name}
+                    {data.prospectus.frozen_by_employee.user?.role
+                      ? ` (${data.prospectus.frozen_by_employee.user.role.charAt(0) + data.prospectus.frozen_by_employee.user.role.slice(1).toLowerCase()})`
+                      : ""}
+                  </span>
+                )}
+              </div>
             ) : (
               <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 text-xs py-1">
                 Awaiting Coordinator Approval
@@ -332,6 +332,54 @@ export function BaselineAuditDrawer({ scholarProfileId, open, onOpenChange, onSu
                   </div>
                 )}
               </div>
+
+              {/* Audit Lock Banner */}
+              {isFrozen && (
+                <div className="p-3 bg-emerald-50/80 border border-emerald-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-emerald-950">
+                  <div className="flex items-center gap-2.5">
+                    <div className="size-7 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
+                      <Lock className="size-3.5" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-emerald-900">Academic Baseline Frozen & Audited</p>
+                      <p className="text-[11px] text-emerald-800/90">
+                        Approved by{" "}
+                        <strong>
+                          {data.prospectus?.frozen_by_employee
+                            ? `${data.prospectus.frozen_by_employee.first_name} ${data.prospectus.frozen_by_employee.last_name}`
+                            : "Authorized Staff"}
+                        </strong>
+                        {data.prospectus?.frozen_by_employee?.user?.role && (
+                          <span>
+                            {" "}
+                            (
+                            {data.prospectus.frozen_by_employee.user.role.charAt(0) +
+                              data.prospectus.frozen_by_employee.user.role.slice(1).toLowerCase()}
+                            )
+                          </span>
+                        )}
+                        {data.prospectus?.frozen_by_employee?.title && (
+                          <span> • {data.prospectus.frozen_by_employee.title}</span>
+                        )}
+                        {data.prospectus?.frozen_at && (
+                          <span>
+                            {" "}
+                            on{" "}
+                            {new Date(data.prospectus.frozen_at).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge className="bg-emerald-600 text-white text-[10px] font-semibold self-start sm:self-auto">
+                    Verified Baseline
+                  </Badge>
+                </div>
+              )}
 
               {/* Quick-Audit Metric Bar */}
               <div className="grid grid-cols-4 gap-2 text-xs">

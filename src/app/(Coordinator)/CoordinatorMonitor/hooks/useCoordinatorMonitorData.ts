@@ -104,6 +104,10 @@ export function useCoordinatorMonitorData() {
     socket.on("contract:signed", handleRefresh);
     socket.on("disbursement:updated", handleRefresh);
     socket.on("grade_report:submitted", handleRefresh);
+    socket.on("grade_report:verified", handleRefresh);
+    socket.on("document:confirmed_by_applicant", handleRefresh);
+    socket.on("document:verified", handleRefresh);
+    socket.on("document:changes_requested", handleRefresh);
 
     return () => {
       socket.off("baseline:submitted_for_review", handleRefresh);
@@ -118,6 +122,10 @@ export function useCoordinatorMonitorData() {
       socket.off("contract:signed", handleRefresh);
       socket.off("disbursement:updated", handleRefresh);
       socket.off("grade_report:submitted", handleRefresh);
+      socket.off("grade_report:verified", handleRefresh);
+      socket.off("document:confirmed_by_applicant", handleRefresh);
+      socket.off("document:verified", handleRefresh);
+      socket.off("document:changes_requested", handleRefresh);
     };
   }, [socket, refreshAll]);
 

@@ -20,7 +20,7 @@ const ROLE_DASHBOARDS: Record<string, string> = {
   COORDINATOR: "/CoordinatorDashboard",
   GRANTOR: "/grantDashboard",
   SCHOLAR: "/scholardashboard",
-  APPLICANT: "/ApplicantsDashboard",
+  APPLICANT: "/ApplicantsApplication",
 };
 
 interface JwtPayload {

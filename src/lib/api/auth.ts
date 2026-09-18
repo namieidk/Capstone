@@ -29,6 +29,21 @@ export interface User {
     scholarship_track?: string;
     relative_employee?: string;
     academic_baseline_status?: string;
+    avatar_url?: string | null;
+    banner_url?: string | null;
+    bio?: string | null;
+    home_address?: string | null;
+    school_grading_system?: {
+      school_id?: number;
+      school_name?: string;
+      grading_scale?: string;
+      passing_grade?: number;
+      highest_grade?: number;
+      failing_grade?: number;
+      min_grade?: number;
+      max_grade?: number;
+      special_codes?: Record<string, string>;
+    } | null;
   };
   employee?: {
     employee_id: number;

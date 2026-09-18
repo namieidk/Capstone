@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BillingAssessmentSummary } from "./components/BillingAssessmentSummary";
+import { EndorsementFinishedCard } from "./components/EndorsementFinishedCard";
 import { EnrolledSubjectsReview } from "./components/EnrolledSubjectsReview";
 import { EnrollmentAuditSummaryCard } from "./components/EnrollmentAuditSummaryCard";
+import { EnrollmentPendingReviewCard } from "./components/EnrollmentPendingReviewCard";
 import { EnrollmentUploadSection } from "./components/EnrollmentUploadSection";
 import { ScholarTermContextCard } from "./components/ScholarTermContextCard";
 import { useScholarEnrollmentState } from "./hooks/useScholarEnrollmentState";
@@ -54,6 +56,10 @@ export default function ScholarEnrollmentPage() {
   } = useScholarEnrollmentState();
 
   const isDraft = status === "DRAFT";
+  const isApproved = status === "APPROVED";
+  const isPending = status === "PENDING_REVIEW";
+  const hasAlreadySubmitted = isApproved || isPending;
+  const totalUnits = enrolledSubjects.reduce((sum, s) => sum + (Number(s.units) || 0), 0);
 
   return (
     <div className="flex min-h-full flex-col bg-[#FAF9F7]">
@@ -101,6 +107,21 @@ export default function ScholarEnrollmentPage() {
             {/* Header Scholar & Term Context Card */}
             <ScholarTermContextCard enrollmentState={enrollmentState} loading={loading} onRefresh={fetchState} />
 
+            {/* If endorsement has completed, show dedicated EndorsementFinishedCard */}
+            {isApproved && (
+              <EndorsementFinishedCard
+                enrollmentState={enrollmentState}
+                totalAssessment={totalAssessment}
+                subjectsCount={enrolledSubjects.length}
+                totalUnits={totalUnits}
+              />
+            )}
+
+            {/* If pending coordinator review, show dedicated pending card */}
+            {isPending && (
+              <EnrollmentPendingReviewCard coordinatorNotes={enrollmentState.enrollment?.coordinator_notes} />
+            )}
+
             {/* Upload Dropzones & Mode Toggle */}
             <EnrollmentUploadSection
               isConsolidated={isConsolidated}
@@ -147,19 +168,21 @@ export default function ScholarEnrollmentPage() {
               isReadOnly={isReadOnly}
             />
 
-            {/* Automated Audit Summary Card & Actions */}
-            <EnrollmentAuditSummaryCard
-              auditResult={auditResult}
-              isSubmitting={isSubmitting}
-              isSavingDraft={isSavingDraft}
-              canSubmit={enrolledSubjects.length > 0 && totalAssessment > 0}
-              status={status}
-              coordinatorNotes={enrollmentState.enrollment?.coordinator_notes}
-              onSubmit={handleSubmit}
-              onSaveDraft={handleSaveDraft}
-              onDiscardDraft={handleDiscardDraft}
-              hasDraft={isDraft || enrolledSubjects.length > 0 || totalAssessment > 0}
-            />
+            {/* Automated Baseline Audit Pre-Check Card & Actions (Hidden if scholar has already submitted) */}
+            {!hasAlreadySubmitted && (
+              <EnrollmentAuditSummaryCard
+                auditResult={auditResult}
+                isSubmitting={isSubmitting}
+                isSavingDraft={isSavingDraft}
+                canSubmit={enrolledSubjects.length > 0 && totalAssessment > 0}
+                status={status}
+                coordinatorNotes={enrollmentState.enrollment?.coordinator_notes}
+                onSubmit={handleSubmit}
+                onSaveDraft={handleSaveDraft}
+                onDiscardDraft={handleDiscardDraft}
+                hasDraft={isDraft || enrolledSubjects.length > 0 || totalAssessment > 0}
+              />
+            )}
           </>
         )}
       </div>

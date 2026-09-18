@@ -241,7 +241,7 @@ export function CcgUploadCard({ onSuccess }: CcgUploadCardProps) {
       const res = await uploadDocuments([file], "CCG");
       setDoc(res);
       setAnalyzingOcr(true);
-      toast.success("Document uploaded! AI OCR is extracting course grades...");
+      toast.success("Document uploaded! Extracting course grades...");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to upload CCG.");
     } finally {

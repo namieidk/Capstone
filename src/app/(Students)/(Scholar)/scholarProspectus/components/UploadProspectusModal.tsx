@@ -96,11 +96,11 @@ export function UploadProspectusModal({ open, onOpenChange, onSuccess }: UploadP
           <div className="p-3.5 bg-tint/50 rounded-xl text-xs space-y-1 text-muted-foreground border border-line">
             <div className="font-bold text-navy flex items-center gap-1.5 text-[11px]">
               <Sparkles className="size-3.5 text-amber" />
-              Automated OCR Extraction
+              Automated Curriculum Extraction
             </div>
             <p className="text-[11px] leading-relaxed">
-              Our Vision OCR parser reads course codes, units, descriptive titles, and prerequisites across all 4 years
-              to build your academic checklist.
+              Our document parser reads course codes, units, descriptive titles, and prerequisites across all 4 years to
+              build your academic checklist.
             </p>
           </div>
 

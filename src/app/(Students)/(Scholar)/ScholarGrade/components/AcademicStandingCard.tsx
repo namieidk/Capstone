@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/contexts/AuthContext";
 import type { GradeReport } from "@/lib/api/documents";
 import { formatRetentionThreshold } from "@/lib/formatters";
 
@@ -23,6 +24,7 @@ export function AcademicStandingCard({
   loading = false,
   gradeThreshold = 90,
 }: AcademicStandingCardProps) {
+  const { user } = useAuth();
   if (loading) {
     return (
       <Card className="rounded-[18px]! border-line bg-white shadow-va-sm">
@@ -52,10 +54,12 @@ export function AcademicStandingCard({
   const appealApproved = latestReport?.appeal_status === "APPROVED";
 
   const gwaValue = latestReport ? Number(latestReport.gpa).toFixed(2) : "—";
-  const thresholdLabel = formatRetentionThreshold(
-    gradeThreshold,
-    latestReport?.scholar_profile?.school_grading_system ?? null,
-  );
+  const scholarProfile = user?.scholar_profile;
+  const schoolGrading =
+    latestReport?.scholar_profile?.school_grading_system ??
+    scholarProfile?.school_grading_system ??
+    (scholarProfile?.school_name ? { school_name: scholarProfile.school_name } : null);
+  const thresholdLabel = formatRetentionThreshold(gradeThreshold, schoolGrading);
 
   return (
     <Card className="rounded-[18px]! border-line bg-white shadow-va-sm">
