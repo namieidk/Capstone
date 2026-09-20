@@ -531,6 +531,24 @@ export function PaymentsIcon() {
     </svg>
   );
 }
+export function ChevronDownIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  );
+}
 export function ClockIcon() {
   return (
     <svg
@@ -663,6 +681,9 @@ export interface PaymentRecord {
   term: string;
   scheduledDate: string;
   status: "Paid" | "Scheduled" | "On hold";
+  // Older payments (before the current term). Shown in the Payment page
+  // drawer's "View full history" view.
+  paymentHistory: HistoryPaymentRecord[];
 }
 
 export interface ArchivedScholar {
@@ -1070,6 +1091,11 @@ export const PAYMENT_RECORDS: PaymentRecord[] = [
     term: "Q3 2026",
     scheduledDate: "Jul 15, 2026",
     status: "Scheduled",
+    paymentHistory: [
+      { term: "Q2 2026", amount: 8000, date: "Apr 15, 2026", status: "Paid" },
+      { term: "Q1 2026", amount: 8000, date: "Jan 15, 2026", status: "Paid" },
+      { term: "Q4 2025", amount: 8000, date: "Oct 15, 2025", status: "Paid" },
+    ],
   },
   {
     id: 2,
@@ -1080,6 +1106,10 @@ export const PAYMENT_RECORDS: PaymentRecord[] = [
     term: "Q3 2026",
     scheduledDate: "Jul 15, 2026",
     status: "Scheduled",
+    paymentHistory: [
+      { term: "Q2 2026", amount: 8000, date: "Apr 15, 2026", status: "Paid" },
+      { term: "Q1 2026", amount: 8000, date: "Jan 15, 2026", status: "Paid" },
+    ],
   },
   {
     id: 3,
@@ -1090,6 +1120,10 @@ export const PAYMENT_RECORDS: PaymentRecord[] = [
     term: "Q3 2026",
     scheduledDate: "Jul 15, 2026",
     status: "On hold",
+    paymentHistory: [
+      { term: "Q2 2026", amount: 8000, date: "Apr 15, 2026", status: "Paid" },
+      { term: "Q1 2026", amount: 8000, date: "Jan 15, 2026", status: "Paid" },
+    ],
   },
   {
     id: 4,
@@ -1100,6 +1134,11 @@ export const PAYMENT_RECORDS: PaymentRecord[] = [
     term: "Q3 2026",
     scheduledDate: "Jul 15, 2026",
     status: "Paid",
+    paymentHistory: [
+      { term: "Q2 2026", amount: 8000, date: "Apr 15, 2026", status: "Paid" },
+      { term: "Q1 2026", amount: 8000, date: "Jan 15, 2026", status: "Paid" },
+      { term: "Q4 2025", amount: 8000, date: "Oct 15, 2025", status: "Paid" },
+    ],
   },
   {
     id: 5,
@@ -1110,6 +1149,11 @@ export const PAYMENT_RECORDS: PaymentRecord[] = [
     term: "Q3 2026",
     scheduledDate: "Jul 15, 2026",
     status: "On hold",
+    paymentHistory: [
+      { term: "Q2 2026", amount: 8000, date: "Apr 15, 2026", status: "Paid" },
+      { term: "Q1 2026", amount: 8000, date: "Jan 15, 2026", status: "Paid" },
+      { term: "Q4 2025", amount: 8000, date: "Oct 15, 2025", status: "Paid" },
+    ],
   },
 ];
 
@@ -1574,6 +1618,38 @@ export const s: Record<string, CSSProperties> = {
   pageSub: { fontSize: "0.96rem", color: "#7a7a74", marginBottom: 24 },
 
   statRow: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 18, margin: "28px 0" },
+
+  // ---- Summary cards (icon box + label + value), used on the Payment page ----
+  summaryCard: {
+    background: WHITE,
+    border: BORDER_SUBTLE,
+    borderRadius: 18,
+    padding: "22px 24px",
+    boxShadow: SHADOW_SM,
+    display: "flex",
+    alignItems: "center",
+    gap: 16,
+    minWidth: 0,
+  },
+  summaryIconBox: {
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  summaryLabel: { fontSize: "0.8rem", color: "#7a7a74", fontWeight: 500, marginBottom: 4 },
+  summaryValue: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: "1.6rem",
+    fontWeight: 700,
+    color: NAVY,
+    lineHeight: 1.1,
+    whiteSpace: "nowrap",
+  },
+
   pipelineCard: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 16, padding: "20px 22px" },
   pipelineTopRow: {
     display: "flex",
@@ -1649,6 +1725,94 @@ export const s: Record<string, CSSProperties> = {
   filterChipCount: { opacity: 0.65, fontWeight: 500 },
 
   tableWrap: { background: WHITE, border: `1px solid ${LINE}`, borderRadius: 18, padding: "8px 8px", marginBottom: 8 },
+
+  // ---- Table header row: "X total ___" count + filter dropdown ----
+  tableHeaderRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 12,
+    padding: "6px 14px 18px",
+  },
+  tableHeaderCount: { fontSize: "0.94rem", color: "#55554f" },
+  tableFilterSelect: {
+    appearance: "none",
+    WebkitAppearance: "none",
+    background: WHITE,
+    border: `1px solid ${LINE}`,
+    borderRadius: 999,
+    padding: "9px 34px 9px 16px",
+    fontSize: "0.86rem",
+    fontWeight: 600,
+    color: "#2B2B28",
+    fontFamily: "'Inter', sans-serif",
+    cursor: "pointer",
+  },
+  tableFilterWrap: { position: "relative", display: "inline-flex", alignItems: "center" },
+  tableFilterChevron: {
+    position: "absolute",
+    right: 14,
+    pointerEvents: "none",
+    color: "#8a8a84",
+    display: "flex",
+  },
+
+  // ---- Flat status pill: solid for the positive state, outline for the rest ----
+  statusPillSolid: {
+    fontSize: "0.8rem",
+    fontWeight: 700,
+    padding: "7px 16px",
+    borderRadius: 999,
+    whiteSpace: "nowrap",
+    background: NAVY,
+    color: WHITE,
+    display: "inline-block",
+  },
+  statusPillOutline: {
+    fontSize: "0.8rem",
+    fontWeight: 700,
+    padding: "6.5px 15px",
+    borderRadius: 999,
+    whiteSpace: "nowrap",
+    background: WHITE,
+    border: `1.3px solid ${LINE}`,
+    color: "#55554f",
+    display: "inline-block",
+  },
+  statusPillOutlineWarn: {
+    fontSize: "0.8rem",
+    fontWeight: 700,
+    padding: "6.5px 15px",
+    borderRadius: 999,
+    whiteSpace: "nowrap",
+    background: WARN_BG,
+    border: `1.3px solid ${WARN}`,
+    color: WARN,
+    display: "inline-block",
+  },
+  statusPillOutlineBad: {
+    fontSize: "0.8rem",
+    fontWeight: 700,
+    padding: "6.5px 15px",
+    borderRadius: 999,
+    whiteSpace: "nowrap",
+    background: BAD_BG,
+    border: `1.3px solid ${BAD}`,
+    color: BAD,
+    display: "inline-block",
+  },
+
+  // ---- Borderless eye/view icon button (no circle background) ----
+  viewIconBtn: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#55554f",
+    padding: 6,
+    background: "none",
+    border: "none",
+  },
   th: {
     textAlign: "left",
     fontSize: "0.78rem",
@@ -1664,6 +1828,20 @@ export const s: Record<string, CSSProperties> = {
   tdNameRow: { display: "flex", alignItems: "center", gap: 12 },
   tdName: { fontSize: "0.92rem", fontWeight: 700, color: NAVY },
   tdSub: { fontSize: "0.78rem", color: "#9a9a94" },
+  // Small initials avatar shown next to the scholar name in table rows.
+  tdAvatar: {
+    width: 38,
+    height: 38,
+    borderRadius: "50%",
+    background: AMBER_BG,
+    color: "#7A5C0A",
+    fontWeight: 700,
+    fontSize: "0.78rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
   stageTag: { fontSize: "0.76rem", fontWeight: 700, padding: "6px 13px", borderRadius: 999, whiteSpace: "nowrap" },
   tableActionBtn: {
     display: "flex",
@@ -1680,27 +1858,108 @@ export const s: Record<string, CSSProperties> = {
   },
   gwaTrendCell: { display: "inline-flex", alignItems: "center", gap: 6 },
 
+  // ---- Drawer overlay/panel: blurred backdrop, right-slide panel ----
   drawerOverlay: {
     position: "fixed",
     inset: 0,
-    background: "rgba(20,33,58,0.35)",
+    background: "rgba(10,20,35,0.55)",
+    backdropFilter: "blur(6px)",
+    WebkitBackdropFilter: "blur(6px)",
     display: "flex",
     justifyContent: "flex-end",
     zIndex: 200,
   },
   drawerPanel: {
-    width: 440,
+    width: 460,
     maxWidth: "92vw",
     background: WHITE,
     height: "100%",
     overflowY: "auto",
-    padding: "32px 30px",
-    boxShadow: "-20px 0 60px -20px rgba(0,0,0,0.2)",
+    boxShadow: "-24px 0 60px -12px rgba(10,20,35,0.35)",
   },
-  drawerHeader: { display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 26 },
-  drawerName: { fontSize: "1.3rem", fontWeight: 700, color: NAVY, marginBottom: 3 },
-  drawerMeta: { fontSize: "0.84rem", color: "#8a8a84" },
-  drawerCloseBtn: { color: "#9a9a94", flexShrink: 0 },
+
+  // ---- Drawer hero header (gradient banner + avatar + status pill) ----
+  drawerHero: {
+    background: "linear-gradient(135deg, #0a4f42 0%, #14283F 100%)",
+    padding: "30px 28px 32px",
+    position: "relative",
+    color: WHITE,
+    borderBottomLeftRadius: 26,
+    borderBottomRightRadius: 26,
+  },
+  drawerHeroTopRow: { display: "flex", justifyContent: "flex-end", marginBottom: 16 },
+  drawerHeroCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: "50%",
+    background: "rgba(255,255,255,0.16)",
+    color: WHITE,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  drawerHeroAvatar: {
+    width: 68,
+    height: 68,
+    borderRadius: "50%",
+    background: "rgba(255,255,255,0.16)",
+    border: "3px solid rgba(255,255,255,0.35)",
+    color: WHITE,
+    fontFamily: "'Inter', sans-serif",
+    fontWeight: 700,
+    fontSize: "1.4rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 14,
+  },
+  drawerHeroName: { fontSize: "1.32rem", fontWeight: 700, color: WHITE, marginBottom: 4 },
+  drawerHeroMeta: { fontSize: "0.85rem", color: "rgba(255,255,255,0.72)", marginBottom: 14 },
+  drawerHeroStatusPill: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+    fontSize: "0.78rem",
+    fontWeight: 700,
+    padding: "6px 14px",
+    borderRadius: 999,
+    background: "rgba(255,255,255,0.16)",
+    color: WHITE,
+  },
+
+  drawerBody: { padding: "24px 28px 30px" },
+
+  // ---- Stat card grid (GWA, docs, disbursement, trend) ----
+  drawerStatGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 24 },
+  drawerStatCard: {
+    background: WHITE,
+    border: `1px solid ${LINE}`,
+    borderRadius: 14,
+    padding: "15px 16px",
+    boxShadow: SHADOW_SM,
+  },
+  drawerStatIconBox: {
+    width: 30,
+    height: 30,
+    borderRadius: 9,
+    background: TINT,
+    color: NAVY,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
+  },
+  drawerStatLabel: { fontSize: "0.72rem", color: "#9a9a94", marginBottom: 3 },
+  drawerStatValue: {
+    fontSize: "1.02rem",
+    fontWeight: 700,
+    color: NAVY,
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+  },
+
   drawerInfoGrid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
@@ -2091,6 +2350,31 @@ export const s: Record<string, CSSProperties> = {
   appNoteIcon: { color: AMBER, display: "flex", flexShrink: 0, marginTop: 2 },
   appNoteText: { fontSize: "0.92rem", color: "#3a3a36", lineHeight: 1.6 },
 
+  // ---- Payment card (redesigned, gradient) ----
+  drawerPayCardNew: {
+    position: "relative",
+    overflow: "hidden",
+    borderRadius: 16,
+    padding: "20px 22px",
+    marginBottom: 22,
+    background: "linear-gradient(135deg,#0a4f42 0%,#0d6f5c 100%)",
+    color: WHITE,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 14,
+  },
+  drawerPayCardTerm: {
+    fontSize: "0.72rem",
+    color: "rgba(255,255,255,0.72)",
+    marginBottom: 8,
+    textTransform: "uppercase",
+    letterSpacing: "0.06em",
+    fontWeight: 700,
+  },
+  drawerPayCardAmount: { fontSize: "1.55rem", fontWeight: 700, color: WHITE, fontFamily: "'Inter', sans-serif" },
+
+  // ---- Legacy flat payment card (kept for compatibility) ----
   drawerCurrentPayCard: {
     display: "flex",
     justifyContent: "space-between",
@@ -2122,10 +2406,6 @@ export const s: Record<string, CSSProperties> = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    background: WHITE,
-    border: `1px solid ${LINE}`,
-    borderRadius: 12,
-    padding: "13px 16px",
   },
   historyRowLeft: { display: "flex", flexDirection: "column", gap: 3 },
   historyRowTerm: { fontSize: "0.88rem", fontWeight: 700, color: NAVY },
@@ -2140,6 +2420,20 @@ export const s: Record<string, CSSProperties> = {
     fontWeight: 600,
     fontSize: "0.86rem",
     marginBottom: 20,
+  },
+
+  // ---- Timeline-style history rows (dot + connecting line + card) ----
+  historyRowNew: { display: "flex", gap: 12 },
+  historyDotCol: { display: "flex", flexDirection: "column", alignItems: "center", width: 14, flexShrink: 0 },
+  historyDot: { width: 10, height: 10, borderRadius: "50%", background: NAVY, marginTop: 8, flexShrink: 0 },
+  historyLine: { width: 2, flexGrow: 1, background: LINE, marginTop: 2, minHeight: 16 },
+  historyContentCard: {
+    flexGrow: 1,
+    background: WHITE,
+    border: `1px solid ${LINE}`,
+    borderRadius: 12,
+    padding: "13px 16px",
+    marginBottom: 14,
   },
 
   barChartRow: {

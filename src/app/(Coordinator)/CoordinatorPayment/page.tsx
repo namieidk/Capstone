@@ -1,41 +1,84 @@
 "use client";
 
-import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  AMBER,
+  ArrowRightIcon,
+  BAD,
+  BellIcon,
   BORDER_SUBTLE,
+  CalendarIcon,
   CheckCircleIcon,
-  DrawerInfoRow,
+  ChevronDownIcon,
+  ClockIcon,
+  GOOD,
+  type HistoryPaymentRecord,
   LINE,
+  MailIcon,
   MenuIcon,
   NAVY,
   PAYMENT_RECORDS,
   PAYMENT_STATUS_COLORS,
   type PaymentRecord,
-  SHADOW_SM,
+  PaymentsIcon,
   s,
+  SearchIcon,
+  SHADOW_SM,
   TINT,
   WHITE,
   XCircleIcon,
 } from "@/components/Coordinatorshared";
 import { useSidebar } from "@/components/SidebarContext";
 
-const PAYMENT_FILTERS: (PaymentRecord["status"] | "All")[] = ["All", "Paid", "Scheduled", "On hold"];
+type PaymentStatus = PaymentRecord["status"];
+type PaymentFilter = PaymentStatus | "All";
+type DrawerView = "overview" | "history";
+
+const PAYMENT_FILTERS: PaymentFilter[] = ["All", "Paid", "Scheduled", "On hold"];
 
 // Approx height (px) of a single table row, used to work out how many rows
 // fit on screen so the table adapts to the device instead of overflowing.
-const ROW_HEIGHT = 58;
-// Reserved space below the table card's top edge for its own header row,
-// the pagination row, and page padding.
-const RESERVED_HEIGHT = 210;
+const ROW_HEIGHT = 72;
+// Reserved space below the table card's top edge for its own header row
+// (count + filter), the column headings, the pagination row, and page padding.
+const RESERVED_HEIGHT = 250;
 const MIN_ROWS = 3;
+
+// Status pill inside the drawer hero (same look as the Monitor drawer).
+const HERO_PILL: Record<PaymentStatus, { bg: string; color: string }> = {
+  Paid: { bg: "rgba(221,238,227,0.9)", color: GOOD },
+  Scheduled: { bg: "rgba(252,238,196,0.9)", color: "#7A5C0A" },
+  "On hold": { bg: "rgba(246,228,223,0.9)", color: BAD },
+};
+
+function statusNote(r: PaymentRecord): string {
+  if (r.status === "Paid") return "This payment has been released to the scholar. No action needed.";
+  if (r.status === "Scheduled")
+    return `Scheduled for release on ${r.scheduledDate}. Mark it as paid once the transfer is confirmed.`;
+  return "Disbursement is on hold pending review of the scholar's documents and grades. Release it once resolved.";
+}
+
+// Current term on top, then the older payments from the record.
+function buildHistory(r: PaymentRecord): HistoryPaymentRecord[] {
+  return [
+    {
+      term: r.term,
+      amount: r.amount,
+      date: r.scheduledDate,
+      status: r.status === "Scheduled" ? "Pending" : r.status,
+    },
+    ...r.paymentHistory,
+  ];
+}
 
 export default function PaymentPage() {
   const { toggleMobile } = useSidebar();
 
   const [records, setRecords] = useState<PaymentRecord[]>(PAYMENT_RECORDS);
   const [selected, setSelected] = useState<PaymentRecord | null>(null);
-  const [filter, setFilter] = useState<PaymentRecord["status"] | "All">("All");
+  const [view, setView] = useState<DrawerView>("overview");
+  const [filter, setFilter] = useState<PaymentFilter>("All");
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -54,39 +97,83 @@ export default function PaymentPage() {
     return () => window.removeEventListener("resize", recalcPageSize);
   }, []);
 
+  const query = search.trim().toLowerCase();
+
   const totalDisbursed = records.filter((r) => r.status === "Paid").reduce((sum, r) => sum + r.amount, 0);
+  const paidCount = records.filter((r) => r.status === "Paid").length;
   const scheduledCount = records.filter((r) => r.status === "Scheduled").length;
   const onHoldCount = records.filter((r) => r.status === "On hold").length;
+  const nextRecord = records.find((r) => r.status === "Scheduled");
+  const pct = (n: number) => (records.length ? Math.round((n / records.length) * 100) : 0);
+
+  const counts: Record<PaymentFilter, number> = {
+    All: records.length,
+    Paid: paidCount,
+    Scheduled: scheduledCount,
+    "On hold": onHoldCount,
+  };
+
+  const filtered = useMemo(
+    () =>
+      records.filter((r) => {
+        const matchesQuery =
+          !query || r.name.toLowerCase().includes(query) || r.course.toLowerCase().includes(query);
+        const matchesFilter = filter === "All" || r.status === filter;
+        return matchesQuery && matchesFilter;
+      }),
+    [records, query, filter],
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const markPaid = (id: number) => {
     setRecords((prev) => prev.map((r) => (r.id === id ? { ...r, status: "Paid" } : r)));
     setSelected((sel) => (sel && sel.id === id ? { ...sel, status: "Paid" } : sel));
   };
 
-  const filtered = filter === "All" ? records : records.filter((r) => r.status === filter);
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
-  const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  function openPayment(r: PaymentRecord) {
+    setSelected(r);
+    setView("overview");
+  }
 
-  const handleFilterChange = (f: PaymentRecord["status"] | "All") => {
+  function closeDrawer() {
+    setSelected(null);
+    setView("overview");
+  }
+
+  function handleSearchChange(value: string) {
+    setSearch(value);
+    setPage(1);
+  }
+
+  function handleFilterChange(f: PaymentFilter) {
     setFilter(f);
     setPage(1);
-  };
+  }
 
-  const counts: Record<string, number> = {
-    All: records.length,
-    Paid: records.filter((r) => r.status === "Paid").length,
-    Scheduled: records.filter((r) => r.status === "Scheduled").length,
-    "On hold": records.filter((r) => r.status === "On hold").length,
-  };
+  const history = selected ? buildHistory(selected) : [];
+  const paidHistory = history.filter((h) => h.status === "Paid");
+  const totalReceived = paidHistory.reduce((sum, h) => sum + h.amount, 0);
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <style>{`
-        .filter-pill { transition: border-color 0.15s ease, background 0.15s ease; }
-        .filter-pill:hover { border-color: rgba(30, 58, 95, 0.35); }
         .filter-select:focus { outline: none; }
         .filter-select option { color: ${NAVY}; background: ${WHITE}; }
+
+        @keyframes paymentOverlayFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes paymentPanelSlideIn {
+          from { opacity: 0; transform: translate3d(32px, 0, 0); }
+          to { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+        .payment-drawer-overlay { animation: paymentOverlayFadeIn 0.2s ease both; }
+        .payment-drawer-panel { animation: paymentPanelSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
         @media (max-width: 720px) {
           .payment-stat-row { grid-template-columns: repeat(2, 1fr) !important; }
           .payment-table th, .payment-table td { padding-left: 8px !important; padding-right: 8px !important; font-size: 0.78rem !important; }
@@ -106,19 +193,20 @@ export default function PaymentPage() {
           <h1 style={s.topbarGreeting}>Payments</h1>
           <p style={s.topbarSub}>Track disbursements, schedules, and payment status.</p>
         </div>
-        <div style={{ ...s.topbarRight, marginLeft: "auto" }}>
-          <PillFilter>
-            <select
-              className="filter-select"
-              value={filter}
-              onChange={(e) => handleFilterChange(e.target.value as PaymentRecord["status"] | "All")}
-              style={{ ...pillSelectStyle, minWidth: 180, width: 180 }}
-            >
-              {PAYMENT_FILTERS.map((f) => (
-                <option key={f} value={f}>{`${f} (${counts[f]})`}</option>
-              ))}
-            </select>
-          </PillFilter>
+        <div style={s.topbarRight}>
+          <div className="vc-topbar-search" style={s.searchBox}>
+            <SearchIcon />
+            <input
+              placeholder="Search scholar name or course..."
+              style={s.searchInput}
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+            />
+          </div>
+          <button type="button" style={s.bellBtn} aria-label="Notifications">
+            <BellIcon />
+            <span style={{ ...s.bellDot, background: AMBER }} />
+          </button>
         </div>
       </header>
 
@@ -127,118 +215,32 @@ export default function PaymentPage() {
           {/* ---------------- Summary cards ---------------- */}
           <div
             className="vc-stat-row payment-stat-row"
-            style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, marginBottom: 28 }}
+            style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, marginBottom: 26 }}
           >
-            <div
-              style={{
-                background: WHITE,
-                border: BORDER_SUBTLE,
-                borderRadius: 18,
-                padding: "26px 28px",
-                boxShadow: SHADOW_SM,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
-              }}
-            >
-              <p style={{ fontSize: "0.84rem", color: "#7a7a74", fontWeight: 500 }}>Disbursed this term</p>
-              <p
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: "1.9rem",
-                  fontWeight: 700,
-                  color: NAVY,
-                  lineHeight: 1,
-                  textAlign: "right",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                ₱{totalDisbursed.toLocaleString()}
-              </p>
-            </div>
-            <div
-              style={{
-                background: WHITE,
-                border: BORDER_SUBTLE,
-                borderRadius: 18,
-                padding: "26px 28px",
-                boxShadow: SHADOW_SM,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
-              }}
-            >
-              <p style={{ fontSize: "0.84rem", color: "#7a7a74", fontWeight: 500 }}>Scheduled</p>
-              <p
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: "1.9rem",
-                  fontWeight: 700,
-                  color: NAVY,
-                  lineHeight: 1,
-                  textAlign: "right",
-                }}
-              >
-                {scheduledCount}
-              </p>
-            </div>
-            <div
-              style={{
-                background: WHITE,
-                border: BORDER_SUBTLE,
-                borderRadius: 18,
-                padding: "26px 28px",
-                boxShadow: SHADOW_SM,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
-              }}
-            >
-              <p style={{ fontSize: "0.84rem", color: "#7a7a74", fontWeight: 500 }}>On hold</p>
-              <p
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: "1.9rem",
-                  fontWeight: 700,
-                  color: NAVY,
-                  lineHeight: 1,
-                  textAlign: "right",
-                }}
-              >
-                {onHoldCount}
-              </p>
-            </div>
-            <div
-              style={{
-                background: WHITE,
-                border: BORDER_SUBTLE,
-                borderRadius: 18,
-                padding: "26px 28px",
-                boxShadow: SHADOW_SM,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
-              }}
-            >
-              <p style={{ fontSize: "0.84rem", color: "#7a7a74", fontWeight: 500 }}>Next disbursement</p>
-              <p
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: "1.3rem",
-                  fontWeight: 700,
-                  color: NAVY,
-                  lineHeight: 1.2,
-                  textAlign: "right",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                Jul 15, 2026
-              </p>
-            </div>
+            <StatCard
+              label="Disbursed this term"
+              value={`₱${totalDisbursed.toLocaleString()}`}
+              percent={pct(paidCount)}
+              caption={`${paidCount} of ${records.length} payments released`}
+            />
+            <StatCard
+              label="Scheduled"
+              value={String(scheduledCount)}
+              percent={pct(scheduledCount)}
+              caption={`${scheduledCount} of ${records.length} payments queued`}
+            />
+            <StatCard
+              label="On hold"
+              value={String(onHoldCount)}
+              percent={pct(onHoldCount)}
+              caption={`${onHoldCount} of ${records.length} payments need review`}
+            />
+            <StatCard
+              label="Next disbursement"
+              value={nextRecord ? nextRecord.scheduledDate : "—"}
+              caption={nextRecord ? `${nextRecord.term} release` : "Nothing scheduled"}
+              valueSize="1.5rem"
+            />
           </div>
 
           {/* ---------------- Table card ---------------- */}
@@ -249,22 +251,36 @@ export default function PaymentPage() {
               border: BORDER_SUBTLE,
               borderRadius: 18,
               boxShadow: SHADOW_SM,
-              padding: "16px 22px 8px",
+              padding: "22px 22px 8px",
             }}
           >
-            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: 6 }}>
-              <span style={{ fontSize: "0.8rem", color: "#9a9a94" }}>
-                {filtered.length === 0
-                  ? "0 shown"
-                  : `${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, filtered.length)} of ${filtered.length}`}
-              </span>
+            <div style={s.tableHeaderRow}>
+              <p style={s.tableHeaderCount}>{filtered.length} total payments</p>
+              <div style={s.tableFilterWrap}>
+                <select
+                  className="filter-select"
+                  value={filter}
+                  onChange={(e) => handleFilterChange(e.target.value as PaymentFilter)}
+                  style={s.tableFilterSelect}
+                  aria-label="Filter by status"
+                >
+                  {PAYMENT_FILTERS.map((f) => (
+                    <option key={f} value={f}>
+                      {f === "All" ? `All statuses (${counts[f]})` : `${f} (${counts[f]})`}
+                    </option>
+                  ))}
+                </select>
+                <span style={s.tableFilterChevron}>
+                  <ChevronDownIcon />
+                </span>
+              </div>
             </div>
 
             <div className="vc-table-scroll" style={{ width: "100%", overflowX: "auto" }}>
               <table className="payment-table" style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${LINE}` }}>
-                    <th style={{ ...s.th, background: "none", padding: "14px 14px", textAlign: "center" }}>Scholar</th>
+                    <th style={{ ...s.th, background: "none", padding: "14px 14px", textAlign: "left" }}>Scholar</th>
                     <th style={{ ...s.th, background: "none", textAlign: "center" }}>Amount</th>
                     <th className="payment-col-term" style={{ ...s.th, background: "none", textAlign: "center" }}>
                       Term
@@ -280,20 +296,29 @@ export default function PaymentPage() {
                   {paginated.map((r, i) => (
                     <tr
                       key={r.id}
-                      onClick={() => setSelected(r)}
+                      onClick={() => openPayment(r)}
                       style={{
                         borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`,
                         cursor: "pointer",
                         verticalAlign: "middle",
                       }}
                     >
-                      <td style={{ ...s.td, padding: "16px 14px", textAlign: "center" }}>
-                        <p style={s.tdName}>{r.name}</p>
-                        <p style={s.tdSub}>{r.course}</p>
+                      <td style={{ ...s.td, padding: "16px 14px", textAlign: "left" }}>
+                        <div style={s.tdNameRow}>
+                          <span style={s.tdAvatar}>{r.initials}</span>
+                          <div style={{ minWidth: 0 }}>
+                            <p style={s.tdName}>{r.name}</p>
+                            <p style={s.tdSub}>{r.course}</p>
+                          </div>
+                        </div>
                       </td>
-                      <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>₱{r.amount.toLocaleString()}</td>
-                      <td className="payment-col-term" style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>
-                        {r.term}
+                      <td style={{ ...s.td, color: NAVY, fontWeight: 700, textAlign: "center", whiteSpace: "nowrap" }}>
+                        ₱{r.amount.toLocaleString()}
+                      </td>
+                      <td className="payment-col-term" style={{ ...s.td, textAlign: "center" }}>
+                        <span style={{ ...s.stageTag, background: TINT, color: "#55554f", fontWeight: 600 }}>
+                          {r.term}
+                        </span>
                       </td>
                       <td className="payment-col-date" style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>
                         {r.scheduledDate}
@@ -304,7 +329,6 @@ export default function PaymentPage() {
                             ...s.stageTag,
                             background: PAYMENT_STATUS_COLORS[r.status].bg,
                             color: PAYMENT_STATUS_COLORS[r.status].text,
-                            fontWeight: 600,
                             display: "inline-flex",
                             alignItems: "center",
                             gap: 6,
@@ -327,21 +351,10 @@ export default function PaymentPage() {
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSelected(r);
+                            openPayment(r);
                           }}
                           aria-label="View payment"
-                          style={{
-                            width: 34,
-                            height: 34,
-                            borderRadius: "50%",
-                            border: `1.5px solid ${LINE}`,
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            background: WHITE,
-                            color: "#7a7a74",
-                            cursor: "pointer",
-                          }}
+                          style={s.viewIconBtn}
                         >
                           <EyeIcon />
                         </button>
@@ -354,96 +367,110 @@ export default function PaymentPage() {
 
             {filtered.length === 0 && (
               <p style={{ textAlign: "center", padding: "40px 0", color: "#9a9a94", fontSize: "0.9rem" }}>
-                No payments match this filter.
+                {query ? `No payments match "${search}".` : "No payments match this filter."}
               </p>
             )}
 
             {filtered.length > 0 && (
               <div
-                style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 8,
+                  flexWrap: "wrap",
+                  padding: "18px 0",
+                }}
               >
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 8,
-                    border: `1px solid ${LINE}`,
-                    background: WHITE,
-                    color: currentPage === 1 ? "#c7c7c2" : "#55554f",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: currentPage === 1 ? "default" : "pointer",
-                  }}
-                  aria-label="Previous page"
-                >
-                  <ChevronLeftIcon />
-                </button>
-                {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
+                <span style={{ fontSize: "0.8rem", color: "#9a9a94" }}>
+                  {`${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, filtered.length)} of ${filtered.length}`}
+                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <button
                     type="button"
-                    key={num}
-                    onClick={() => setPage(num)}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
                     style={{
                       width: 32,
                       height: 32,
                       borderRadius: 8,
-                      border: `1px solid ${num === currentPage ? NAVY : LINE}`,
-                      background: num === currentPage ? NAVY : WHITE,
-                      color: num === currentPage ? WHITE : "#55554f",
-                      fontSize: "0.82rem",
-                      fontWeight: 600,
-                      cursor: "pointer",
+                      border: `1px solid ${LINE}`,
+                      background: WHITE,
+                      color: currentPage === 1 ? "#c7c7c2" : "#55554f",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: currentPage === 1 ? "default" : "pointer",
                     }}
+                    aria-label="Previous page"
                   >
-                    {num}
+                    <ChevronLeftIcon />
                   </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 8,
-                    border: `1px solid ${LINE}`,
-                    background: WHITE,
-                    color: currentPage === totalPages ? "#c7c7c2" : "#55554f",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: currentPage === totalPages ? "default" : "pointer",
-                  }}
-                  aria-label="Next page"
-                >
-                  <ChevronRightIcon />
-                </button>
+                  {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
+                    <button
+                      type="button"
+                      key={num}
+                      onClick={() => setPage(num)}
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
+                        border: `1px solid ${num === currentPage ? NAVY : LINE}`,
+                        background: num === currentPage ? NAVY : WHITE,
+                        color: num === currentPage ? WHITE : "#55554f",
+                        fontSize: "0.82rem",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 8,
+                      border: `1px solid ${LINE}`,
+                      background: WHITE,
+                      color: currentPage === totalPages ? "#c7c7c2" : "#55554f",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: currentPage === totalPages ? "default" : "pointer",
+                    }}
+                    aria-label="Next page"
+                  >
+                    <ChevronRightIcon />
+                  </button>
+                </div>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* ---------------- Drawer ---------------- */}
+      {/* ---------------- Drawer (same design as Monitor) ---------------- */}
       {selected && (
         // biome-ignore lint/a11y/useSemanticElements: overlay backdrop acts as a dismiss button; div cannot be a real button (contains block content)
         <div
+          className="payment-drawer-overlay"
           style={s.drawerOverlay}
-          onClick={() => setSelected(null)}
+          onClick={closeDrawer}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              setSelected(null);
+              closeDrawer();
             }
           }}
         >
           <div
+            className="payment-drawer-panel"
             style={s.drawerPanel}
             onClick={(e) => e.stopPropagation()}
             role="dialog"
@@ -453,46 +480,172 @@ export default function PaymentPage() {
               }
             }}
           >
-            <div style={{ ...s.drawerHeader, marginBottom: 22 }}>
-              <span style={s.profileAvatar}>{selected.initials}</span>
-              <div style={{ flexGrow: 1 }}>
-                <h3 style={s.drawerName}>{selected.name}</h3>
-                <p style={s.drawerMeta}>{selected.course}</p>
-              </div>
-              <button type="button" onClick={() => setSelected(null)} style={s.drawerCloseBtn}>
-                <XCircleIcon />
-              </button>
-            </div>
-
-            <div style={{ ...s.drawerInfoGrid, marginBottom: 22, rowGap: 20 }}>
-              <DrawerInfoRow label="Amount" value={`₱${selected.amount.toLocaleString()}`} />
-              <DrawerInfoRow label="Term" value={selected.term} />
-              <DrawerInfoRow label="Scheduled date" value={selected.scheduledDate} />
-              <DrawerInfoRow label="Status" value={selected.status} />
-            </div>
-
-            <p style={{ ...s.drawerSectionLabel, marginBottom: 10 }}>Payment history</p>
-            <div style={{ ...s.drawerDocList, marginBottom: 26 }}>
-              <div style={s.drawerDocRow}>
-                <span>
-                  <CheckCircleIcon small />
-                </span>
-                <span style={s.drawerDocText}>Q2 2026 — ₱8,000 paid Apr 15, 2026</span>
-              </div>
-              <div style={s.drawerDocRow}>
-                <span>
-                  <CheckCircleIcon small />
-                </span>
-                <span style={s.drawerDocText}>Q1 2026 — ₱8,000 paid Jan 15, 2026</span>
-              </div>
-            </div>
-
-            <p style={{ ...s.drawerSectionLabel, marginBottom: 10 }}>Actions</p>
-            <div style={{ ...s.drawerStageActions, marginTop: 4 }}>
-              {selected.status !== "Paid" && (
-                <button type="button" onClick={() => markPaid(selected.id)} style={s.continueBtnSmall}>
-                  Mark as paid
+            {/* ---------------- Hero header ---------------- */}
+            <div style={s.drawerHero}>
+              <div style={s.drawerHeroTopRow}>
+                <button type="button" onClick={closeDrawer} style={s.drawerHeroCloseBtn} aria-label="Close">
+                  <XCircleIcon />
                 </button>
+              </div>
+              <div style={s.drawerHeroAvatar}>{selected.initials}</div>
+              <h3 style={s.drawerHeroName}>{selected.name}</h3>
+              <p style={s.drawerHeroMeta}>{selected.course}</p>
+              <span
+                style={{
+                  ...s.drawerHeroStatusPill,
+                  background: HERO_PILL[selected.status].bg,
+                  color: HERO_PILL[selected.status].color,
+                }}
+              >
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "currentColor",
+                    flexShrink: 0,
+                  }}
+                />
+                {selected.status}
+              </span>
+            </div>
+
+            <div style={s.drawerBody}>
+              {view === "overview" ? (
+                <>
+                  {/* ---------------- Stat cards ---------------- */}
+                  <div style={s.drawerStatGrid}>
+                    <div style={s.drawerStatCard}>
+                      <div style={s.drawerStatIconBox}>
+                        <PaymentsIcon />
+                      </div>
+                      <p style={s.drawerStatLabel}>Amount</p>
+                      <p style={s.drawerStatValue}>₱{selected.amount.toLocaleString()}</p>
+                    </div>
+                    <div style={s.drawerStatCard}>
+                      <div style={s.drawerStatIconBox}>
+                        <CalendarIcon />
+                      </div>
+                      <p style={s.drawerStatLabel}>Scheduled date</p>
+                      <p style={{ ...s.drawerStatValue, fontSize: "0.88rem" }}>{selected.scheduledDate}</p>
+                    </div>
+                    <div style={s.drawerStatCard}>
+                      <div style={s.drawerStatIconBox}>
+                        <CheckCircleIcon small />
+                      </div>
+                      <p style={s.drawerStatLabel}>Payments made</p>
+                      <p style={s.drawerStatValue}>{paidHistory.length}</p>
+                    </div>
+                    <div style={s.drawerStatCard}>
+                      <div style={s.drawerStatIconBox}>
+                        <PaymentsIcon />
+                      </div>
+                      <p style={s.drawerStatLabel}>Total received</p>
+                      <p style={{ ...s.drawerStatValue, fontSize: "0.88rem" }}>₱{totalReceived.toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  {/* ---------------- Payment card ---------------- */}
+                  <p style={s.drawerSectionLabel}>This term&apos;s payment</p>
+                  <div style={s.drawerPayCardNew}>
+                    <div>
+                      <p style={s.drawerPayCardTerm}>{selected.term}</p>
+                      <p style={s.drawerPayCardAmount}>₱{selected.amount.toLocaleString()}</p>
+                    </div>
+                    <span
+                      style={{
+                        ...s.stageTag,
+                        background: "rgba(255,255,255,0.18)",
+                        color: WHITE,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {selected.status}
+                    </span>
+                  </div>
+
+                  <div style={s.drawerHistoryBtnRow}>
+                    <button type="button" onClick={() => setView("history")} style={s.drawerHistoryBtn}>
+                      <ClockIcon /> View full history <ArrowRightIcon />
+                    </button>
+                  </div>
+
+                  {/* ---------------- Status note ---------------- */}
+                  <p style={s.drawerSectionLabel}>Status</p>
+                  <div style={s.appNoteCard}>
+                    <span style={s.appNoteIcon}>
+                      <PaymentsIcon />
+                    </span>
+                    <p style={s.appNoteText}>{statusNote(selected)}</p>
+                  </div>
+
+                  <div style={s.drawerStageActions}>
+                    {selected.status !== "Paid" && (
+                      <button type="button" onClick={() => markPaid(selected.id)} style={s.continueBtnSmall}>
+                        <CheckCircleIcon small /> Mark as paid
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      style={{
+                        ...s.backBtn,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 8,
+                        padding: "10px 18px",
+                        fontSize: "0.88rem",
+                      }}
+                    >
+                      <MailIcon small /> Message scholar
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <button type="button" onClick={() => setView("overview")} style={s.backToOverviewBtn}>
+                    ← Back to overview
+                  </button>
+
+                  <div style={s.historySection}>
+                    <p style={s.drawerSectionLabel}>Payment history</p>
+                    <div>
+                      {history.map((p, idx) => (
+                        <div key={`${p.term}-${p.date}-${p.amount}`} style={s.historyRowNew}>
+                          <div style={s.historyDotCol}>
+                            <span
+                              style={{
+                                ...s.historyDot,
+                                background: PAYMENT_STATUS_COLORS[p.status].text,
+                              }}
+                            />
+                            {idx !== history.length - 1 && <span style={s.historyLine} />}
+                          </div>
+                          <div style={s.historyContentCard}>
+                            <div style={s.historyRow}>
+                              <div style={s.historyRowLeft}>
+                                <span style={s.historyRowTerm}>{p.term}</span>
+                                <span style={s.historyRowSub}>{p.date}</span>
+                              </div>
+                              <div style={s.historyRowRight}>
+                                <span style={s.historyRowValue}>₱{p.amount.toLocaleString()}</span>
+                                <span
+                                  style={{
+                                    ...s.stageTag,
+                                    background: PAYMENT_STATUS_COLORS[p.status].bg,
+                                    color: PAYMENT_STATUS_COLORS[p.status].text,
+                                  }}
+                                >
+                                  {p.status}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -502,71 +655,119 @@ export default function PaymentPage() {
   );
 }
 
-/* ---------------- Pill filter (rounded navy dropdown, matches Admin) ---------------- */
+/* ---------------- Summary card (all four use this same design) ---------------- */
 
-const pillSelectStyle: React.CSSProperties = {
-  border: "none",
-  borderRadius: 999,
-  padding: "8px 28px 8px 14px",
-  fontSize: "0.8rem",
-  color: WHITE,
-  width: 180,
-  minWidth: 180,
-  height: 38,
-  background: "transparent",
-  outline: "none",
-  fontFamily: "'Inter', sans-serif",
-  appearance: "none",
-  WebkitAppearance: "none",
-  MozAppearance: "none",
-  cursor: "pointer",
-  fontWeight: 500,
-  textAlign: "center",
-  textAlignLast: "center",
-};
-
-function ChevronIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      focusable="false"
-      width="11"
-      height="11"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke={WHITE}
-      strokeWidth="2.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M6 9l6 6 6-6" />
-    </svg>
-  );
-}
-
-function PillFilter({ children }: { children: React.ReactNode }) {
+function StatCard({
+  label,
+  value,
+  caption,
+  percent,
+  valueSize,
+}: {
+  label: string;
+  value: string;
+  caption: string;
+  percent?: number;
+  valueSize?: string;
+}) {
   return (
     <div
-      className="filter-pill"
       style={{
         position: "relative",
-        display: "inline-flex",
-        alignItems: "center",
-        background: "#1E3A5F",
-        border: "1.5px solid #1E3A5F",
-        borderRadius: 999,
+        overflow: "hidden",
+        borderRadius: 18,
+        padding: "22px 24px",
+        background: "linear-gradient(135deg,#0a4f42 0%,#0d6f5c 100%)",
+        color: WHITE,
         boxShadow: SHADOW_SM,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        gap: 18,
+        minWidth: 0,
       }}
     >
-      {children}
+      {/* soft decorative circles */}
       <span
-        style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
-      >
-        <ChevronIcon />
-      </span>
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          top: -34,
+          right: -34,
+          width: 120,
+          height: 120,
+          borderRadius: "50%",
+          background: "rgba(255,255,255,0.08)",
+        }}
+      />
+      <span
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          bottom: -46,
+          right: 26,
+          width: 90,
+          height: 90,
+          borderRadius: "50%",
+          background: "rgba(255,255,255,0.06)",
+        }}
+      />
+
+      <div style={{ position: "relative" }}>
+        <p
+          style={{
+            fontSize: "0.72rem",
+            fontWeight: 700,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,0.72)",
+            marginBottom: 10,
+          }}
+        >
+          {label}
+        </p>
+        <p
+          style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: valueSize ?? "1.9rem",
+            fontWeight: 700,
+            color: WHITE,
+            lineHeight: 1,
+            whiteSpace: "nowrap",
+            minHeight: "1.9rem",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          {value}
+        </p>
+      </div>
+
+      <div style={{ position: "relative" }}>
+        {percent === undefined ? (
+          <div style={{ height: 6, display: "flex", alignItems: "center" }}>
+            <div style={{ height: 1, width: "100%", background: "rgba(255,255,255,0.2)" }} />
+          </div>
+        ) : (
+          <div style={{ height: 6, borderRadius: 999, background: "rgba(255,255,255,0.2)", overflow: "hidden" }}>
+            <div
+              style={{
+                width: `${percent}%`,
+                height: "100%",
+                borderRadius: 999,
+                background: AMBER,
+                transition: "width 0.3s ease",
+              }}
+            />
+          </div>
+        )}
+        <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.78)", marginTop: 8 }}>{caption}</p>
+      </div>
     </div>
   );
 }
+
+/* ---------------- Icons ---------------- */
 
 function EyeIcon() {
   return (
