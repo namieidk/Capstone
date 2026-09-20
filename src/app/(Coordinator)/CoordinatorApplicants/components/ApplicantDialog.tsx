@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, AlertTriangle, ArrowRight, CalendarClock } from "lucide-react";
+import { AlertCircle, AlertTriangle, ArrowRight, CalendarClock, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ScheduleMeetingDialog } from "@/app/(Grantor)/grantMeeting/components/ScheduleMeetingDialog";
 import type { Applicant, Stage } from "@/components/Coordinatorshared";
@@ -51,6 +51,7 @@ export function ApplicantDialog({
   onMeetingScheduled,
 }: ApplicantDialogProps) {
   const [confirmingReject, setConfirmingReject] = useState(false);
+  const [confirmingReopen, setConfirmingReopen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [acceptWarningText, setAcceptWarningText] = useState<string | null>(null);
   const [docsToken, setDocsToken] = useState(0);
@@ -63,12 +64,14 @@ export function ApplicantDialog({
     setLoadedDocs(null);
     setAcceptWarningText(null);
     setConfirmingReject(false);
+    setConfirmingReopen(false);
     setRejectReason("");
     setScheduling(false);
   }, [applicant?.id, applicant?.stage, applicant?.documentsCount]);
 
   function handleClose() {
     setConfirmingReject(false);
+    setConfirmingReopen(false);
     setRejectReason("");
     setAcceptWarningText(null);
     setVerifyingDoc(null);
@@ -269,51 +272,49 @@ export function ApplicantDialog({
                   </Button>
                 )}
 
-                {/* Pass to Interview button */}
-                {applicant.stage !== "Interview" &&
-                  applicant.stage !== "Endorsed" &&
-                  applicant.stage !== "Accepted" && (
-                    <div className="flex flex-col gap-2">
-                      {hasNoDocs && !isDocsLoading && (
-                        <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
-                          <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                          <span>Cannot pass applicant to interview: No documents have been submitted yet.</span>
-                        </div>
-                      )}
-                      {!hasNoDocs && !hasConfirmedDocs && !isDocsLoading && (
-                        <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
-                          <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                          <span>
-                            Cannot pass applicant to interview: Submitted document(s) have not been confirmed by the
-                            applicant yet (awaiting student review).
-                          </span>
-                        </div>
-                      )}
-                      <Button
-                        type="button"
-                        className="h-10 text-sm!"
-                        disabled={acting || !canPassToInterview}
-                        title={
-                          hasNoDocs
-                            ? "Applicant has not submitted any documents yet"
-                            : !hasConfirmedDocs
-                              ? "Applicant must review and confirm their document first"
-                              : undefined
+                {/* Pass to Interview button (only in Submitted or Under review stages) */}
+                {(applicant.stage === "Submitted" || applicant.stage === "Under review") && (
+                  <div className="flex flex-col gap-2">
+                    {hasNoDocs && !isDocsLoading && (
+                      <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+                        <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                        <span>Cannot pass applicant to interview: No documents have been submitted yet.</span>
+                      </div>
+                    )}
+                    {!hasNoDocs && !hasConfirmedDocs && !isDocsLoading && (
+                      <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+                        <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                        <span>
+                          Cannot pass applicant to interview: Submitted document(s) have not been confirmed by the
+                          applicant yet (awaiting student review).
+                        </span>
+                      </div>
+                    )}
+                    <Button
+                      type="button"
+                      className="h-10 text-sm!"
+                      disabled={acting || !canPassToInterview}
+                      title={
+                        hasNoDocs
+                          ? "Applicant has not submitted any documents yet"
+                          : !hasConfirmedDocs
+                            ? "Applicant must review and confirm their document first"
+                            : undefined
+                      }
+                      onClick={async () => {
+                        try {
+                          await onMoveStage(applicant.id, "Interview");
+                          setScheduling(true);
+                        } catch {
+                          // Handled by actionError in parent
                         }
-                        onClick={async () => {
-                          try {
-                            await onMoveStage(applicant.id, "Interview");
-                            setScheduling(true);
-                          } catch {
-                            // Handled by actionError in parent
-                          }
-                        }}
-                      >
-                        Pass to Interview
-                        <ArrowRight className="size-4" />
-                      </Button>
-                    </div>
-                  )}
+                      }}
+                    >
+                      Pass to Interview
+                      <ArrowRight className="size-4" />
+                    </Button>
+                  </div>
+                )}
 
                 {/* Accept / Endorse Applicant button */}
                 {applicant.stage === "Interview" && (
@@ -346,6 +347,29 @@ export function ApplicantDialog({
                   >
                     Reject application
                   </Button>
+                )}
+
+                {/* Reopen Application (e.g. after successful inquiry) */}
+                {applicant.stage === "Rejected" && (
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 rounded-xl border border-border/80 bg-muted/20 p-3">
+                    <div className="text-xs text-muted-foreground">
+                      <p className="font-semibold text-navy">Application is currently marked as Rejected</p>
+                      <p>
+                        If an applicant inquiry or clarification was accepted, you can reopen this application for
+                        evaluation.
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-9 px-4 text-xs! font-semibold border-navy/30 text-navy hover:bg-navy/5 shrink-0 gap-1.5"
+                      disabled={acting}
+                      onClick={() => setConfirmingReopen(true)}
+                    >
+                      <RotateCcw className="size-3.5" />
+                      <span>Reopen Application</span>
+                    </Button>
+                  </div>
                 )}
               </div>
             </>
@@ -388,16 +412,27 @@ export function ApplicantDialog({
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-navy">Reject Application</DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
-              Please provide a reason for rejecting this application. This feedback will be recorded.
+              You can optionally provide remarks or feedback explaining this evaluation decision.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-2">
+          <div className="flex flex-col gap-3 py-2">
+            <div className="rounded-xl border border-border/80 bg-muted/30 p-3 text-xs text-muted-foreground">
+              <p className="font-semibold text-navy mb-1">Standard notification message to applicant:</p>
+              <p className="italic leading-relaxed">
+                &ldquo;Thank you for applying for our scholarship program. After careful evaluation of all submissions,
+                your application was not selected for this cycle.&rdquo;
+              </p>
+              <p className="mt-1.5 text-[11px] text-muted-foreground">
+                If custom remarks are entered below, they will be attached to the applicant&apos;s decision notice.
+              </p>
+            </div>
+
             <Textarea
-              placeholder="Rejection reason (required)..."
+              placeholder="Optional remarks or feedback (e.g. GWA threshold, missing prerequisite)..."
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               className="min-h-24 text-sm!"
-              aria-label="Rejection reason"
+              aria-label="Optional rejection reason"
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
@@ -417,10 +452,10 @@ export function ApplicantDialog({
               type="button"
               variant="destructive"
               className="h-10 text-sm!"
-              disabled={acting || rejectReason.trim() === ""}
+              disabled={acting}
               onClick={() => {
                 if (applicant) {
-                  onMoveStage(applicant.id, "Rejected", rejectReason.trim());
+                  onMoveStage(applicant.id, "Rejected", rejectReason.trim() || undefined);
                   setConfirmingReject(false);
                 }
               }}
@@ -430,6 +465,36 @@ export function ApplicantDialog({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Reopen Confirmation Alert Dialog */}
+      <AlertDialog open={confirmingReopen} onOpenChange={setConfirmingReopen}>
+        <AlertDialogContent className="max-w-md rounded-2xl p-6">
+          <AlertDialogHeader className="flex flex-col items-center text-center">
+            <div className="mb-2 flex size-12 items-center justify-center rounded-full bg-navy/10 text-navy">
+              <RotateCcw className="size-6" />
+            </div>
+            <AlertDialogTitle className="text-lg font-bold text-navy">Reopen Application?</AlertDialogTitle>
+            <AlertDialogDescription className="mt-1 text-sm text-muted-foreground">
+              Are you sure you want to reopen the application for <strong>{applicant?.name}</strong>? This will return
+              their application to active review (&ldquo;Under review&rdquo;) and clear the previous rejection record.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4 flex flex-row justify-end gap-2">
+            <AlertDialogCancel className="h-10 rounded-lg text-sm!">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="h-10 rounded-lg bg-navy px-4 text-sm! font-medium text-white hover:bg-navy/90"
+              onClick={async () => {
+                if (applicant) {
+                  setConfirmingReopen(false);
+                  await onMoveStage(applicant.id, "Under review");
+                }
+              }}
+            >
+              Confirm Reopen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <DocumentVerifyDialog
         document={verifyingDoc}

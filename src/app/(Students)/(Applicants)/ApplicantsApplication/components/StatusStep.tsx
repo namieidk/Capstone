@@ -10,6 +10,7 @@ import {
   Eye,
   FileSignature,
   FileText,
+  Mail,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
@@ -57,9 +58,77 @@ export function StatusStep({
   const isRejected = application.status === "REJECTED";
   const verifiedDocsCount = documents.filter((d) => d.status === "VERIFIED" || d.status === "STUDENT_CONFIRMED").length;
 
+  const gmailInquiryUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=support@viascholar.edu&su=${encodeURIComponent(
+    `Scholarship Application Inquiry - Ref #${String(application.application_id).padStart(5, "0")}`,
+  )}&body=${encodeURIComponent(
+    `Dear Scholarship Committee,\n\nI am writing to respectfully inquire regarding my scholarship application (Ref #${String(application.application_id).padStart(5, "0")}) for the current academic cycle.\n\nThank you for your guidance.\n\nSincerely,\nApplicant`,
+  )}`;
+
   return (
     <div className="flex flex-col gap-5">
-      {/* 1. HERO CELEBRATORY CONTRACT SIGNING BANNER (High-prominence when APPROVED) */}
+      {/* 1. HERO REJECTION DECISION BANNER (Top prominence when REJECTED) */}
+      {isRejected && (
+        <div className="relative overflow-hidden rounded-2xl border-2 border-destructive/40 bg-linear-to-br from-red-50/70 via-white to-red-50/30 p-6 shadow-md dark:from-red-950/30 dark:via-background dark:to-red-950/10">
+          <div className="absolute right-0 top-0 -mt-4 -mr-4 size-32 rounded-full bg-destructive/10 blur-2xl pointer-events-none" />
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-5 relative z-10">
+            <div className="flex items-start gap-4">
+              <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-destructive/10 text-destructive shadow-xs ring-4 ring-destructive/10">
+                <AlertCircle className="size-7" />
+              </div>
+              <div className="flex flex-col gap-1.5 max-w-2xl">
+                <div className="flex items-center gap-2">
+                  <Badge variant="destructive" className="px-2.5 py-0.5 text-xs font-semibold">
+                    Application Unsuccessful
+                  </Badge>
+                  {application?.decision_at && (
+                    <span className="text-xs text-muted-foreground">
+                      Decided on {new Date(application.decision_at).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+                <h2 className="text-xl font-bold text-navy dark:text-foreground">Application Decision: Not Selected</h2>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Thank you for applying for our scholarship program. After careful evaluation of all submissions, your
+                  application was not selected for this cycle.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-center md:items-end gap-2 shrink-0">
+              <a href={gmailInquiryUrl} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto h-11 px-5 text-sm font-semibold border-border/80 text-navy gap-2"
+                >
+                  <Mail className="size-4" />
+                  <span>Inquire via Gmail</span>
+                </Button>
+              </a>
+            </div>
+          </div>
+
+          {/* Official Feedback / Remarks */}
+          {application.rejection_reason && (
+            <div className="mt-5 rounded-xl border border-destructive/20 bg-destructive/5 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-destructive mb-1">
+                Evaluation Committee Remarks:
+              </p>
+              <p className="text-sm leading-relaxed text-foreground italic">"{application.rejection_reason}"</p>
+            </div>
+          )}
+
+          <div className="mt-4 pt-3.5 border-t border-border/60 text-xs text-muted-foreground">
+            <span>
+              Your submitted profile remains preserved in read-only mode for your reference. Document uploads and wizard
+              edits for this cycle are closed.
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* 2. HERO CELEBRATORY CONTRACT SIGNING BANNER (High-prominence when APPROVED) */}
       {isApproved && (
         <div className="relative overflow-hidden rounded-2xl border-2 border-emerald-500/40 bg-linear-to-br from-emerald-50 via-white to-emerald-50/40 p-6 shadow-md dark:from-emerald-950/30 dark:via-background dark:to-emerald-950/10">
           <div className="absolute right-0 top-0 -mt-4 -mr-4 size-32 rounded-full bg-emerald-400/10 blur-2xl pointer-events-none" />
@@ -110,7 +179,7 @@ export function StatusStep({
         </div>
       )}
 
-      {/* 2. APPLICATION OVERVIEW & STATUS CARD (Clean status overview without duplicate numbered stepper) */}
+      {/* 3. APPLICATION OVERVIEW & STATUS CARD */}
       <Card className="rounded-[18px]! border-border bg-white shadow-xs">
         <CardHeader className="pb-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -175,7 +244,7 @@ export function StatusStep({
                 {isApproved
                   ? "Congratulations! Your scholarship application has been officially accepted. Please proceed to review and sign your scholarship contract above."
                   : isRejected
-                    ? "Your application review has concluded. See details below for any feedback or remarks provided."
+                    ? "Your application review has concluded. The evaluation decision and committee remarks are detailed in the notice above."
                     : application.interview_at
                       ? "An interview has been scheduled by the scholarship committee. Check the interview session details below."
                       : "Your credentials and academic records are actively being reviewed by the scholarship coordinators and grant committee."}
@@ -185,8 +254,8 @@ export function StatusStep({
         </CardContent>
       </Card>
 
-      {/* 3. INTERVIEW SCHEDULED DETAILS */}
-      {application.interview_at ? (
+      {/* INTERVIEW SCHEDULED DETAILS */}
+      {application.interview_at && (
         <Card className="rounded-[18px]! border-border bg-white shadow-xs">
           <CardHeader>
             <div className="flex items-center gap-3">
@@ -219,66 +288,31 @@ export function StatusStep({
             )}
           </CardContent>
         </Card>
-      ) : (
-        application.stage?.toLowerCase().includes("interview") &&
-        !isApproved &&
-        !isRejected && (
-          <Card className="rounded-[18px]! border-border bg-white shadow-xs">
-            <CardContent className="flex items-center gap-3 px-6 py-5">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-tint text-navy shadow-xs">
-                <CalendarClock className="size-5" />
-              </span>
+      )}
+
+      {/* 4. DOCUMENTS VERIFICATION STATUS (Only show if documents exist) */}
+      {documents.length > 0 && (
+        <Card className="rounded-[18px]! border-border bg-white shadow-xs">
+          <CardHeader>
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-navy">You are in the interview stage</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">
-                  Your interview date and meeting link will appear here once scheduled by the committee.
-                </p>
+                <CardTitle className="text-lg! text-navy">
+                  {isRejected ? "Submitted Application Documents" : "Submitted Documents"} ({documents.length})
+                </CardTitle>
+                <CardDescription className="text-sm!">
+                  {isRejected
+                    ? "Archived record of all requirements submitted during this application."
+                    : "Verification status and data confirmation per file."}
+                </CardDescription>
               </div>
-            </CardContent>
-          </Card>
-        )
-      )}
-
-      {/* 4. REJECTION NOTICE */}
-      {isRejected && (
-        <Card className="rounded-[18px]! border-destructive/30 bg-white shadow-xs">
-          <CardContent className="px-6 py-5">
-            <div className="flex items-center gap-2 text-destructive font-semibold text-sm">
-              <AlertCircle className="size-4" />
-              <span>Application not approved</span>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <ShieldCheck className="size-4 text-good" />
+                <span>{isRejected ? "Archived record" : "Securely stored"}</span>
+              </div>
             </div>
-            {application.rejection_reason ? (
-              <p className="mt-2 text-sm leading-relaxed text-foreground">{application.rejection_reason}</p>
-            ) : (
-              <p className="mt-2 text-sm text-muted-foreground">
-                Thank you for applying. At this time, your application was not selected for this scholarship cycle.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* 5. DOCUMENTS VERIFICATION STATUS */}
-      <Card className="rounded-[18px]! border-border bg-white shadow-xs">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg! text-navy">Submitted Documents ({documents.length})</CardTitle>
-              <CardDescription className="text-sm!">
-                Verification status and data confirmation per file.
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <ShieldCheck className="size-4 text-good" />
-              <span>Securely stored</span>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2.5">
-          {documents.length === 0 ? (
-            <p className="py-2 text-sm text-muted-foreground">No documents uploaded yet.</p>
-          ) : (
-            documents.map((doc) => {
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2.5">
+            {documents.map((doc) => {
               const dm = docStatusMeta(doc.status);
               return (
                 <div
@@ -302,16 +336,25 @@ export function StatusStep({
                   </Button>
                 </div>
               );
-            })
-          )}
-          <Separator className="my-1" />
-          <div>
-            <Button type="button" variant="outline" className="h-10 text-sm! text-navy" onClick={onBackToDocuments}>
-              Back to documents
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            })}
+            {!isRejected && (
+              <>
+                <Separator className="my-1" />
+                <div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-10 text-sm! text-navy"
+                    onClick={onBackToDocuments}
+                  >
+                    Back to documents
+                  </Button>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <DocumentReviewDialog
         document={previewDoc}

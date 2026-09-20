@@ -209,7 +209,10 @@ export default function ApplicantsApplicationPage() {
     }, "Document details confirmed successfully!");
   }
 
+  const isRejected = application?.status === "REJECTED";
+
   function goTo(target: WizardStep) {
+    if (isRejected) return; // Locked on decision status
     if (target === 1 || application) changeStep(target);
   }
 
@@ -219,7 +222,10 @@ export default function ApplicantsApplicationPage() {
 
   return (
     <div>
-      <PageHeader title="Application" subtitle="Apply in 3 quick steps." />
+      <PageHeader
+        title="Application"
+        subtitle={isRejected ? "Your application review has concluded." : "Apply in 3 quick steps."}
+      />
 
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-5 py-6">
         {loadError ? (
@@ -234,25 +240,29 @@ export default function ApplicantsApplicationPage() {
           <>
             <ol className="flex items-start rounded-[18px]! border border-border bg-white p-4 shadow-xs">
               {wizardSteps.map((s, i) => {
-                const done = s.step < step;
-                const active = s.step === step;
-                const unlocked = s.step === 1 || application !== null;
+                const done = isRejected ? s.step < 3 : s.step < step;
+                const active = isRejected ? s.step === 3 : s.step === step;
+                const unlocked = !isRejected && (s.step === 1 || application !== null);
                 return (
                   <li key={s.step} className="flex flex-1 items-start last:flex-none">
                     <button
                       type="button"
                       onClick={() => goTo(s.step)}
-                      disabled={!unlocked}
+                      disabled={!unlocked || isRejected}
                       aria-current={active ? "step" : undefined}
-                      className={`flex flex-col items-center gap-1.5 rounded-lg px-1 ${unlocked ? "cursor-pointer" : "cursor-default opacity-60"}`}
+                      className={`flex flex-col items-center gap-1.5 rounded-lg px-1 ${
+                        unlocked && !isRejected ? "cursor-pointer" : "cursor-default opacity-60"
+                      }`}
                     >
                       <span
                         className={`flex size-9 items-center justify-center rounded-full text-sm font-bold transition-all duration-300 transform ${
-                          done
-                            ? "bg-navy text-white shadow-xs"
-                            : active
-                              ? "bg-amber! text-navy! ring-4 ring-amber/25 scale-105 shadow-xs"
-                              : "bg-muted text-muted-foreground scale-95"
+                          isRejected && s.step === 3
+                            ? "bg-destructive text-white ring-4 ring-destructive/20 scale-105 shadow-xs"
+                            : done
+                              ? "bg-navy text-white shadow-xs"
+                              : active
+                                ? "bg-amber! text-navy! ring-4 ring-amber/25 scale-105 shadow-xs"
+                                : "bg-muted text-muted-foreground scale-95"
                         }`}
                       >
                         {done ? (
@@ -263,18 +273,26 @@ export default function ApplicantsApplicationPage() {
                       </span>
                       <span className="flex flex-col items-center">
                         <span
-                          className={`text-xs transition-colors duration-200 ${active || done ? "font-semibold text-navy" : "text-muted-foreground"}`}
+                          className={`text-xs transition-colors duration-200 ${
+                            isRejected && s.step === 3
+                              ? "font-semibold text-destructive"
+                              : active || done
+                                ? "font-semibold text-navy"
+                                : "text-muted-foreground"
+                          }`}
                         >
-                          {s.label}
+                          {isRejected && s.step === 3 ? "Decision" : s.label}
                         </span>
-                        <span className="hidden text-[0.7rem] text-muted-foreground sm:block">{s.sub}</span>
+                        <span className="hidden text-[0.7rem] text-muted-foreground sm:block">
+                          {isRejected && s.step === 3 ? "Review concluded" : s.sub}
+                        </span>
                       </span>
                     </button>
                     {i < wizardSteps.length - 1 && (
                       <div className="mx-1 mt-4 h-1 flex-1 overflow-hidden rounded-full bg-border/70">
                         <div
                           className="h-full bg-navy transition-all duration-500 ease-out"
-                          style={{ width: s.step < step ? "100%" : "0%" }}
+                          style={{ width: (isRejected ? 3 : step) > s.step ? "100%" : "0%" }}
                         />
                       </div>
                     )}
