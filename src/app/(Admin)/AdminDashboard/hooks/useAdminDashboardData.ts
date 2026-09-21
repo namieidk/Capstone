@@ -51,7 +51,24 @@ export function useAdminDashboardData() {
     try {
       const data = await getAdminDashboardData();
       setMetrics(data.metrics);
-      setStaff(data.staff as StaffRow[]);
+      const mappedStaff: StaffRow[] = (data.staff || []).map((s) => ({
+        id: s.id,
+        name: s.name,
+        email: s.email,
+        title: s.title,
+        department: s.department,
+        type: s.type,
+        status: s.active ? "Active" : "Inactive",
+        initials: s.initials,
+        joined: s.joined,
+        user: {
+          user_id: s.id,
+          email: s.email,
+          role: s.type.toUpperCase() as "ADMIN" | "COORDINATOR" | "GRANTOR",
+          is_active: s.active,
+        } as unknown as import("@/lib/api/auth").User,
+      }));
+      setStaff(mappedStaff);
       setRecentLogs(data.recentLogs || []);
       setSchools(data.schools);
       setSettings(data.settings);
@@ -79,13 +96,19 @@ export function useAdminDashboardData() {
   useSocketEvent<AuditLogEntry>("audit:new_log", handleNewLog);
   useSocketEvent("staff:created", () => fetchDashboardData(true));
   useSocketEvent("user:status_updated", () => fetchDashboardData(true));
+  useSocketEvent("user:role_updated", () => fetchDashboardData(true));
+  useSocketEvent("user:registered", () => fetchDashboardData(true));
   useSocketEvent("user:password_reset", () => fetchDashboardData(true));
+  useSocketEvent("application:new_submission", () => fetchDashboardData(true));
+  useSocketEvent("application:stage_updated", () => fetchDashboardData(true));
+  useSocketEvent("school:created", () => fetchDashboardData(true));
+  useSocketEvent("school:updated", () => fetchDashboardData(true));
   useSocketEvent<GlobalSettings>("settings:updated", (updated) => {
     if (updated) {
       setSettings(updated);
       setMetrics((prev) => ({
         ...prev,
-        gradeThreshold: Number(updated.grade_retention_threshold || 85),
+        gradeThreshold: Number(updated.grade_threshold || 85),
       }));
     }
   });

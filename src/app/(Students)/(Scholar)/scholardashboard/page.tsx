@@ -19,10 +19,7 @@ export default function ScholarDashboardPage() {
   if (loading && !data) {
     return (
       <div className="flex flex-col min-h-screen bg-[#FAF8F5]">
-        <PageHeader
-          title="Scholar Dashboard"
-          subtitle="Academic Standing & Grant Management"
-        />
+        <PageHeader title="Scholar Dashboard" subtitle="Academic Standing & Grant Management" />
         <ScholarDashboardSkeleton />
       </div>
     );
@@ -31,18 +28,11 @@ export default function ScholarDashboardPage() {
   if (loadError && !data) {
     return (
       <div className="flex flex-col min-h-screen bg-[#FAF8F5]">
-        <PageHeader
-          title="Scholar Dashboard"
-          subtitle="Academic Standing & Grant Management"
-        />
+        <PageHeader title="Scholar Dashboard" subtitle="Academic Standing & Grant Management" />
         <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
           <div className="max-w-md space-y-3 rounded-2xl border border-rose-200 bg-rose-50/70 p-6 text-rose-950">
-            <h2 className="text-base font-bold">
-              Failed to Load Scholar Dashboard
-            </h2>
-            <p className="text-xs text-rose-800/80 leading-relaxed">
-              {loadError}
-            </p>
+            <h2 className="text-base font-bold">Failed to Load Scholar Dashboard</h2>
+            <p className="text-xs text-rose-800/80 leading-relaxed">{loadError}</p>
             <Button
               type="button"
               onClick={() => refetch()}
@@ -59,10 +49,7 @@ export default function ScholarDashboardPage() {
   if (!data) {
     return (
       <div className="flex flex-col min-h-screen bg-[#FAF8F5]">
-        <PageHeader
-          title="Scholar Dashboard"
-          subtitle="Academic Standing & Grant Management"
-        />
+        <PageHeader title="Scholar Dashboard" subtitle="Academic Standing & Grant Management" />
         <ScholarDashboardSkeleton />
       </div>
     );
@@ -71,19 +58,12 @@ export default function ScholarDashboardPage() {
   return (
     <div className="flex flex-col min-h-screen bg-[#FAF8F5]">
       {/* Top Header */}
-      <PageHeader
-        title="Scholar Dashboard"
-        subtitle="Academic Standing, Curriculum & Grant Management"
-      />
+      <PageHeader title="Scholar Dashboard" subtitle="Academic Standing, Curriculum & Grant Management" />
 
       {/* Main Content Body */}
       <div className="flex-1 space-y-6 p-4 sm:p-6 max-w-7xl w-full mx-auto">
         {/* 1. Scholar Identity & Program Header */}
-        <ScholarDashboardHeader
-          profile={data.profile}
-          onRefresh={() => refetch(true)}
-          isRefreshing={loading}
-        />
+        <ScholarDashboardHeader profile={data.profile} onRefresh={() => refetch(true)} isRefreshing={loading} />
 
         {/* 2. Dynamic Academic Standing / Probation / Appeal Alert Banner */}
         <ScholarAcademicStandingBanner standing={data.academic_standing} />
@@ -108,10 +88,7 @@ export default function ScholarDashboardPage() {
         {/* 5. Row 2 Operational Grid: Financial Aid Disbursements + Coordinator Guidance & Advisory */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ScholarDisbursementCard disbursements={data.disbursements} />
-          <ScholarCoordinatorAndMeetingsCard
-            communication={data.communication}
-            meetings={data.upcoming_meetings}
-          />
+          <ScholarCoordinatorAndMeetingsCard communication={data.communication} meetings={data.upcoming_meetings} />
         </div>
 
         {/* 6. Row 3: Announcements & Community Forum */}

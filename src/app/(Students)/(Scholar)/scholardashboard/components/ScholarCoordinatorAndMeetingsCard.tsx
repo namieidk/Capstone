@@ -1,34 +1,20 @@
 "use client";
 
-import {
-  ArrowRight,
-  Calendar,
-  ExternalLink,
-  MessageSquare,
-  Video,
-} from "lucide-react";
+import { ArrowRight, Calendar, ExternalLink, MessageSquare, Video } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import type {
-  ScholarCommunicationData,
-  ScholarMeetingItem,
-} from "@/lib/api/scholar-dashboard";
+import type { ScholarCommunicationData, ScholarMeetingItem } from "@/lib/api/scholar-dashboard";
 
 interface ScholarCoordinatorAndMeetingsCardProps {
   communication: ScholarCommunicationData;
   meetings: ScholarMeetingItem[];
 }
 
-export function ScholarCoordinatorAndMeetingsCard({
-  communication,
-  meetings,
-}: ScholarCoordinatorAndMeetingsCardProps) {
-  const coordinatorName =
-    communication.coordinator?.name || "Assigned Coordinator";
-  const coordinatorTitle =
-    communication.coordinator?.title || "Scholarship Coordinator";
+export function ScholarCoordinatorAndMeetingsCard({ communication, meetings }: ScholarCoordinatorAndMeetingsCardProps) {
+  const coordinatorName = communication.coordinator?.name || "Assigned Coordinator";
+  const coordinatorTitle = communication.coordinator?.title || "Scholarship Coordinator";
 
   return (
     <Card className="flex flex-col justify-between rounded-2xl border-line/80 bg-white shadow-2xs hover:shadow-xs transition-all">
@@ -38,12 +24,8 @@ export function ScholarCoordinatorAndMeetingsCard({
             <MessageSquare className="size-4" />
           </div>
           <div>
-            <h2 className="text-sm font-bold tracking-tight text-[#14213a]">
-              Coordinator & Advisory
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Direct guidance & mentoring sessions
-            </p>
+            <h2 className="text-sm font-bold tracking-tight text-[#14213a]">Coordinator & Advisory</h2>
+            <p className="text-xs text-muted-foreground">Direct guidance & mentoring sessions</p>
           </div>
         </div>
 
@@ -72,12 +54,8 @@ export function ScholarCoordinatorAndMeetingsCard({
                 .slice(0, 2) || "CO"}
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-bold text-[#14213a] truncate">
-                {coordinatorName}
-              </p>
-              <p className="text-[11px] text-muted-foreground">
-                {coordinatorTitle}
-              </p>
+              <p className="text-xs font-bold text-[#14213a] truncate">{coordinatorName}</p>
+              <p className="text-[11px] text-muted-foreground">{coordinatorTitle}</p>
             </div>
           </div>
 
@@ -86,10 +64,7 @@ export function ScholarCoordinatorAndMeetingsCard({
             size="sm"
             className="h-7.5 rounded-full bg-[#0a4f42] px-3.5 text-[11px] font-semibold text-white! hover:bg-[#0a4f42]/90 shadow-2xs"
           >
-            <Link
-              href="/scholarMessage"
-              className="flex items-center gap-1.5 text-white!"
-            >
+            <Link href="/scholarMessage" className="flex items-center gap-1.5 text-white!">
               <span className="text-white!">Chat</span>
               {communication.unread_messages_count > 0 && (
                 <Badge className="h-4 rounded-full bg-[#f1b71e] text-[#14213a] px-1 text-[9px] font-bold">
@@ -106,10 +81,7 @@ export function ScholarCoordinatorAndMeetingsCard({
             <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
               Upcoming Meetings & Check-ins
             </p>
-            <Link
-              href="/scholarMeeting"
-              className="text-[11px] font-semibold text-[#0a4f42] hover:underline"
-            >
+            <Link href="/scholarMeeting" className="text-[11px] font-semibold text-[#0a4f42] hover:underline">
               Schedule
             </Link>
           </div>
@@ -148,11 +120,7 @@ export function ScholarCoordinatorAndMeetingsCard({
                     size="sm"
                     className="h-7 rounded-full border-line text-[11px] font-semibold text-[#0a4f42]"
                   >
-                    <a
-                      href={m.meeting_link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
+                    <a href={m.meeting_link} target="_blank" rel="noopener noreferrer">
                       Join <ExternalLink className="ml-1 size-3" />
                     </a>
                   </Button>

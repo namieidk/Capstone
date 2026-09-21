@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  ArrowRight,
-  CheckCircle2,
-  Clock,
-  FileSpreadsheet,
-  FileUp,
-  Receipt,
-  ShieldAlert,
-} from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock, FileSpreadsheet, FileUp, Receipt, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,10 +12,7 @@ interface ScholarEnrollmentQuickHubProps {
   pendingOrCount: number;
 }
 
-export function ScholarEnrollmentQuickHub({
-  latestEnrollment,
-  pendingOrCount,
-}: ScholarEnrollmentQuickHubProps) {
+export function ScholarEnrollmentQuickHub({ latestEnrollment, pendingOrCount }: ScholarEnrollmentQuickHubProps) {
   const status = latestEnrollment?.status || "NOT_SUBMITTED";
 
   const getStatusBadge = (st: string) => {
@@ -63,12 +52,8 @@ export function ScholarEnrollmentQuickHub({
             <FileSpreadsheet className="size-4" />
           </div>
           <div>
-            <h2 className="text-sm font-bold tracking-tight text-[#14213a]">
-              Active Term Operations
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Registration, COR & submission center
-            </p>
+            <h2 className="text-sm font-bold tracking-tight text-[#14213a]">Active Term Operations</h2>
+            <p className="text-xs text-muted-foreground">Registration, COR & submission center</p>
           </div>
         </div>
 
@@ -97,10 +82,7 @@ export function ScholarEnrollmentQuickHub({
               size="sm"
               className="h-8 rounded-full bg-[#0a4f42] px-3.5 text-xs font-semibold text-white! hover:bg-[#0a4f42]/90 shadow-2xs"
             >
-              <Link
-                href="/scholar-enrollment"
-                className="flex items-center gap-1.5 text-white!"
-              >
+              <Link href="/scholar-enrollment" className="flex items-center gap-1.5 text-white!">
                 <span className="text-white!">Enrollment Hub</span>
                 <ArrowRight className="size-3 text-white" />
               </Link>
@@ -109,8 +91,7 @@ export function ScholarEnrollmentQuickHub({
 
           {latestEnrollment?.coordinator_notes && (
             <div className="mt-2.5 rounded-lg bg-amber-50 border border-amber-200/80 p-2 text-[11px] text-amber-900">
-              <strong className="font-semibold">Coordinator Note:</strong>{" "}
-              {latestEnrollment.coordinator_notes}
+              <strong className="font-semibold">Coordinator Note:</strong> {latestEnrollment.coordinator_notes}
             </div>
           )}
         </div>
@@ -129,9 +110,7 @@ export function ScholarEnrollmentQuickHub({
                 <p className="text-xs font-bold text-[#14213a] group-hover:text-[#0a4f42] transition-colors">
                   Submit Grades
                 </p>
-                <p className="text-[10px] text-muted-foreground">
-                  Upload COG for evaluation
-                </p>
+                <p className="text-[10px] text-muted-foreground">Upload COG for evaluation</p>
               </div>
             </div>
             <ArrowRight className="size-3.5 text-muted-foreground group-hover:text-[#0a4f42] group-hover:translate-x-0.5 transition-all" />
@@ -150,14 +129,10 @@ export function ScholarEnrollmentQuickHub({
                   <p className="text-xs font-bold text-[#14213a] group-hover:text-[#8a6410] transition-colors">
                     Official Receipts
                   </p>
-                  {pendingOrCount > 0 && (
-                    <span className="flex size-2 rounded-full bg-amber-600 animate-ping" />
-                  )}
+                  {pendingOrCount > 0 && <span className="flex size-2 rounded-full bg-amber-600 animate-ping" />}
                 </div>
                 <p className="text-[10px] text-muted-foreground">
-                  {pendingOrCount > 0
-                    ? `${pendingOrCount} OR Upload Required`
-                    : "View payment history"}
+                  {pendingOrCount > 0 ? `${pendingOrCount} OR Upload Required` : "View payment history"}
                 </p>
               </div>
             </div>

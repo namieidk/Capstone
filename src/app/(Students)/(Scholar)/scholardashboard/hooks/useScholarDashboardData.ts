@@ -33,8 +33,14 @@ export function useScholarDashboardData() {
   useSocketEvent("grade_report:evaluated", () => fetchDashboardData(true));
   useSocketEvent("enrollment:updated", () => fetchDashboardData(true));
   useSocketEvent("disbursement:updated", () => fetchDashboardData(true));
+  useSocketEvent("disbursement:settled", () => fetchDashboardData(true));
   useSocketEvent("message:received", () => fetchDashboardData(true));
+  useSocketEvent("chat:new_message", () => fetchDashboardData(true));
   useSocketEvent("meeting:scheduled", () => fetchDashboardData(true));
+  useSocketEvent("meeting:cancelled", () => fetchDashboardData(true));
+  useSocketEvent("meeting:rescheduled", () => fetchDashboardData(true));
+  useSocketEvent("announcement:created", () => fetchDashboardData(true));
+  useSocketEvent("notification:received", () => fetchDashboardData(true));
 
   return {
     loading,
