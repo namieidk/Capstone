@@ -1,7 +1,6 @@
 "use client";
 
 import { Lottie } from "lottie-react";
-import { ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import searchingAnimation from "../../public/lottie_animations/SearchingFile.json";
@@ -40,9 +39,7 @@ export function VerifyingPermissionScreen({
             unoptimized
             className="size-5 object-contain"
           />
-          <span className="text-base font-bold tracking-tight text-[#0a4f42]">
-            ViaScholar
-          </span>
+          <span className="text-base font-bold tracking-tight text-[#0a4f42]">ViaScholar</span>
         </div>
       </header>
 
@@ -51,26 +48,17 @@ export function VerifyingPermissionScreen({
         {/* Lottie Animation Display */}
         <div className="relative mb-2 flex size-52 sm:size-60 items-center justify-center">
           {mounted ? (
-            <Lottie
-              src={searchingAnimation}
-              loop={true}
-              autoplay={true}
-              className="size-full"
-            />
+            <Lottie src={searchingAnimation} loop={true} autoplay={true} className="size-full" />
           ) : (
             <div className="size-44 animate-pulse rounded-full bg-[#dfe4ea]/40" />
           )}
         </div>
 
         {/* Main Heading */}
-        <h2 className="text-lg sm:text-xl font-bold tracking-tight text-[#14213a]">
-          {message}
-        </h2>
+        <h2 className="text-lg sm:text-xl font-bold tracking-tight text-[#14213a]">{message}</h2>
 
         {/* Subtitle */}
-        <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-sm">
-          {subMessage}
-        </p>
+        <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-sm">{subMessage}</p>
 
         {/* Animated Progress Bar Indicator */}
         <div className="mt-6 h-1.5 w-48 overflow-hidden rounded-full bg-[#dfe4ea]">
@@ -80,9 +68,7 @@ export function VerifyingPermissionScreen({
 
       {/* Footer info */}
       <footer className="relative z-10 text-center pb-2">
-        <p className="text-[11px] font-medium text-muted-foreground/80">
-          ViaScholar Scholarship Management Platform
-        </p>
+        <p className="text-[11px] font-medium text-muted-foreground/80">ViaScholar Scholarship Management Platform</p>
       </footer>
     </div>
   );
