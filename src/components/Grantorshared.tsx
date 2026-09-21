@@ -721,6 +721,84 @@ export const s: Record<string, CSSProperties> = {
     borderRadius: 999,
   },
   gwaTrendCell: { display: "inline-flex", alignItems: "center", gap: 6 },
+
+  // ---- Table header row: "X total ___" count + filter dropdown ----
+  tableHeaderRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 12,
+    padding: "6px 14px 18px",
+  },
+  tableHeaderCount: { fontSize: "0.94rem", color: "#55554f" },
+  tableFilterSelect: {
+    appearance: "none",
+    WebkitAppearance: "none",
+    background: WHITE,
+    border: `1px solid ${LINE}`,
+    borderRadius: 999,
+    padding: "9px 34px 9px 16px",
+    fontSize: "0.86rem",
+    fontWeight: 600,
+    color: "#2B2B28",
+    fontFamily: "'Inter', sans-serif",
+    cursor: "pointer",
+  },
+  tableFilterWrap: { position: "relative", display: "inline-flex", alignItems: "center" },
+  tableFilterChevron: {
+    position: "absolute",
+    right: 14,
+    pointerEvents: "none",
+    color: "#8a8a84",
+    display: "flex",
+  },
+
+  // ---- Flat status pill: solid for the positive state, outline for the rest ----
+  statusPillSolid: {
+    fontSize: "0.8rem",
+    fontWeight: 700,
+    padding: "7px 16px",
+    borderRadius: 999,
+    whiteSpace: "nowrap",
+    background: NAVY,
+    color: WHITE,
+    display: "inline-block",
+  },
+  statusPillOutlineWarn: {
+    fontSize: "0.8rem",
+    fontWeight: 700,
+    padding: "6.5px 15px",
+    borderRadius: 999,
+    whiteSpace: "nowrap",
+    background: WARN_BG,
+    border: `1.3px solid ${WARN}`,
+    color: WARN,
+    display: "inline-block",
+  },
+  statusPillOutlineBad: {
+    fontSize: "0.8rem",
+    fontWeight: 700,
+    padding: "6.5px 15px",
+    borderRadius: 999,
+    whiteSpace: "nowrap",
+    background: BAD_BG,
+    border: `1.3px solid ${BAD}`,
+    color: BAD,
+    display: "inline-block",
+  },
+
+  // ---- Borderless eye/view icon button (no circle background) ----
+  viewIconBtn: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#55554f",
+    padding: 6,
+    background: "none",
+    border: "none",
+  },
+
   drawerOverlay: {
     position: "fixed",
     inset: 0,
@@ -738,6 +816,162 @@ export const s: Record<string, CSSProperties> = {
     padding: "32px 30px",
     boxShadow: "-20px 0 60px -20px rgba(0,0,0,0.2)",
   },
+
+  // ---- Hero-style drawer (used by the Monitor page) ----
+  // Blurred backdrop + right-slide panel with no outer padding, because the
+  // hero header runs edge to edge and the body adds its own padding.
+  drawerOverlayBlur: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(10,20,35,0.55)",
+    backdropFilter: "blur(6px)",
+    WebkitBackdropFilter: "blur(6px)",
+    display: "flex",
+    justifyContent: "flex-end",
+    zIndex: 200,
+  },
+  drawerPanelFlush: {
+    width: 460,
+    maxWidth: "92vw",
+    background: WHITE,
+    height: "100%",
+    overflowY: "auto",
+    boxShadow: "-24px 0 60px -12px rgba(10,20,35,0.35)",
+  },
+
+  // ---- Drawer hero header (gradient banner + avatar + status pill) ----
+  drawerHero: {
+    background: "linear-gradient(135deg, #0a4f42 0%, #14283F 100%)",
+    padding: "30px 28px 32px",
+    position: "relative",
+    color: WHITE,
+    borderBottomLeftRadius: 26,
+    borderBottomRightRadius: 26,
+  },
+  drawerHeroTopRow: { display: "flex", justifyContent: "flex-end", marginBottom: 16 },
+  drawerHeroCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: "50%",
+    background: "rgba(255,255,255,0.16)",
+    color: WHITE,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  drawerHeroAvatar: {
+    width: 68,
+    height: 68,
+    borderRadius: "50%",
+    background: "rgba(255,255,255,0.16)",
+    border: "3px solid rgba(255,255,255,0.35)",
+    color: WHITE,
+    fontFamily: "'Inter', sans-serif",
+    fontWeight: 700,
+    fontSize: "1.4rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 14,
+  },
+  drawerHeroName: { fontSize: "1.32rem", fontWeight: 700, color: WHITE, marginBottom: 4 },
+  drawerHeroMeta: { fontSize: "0.85rem", color: "rgba(255,255,255,0.72)", marginBottom: 14 },
+  drawerHeroStatusPill: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+    fontSize: "0.78rem",
+    fontWeight: 700,
+    padding: "6px 14px",
+    borderRadius: 999,
+    background: "rgba(255,255,255,0.16)",
+    color: WHITE,
+  },
+  drawerBody: { padding: "24px 28px 30px" },
+
+  // ---- Stat card grid (GWA, docs, disbursement, trend) ----
+  drawerStatGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 24 },
+  drawerStatCard: {
+    background: WHITE,
+    border: `1px solid ${LINE}`,
+    borderRadius: 14,
+    padding: "15px 16px",
+    boxShadow: "0 4px 18px rgba(30, 58, 95, 0.09)",
+  },
+  drawerStatIconBox: {
+    width: 30,
+    height: 30,
+    borderRadius: 9,
+    background: TINT,
+    color: NAVY,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
+  },
+  drawerStatLabel: { fontSize: "0.72rem", color: "#9a9a94", marginBottom: 3 },
+  drawerStatValue: {
+    fontSize: "1.02rem",
+    fontWeight: 700,
+    color: NAVY,
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  // ---- Payment card (gradient) ----
+  drawerPayCardNew: {
+    position: "relative",
+    overflow: "hidden",
+    borderRadius: 16,
+    padding: "20px 22px",
+    marginBottom: 22,
+    background: "linear-gradient(135deg,#0a4f42 0%,#0d6f5c 100%)",
+    color: WHITE,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 14,
+  },
+  drawerPayCardTerm: {
+    fontSize: "0.72rem",
+    color: "rgba(255,255,255,0.72)",
+    marginBottom: 8,
+    textTransform: "uppercase",
+    letterSpacing: "0.06em",
+    fontWeight: 700,
+  },
+  drawerPayCardAmount: { fontSize: "1.55rem", fontWeight: 700, color: WHITE, fontFamily: "'Inter', sans-serif" },
+
+  // Status note with the brighter amber palette used on the Coordinator pages.
+  appNoteCardAmber: {
+    display: "flex",
+    gap: 14,
+    alignItems: "flex-start",
+    background: "#FCEEC4",
+    border: "1px solid #F1B71E",
+    borderRadius: 14,
+    padding: "18px 20px",
+    marginBottom: 20,
+  },
+
+  // ---- Timeline-style history rows (dot + connecting line + card) ----
+  historyRowNew: { display: "flex", gap: 12 },
+  historyDotCol: { display: "flex", flexDirection: "column", alignItems: "center", width: 14, flexShrink: 0 },
+  historyDot: { width: 10, height: 10, borderRadius: "50%", background: NAVY, marginTop: 8, flexShrink: 0 },
+  historyLine: { width: 2, flexGrow: 1, background: LINE, marginTop: 2, minHeight: 16 },
+  historyContentCard: {
+    flexGrow: 1,
+    background: WHITE,
+    border: `1px solid ${LINE}`,
+    borderRadius: 12,
+    padding: "13px 16px",
+    marginBottom: 14,
+  },
+  // Row inside a timeline card (historyRow already draws its own card, so this one is flat).
+  historyRowFlat: { display: "flex", justifyContent: "space-between", alignItems: "center" },
+
   drawerHeader: { display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 22 },
   drawerName: { fontSize: "1.3rem", fontWeight: 700, color: NAVY, marginBottom: 3 },
   drawerMeta: { fontSize: "0.84rem", color: "#8a8a84" },
@@ -1752,6 +1986,24 @@ export function ClockIcon() {
     >
       <circle cx="12" cy="12" r="9" />
       <path d="M12 7v5l3.5 2" />
+    </svg>
+  );
+}
+export function ChevronDownIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M6 9l6 6 6-6" />
     </svg>
   );
 }

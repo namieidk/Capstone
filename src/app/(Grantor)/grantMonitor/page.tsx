@@ -6,8 +6,9 @@ import {
   ArrowRightIcon,
   BAD,
   BellIcon,
+  CheckCircleIcon,
+  ChevronDownIcon,
   ClockIcon,
-  DrawerInfoRow,
   FUNDED_SCHOLARS,
   type FundedScholar,
   GOOD,
@@ -19,6 +20,7 @@ import {
   MonitorIcon,
   NAVY,
   PAYMENT_STATUS_COLORS,
+  PaymentsIcon,
   SearchIcon,
   s,
   TINT,
@@ -30,13 +32,14 @@ import {
 import { useSidebar } from "@/components/SidebarContext";
 
 /* ------------------------------------------------------------------ */
-/* Local tokens not exported from Grantorshared                        */
+/* Local tokens (same values as the Coordinator Monitor page)          */
 /* ------------------------------------------------------------------ */
 
-const BORDER_SUBTLE = `1px solid ${LINE}`;
-const SHADOW_SM = "0 1px 3px rgba(0,0,0,0.04)";
+const BORDER_SUBTLE = "1px solid rgba(30, 58, 95, 0.10)";
+const SHADOW_SM = "0 4px 18px rgba(30, 58, 95, 0.09)";
 
 type DrawerView = "overview" | "history";
+type HealthFilter = "all" | FundedScholar["health"];
 
 export default function GrantorMonitorPage() {
   const { toggleMobile } = useSidebar();
@@ -45,18 +48,20 @@ export default function GrantorMonitorPage() {
   const [view, setView] = useState<DrawerView>("overview");
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [healthFilter, setHealthFilter] = useState<HealthFilter>("all");
   const PAGE_SIZE = 10;
 
   const query = search.trim().toLowerCase();
 
   const filteredScholars = useMemo(
     () =>
-      query
-        ? FUNDED_SCHOLARS.filter(
-            (sch) => sch.name.toLowerCase().includes(query) || sch.course.toLowerCase().includes(query),
-          )
-        : FUNDED_SCHOLARS,
-    [query],
+      FUNDED_SCHOLARS.filter((sch) => {
+        const matchesQuery =
+          !query || sch.name.toLowerCase().includes(query) || sch.course.toLowerCase().includes(query);
+        const matchesHealth = healthFilter === "all" || sch.health === healthFilter;
+        return matchesQuery && matchesHealth;
+      }),
+    [query, healthFilter],
   );
 
   const totalPages = Math.max(1, Math.ceil(filteredScholars.length / PAGE_SIZE));
@@ -82,6 +87,17 @@ export default function GrantorMonitorPage() {
     <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <style>{`
         .filter-select:focus { outline: none; }
+
+        @keyframes monitorOverlayFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes monitorPanelSlideIn {
+          from { opacity: 0; transform: translate3d(32px, 0, 0); }
+          to { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+        .monitor-drawer-overlay { animation: monitorOverlayFadeIn 0.2s ease both; }
+        .monitor-drawer-panel { animation: monitorPanelSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both; }
       `}</style>
 
       {/* ---------------- Page-level navbar ---------------- */}
@@ -103,7 +119,7 @@ export default function GrantorMonitorPage() {
               onChange={(e) => handleSearchChange(e.target.value)}
             />
           </div>
-          <button type="button" style={s.bellBtn}>
+          <button type="button" style={s.bellBtn} aria-label="Notifications">
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
           </button>
@@ -122,11 +138,35 @@ export default function GrantorMonitorPage() {
               padding: "22px 22px 8px",
             }}
           >
+            <div style={s.tableHeaderRow}>
+              <p style={s.tableHeaderCount}>{filteredScholars.length} total scholars</p>
+              <div style={s.tableFilterWrap}>
+                <select
+                  className="filter-select"
+                  value={healthFilter}
+                  onChange={(e) => {
+                    setHealthFilter(e.target.value as HealthFilter);
+                    setPage(1);
+                  }}
+                  style={s.tableFilterSelect}
+                  aria-label="Filter by status"
+                >
+                  <option value="all">All statuses</option>
+                  <option value="good">On track</option>
+                  <option value="warn">Needs attention</option>
+                  <option value="bad">At risk</option>
+                </select>
+                <span style={s.tableFilterChevron}>
+                  <ChevronDownIcon />
+                </span>
+              </div>
+            </div>
+
             <div className="vg-table-scroll" style={{ width: "100%", overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${LINE}` }}>
-                    <th style={{ ...s.th, background: "none", padding: "14px 14px", textAlign: "center" }}>Scholar</th>
+                    <th style={{ ...s.th, background: "none", padding: "14px 14px", textAlign: "left" }}>Scholar</th>
                     <th style={{ ...s.th, background: "none", textAlign: "center" }}>GWA</th>
                     <th style={{ ...s.th, background: "none", textAlign: "center" }}>Documents</th>
                     <th style={{ ...s.th, background: "none", textAlign: "center" }}>Disbursement</th>
@@ -145,7 +185,7 @@ export default function GrantorMonitorPage() {
                         verticalAlign: "middle",
                       }}
                     >
-                      <td style={{ ...s.td, padding: "16px 14px", textAlign: "center" }}>
+                      <td style={{ ...s.td, padding: "16px 14px", textAlign: "left" }}>
                         <p style={s.tdName}>{sch.name}</p>
                         <p style={s.tdSub}>{sch.course}</p>
                       </td>
@@ -167,25 +207,14 @@ export default function GrantorMonitorPage() {
                       <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{sch.disbursement}</td>
                       <td style={{ ...s.td, textAlign: "center" }}>
                         <span
-                          style={{
-                            ...s.stageTag,
-                            background: HEALTH_TAG[sch.health].bg,
-                            color: HEALTH_TAG[sch.health].text,
-                            fontWeight: 600,
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 6,
-                          }}
+                          style={
+                            sch.health === "good"
+                              ? s.statusPillSolid
+                              : sch.health === "warn"
+                                ? s.statusPillOutlineWarn
+                                : s.statusPillOutlineBad
+                          }
                         >
-                          <span
-                            style={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: "50%",
-                              background: HEALTH_TAG[sch.health].text,
-                              flexShrink: 0,
-                            }}
-                          />
                           {HEALTH_TAG[sch.health].label}
                         </span>
                       </td>
@@ -197,18 +226,7 @@ export default function GrantorMonitorPage() {
                             openScholar(sch);
                           }}
                           aria-label="View scholar"
-                          style={{
-                            width: 34,
-                            height: 34,
-                            borderRadius: "50%",
-                            border: `1.5px solid ${LINE}`,
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            background: WHITE,
-                            color: "#7a7a74",
-                            cursor: "pointer",
-                          }}
+                          style={s.viewIconBtn}
                         >
                           <EyeIcon />
                         </button>
@@ -251,8 +269,8 @@ export default function GrantorMonitorPage() {
                 </button>
                 {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
                   <button
-                    key={num}
                     type="button"
+                    key={num}
                     onClick={() => setPage(num)}
                     style={{
                       width: 32,
@@ -296,11 +314,13 @@ export default function GrantorMonitorPage() {
       </div>
 
       {selected && (
+        // biome-ignore lint/a11y/useSemanticElements: overlay backdrop acts as a dismiss button; div cannot be a real button (contains block content)
         <div
-          style={s.drawerOverlay}
-          role="dialog"
-          aria-modal="true"
+          className="monitor-drawer-overlay"
+          style={s.drawerOverlayBlur}
           onClick={closeDrawer}
+          role="button"
+          tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
@@ -308,130 +328,229 @@ export default function GrantorMonitorPage() {
             }
           }}
         >
-          <div style={s.drawerPanel} role="presentation" aria-hidden onClick={(e) => e.stopPropagation()}>
-            <div style={s.drawerHeader}>
-              <span style={s.profileAvatar}>{selected.initials}</span>
-              <div style={{ flexGrow: 1 }}>
-                <h3 style={s.drawerName}>{selected.name}</h3>
-                <p style={s.drawerMeta}>{selected.course}</p>
+          <div
+            className="monitor-drawer-panel"
+            style={s.drawerPanelFlush}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.stopPropagation();
+              }
+            }}
+          >
+            {/* ---------------- Hero header ---------------- */}
+            <div style={s.drawerHero}>
+              <div style={s.drawerHeroTopRow}>
+                <button type="button" onClick={closeDrawer} style={s.drawerHeroCloseBtn} aria-label="Close">
+                  <XCircleIcon />
+                </button>
               </div>
-              <button type="button" onClick={closeDrawer} style={s.drawerCloseBtn}>
-                <XCircleIcon />
-              </button>
+              <div style={s.drawerHeroAvatar}>{selected.initials}</div>
+              <h3 style={s.drawerHeroName}>{selected.name}</h3>
+              <p style={s.drawerHeroMeta}>{selected.course}</p>
+              <span
+                style={{
+                  ...s.drawerHeroStatusPill,
+                  background:
+                    selected.health === "good"
+                      ? "rgba(221,238,227,0.9)"
+                      : selected.health === "warn"
+                        ? "rgba(252,238,196,0.9)"
+                        : "rgba(246,228,223,0.9)",
+                  color: selected.health === "good" ? GOOD : selected.health === "warn" ? "#8A6410" : BAD,
+                }}
+              >
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "currentColor",
+                    flexShrink: 0,
+                  }}
+                />
+                {HEALTH_TAG[selected.health].label}
+              </span>
             </div>
 
-            {view === "overview" ? (
-              <>
-                <p style={s.drawerSectionLabel}>Current standing</p>
-                <div style={s.drawerInfoGrid}>
-                  <DrawerInfoRow label="Current GWA" value={`${selected.gwa}%`} />
-                  <DrawerInfoRow label="Trend" value={selected.trend === "up" ? "Improving" : "Declining"} />
-                  <DrawerInfoRow label="Documents" value={selected.docs} />
-                  <DrawerInfoRow label="Disbursement" value={selected.disbursement} />
-                </div>
-
-                <p style={s.drawerSectionLabel}>This semesters payment</p>
-                <div style={s.drawerCurrentPayCard}>
-                  <div style={s.drawerCurrentPayLeft}>
-                    <span style={s.drawerCurrentPayTerm}>{selected.currentPayment.term}</span>
-                    <span style={s.drawerCurrentPayAmount}>₱{selected.currentPayment.amount.toLocaleString()}</span>
-                  </div>
-                  <span
-                    style={{
-                      ...s.stageTag,
-                      background: PAYMENT_STATUS_COLORS[selected.currentPayment.status].bg,
-                      color: PAYMENT_STATUS_COLORS[selected.currentPayment.status].text,
-                    }}
-                  >
-                    {selected.currentPayment.status}
-                  </span>
-                </div>
-
-                <div style={s.drawerHistoryBtnRow}>
-                  <button type="button" onClick={() => setView("history")} style={s.drawerHistoryBtn}>
-                    <ClockIcon /> View full history <ArrowRightIcon />
-                  </button>
-                </div>
-
-                <p style={s.drawerSectionLabel}>Status</p>
-                <div style={s.appNoteCard}>
-                  <span style={s.appNoteIcon}>
-                    <MonitorIcon />
-                  </span>
-                  <p style={s.appNoteText}>
-                    {selected.health === "good" &&
-                      "This scholar is meeting all retention requirements. No action needed."}
-                    {selected.health === "warn" &&
-                      "Missing a required document. Consider following up with the coordinator."}
-                    {selected.health === "bad" &&
-                      "GWA trending down and documents incomplete. Disbursement is on hold pending review."}
-                  </p>
-                </div>
-
-                <div style={s.drawerStageActions}>
-                  <button type="button" style={s.continueBtnSmall}>
-                    <MailIcon small /> Message coordinator
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <button type="button" onClick={() => setView("overview")} style={s.backToOverviewBtn}>
-                  ← Back to overview
-                </button>
-
-                <div style={s.historySection}>
-                  <p style={s.drawerSectionLabel}>Grade history</p>
-                  <div style={s.historyList}>
-                    {selected.gradeHistory.map((g) => (
-                      <div key={g.term} style={s.historyRow}>
-                        <div style={s.historyRowLeft}>
-                          <span style={s.historyRowTerm}>{g.term}</span>
-                          <span style={s.historyRowSub}>GWA {g.gwa}%</span>
-                        </div>
-                        <div style={s.historyRowRight}>
-                          <span
-                            style={{
-                              ...s.stageTag,
-                              background: GRADE_STATUS_COLORS[g.status].bg,
-                              color: GRADE_STATUS_COLORS[g.status].text,
-                            }}
-                          >
-                            {g.status}
+            <div style={s.drawerBody}>
+              {view === "overview" ? (
+                <>
+                  {/* ---------------- Stat cards ---------------- */}
+                  <div style={s.drawerStatGrid}>
+                    <div style={s.drawerStatCard}>
+                      <div style={s.drawerStatIconBox}>
+                        {selected.trend === "up" ? (
+                          <span style={{ color: GOOD, display: "flex" }}>
+                            <TrendUpIcon />
                           </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div style={s.historySection}>
-                  <p style={s.drawerSectionLabel}>Payment history</p>
-                  <div style={s.historyList}>
-                    {selected.paymentHistory.map((p) => (
-                      <div key={p.term} style={s.historyRow}>
-                        <div style={s.historyRowLeft}>
-                          <span style={s.historyRowTerm}>{p.term}</span>
-                          <span style={s.historyRowSub}>{p.date}</span>
-                        </div>
-                        <div style={s.historyRowRight}>
-                          <span style={s.historyRowValue}>₱{p.amount.toLocaleString()}</span>
-                          <span
-                            style={{
-                              ...s.stageTag,
-                              background: PAYMENT_STATUS_COLORS[p.status].bg,
-                              color: PAYMENT_STATUS_COLORS[p.status].text,
-                            }}
-                          >
-                            {p.status}
+                        ) : (
+                          <span style={{ color: BAD, display: "flex" }}>
+                            <TrendDownIcon />
                           </span>
-                        </div>
+                        )}
                       </div>
-                    ))}
+                      <p style={s.drawerStatLabel}>Current GWA</p>
+                      <p style={s.drawerStatValue}>{selected.gwa}%</p>
+                    </div>
+                    <div style={s.drawerStatCard}>
+                      <div style={s.drawerStatIconBox}>
+                        <CheckCircleIcon small />
+                      </div>
+                      <p style={s.drawerStatLabel}>Documents</p>
+                      <p style={s.drawerStatValue}>{selected.docs}</p>
+                    </div>
+                    <div style={s.drawerStatCard}>
+                      <div style={s.drawerStatIconBox}>
+                        <PaymentsIcon />
+                      </div>
+                      <p style={s.drawerStatLabel}>Disbursement</p>
+                      <p style={{ ...s.drawerStatValue, fontSize: "0.88rem" }}>{selected.disbursement}</p>
+                    </div>
+                    <div style={s.drawerStatCard}>
+                      <div style={s.drawerStatIconBox}>
+                        <MonitorIcon />
+                      </div>
+                      <p style={s.drawerStatLabel}>Trend</p>
+                      <p style={{ ...s.drawerStatValue, fontSize: "0.88rem" }}>
+                        {selected.trend === "up" ? "Improving" : "Declining"}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </>
-            )}
+
+                  {/* ---------------- Payment card ---------------- */}
+                  <p style={s.drawerSectionLabel}>This semester&apos;s payment</p>
+                  <div style={s.drawerPayCardNew}>
+                    <div>
+                      <p style={s.drawerPayCardTerm}>{selected.currentPayment.term}</p>
+                      <p style={s.drawerPayCardAmount}>₱{selected.currentPayment.amount.toLocaleString()}</p>
+                    </div>
+                    <span
+                      style={{
+                        ...s.stageTag,
+                        background: "rgba(255,255,255,0.18)",
+                        color: WHITE,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {selected.currentPayment.status}
+                    </span>
+                  </div>
+
+                  <div style={s.drawerHistoryBtnRow}>
+                    <button type="button" onClick={() => setView("history")} style={s.drawerHistoryBtn}>
+                      <ClockIcon /> View full history <ArrowRightIcon />
+                    </button>
+                  </div>
+
+                  {/* ---------------- Status note ---------------- */}
+                  <p style={s.drawerSectionLabel}>Status</p>
+                  <div style={s.appNoteCardAmber}>
+                    <span style={s.appNoteIcon}>
+                      <MonitorIcon />
+                    </span>
+                    <p style={s.appNoteText}>
+                      {selected.health === "good" &&
+                        "This scholar is meeting all retention requirements. No action needed."}
+                      {selected.health === "warn" &&
+                        "Missing a required document. Consider following up with the coordinator."}
+                      {selected.health === "bad" &&
+                        "GWA trending down and documents incomplete. Disbursement is on hold pending review."}
+                    </p>
+                  </div>
+
+                  <div style={s.drawerStageActions}>
+                    <button type="button" style={s.continueBtnSmall}>
+                      <MailIcon small /> Message coordinator
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <button type="button" onClick={() => setView("overview")} style={s.backToOverviewBtn}>
+                    ← Back to overview
+                  </button>
+
+                  <div style={s.historySection}>
+                    <p style={s.drawerSectionLabel}>Grade history</p>
+                    <div>
+                      {selected.gradeHistory.map((g, idx) => (
+                        <div key={`${g.term}-${g.gwa}`} style={s.historyRowNew}>
+                          <div style={s.historyDotCol}>
+                            <span
+                              style={{
+                                ...s.historyDot,
+                                background: GRADE_STATUS_COLORS[g.status].text,
+                              }}
+                            />
+                            {idx !== selected.gradeHistory.length - 1 && <span style={s.historyLine} />}
+                          </div>
+                          <div style={s.historyContentCard}>
+                            <div style={s.historyRowFlat}>
+                              <div style={s.historyRowLeft}>
+                                <span style={s.historyRowTerm}>{g.term}</span>
+                                <span style={s.historyRowSub}>GWA {g.gwa}%</span>
+                              </div>
+                              <div style={s.historyRowRight}>
+                                <span
+                                  style={{
+                                    ...s.stageTag,
+                                    background: GRADE_STATUS_COLORS[g.status].bg,
+                                    color: GRADE_STATUS_COLORS[g.status].text,
+                                  }}
+                                >
+                                  {g.status}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div style={s.historySection}>
+                    <p style={s.drawerSectionLabel}>Payment history</p>
+                    <div>
+                      {selected.paymentHistory.map((p, idx) => (
+                        <div key={`${p.term}-${p.date}-${p.amount}`} style={s.historyRowNew}>
+                          <div style={s.historyDotCol}>
+                            <span
+                              style={{
+                                ...s.historyDot,
+                                background: PAYMENT_STATUS_COLORS[p.status].text,
+                              }}
+                            />
+                            {idx !== selected.paymentHistory.length - 1 && <span style={s.historyLine} />}
+                          </div>
+                          <div style={s.historyContentCard}>
+                            <div style={s.historyRowFlat}>
+                              <div style={s.historyRowLeft}>
+                                <span style={s.historyRowTerm}>{p.term}</span>
+                                <span style={s.historyRowSub}>{p.date}</span>
+                              </div>
+                              <div style={s.historyRowRight}>
+                                <span style={s.historyRowValue}>₱{p.amount.toLocaleString()}</span>
+                                <span
+                                  style={{
+                                    ...s.stageTag,
+                                    background: PAYMENT_STATUS_COLORS[p.status].bg,
+                                    color: PAYMENT_STATUS_COLORS[p.status].text,
+                                  }}
+                                >
+                                  {p.status}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
