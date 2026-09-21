@@ -74,7 +74,11 @@ export default function ScholarGradePage() {
         />
 
         {/* Center: CCG Ingestion & OCR Precheck Card */}
-        <CcgUploadCard onSuccess={fetchReports} />
+        <CcgUploadCard
+          onSuccess={fetchReports}
+          latestReport={latestReport}
+          onOpenAppeal={() => setAppealModalOpen(true)}
+        />
 
         {/* Bottom: Semestral Credited Grades History */}
         <TermGradesHistoryTable reports={reports} loading={loading} />

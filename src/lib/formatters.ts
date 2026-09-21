@@ -82,14 +82,13 @@ export function formatRetentionThreshold(
   }
 
   if (isFourPoint) {
-    // 4.0 ascending scale (e.g. UM: 4.00 highest, 2.00 passing at 75%, 3.00 retention at 90%)
-    const thresholdGwa =
-      norm <= 90 ? passing + ((norm - 75) / 15) * (3.0 - passing) : 3.0 + ((norm - 90) / 10) * (highest - 3.0);
+    // 4.0 ascending scale (e.g. UM: 4.00 highest, 3.50 at 90-95%, 2.00 passing at 75%)
+    const thresholdGwa = norm <= 90 ? passing + ((norm - 75) / 15) * 1.5 : 3.5 + ((norm - 90) / 10) * (highest - 3.5);
     return `${thresholdGwa.toFixed(2)} (${norm.toFixed(0)}%)`;
   }
 
   if (highest < failing) {
-    // 5-point inverted scale (e.g. 1.00 highest, 3.00 passing at 75%)
+    // 5-point inverted scale (e.g. 1.00 highest, 3.00 passing at 75%, 1.80 at 90%)
     const thresholdGwa = passing - ((norm - 75) / 25) * (passing - highest);
     return `${thresholdGwa.toFixed(2)} (${norm.toFixed(0)}%)`;
   }

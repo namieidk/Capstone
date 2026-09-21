@@ -16,6 +16,8 @@ import type { MessageItem } from "@/lib/api/chat";
 import { formatMessageTime } from "./chat-utils";
 import { MessageListSkeleton } from "./MessageListSkeleton";
 
+import { SystemAppealEventCard } from "./SystemAppealEventCard";
+
 interface MessageListProps {
   messages: MessageItem[];
   currentUserId?: number;
@@ -68,11 +70,22 @@ export function MessageList({ messages, currentUserId, isPartnerTyping, loading,
         <MessageScrollerViewport>
           <MessageScrollerContent className="space-y-3">
             {uniqueMessages.map((m, idx) => {
+              const isSystemAppeal =
+                Boolean(m.message_type) && m.message_type !== "TEXT" && m.message_type?.startsWith("SYSTEM_APPEAL_");
+              const key =
+                m.message_id !== undefined && m.message_id !== null ? `msg-${m.message_id}` : `msg-idx-${idx}`;
+
+              if (isSystemAppeal) {
+                return (
+                  <MessageScrollerItem key={key}>
+                    <SystemAppealEventCard message={m} />
+                  </MessageScrollerItem>
+                );
+              }
+
               const isMe = m.sender_user_id === currentUserId;
               const align = isMe ? "end" : "start";
               const bubbleVariant = isMe ? "primary" : "default";
-              const key =
-                m.message_id !== undefined && m.message_id !== null ? `msg-${m.message_id}` : `msg-idx-${idx}`;
 
               return (
                 <MessageScrollerItem key={key}>

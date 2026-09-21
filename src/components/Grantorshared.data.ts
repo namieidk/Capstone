@@ -109,7 +109,7 @@ export interface BudgetScholarRow {
   allocated: number;
   disbursed: number;
   remaining: number;
-  status: "On track" | "At risk" | "Needs attention";
+  status: "On track" | "Action required" | "Needs attention";
 }
 
 export interface FieldProps {
@@ -292,7 +292,7 @@ export const FUNDED_SCHOLARS: FundedScholar[] = [
 export const HEALTH_TAG: Record<FundedScholar["health"], { bg: string; text: string; label: string }> = {
   good: { bg: GOOD_BG, text: GOOD, label: "On track" },
   warn: { bg: WARN_BG, text: WARN, label: "Needs attention" },
-  bad: { bg: BAD_BG, text: BAD, label: "At risk" },
+  bad: { bg: BAD_BG, text: BAD, label: "Action required" },
 };
 
 export const PAYMENT_STATUS_COLORS: Record<
@@ -396,7 +396,7 @@ export const BUDGET_SCHOLAR_ROWS: BudgetScholarRow[] = FUNDED_SCHOLARS.map((scho
     allocated,
     disbursed,
     remaining: allocated - disbursed,
-    status: scholar.health === "good" ? "On track" : scholar.health === "warn" ? "Needs attention" : "At risk",
+    status: scholar.health === "good" ? "On track" : scholar.health === "warn" ? "Needs attention" : "Action required",
   };
 });
 
@@ -413,7 +413,7 @@ export const GRANT_DISBURSEMENT_MONTHLY = [
 export const BUDGET_STATUS_COLORS: Record<BudgetScholarRow["status"], { bg: string; text: string }> = {
   "On track": { bg: GOOD_BG, text: GOOD },
   "Needs attention": { bg: WARN_BG, text: WARN },
-  "At risk": { bg: BAD_BG, text: BAD },
+  "Action required": { bg: BAD_BG, text: BAD },
 };
 
 export const CONVERSATIONS: Conversation[] = [

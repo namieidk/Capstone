@@ -1,8 +1,8 @@
 "use client";
 
-import { CheckCircle2, ExternalLink, GraduationCap, X } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ExternalLink, GraduationCap, ShieldAlert, X } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
 import { getSettings } from "@/lib/api/settings";
 import { GradeAuditSkeleton } from "./GradeAuditSkeleton";
 import { GradeAuditSubjectsTable } from "./GradeAuditSubjectsTable";
+import { GradeFlagAppealConfirmDialog } from "./GradeFlagAppealConfirmDialog";
 import { GradeGradingSystemLegend } from "./GradeGradingSystemLegend";
 import { GradeRequestChangesDialog } from "./GradeRequestChangesDialog";
 
@@ -35,6 +36,7 @@ export function GradeAuditDrawer({ documentId, open, onClose, onReviewed }: Grad
   const [semester, setSemester] = useState<string>("2nd Semester");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requestChangesOpen, setRequestChangesOpen] = useState(false);
+  const [flagAppealDialogOpen, setFlagAppealDialogOpen] = useState(false);
   const [coordinatorNotes, setCoordinatorNotes] = useState("");
 
   useEffect(() => {
@@ -94,6 +96,71 @@ export function GradeAuditDrawer({ documentId, open, onClose, onReviewed }: Grad
     return { totalUnits: unitsSum, computedGwa: gwa };
   }, [gradeItems]);
 
+  const scholar = doc?.scholar_profile;
+  const scholarName = scholar ? `${scholar.first_name || ""} ${scholar.last_name || ""}`.trim() : "Scholar";
+  const schoolGrading = scholar?.school_grading_system;
+
+  const isPassingGrade = useCallback(
+    (grade: number) => {
+      if (Number.isNaN(grade) || grade <= 0) return true;
+      const highestGrade = schoolGrading?.highest_grade != null ? Number(schoolGrading.highest_grade) : undefined;
+      const passingGrade = schoolGrading?.passing_grade != null ? Number(schoolGrading.passing_grade) : undefined;
+      const failingGrade = schoolGrading?.failing_grade != null ? Number(schoolGrading.failing_grade) : undefined;
+
+      if (highestGrade != null && passingGrade != null) {
+        if (highestGrade < (failingGrade ?? 5.0)) {
+          // Inverted 5-point scale (e.g. 1.0 highest, 3.0 passing)
+          return grade <= passingGrade && grade >= highestGrade;
+        }
+        // Direct 4-point scale or percentage scale
+        return grade >= passingGrade && grade <= highestGrade;
+      }
+
+      if (grade <= 5.0 && grade >= 1.0) {
+        return grade <= 3.0;
+      }
+      return grade >= 75.0;
+    },
+    [schoolGrading],
+  );
+
+  const isGwaPassing = useCallback(
+    (gwa: number, thresholdPercent: number) => {
+      if (gwa <= 0) return true;
+      const scale = schoolGrading?.grading_scale;
+      if (scale === "NUMERIC_4_POINT") {
+        const requiredGwa =
+          thresholdPercent <= 90
+            ? 2.0 + ((thresholdPercent - 75) / 15) * 1.5
+            : 3.5 + ((thresholdPercent - 90) / 10) * 0.5;
+        return gwa >= requiredGwa;
+      }
+      if (scale === "NUMERIC_5_POINT" || scale === "NUMERIC_1_POINT_PASSING") {
+        const requiredGwa = 3.0 - (thresholdPercent - 75) * (2.0 / 25);
+        return gwa <= requiredGwa;
+      }
+      return gwa >= thresholdPercent;
+    },
+    [schoolGrading],
+  );
+
+  const failedSubjects = useMemo(() => {
+    return gradeItems.filter((item) => {
+      const g = Number(item.grade);
+      return !Number.isNaN(g) && g > 0 && !isPassingGrade(g);
+    });
+  }, [gradeItems, isPassingGrade]);
+
+  const isGwaDeficient = useMemo(() => {
+    return computedGwa > 0 && !isGwaPassing(computedGwa, gradeThreshold);
+  }, [computedGwa, gradeThreshold, isGwaPassing]);
+
+  const hasDeficiency = failedSubjects.length > 0 || isGwaDeficient;
+
+  const failedSubjectsSummary = useMemo(() => {
+    return failedSubjects.map((s) => `${s.subject_code || s.subject_name} (${Number(s.grade).toFixed(2)})`).join(", ");
+  }, [failedSubjects]);
+
   if (!open || !documentId) return null;
 
   const handleVerify = async () => {
@@ -115,6 +182,7 @@ export function GradeAuditDrawer({ documentId, open, onClose, onReviewed }: Grad
           ? "Grades verified successfully! Scholar is cleared for the next term."
           : "Grades recorded. Scholar flagged as Under Review / Academic Appeal required.",
       );
+      setFlagAppealDialogOpen(false);
       onReviewed();
       onClose();
     } catch (err) {
@@ -141,9 +209,6 @@ export function GradeAuditDrawer({ documentId, open, onClose, onReviewed }: Grad
   };
 
   const fileUrl = doc?.file_url;
-  const scholar = doc?.scholar_profile;
-  const scholarName = scholar ? `${scholar.first_name || ""} ${scholar.last_name || ""}`.trim() : "Scholar";
-  const schoolGrading = scholar?.school_grading_system;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end transition-opacity">
@@ -224,9 +289,19 @@ export function GradeAuditDrawer({ documentId, open, onClose, onReviewed }: Grad
                   <span className="text-[10px] uppercase font-bold text-teal-700 block">Total Units</span>
                   <span className="text-base font-black text-[#0a4f42]">{totalUnits.toFixed(1)}</span>
                 </div>
-                <div className="bg-emerald-50/70 border border-emerald-100 p-2.5 rounded-xl text-center">
-                  <span className="text-[10px] uppercase font-bold text-emerald-700 block">Computed GWA</span>
-                  <span className="text-base font-black text-emerald-900">
+                <div
+                  className={`border p-2.5 rounded-xl text-center ${
+                    isGwaDeficient ? "bg-rose-50/70 border-rose-200" : "bg-emerald-50/70 border-emerald-100"
+                  }`}
+                >
+                  <span
+                    className={`text-[10px] uppercase font-bold block ${
+                      isGwaDeficient ? "text-rose-700" : "text-emerald-700"
+                    }`}
+                  >
+                    Computed GWA
+                  </span>
+                  <span className={`text-base font-black ${isGwaDeficient ? "text-rose-900" : "text-emerald-900"}`}>
                     {computedGwa > 0 ? computedGwa.toFixed(2) : "—"}
                   </span>
                 </div>
@@ -244,6 +319,33 @@ export function GradeAuditDrawer({ documentId, open, onClose, onReviewed }: Grad
                 schoolGrading={schoolGrading}
                 gradeThreshold={gradeThreshold}
               />
+
+              {/* Real-time Academic Standing Banner */}
+              {hasDeficiency ? (
+                <div className="rounded-xl border border-rose-200 bg-rose-50/80 p-3 flex items-start gap-2.5 shrink-0">
+                  <AlertTriangle className="size-4 text-rose-600 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5 text-xs text-rose-900">
+                    <span className="font-bold block">
+                      Academic Deficiencies Detected (
+                      {failedSubjects.length > 0
+                        ? `${failedSubjects.length} failed subject${failedSubjects.length > 1 ? "s" : ""}`
+                        : "GWA below retention standard"}
+                      )
+                    </span>
+                    <p className="text-[11px] text-rose-700 leading-snug">
+                      Certifying this CCG will record these grades and notify the scholar to submit an{" "}
+                      <span className="font-semibold underline">Academic Second Chance Appeal</span> for Grantor review.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-2.5 flex items-center gap-2 shrink-0">
+                  <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
+                  <span className="text-xs font-semibold text-emerald-900">
+                    All subjects passed • Good Academic Standing
+                  </span>
+                </div>
+              )}
 
               {/* Subjects Table */}
               <GradeAuditSubjectsTable
@@ -270,15 +372,30 @@ export function GradeAuditDrawer({ documentId, open, onClose, onReviewed }: Grad
                   Request Correction
                 </Button>
 
-                <Button
-                  type="button"
-                  disabled={isSubmitting}
-                  onClick={handleVerify}
-                  className="h-9.5 rounded-xl bg-[#0a4f42] hover:bg-[#083c32] text-white text-xs font-bold px-5 gap-2 shadow-xs"
-                >
-                  <CheckCircle2 className="size-4" />
-                  <span>Approve</span>
-                </Button>
+                {hasDeficiency ? (
+                  <Button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => {
+                      setCoordinatorNotes("");
+                      setFlagAppealDialogOpen(true);
+                    }}
+                    className="h-9.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold px-4 gap-1.5 shadow-xs"
+                  >
+                    <ShieldAlert className="size-4" />
+                    <span>Record & Flag for Academic Appeal</span>
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={handleVerify}
+                    className="h-9.5 rounded-xl bg-[#0a4f42] hover:bg-[#083c32] text-white text-xs font-bold px-5 gap-2 shadow-xs"
+                  >
+                    <CheckCircle2 className="size-4" />
+                    <span>Approve & Clear Standing</span>
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -291,6 +408,20 @@ export function GradeAuditDrawer({ documentId, open, onClose, onReviewed }: Grad
         notes={coordinatorNotes}
         onNotesChange={setCoordinatorNotes}
         onConfirm={handleRequestChanges}
+        isSubmitting={isSubmitting}
+      />
+
+      <GradeFlagAppealConfirmDialog
+        open={flagAppealDialogOpen}
+        onOpenChange={setFlagAppealDialogOpen}
+        scholarName={scholarName}
+        failedCount={failedSubjects.length}
+        failedSubjectsText={failedSubjectsSummary}
+        isGwaDeficient={isGwaDeficient}
+        computedGwa={computedGwa}
+        notes={coordinatorNotes}
+        onNotesChange={setCoordinatorNotes}
+        onConfirm={handleVerify}
         isSubmitting={isSubmitting}
       />
     </div>

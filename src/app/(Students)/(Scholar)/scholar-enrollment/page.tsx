@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BillingAssessmentSummary } from "./components/BillingAssessmentSummary";
 import { EndorsementFinishedCard } from "./components/EndorsementFinishedCard";
 import { EnrolledSubjectsReview } from "./components/EnrolledSubjectsReview";
+import { EnrollmentAcademicLockCard } from "./components/EnrollmentAcademicLockCard";
 import { EnrollmentAuditSummaryCard } from "./components/EnrollmentAuditSummaryCard";
 import { EnrollmentPendingReviewCard } from "./components/EnrollmentPendingReviewCard";
 import { EnrollmentUploadSection } from "./components/EnrollmentUploadSection";
@@ -20,6 +21,8 @@ export default function ScholarEnrollmentPage() {
     loading,
     error,
     enrollmentState,
+    academicLock,
+    isAcademicLocked,
     fetchState,
     isConsolidated,
     setIsConsolidated,
@@ -107,81 +110,88 @@ export default function ScholarEnrollmentPage() {
             {/* Header Scholar & Term Context Card */}
             <ScholarTermContextCard enrollmentState={enrollmentState} loading={loading} onRefresh={fetchState} />
 
-            {/* If endorsement has completed, show dedicated EndorsementFinishedCard */}
-            {isApproved && (
-              <EndorsementFinishedCard
-                enrollmentState={enrollmentState}
-                totalAssessment={totalAssessment}
-                subjectsCount={enrolledSubjects.length}
-                totalUnits={totalUnits}
-              />
-            )}
+            {/* If Scholar has active academic standing lock (appeal pending / probation review), display lock card */}
+            {isAcademicLocked && academicLock ? (
+              <EnrollmentAcademicLockCard lock={academicLock} />
+            ) : (
+              <>
+                {/* If endorsement has completed, show dedicated EndorsementFinishedCard */}
+                {isApproved && (
+                  <EndorsementFinishedCard
+                    enrollmentState={enrollmentState}
+                    totalAssessment={totalAssessment}
+                    subjectsCount={enrolledSubjects.length}
+                    totalUnits={totalUnits}
+                  />
+                )}
 
-            {/* If pending coordinator review, show dedicated pending card */}
-            {isPending && (
-              <EnrollmentPendingReviewCard coordinatorNotes={enrollmentState.enrollment?.coordinator_notes} />
-            )}
+                {/* If pending coordinator review, show dedicated pending card */}
+                {isPending && (
+                  <EnrollmentPendingReviewCard coordinatorNotes={enrollmentState.enrollment?.coordinator_notes} />
+                )}
 
-            {/* Upload Dropzones & Mode Toggle */}
-            <EnrollmentUploadSection
-              isConsolidated={isConsolidated}
-              onToggleConsolidated={setIsConsolidated}
-              isReadOnly={isReadOnly}
-              isUploadingConsolidated={isUploadingConsolidated}
-              consolidatedFile={consolidatedFile}
-              onUploadConsolidated={handleConsolidatedUpload}
-              onClearConsolidated={() => {
-                setConsolidatedFile(null);
-                setCorDocId(undefined);
-              }}
-              isUploadingCor={isUploadingCor}
-              corFile={corFile}
-              onUploadCor={handleCorUpload}
-              onClearCor={() => {
-                setCorFile(null);
-                setCorDocId(undefined);
-              }}
-              isUploadingSoa={isUploadingSoa}
-              soaFile={soaFile}
-              onUploadSoa={handleSoaUpload}
-              onClearSoa={() => {
-                setSoaFile(null);
-                setSoaDocId(undefined);
-              }}
-            />
+                {/* Upload Dropzones & Mode Toggle */}
+                <EnrollmentUploadSection
+                  isConsolidated={isConsolidated}
+                  onToggleConsolidated={setIsConsolidated}
+                  isReadOnly={isReadOnly}
+                  isUploadingConsolidated={isUploadingConsolidated}
+                  consolidatedFile={consolidatedFile}
+                  onUploadConsolidated={handleConsolidatedUpload}
+                  onClearConsolidated={() => {
+                    setConsolidatedFile(null);
+                    setCorDocId(undefined);
+                  }}
+                  isUploadingCor={isUploadingCor}
+                  corFile={corFile}
+                  onUploadCor={handleCorUpload}
+                  onClearCor={() => {
+                    setCorFile(null);
+                    setCorDocId(undefined);
+                  }}
+                  isUploadingSoa={isUploadingSoa}
+                  soaFile={soaFile}
+                  onUploadSoa={handleSoaUpload}
+                  onClearSoa={() => {
+                    setSoaFile(null);
+                    setSoaDocId(undefined);
+                  }}
+                />
 
-            {/* Enrolled Subjects Review */}
-            <EnrolledSubjectsReview
-              subjects={enrolledSubjects}
-              onChangeSubjects={setEnrolledSubjects}
-              isReadOnly={isReadOnly}
-            />
+                {/* Enrolled Subjects Review */}
+                <EnrolledSubjectsReview
+                  subjects={enrolledSubjects}
+                  onChangeSubjects={setEnrolledSubjects}
+                  isReadOnly={isReadOnly}
+                />
 
-            {/* Billing Assessment Summary */}
-            <BillingAssessmentSummary
-              totalAssessment={totalAssessment}
-              assessmentDate={assessmentDate}
-              billingBreakdown={billingBreakdown}
-              onChangeTotalAssessment={setTotalAssessment}
-              onChangeAssessmentDate={setAssessmentDate}
-              onChangeBreakdown={setBillingBreakdown}
-              isReadOnly={isReadOnly}
-            />
+                {/* Billing Assessment Summary */}
+                <BillingAssessmentSummary
+                  totalAssessment={totalAssessment}
+                  assessmentDate={assessmentDate}
+                  billingBreakdown={billingBreakdown}
+                  onChangeTotalAssessment={setTotalAssessment}
+                  onChangeAssessmentDate={setAssessmentDate}
+                  onChangeBreakdown={setBillingBreakdown}
+                  isReadOnly={isReadOnly}
+                />
 
-            {/* Automated Baseline Audit Pre-Check Card & Actions (Hidden if scholar has already submitted) */}
-            {!hasAlreadySubmitted && (
-              <EnrollmentAuditSummaryCard
-                auditResult={auditResult}
-                isSubmitting={isSubmitting}
-                isSavingDraft={isSavingDraft}
-                canSubmit={enrolledSubjects.length > 0 && totalAssessment > 0}
-                status={status}
-                coordinatorNotes={enrollmentState.enrollment?.coordinator_notes}
-                onSubmit={handleSubmit}
-                onSaveDraft={handleSaveDraft}
-                onDiscardDraft={handleDiscardDraft}
-                hasDraft={isDraft || enrolledSubjects.length > 0 || totalAssessment > 0}
-              />
+                {/* Automated Baseline Audit Pre-Check Card & Actions (Hidden if scholar has already submitted) */}
+                {!hasAlreadySubmitted && (
+                  <EnrollmentAuditSummaryCard
+                    auditResult={auditResult}
+                    isSubmitting={isSubmitting}
+                    isSavingDraft={isSavingDraft}
+                    canSubmit={enrolledSubjects.length > 0 && totalAssessment > 0}
+                    status={status}
+                    coordinatorNotes={enrollmentState.enrollment?.coordinator_notes}
+                    onSubmit={handleSubmit}
+                    onSaveDraft={handleSaveDraft}
+                    onDiscardDraft={handleDiscardDraft}
+                    hasDraft={isDraft || enrolledSubjects.length > 0 || totalAssessment > 0}
+                  />
+                )}
+              </>
             )}
           </>
         )}

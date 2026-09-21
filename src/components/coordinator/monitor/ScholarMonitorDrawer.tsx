@@ -105,9 +105,10 @@ export function ScholarMonitorDrawer({ scholar, open, onOpenChange }: ScholarMon
               <span className="font-semibold text-foreground">Monitoring Note:</span>
               <p className="text-[11px] leading-relaxed">
                 {scholar.health === "good" && "This scholar is meeting all retention requirements. No action needed."}
-                {scholar.health === "warn" && "Missing a required document. A reminder message is recommended."}
+                {scholar.health === "warn" &&
+                  "Active probation or pending document upload. Regular follow-up recommended."}
                 {scholar.health === "bad" &&
-                  "GWA trending down and documents incomplete. Disbursement is on hold pending review."}
+                  "Academic audit requirement flagged. Action is required before disbursement can proceed."}
               </p>
             </div>
 

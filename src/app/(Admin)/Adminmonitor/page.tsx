@@ -42,7 +42,7 @@ const HEALTH_OPTIONS: Array<{ value: "all" | ScholarHealth; label: string }> = [
   { value: "all", label: "All statuses" },
   { value: "good", label: "On track" },
   { value: "warn", label: "Needs attention" },
-  { value: "bad", label: "At risk" },
+  { value: "bad", label: "Action required" },
 ];
 
 export default function AdminMonitorPage() {
@@ -323,7 +323,7 @@ export default function AdminMonitorPage() {
             <div style={{ display: "flex", gap: 16, marginTop: 10, flexWrap: "wrap", justifyContent: "center" }}>
               <LegendDot color={GOOD} label={`On track (${counts.good})`} />
               <LegendDot color={WARN} label={`Needs attn. (${counts.warn})`} />
-              <LegendDot color={BAD} label={`At risk (${counts.bad})`} />
+              <LegendDot color={BAD} label={`Action req. (${counts.bad})`} />
             </div>
           </div>
 

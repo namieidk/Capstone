@@ -1349,7 +1349,7 @@ export const TONE_MAP: Record<PipelineCount["tone"], { bg: string; text: string 
 export const HEALTH_TAG: Record<ActiveScholar["health"], { bg: string; text: string; label: string }> = {
   good: { bg: GOOD_BG, text: GOOD, label: "On track" },
   warn: { bg: WARN_BG, text: WARN, label: "Needs attention" },
-  bad: { bg: BAD_BG, text: BAD, label: "At risk" },
+  bad: { bg: BAD_BG, text: BAD, label: "Action required" },
 };
 
 export const TITLES: Record<string, [string, string]> = {

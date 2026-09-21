@@ -127,13 +127,22 @@ export function useScholarEnrollmentState() {
       fetchState();
       toast.info("Enrollment status updated by coordinator.");
     };
+    const handleAppealUpdate = () => {
+      fetchState();
+    };
     socket.on("enrollment:approved", handleUpdate);
     socket.on("enrollment:changes_requested", handleUpdate);
     socket.on("enrollment:rejected", handleUpdate);
+    socket.on("grade_report:appeal_decided", handleAppealUpdate);
+    socket.on("grade_report:appealed", handleAppealUpdate);
+    socket.on("grade_report:verified", handleAppealUpdate);
     return () => {
       socket.off("enrollment:approved", handleUpdate);
       socket.off("enrollment:changes_requested", handleUpdate);
       socket.off("enrollment:rejected", handleUpdate);
+      socket.off("grade_report:appeal_decided", handleAppealUpdate);
+      socket.off("grade_report:appealed", handleAppealUpdate);
+      socket.off("grade_report:verified", handleAppealUpdate);
     };
   }, [socket, fetchState]);
 
@@ -336,20 +345,28 @@ export function useScholarEnrollmentState() {
     }
   };
 
+  const isAcademicLocked = Boolean(enrollmentState?.academic_lock?.is_locked);
   const isReadOnly =
-    enrollmentState?.enrollment?.status === "APPROVED" || enrollmentState?.enrollment?.status === "PENDING_REVIEW";
+    isAcademicLocked ||
+    enrollmentState?.enrollment?.status === "APPROVED" ||
+    enrollmentState?.enrollment?.status === "PENDING_REVIEW";
   const status = enrollmentState?.enrollment?.status || "NOT_SUBMITTED";
 
   return {
     loading,
     error,
     enrollmentState,
+    academicLock: enrollmentState?.academic_lock,
+    isAcademicLocked,
     fetchState,
     isConsolidated,
     setIsConsolidated,
     isUploadingCor,
+    setIsUploadingCor,
     isUploadingSoa,
+    setIsUploadingSoa,
     isUploadingConsolidated,
+    setIsUploadingConsolidated,
     isSubmitting,
     isSavingDraft,
     corFile,

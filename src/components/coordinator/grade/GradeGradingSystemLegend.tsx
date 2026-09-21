@@ -36,6 +36,7 @@ export function GradeGradingSystemLegend({
 
   const institution = schoolGrading?.school_name || schoolName || "Standard Academic Scale";
   const retentionLabel = formatRetentionThreshold(gradeThreshold, schoolGrading);
+  const isAscending = isPercentage || isFourPoint || highest > failing;
 
   return (
     <div className="rounded-xl border border-teal-200/80 bg-linear-to-r from-teal-50/70 via-emerald-50/40 to-slate-50/70 p-3 text-xs space-y-2 shrink-0">
@@ -94,7 +95,7 @@ export function GradeGradingSystemLegend({
               Retention Standard
             </span>
             <span className="text-xs font-black text-teal-800 tabular-nums">
-              {isPercentage ? `GWA ≥ ${retentionLabel}` : `GWA ≤ ${retentionLabel}`}
+              {isAscending ? `GWA ≥ ${retentionLabel}` : `GWA ≤ ${retentionLabel}`}
             </span>
           </div>
         </div>

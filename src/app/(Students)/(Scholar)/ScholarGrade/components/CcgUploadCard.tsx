@@ -1,16 +1,18 @@
 "use client";
 
-import { FileUp } from "lucide-react";
+import { AlertTriangle, Clock, FileText, FileUp, ShieldAlert } from "lucide-react";
 import type React from "react";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SocketContext } from "@/contexts/SocketContext";
 import {
   confirmDocument,
   deleteDocument,
   type GradeItem,
+  type GradeReport,
   getExtractedData,
   getMyDocuments,
   type ScholarDocument,
@@ -25,6 +27,8 @@ import { CcgSubmittedStatusCard } from "./CcgSubmittedStatusCard";
 
 interface CcgUploadCardProps {
   onSuccess: () => void;
+  latestReport?: GradeReport | null;
+  onOpenAppeal?: () => void;
 }
 
 function normalizeAy(raw?: string): string {
@@ -42,7 +46,7 @@ function normalizeSem(raw?: string): string {
   return raw;
 }
 
-export function CcgUploadCard({ onSuccess }: CcgUploadCardProps) {
+export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUploadCardProps) {
   const { socket } = useContext(SocketContext);
 
   const [academicYear, setAcademicYear] = useState("2025-2026");
@@ -353,47 +357,120 @@ export function CcgUploadCard({ onSuccess }: CcgUploadCardProps) {
           )}
         </div>
 
-        {!doc ? (
-          <CcgFileDropzone
-            enrollmentDetected={enrollmentDetected}
-            academicYear={academicYear}
-            setAcademicYear={setAcademicYear}
-            semester={semester}
-            setSemester={setSemester}
-            file={file}
-            onFileSelect={handleFileSelect}
-            uploading={uploading}
-            onUpload={handleUploadAndParse}
-          />
-        ) : analyzingOcr ? (
-          <CcgOcrScanning fileName={doc.file_name} discarding={discarding} onDiscard={handleDiscardDraft} />
-        ) : doc.status === "STUDENT_CONFIRMED" ? (
-          <CcgSubmittedStatusCard
-            doc={doc}
-            academicYear={academicYear}
-            semester={semester}
-            gradeItems={gradeItems}
-            previewGwa={previewGwa()}
-            discarding={discarding}
-            onDiscard={handleDiscardDraft}
-          />
-        ) : (
-          <CcgGradeReviewTable
-            doc={doc}
-            academicYear={academicYear}
-            setAcademicYear={setAcademicYear}
-            semester={semester}
-            setSemester={setSemester}
-            gradeItems={gradeItems}
-            setGradeItems={setGradeItems}
-            previewGwa={previewGwa()}
-            discarding={discarding}
-            confirming={confirming}
-            onDiscard={handleDiscardDraft}
-            onConfirm={handleConfirmAndSubmit}
-            onAddSubject={handleAddSubject}
-          />
-        )}
+        {(() => {
+          const isFlagged = latestReport && (!latestReport.is_eligible || latestReport.status === "FLAGGED");
+          const hasPendingAppeal = latestReport?.appeal_status === "PENDING_GRANTOR";
+          const appealApproved = latestReport?.appeal_status === "APPROVED";
+          const appealDenied = latestReport?.appeal_status === "DENIED";
+          const isAcademicLocked = (isFlagged && !appealApproved) || appealDenied;
+
+          if (isAcademicLocked && !doc) {
+            return (
+              <div className="rounded-xl border border-amber-200/90 bg-linear-to-br from-amber-50/70 via-white to-orange-50/40 p-5 space-y-4">
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`size-10 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                      appealDenied
+                        ? "bg-rose-100 text-rose-700"
+                        : hasPendingAppeal
+                          ? "bg-amber-100 text-amber-800"
+                          : "bg-rose-100 text-rose-700"
+                    }`}
+                  >
+                    {appealDenied ? (
+                      <ShieldAlert className="size-5" />
+                    ) : hasPendingAppeal ? (
+                      <Clock className="size-5 animate-pulse" />
+                    ) : (
+                      <AlertTriangle className="size-5" />
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-bold text-navy">
+                      {appealDenied
+                        ? "Grade Slip Submission Unavailable"
+                        : hasPendingAppeal
+                          ? "Grade Submission Paused • Academic Appeal Under Review"
+                          : "Grade Submission Paused • Academic Appeal Required"}
+                    </h4>
+                    <p className="text-xs text-stone-700 leading-relaxed">
+                      {appealDenied
+                        ? "Your scholarship agreement has ended following an appeal decision. Grade uploads are disabled."
+                        : hasPendingAppeal
+                          ? `Your second chance appeal for ${latestReport?.academic_year || "the previous term"} ${latestReport?.semester || ""} is currently awaiting Grantor review. Once the appeal is granted and probation is lifted, grade submissions will be automatically unlocked.`
+                          : `Your previous semester's grades (${latestReport?.academic_year || ""} ${latestReport?.semester || ""}) were flagged for academic review. Please complete and submit your Second Chance Appeal above before uploading subsequent course records.`}
+                    </p>
+                  </div>
+                </div>
+
+                {!hasPendingAppeal && !appealDenied && onOpenAppeal && (
+                  <div className="pt-2 border-t border-amber-200/60 flex justify-end">
+                    <Button
+                      type="button"
+                      onClick={onOpenAppeal}
+                      className="h-8.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold px-3.5 gap-1.5 shadow-xs"
+                    >
+                      <FileText className="size-3.5" />
+                      <span>Submit Second Chance Appeal</span>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          if (!doc) {
+            return (
+              <CcgFileDropzone
+                enrollmentDetected={enrollmentDetected}
+                academicYear={academicYear}
+                setAcademicYear={setAcademicYear}
+                semester={semester}
+                setSemester={setSemester}
+                file={file}
+                onFileSelect={handleFileSelect}
+                uploading={uploading}
+                onUpload={handleUploadAndParse}
+              />
+            );
+          }
+
+          if (analyzingOcr) {
+            return <CcgOcrScanning fileName={doc.file_name} discarding={discarding} onDiscard={handleDiscardDraft} />;
+          }
+
+          if (doc.status === "STUDENT_CONFIRMED") {
+            return (
+              <CcgSubmittedStatusCard
+                doc={doc}
+                academicYear={academicYear}
+                semester={semester}
+                gradeItems={gradeItems}
+                previewGwa={previewGwa()}
+                discarding={discarding}
+                onDiscard={handleDiscardDraft}
+              />
+            );
+          }
+
+          return (
+            <CcgGradeReviewTable
+              doc={doc}
+              academicYear={academicYear}
+              setAcademicYear={setAcademicYear}
+              semester={semester}
+              setSemester={setSemester}
+              gradeItems={gradeItems}
+              setGradeItems={setGradeItems}
+              previewGwa={previewGwa()}
+              discarding={discarding}
+              confirming={confirming}
+              onDiscard={handleDiscardDraft}
+              onConfirm={handleConfirmAndSubmit}
+              onAddSubject={handleAddSubject}
+            />
+          );
+        })()}
       </CardContent>
     </Card>
   );
