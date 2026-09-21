@@ -1,27 +1,27 @@
 "use client";
 
-import React, { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { type FormEvent, useEffect, useState } from "react";
 import {
-  GlobalStyles,
+  AMBER,
+  ArrowRightIcon,
   BrandPanel,
-  RoleToggle,
-  Field,
-  MailIcon,
-  LockIcon,
+  CheckCircleIcon,
   EyeIcon,
   EyeOffIcon,
-  CheckCircleIcon,
-  ArrowRightIcon,
-  SpinnerIcon,
-  ROLES,
-  ls,
-  AMBER,
-  WHITE,
+  Field,
+  GlobalStyles,
   LINE,
-  StaffRoleKey,
-  StaffSession,
+  LockIcon,
+  ls,
+  MailIcon,
+  ROLES,
+  RoleToggle,
+  SpinnerIcon,
+  type StaffRoleKey,
+  WHITE,
 } from "@/components/StaffAuthShared";
+import { useAuth } from "@/contexts/AuthContext";
 
 // ============================================================
 // LOGIN FORM
@@ -29,20 +29,21 @@ import {
 
 interface LoginFormProps {
   role: StaffRoleKey;
-  onSuccess: (session: StaffSession) => void;
 }
 
-function LoginForm({ role, onSuccess }: LoginFormProps) {
+function LoginForm({ role }: LoginFormProps) {
+  const { login } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(true);
+  const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const activeRoleInfo = ROLES.find((r) => r.key === role)!;
+  const activeRoleInfo = ROLES.find((r) => r.key === role) ?? ROLES[0];
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
       setError("Please enter both your email and password.");
@@ -50,17 +51,20 @@ function LoginForm({ role, onSuccess }: LoginFormProps) {
     }
     setError("");
     setLoading(true);
-
-    // TODO: replace with a real auth call, e.g.:
-    // const res = await fetch("/api/auth/staff-login", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ email, password, role, remember }),
-    // });
-    setTimeout(() => {
+    try {
+      const loggedInUser = await login(email, password, remember);
+      const dashboardMap: Record<string, string> = {
+        ADMIN: "/AdminDashboard",
+        COORDINATOR: "/CoordinatorDashboard",
+        GRANTOR: "/grantDashboard",
+      };
+      const path = dashboardMap[loggedInUser.role];
+      if (path) router.push(path);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Login failed. Please try again.";
+      setError(message);
       setLoading(false);
-      onSuccess({ email, role });
-    }, 900);
+    }
   };
 
   return (
@@ -102,8 +106,14 @@ function LoginForm({ role, onSuccess }: LoginFormProps) {
 
       <div style={ls.formRow}>
         <label style={ls.checkboxLabel}>
+          <input
+            type="checkbox"
+            checked={remember}
+            onChange={() => setRemember((v) => !v)}
+            style={{ position: "absolute", opacity: 0, width: 1, height: 1, overflow: "hidden" }}
+          />
           <span
-            onClick={() => setRemember((v) => !v)}
+            aria-hidden="true"
             style={{ ...ls.checkbox, background: remember ? AMBER : WHITE, borderColor: remember ? AMBER : LINE }}
           >
             {remember && <CheckCircleIcon />}
@@ -136,14 +146,25 @@ function LoginForm({ role, onSuccess }: LoginFormProps) {
 // SUCCESS STATE
 // ============================================================
 
-interface SignedInPanelProps {
-  session: StaffSession;
-  onReset: () => void;
-}
-
-function SignedInPanel({ session, onReset }: SignedInPanelProps) {
+function SignedInPanel() {
   const router = useRouter();
-  const roleInfo = ROLES.find((r) => r.key === session.role)!;
+  const { user, logout } = useAuth();
+
+  const role = user?.role?.toLowerCase() ?? "";
+  const roleInfo = ROLES.find((r) => r.key === role);
+
+  const dashboardMap: Record<string, string> = {
+    admin: "/AdminDashboard",
+    coordinator: "/CoordinatorDashboard",
+    grantor: "/grantDashboard",
+  };
+
+  const handleContinue = () => {
+    const path = dashboardMap[role];
+    if (path) {
+      router.push(path);
+    }
+  };
 
   return (
     <div style={ls.successWrap}>
@@ -152,19 +173,16 @@ function SignedInPanel({ session, onReset }: SignedInPanelProps) {
       </span>
       <h3 style={ls.successTitle}>You&apos;re signed in</h3>
       <p style={ls.successSub}>
-        Signed in as <strong>{session.email}</strong>
+        Signed in as <strong>{user?.email}</strong>
       </p>
       <div style={ls.successRoleTag}>
-        <span style={{ display: "flex" }}>{roleInfo.icon}</span>
-        {roleInfo.label}
+        <span style={{ display: "flex" }}>{roleInfo?.icon}</span>
+        {roleInfo?.label}
       </div>
-      <button
-        style={ls.continueBtn}
-        onClick={() => router.push(session.role === "admin" ? "/admin" : "/coordinator")}
-      >
-        Continue to {session.role === "admin" ? "admin console" : "coordinator dashboard"} <ArrowRightIcon />
+      <button type="button" style={ls.continueBtn} onClick={handleContinue}>
+        Continue to {roleInfo?.label ? roleInfo.label.toLowerCase() : "dashboard"} dashboard <ArrowRightIcon />
       </button>
-      <button onClick={onReset} style={ls.switchUserLink}>
+      <button type="button" onClick={logout} style={ls.switchUserLink}>
         Sign in as a different user
       </button>
     </div>
@@ -177,9 +195,40 @@ function SignedInPanel({ session, onReset }: SignedInPanelProps) {
 
 export default function StaffLoginPage() {
   const [role, setRole] = useState<StaffRoleKey>("coordinator");
-  const [session, setSession] = useState<StaffSession | null>(null);
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
-  const activeRole = ROLES.find((r) => r.key === role)!;
+  useEffect(() => {
+    if (!loading && user) {
+      const dashboardMap: Record<string, string> = {
+        ADMIN: "/AdminDashboard",
+        COORDINATOR: "/CoordinatorDashboard",
+        GRANTOR: "/grantDashboard",
+        SCHOLAR: "/scholardashboard",
+        APPLICANT: "/ApplicantsDashboard",
+      };
+      const path = dashboardMap[user.role];
+      if (path) router.replace(path);
+    }
+  }, [user, loading, router]);
+
+  const activeRole = ROLES.find((r) => r.key === role) ?? ROLES[0];
+
+  if (loading) {
+    return (
+      <div className="vl">
+        <GlobalStyles />
+        <div className="vl-shell">
+          <BrandPanel role={role} />
+          <div style={ls.formSide}>
+            <div className="vl-form-card" style={ls.formCard}>
+              <div style={{ ...ls.successWrap, minHeight: 300 }} />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="vl">
@@ -189,7 +238,7 @@ export default function StaffLoginPage() {
 
         <div style={ls.formSide}>
           <div className="vl-form-card" style={ls.formCard}>
-            {!session ? (
+            {!user ? (
               <>
                 <div style={ls.formHeader}>
                   <h2 style={ls.formTitle}>Welcome back</h2>
@@ -199,12 +248,12 @@ export default function StaffLoginPage() {
                 <RoleToggle role={role} onChange={setRole} />
                 <p style={ls.roleDesc}>{activeRole.desc}</p>
 
-                <LoginForm role={role} onSuccess={(s) => setSession(s)} />
+                <LoginForm role={role} />
 
                 <p style={ls.footerNote}>Need access? Contact your program administrator.</p>
               </>
             ) : (
-              <SignedInPanel session={session} onReset={() => setSession(null)} />
+              <SignedInPanel />
             )}
           </div>
         </div>

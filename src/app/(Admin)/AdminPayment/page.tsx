@@ -1,26 +1,26 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Check, ChevronLeft, ChevronRight, ListFilter } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ListFilter, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import {
-  XCircleIcon,
-  DrawerInfoRow,
   ADMIN_PAYMENT_RECORDS,
-  PAYMENT_STATUS_COLORS,
-  AdminPaymentRecord,
-  NAVY,
-  WHITE,
-  LINE,
-  TINT,
+  type AdminPaymentRecord,
   AMBER,
-  SHADOW_SM,
-  SHADOW_MD,
-  BORDER_SUBTLE,
-  MenuIcon,
   BellIcon,
+  BORDER_SUBTLE,
+  DrawerInfoRow,
+  LINE,
+  MenuIcon,
+  NAVY,
+  PAYMENT_STATUS_COLORS,
   SearchIcon,
+  SHADOW_MD,
+  SHADOW_SM,
   s,
+  TINT,
+  WHITE,
+  XCircleIcon,
 } from "@/components/Adminshared";
 import { useSidebar } from "@/components/SidebarContext";
 
@@ -67,8 +67,8 @@ export default function AdminPaymentsPage() {
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       const target = e.target as Node;
-      const insideTrigger = filterRef.current && filterRef.current.contains(target);
-      const insideMenu = filterMenuRef.current && filterMenuRef.current.contains(target);
+      const insideTrigger = filterRef.current?.contains(target);
+      const insideMenu = filterMenuRef.current?.contains(target);
       if (!insideTrigger && !insideMenu) {
         setFilterOpen(false);
       }
@@ -99,7 +99,10 @@ export default function AdminPaymentsPage() {
     let list = filter === "All" ? records : records.filter((r) => r.status === filter);
     if (query) {
       list = list.filter(
-        (r) => r.name.toLowerCase().includes(query) || r.coordinator.toLowerCase().includes(query) || r.course.toLowerCase().includes(query)
+        (r) =>
+          r.name.toLowerCase().includes(query) ||
+          r.coordinator.toLowerCase().includes(query) ||
+          r.course.toLowerCase().includes(query),
       );
     }
     return list;
@@ -163,7 +166,7 @@ export default function AdminPaymentsPage() {
 
       {/* ---------------- Page-level navbar ---------------- */}
       <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button className="va-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="va-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -184,7 +187,7 @@ export default function AdminPaymentsPage() {
               style={s.searchInput}
             />
           </div>
-          <button style={s.bellBtn}>
+          <button type="button" style={s.bellBtn}>
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
           </button>
@@ -198,30 +201,133 @@ export default function AdminPaymentsPage() {
             className="va-stat-row payment-stat-row"
             style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, marginBottom: 28 }}
           >
-            <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, padding: "26px 28px", boxShadow: SHADOW_SM, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            <div
+              style={{
+                background: WHITE,
+                border: BORDER_SUBTLE,
+                borderRadius: 18,
+                padding: "26px 28px",
+                boxShadow: SHADOW_SM,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+              }}
+            >
               <p style={{ fontSize: "0.84rem", color: "#7a7a74", fontWeight: 500 }}>Disbursed this term</p>
-              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.9rem", fontWeight: 700, color: NAVY, lineHeight: 1, textAlign: "right", whiteSpace: "nowrap" }}>
+              <p
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: "1.9rem",
+                  fontWeight: 700,
+                  color: NAVY,
+                  lineHeight: 1,
+                  textAlign: "right",
+                  whiteSpace: "nowrap",
+                }}
+              >
                 ₱{totalDisbursed.toLocaleString()}
               </p>
             </div>
-            <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, padding: "26px 28px", boxShadow: SHADOW_SM, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            <div
+              style={{
+                background: WHITE,
+                border: BORDER_SUBTLE,
+                borderRadius: 18,
+                padding: "26px 28px",
+                boxShadow: SHADOW_SM,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+              }}
+            >
               <p style={{ fontSize: "0.84rem", color: "#7a7a74", fontWeight: 500 }}>Scheduled</p>
-              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.9rem", fontWeight: 700, color: NAVY, lineHeight: 1, textAlign: "right" }}>{scheduledCount}</p>
+              <p
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: "1.9rem",
+                  fontWeight: 700,
+                  color: NAVY,
+                  lineHeight: 1,
+                  textAlign: "right",
+                }}
+              >
+                {scheduledCount}
+              </p>
             </div>
-            <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, padding: "26px 28px", boxShadow: SHADOW_SM, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            <div
+              style={{
+                background: WHITE,
+                border: BORDER_SUBTLE,
+                borderRadius: 18,
+                padding: "26px 28px",
+                boxShadow: SHADOW_SM,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+              }}
+            >
               <p style={{ fontSize: "0.84rem", color: "#7a7a74", fontWeight: 500 }}>On hold</p>
-              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.9rem", fontWeight: 700, color: NAVY, lineHeight: 1, textAlign: "right" }}>{onHoldCount}</p>
+              <p
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: "1.9rem",
+                  fontWeight: 700,
+                  color: NAVY,
+                  lineHeight: 1,
+                  textAlign: "right",
+                }}
+              >
+                {onHoldCount}
+              </p>
             </div>
-            <div style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, padding: "26px 28px", boxShadow: SHADOW_SM, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            <div
+              style={{
+                background: WHITE,
+                border: BORDER_SUBTLE,
+                borderRadius: 18,
+                padding: "26px 28px",
+                boxShadow: SHADOW_SM,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+              }}
+            >
               <p style={{ fontSize: "0.84rem", color: "#7a7a74", fontWeight: 500 }}>Next batch date</p>
-              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "1.3rem", fontWeight: 700, color: NAVY, lineHeight: 1.2, textAlign: "right", whiteSpace: "nowrap" }}>Jul 15, 2026</p>
+              <p
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: "1.3rem",
+                  fontWeight: 700,
+                  color: NAVY,
+                  lineHeight: 1.2,
+                  textAlign: "right",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Jul 15, 2026
+              </p>
             </div>
           </div>
 
           {/* ---------------- Table card ---------------- */}
-          <div ref={tableCardRef} style={{ background: WHITE, border: BORDER_SUBTLE, borderRadius: 18, boxShadow: SHADOW_SM, padding: "16px 22px 8px" }}>
+          <div
+            ref={tableCardRef}
+            style={{
+              background: WHITE,
+              border: BORDER_SUBTLE,
+              borderRadius: 18,
+              boxShadow: SHADOW_SM,
+              padding: "16px 22px 8px",
+            }}
+          >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <p style={{ fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif" }}>Payment records</p>
+              <p style={{ fontSize: "1.15rem", fontWeight: 700, color: NAVY, fontFamily: "'Inter', sans-serif" }}>
+                Payment records
+              </p>
               <span style={{ fontSize: "0.8rem", color: "#9a9a94" }}>
                 {filtered.length === 0
                   ? "0 shown"
@@ -239,7 +345,10 @@ export default function AdminPaymentsPage() {
                         Scholar
                       </div>
                     </th>
-                    <th className="payment-col-coordinator" style={{ ...s.th, background: "none", padding: "6px 14px", textAlign: "center" }}>
+                    <th
+                      className="payment-col-coordinator"
+                      style={{ ...s.th, background: "none", padding: "6px 14px", textAlign: "center" }}
+                    >
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
                         <span style={{ width: 34, height: 34 }} />
                         Coordinator
@@ -251,13 +360,19 @@ export default function AdminPaymentsPage() {
                         Amount
                       </div>
                     </th>
-                    <th className="payment-col-term" style={{ ...s.th, background: "none", padding: "6px 14px", textAlign: "center" }}>
+                    <th
+                      className="payment-col-term"
+                      style={{ ...s.th, background: "none", padding: "6px 14px", textAlign: "center" }}
+                    >
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
                         <span style={{ width: 34, height: 34 }} />
                         Term
                       </div>
                     </th>
-                    <th className="payment-col-date" style={{ ...s.th, background: "none", padding: "6px 14px", textAlign: "center" }}>
+                    <th
+                      className="payment-col-date"
+                      style={{ ...s.th, background: "none", padding: "6px 14px", textAlign: "center" }}
+                    >
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
                         <span style={{ width: 34, height: 34 }} />
                         Scheduled date
@@ -269,11 +384,20 @@ export default function AdminPaymentsPage() {
                         Status
                       </div>
                     </th>
-                    <th style={{ ...s.th, background: "none", padding: "6px 14px", textAlign: "center", position: "relative" }}>
+                    <th
+                      style={{
+                        ...s.th,
+                        background: "none",
+                        padding: "6px 14px",
+                        textAlign: "center",
+                        position: "relative",
+                      }}
+                    >
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
                         <div style={{ position: "relative" }} ref={filterRef}>
                           <div className="filter-trigger-wrap">
                             <button
+                              type="button"
                               ref={filterBtnRef}
                               onClick={handleFilterToggle}
                               aria-label="Filter by status"
@@ -339,6 +463,7 @@ export default function AdminPaymentsPage() {
                                   const isActive = filter === f;
                                   return (
                                     <button
+                                      type="button"
                                       key={f}
                                       role="option"
                                       aria-selected={isActive}
@@ -364,14 +489,16 @@ export default function AdminPaymentsPage() {
                                     >
                                       <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                         {f}
-                                        <span style={{ fontSize: "0.76rem", fontWeight: 500, color: "#9a9a94" }}>({counts[f]})</span>
+                                        <span style={{ fontSize: "0.76rem", fontWeight: 500, color: "#9a9a94" }}>
+                                          ({counts[f]})
+                                        </span>
                                       </span>
                                       {isActive && <Check size={14} color={NAVY} strokeWidth={2.5} />}
                                     </button>
                                   );
                                 })}
                               </div>,
-                              document.body
+                              document.body,
                             )}
                         </div>
                         View
@@ -384,16 +511,29 @@ export default function AdminPaymentsPage() {
                     <tr
                       key={r.id}
                       onClick={() => setSelected(r)}
-                      style={{ borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`, cursor: "pointer", verticalAlign: "middle" }}
+                      style={{
+                        borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`,
+                        cursor: "pointer",
+                        verticalAlign: "middle",
+                      }}
                     >
                       <td style={{ ...s.td, padding: "16px 14px", textAlign: "center" }}>
                         <p style={s.tdName}>{r.name}</p>
                         <p style={s.tdSub}>{r.course}</p>
                       </td>
-                      <td className="payment-col-coordinator" style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{r.coordinator}</td>
+                      <td
+                        className="payment-col-coordinator"
+                        style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}
+                      >
+                        {r.coordinator}
+                      </td>
                       <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>₱{r.amount.toLocaleString()}</td>
-                      <td className="payment-col-term" style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{r.term}</td>
-                      <td className="payment-col-date" style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{r.scheduledDate}</td>
+                      <td className="payment-col-term" style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>
+                        {r.term}
+                      </td>
+                      <td className="payment-col-date" style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>
+                        {r.scheduledDate}
+                      </td>
                       <td style={{ ...s.td, textAlign: "center" }}>
                         <span
                           style={{
@@ -420,12 +560,23 @@ export default function AdminPaymentsPage() {
                       </td>
                       <td style={{ ...s.td, textAlign: "center" }}>
                         <button
-                          onClick={(e) => { e.stopPropagation(); setSelected(r); }}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelected(r);
+                          }}
                           aria-label="View payment"
                           style={{
-                            width: 34, height: 34, borderRadius: "50%", border: `1.5px solid ${LINE}`,
-                            display: "inline-flex", alignItems: "center", justifyContent: "center",
-                            background: WHITE, color: "#7a7a74", cursor: "pointer",
+                            width: 34,
+                            height: 34,
+                            borderRadius: "50%",
+                            border: `1.5px solid ${LINE}`,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            background: WHITE,
+                            color: "#7a7a74",
+                            cursor: "pointer",
                           }}
                         >
                           <EyeIcon />
@@ -444,13 +595,23 @@ export default function AdminPaymentsPage() {
             )}
 
             {filtered.length > 0 && (
-              <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}>
+              <div
+                style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}
+              >
                 <button
+                  type="button"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                   style={{
-                    width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
-                    color: currentPage === 1 ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    border: `1px solid ${LINE}`,
+                    background: WHITE,
+                    color: currentPage === 1 ? "#c7c7c2" : "#55554f",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     cursor: currentPage === 1 ? "default" : "pointer",
                   }}
                   aria-label="Previous page"
@@ -459,23 +620,38 @@ export default function AdminPaymentsPage() {
                 </button>
                 {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
                   <button
+                    type="button"
                     key={num}
                     onClick={() => setPage(num)}
                     style={{
-                      width: 32, height: 32, borderRadius: 8, border: `1px solid ${num === currentPage ? AMBER : LINE}`,
-                      background: num === currentPage ? AMBER : WHITE, color: num === currentPage ? NAVY : "#55554f",
-                      fontSize: "0.82rem", fontWeight: 700, cursor: "pointer",
+                      width: 32,
+                      height: 32,
+                      borderRadius: 8,
+                      border: `1px solid ${num === currentPage ? AMBER : LINE}`,
+                      background: num === currentPage ? AMBER : WHITE,
+                      color: num === currentPage ? NAVY : "#55554f",
+                      fontSize: "0.82rem",
+                      fontWeight: 700,
+                      cursor: "pointer",
                     }}
                   >
                     {num}
                   </button>
                 ))}
                 <button
+                  type="button"
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
                   style={{
-                    width: 32, height: 32, borderRadius: 8, border: `1px solid ${LINE}`, background: WHITE,
-                    color: currentPage === totalPages ? "#c7c7c2" : "#55554f", display: "flex", alignItems: "center", justifyContent: "center",
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    border: `1px solid ${LINE}`,
+                    background: WHITE,
+                    color: currentPage === totalPages ? "#c7c7c2" : "#55554f",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     cursor: currentPage === totalPages ? "default" : "pointer",
                   }}
                   aria-label="Next page"
@@ -490,15 +666,36 @@ export default function AdminPaymentsPage() {
 
       {/* ---------------- Drawer ---------------- */}
       {selected && (
-        <div style={s.drawerOverlay} onClick={() => setSelected(null)}>
-          <div style={s.drawerPanel} onClick={(e) => e.stopPropagation()}>
+        // biome-ignore lint/a11y/useSemanticElements: overlay backdrop acts as a dismiss button; div cannot be a real button (contains block content)
+        <div
+          style={s.drawerOverlay}
+          onClick={() => setSelected(null)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setSelected(null);
+            }
+          }}
+        >
+          <div
+            style={s.drawerPanel}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.stopPropagation();
+              }
+            }}
+          >
             <div style={{ ...s.drawerHeader, marginBottom: 22 }}>
               <span style={s.profileAvatar}>{selected.initials}</span>
               <div style={{ flexGrow: 1 }}>
                 <h3 style={s.drawerName}>{selected.name}</h3>
                 <p style={s.drawerMeta}>{selected.course}</p>
               </div>
-              <button onClick={() => setSelected(null)} style={s.drawerCloseBtn}>
+              <button type="button" onClick={() => setSelected(null)} style={s.drawerCloseBtn}>
                 <XCircleIcon />
               </button>
             </div>
@@ -513,12 +710,12 @@ export default function AdminPaymentsPage() {
             <p style={{ ...s.drawerSectionLabel, marginBottom: 10 }}>Actions</p>
             <div style={{ ...s.drawerStageActions, marginTop: 4 }}>
               {selected.status !== "Paid" && (
-                <button onClick={() => setStatus(selected.id, "Paid")} style={s.continueBtnSmall}>
+                <button type="button" onClick={() => setStatus(selected.id, "Paid")} style={s.continueBtnSmall}>
                   Mark as paid
                 </button>
               )}
               {selected.status !== "On hold" && (
-                <button onClick={() => setStatus(selected.id, "On hold")} style={s.rejectBtn}>
+                <button type="button" onClick={() => setStatus(selected.id, "On hold")} style={s.rejectBtn}>
                   Put on hold
                 </button>
               )}
@@ -532,7 +729,16 @@ export default function AdminPaymentsPage() {
 
 function EyeIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+      focusable="false"
+    >
       <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
       <circle cx="12" cy="12" r="3" />
     </svg>

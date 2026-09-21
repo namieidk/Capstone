@@ -1,0 +1,10 @@
+export { About } from "./About";
+export { Contact } from "./Contact";
+export { Faq } from "./Faq";
+export { FinalCta } from "./FinalCta";
+export { Footer } from "./Footer";
+export { Hero } from "./Hero";
+export { Nav } from "./Nav";
+export { Qualifications } from "./Qualifications";
+export { Requirements } from "./Requirements";
+export { Reviews } from "./Reviews";

@@ -1,31 +1,45 @@
 "use client";
 
-import React from "react";
-import { GlobalStyles, s } from "../../../components/StudentShared";
-import { Sidebar } from "../../../components/Sidebar";
-import { SidebarProvider, useSidebar } from "../../../components/SidebarContext";
+import type React from "react";
+import { AppSidebar } from "@/components/app-sidebar/AppSidebar";
+import { RoleGuard } from "@/components/RoleGuard";
+import { SidebarContext } from "@/components/SidebarContext";
+import { GlobalStyles, s } from "@/components/StudentShared";
+import { SidebarProvider, useSidebar as useShadcnSidebar } from "@/components/ui/sidebar";
 
-function LayoutShell({ children }: { children: React.ReactNode }) {
-  const { mobileOpen } = useSidebar();
-
+function SidebarBridge({ children }: { children: React.ReactNode }) {
+  const { openMobile, toggleSidebar, setOpenMobile } = useShadcnSidebar();
   return (
-    <div className="vd">
-      <GlobalStyles />
-      <div className="vd-app-shell">
-        <Sidebar mobileOpen={mobileOpen} role="student" />
-
-        <main className="vd-main" style={s.main}>
-          {children}
-        </main>
-      </div>
-    </div>
+    <SidebarContext.Provider
+      value={{
+        mobileOpen: openMobile,
+        toggleMobile: toggleSidebar,
+        closeMobile: () => setOpenMobile(false),
+      }}
+    >
+      {children}
+    </SidebarContext.Provider>
   );
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SidebarProvider>
-      <LayoutShell>{children}</LayoutShell>
-    </SidebarProvider>
+    <RoleGuard allowedRoles={["APPLICANT"]}>
+      <SidebarProvider>
+        <SidebarBridge>
+          <div className="vd w-full min-w-0">
+            <GlobalStyles />
+            <div className="vd-app-shell">
+              {/* biome-ignore lint/a11y/useValidAriaRole: `role` here is AppSidebar's menu-role prop (admin|applicant), not an ARIA role */}
+              <AppSidebar role="applicant" />
+
+              <main className="vd-main" style={s.main}>
+                {children}
+              </main>
+            </div>
+          </div>
+        </SidebarBridge>
+      </SidebarProvider>
+    </RoleGuard>
   );
 }

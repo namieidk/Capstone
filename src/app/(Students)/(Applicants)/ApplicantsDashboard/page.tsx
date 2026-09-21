@@ -1,27 +1,32 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
+import { useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useSidebar } from "../../../../components/SidebarContext";
 import {
-  ArrowRightIcon,
-  MailIcon,
-  CalendarIcon,
-  ForumIcon,
-  MenuIcon,
-  BellIcon,
-  CheckCircleIcon,
-  ApplicationIcon,
   ACTIVITY_FEED,
-  UPCOMING_ITEMS,
-  APPLICATION_STAGES,
-  CURRENT_STAGE_INDEX,
-  PROFILE_DOCUMENTS,
-  SCHOLAR,
   AMBER,
   AMBER_BG,
+  APPLICATION_STAGES,
+  ApplicationIcon,
+  ArrowRightIcon,
+  BellIcon,
+  CalendarIcon,
+  CheckCircleIcon,
+  CURRENT_STAGE_INDEX,
+  ForumIcon,
+  GOOD,
+  GOOD_BG,
   LINE,
+  MailIcon,
+  MenuIcon,
+  NAVY,
+  PROFILE_DOCUMENTS,
+  SCHOLAR,
   s,
+  UPCOMING_ITEMS,
+  WARN,
 } from "../../../../components/StudentShared";
 
 interface StatCardProps {
@@ -31,9 +36,13 @@ interface StatCardProps {
   progress: number;
 }
 
+// All three stat cards share the same box (height 100%, min-width 0) so they
+// stay the same size no matter how much text each one holds.
+const STAT_CARD_BOX = { height: "100%", minWidth: 0, boxSizing: "border-box" } as const;
+
 function StatCard({ label, value, caption, progress }: StatCardProps) {
   return (
-    <div style={s.statCard}>
+    <div style={{ ...s.statCard, ...STAT_CARD_BOX }}>
       <p style={s.statCardLabel}>{label}</p>
       <p style={s.statCardValue}>{value}</p>
       <div style={s.statProgressTrack}>
@@ -53,10 +62,10 @@ interface InfoCardProps {
 
 function InfoCard({ label, value, caption, tone }: InfoCardProps) {
   return (
-    <div style={s.statCard}>
+    <div style={{ ...s.statCard, ...STAT_CARD_BOX }}>
       <p style={s.statCardLabel}>{label}</p>
       <p style={s.statCardValue}>{value}</p>
-      <p style={{ ...s.statCardCaption, color: tone === "good" ? "#6b8a3e" : "#7a7a74", marginTop: "auto" }}>{caption}</p>
+      <p style={{ ...s.statCardCaption, color: tone === "good" ? GOOD : "#7a7a74", marginTop: "auto" }}>{caption}</p>
     </div>
   );
 }
@@ -97,8 +106,15 @@ function QuickLink({ icon, label, href }: QuickLinkProps) {
 
 export default function DashboardPage() {
   const { toggleMobile } = useSidebar();
+  const { user } = useAuth();
 
-  const firstName = SCHOLAR.name.split(" ")[0];
+  useEffect(() => {
+    if (user?.role === "SCHOLAR") {
+      window.location.href = "/scholardashboard";
+    }
+  }, [user?.role]);
+
+  const firstName = user?.first_name?.trim() ? user.first_name : SCHOLAR.name.split(" ")[0];
 
   const currentStage = APPLICATION_STAGES[CURRENT_STAGE_INDEX];
   const stageProgress = Math.round(((CURRENT_STAGE_INDEX + 1) / APPLICATION_STAGES.length) * 100);
@@ -110,24 +126,55 @@ export default function DashboardPage() {
   const submittedStage = APPLICATION_STAGES[0];
 
   return (
-    <div>
-      <header style={s.topbar}>
-        <button className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+    <div className="vd-page">
+      <style>{`
+        /* ---- Stat cards: 3 equal columns, every card the same width and height ---- */
+        .vd-page .vd-stat-row {
+          grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+          grid-auto-rows: 1fr;
+        }
+        .vd-page .vd-stat-row > * { min-width: 0; }
+
+        /* ---- Panels: never let long text push the layout wider than the screen ---- */
+        .vd-page .vd-content-grid > * { min-width: 0; }
+        .vd-page .vd-doc-info { min-width: 0; overflow-wrap: anywhere; }
+
+        /* ---- Tablet: panels stack in one column ---- */
+        @media (max-width: 980px) {
+          .vd-page .vd-content-grid { grid-template-columns: minmax(0, 1fr) !important; }
+        }
+
+        /* ---- Small tablet / large phone: stat cards stack, still equal size ---- */
+        @media (max-width: 760px) {
+          .vd-page .vd-stat-row { grid-template-columns: minmax(0, 1fr) !important; }
+        }
+
+        /* ---- Phone: tighter spacing so everything fits the screen ---- */
+        @media (max-width: 640px) {
+          .vd-page .vd-topbar { padding: 12px 16px !important; gap: 10px !important; }
+          .vd-page .vd-main { padding-left: 16px !important; padding-right: 16px !important; padding-bottom: 32px !important; }
+          .vd-page .vd-panel { padding: 20px 18px !important; }
+          .vd-page .vd-doc-row { flex-wrap: wrap; }
+        }
+      `}</style>
+
+      <header className="vd-topbar" style={s.topbar}>
+        <button type="button" className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
-        <div>
+        <div style={{ minWidth: 0, flexGrow: 1 }}>
           <h1 style={s.topbarGreeting}>Good morning, {firstName}.</h1>
-          <p style={s.topbarSub}>Heres a look at your application progress and requirements.</p>
+          <p style={s.topbarSub}>Here&apos;s a look at your application progress and requirements.</p>
         </div>
-        <div style={s.topbarRight}>
-          <button style={s.bellBtn}>
+        <div style={{ ...s.topbarRight, flexShrink: 0 }}>
+          <button type="button" style={s.bellBtn} aria-label="Notifications">
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
           </button>
         </div>
       </header>
 
-      <div style={s.mainContent}>
+      <div className="vd-main" style={s.mainContent}>
         <div className="vd-stat-row" style={{ ...s.statRow, marginTop: 16 }}>
           <StatCard
             label="Application stage"
@@ -151,16 +198,16 @@ export default function DashboardPage() {
 
         {/* Activity + Upcoming */}
         <div className="vd-content-grid" style={s.contentGrid}>
-          <section style={s.feedCard}>
+          <section className="vd-panel" style={s.feedCard}>
             <PanelHeader title="Recent activity" href="/ApplicantsDashboard" />
             <div style={s.feedList}>
               {ACTIVITY_FEED.map((item, i) => (
                 <div
-                  key={i}
+                  key={`${item.text}-${item.time}`}
                   style={{ ...s.feedRow, borderBottom: i === ACTIVITY_FEED.length - 1 ? "none" : `1px solid ${LINE}` }}
                 >
                   <span style={s.feedIconBox}>{item.icon}</span>
-                  <div style={s.feedTextCol}>
+                  <div style={{ ...s.feedTextCol, minWidth: 0 }}>
                     <p style={s.feedText}>{item.text}</p>
                     <p style={s.feedTime}>{item.time}</p>
                   </div>
@@ -169,13 +216,13 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          <section style={s.upcomingCard}>
+          <section className="vd-panel" style={s.upcomingCard}>
             <PanelHeader title="Upcoming" href="/ApplicantsDashboard" />
             <div style={s.upcomingList}>
-              {UPCOMING_ITEMS.map((item, i) => (
-                <div key={i} style={s.upcomingRow}>
-                  <span style={{ ...s.upcomingDot, background: item.urgent ? AMBER : "#C9C2A8" }} />
-                  <div>
+              {UPCOMING_ITEMS.map((item) => (
+                <div key={`${item.label}-${item.detail}`} style={s.upcomingRow}>
+                  <span style={{ ...s.upcomingDot, background: item.urgent ? AMBER : LINE }} />
+                  <div style={{ minWidth: 0 }}>
                     <p style={s.upcomingLabel}>{item.label}</p>
                     <p style={s.upcomingDetail}>{item.detail}</p>
                   </div>
@@ -195,24 +242,24 @@ export default function DashboardPage() {
 
         {/* Application status + Documents */}
         <div className="vd-content-grid" style={s.contentGrid}>
-          <section style={s.feedCard}>
+          <section className="vd-panel" style={s.feedCard}>
             <PanelHeader title="Application status" href="/ApplicantsApplication" />
             <div style={s.appTimeline}>
               {APPLICATION_STAGES.map((stage, i) => {
                 const isDone = i < CURRENT_STAGE_INDEX;
                 const isCurrent = i === CURRENT_STAGE_INDEX;
                 const isLast = i === APPLICATION_STAGES.length - 1;
-                const dotColor = isDone ? "#6b8a3e" : isCurrent ? AMBER : "#C9C2A8";
+                const dotColor = isDone ? GOOD : isCurrent ? AMBER : LINE;
                 return (
                   <div key={stage.key} style={s.appTimelineRow}>
                     <div style={s.appTimelineMarkerCol}>
                       <span style={{ ...s.appTimelineDot, borderColor: dotColor, color: dotColor }}>
                         {isDone ? <CheckCircleIcon small /> : i + 1}
                       </span>
-                      {!isLast && <span style={{ ...s.appTimelineLine, background: isDone ? "#6b8a3e" : LINE }} />}
+                      {!isLast && <span style={{ ...s.appTimelineLine, background: isDone ? GOOD : LINE }} />}
                     </div>
-                    <div style={{ paddingBottom: isLast ? 0 : 20 }}>
-                      <p style={{ ...s.appTimelineTitle, color: isCurrent ? AMBER : "#14213A" }}>{stage.title}</p>
+                    <div style={{ paddingBottom: isLast ? 0 : 20, minWidth: 0 }}>
+                      <p style={{ ...s.appTimelineTitle, color: isCurrent ? AMBER : NAVY }}>{stage.title}</p>
                       <p style={s.appTimelineDate}>{stage.date}</p>
                       <p style={s.appTimelineDesc}>{stage.desc}</p>
                     </div>
@@ -222,15 +269,15 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          <section style={s.feedCard}>
+          <section className="vd-panel" style={s.feedCard}>
             <PanelHeader title="Documents" href="/ApplicantsProfile" />
             <div style={s.profileDocList}>
               {PROFILE_DOCUMENTS.map((doc) => (
-                <div key={doc.file} style={s.profileDocRow}>
+                <div key={doc.file} className="vd-doc-row" style={s.profileDocRow}>
                   <span style={s.feedIconBox}>
                     <ApplicationIcon />
                   </span>
-                  <div style={s.profileDocInfo}>
+                  <div className="vd-doc-info" style={s.profileDocInfo}>
                     <p style={s.profileDocLabel}>{doc.label}</p>
                     <p style={s.profileDocFile}>
                       {doc.file} · {doc.size}
@@ -239,8 +286,8 @@ export default function DashboardPage() {
                   <span
                     style={{
                       ...s.statusTag,
-                      background: doc.status === "verified" ? AMBER_BG : "#F3E6C8",
-                      color: "#6b5220",
+                      background: doc.status === "verified" ? GOOD_BG : AMBER_BG,
+                      color: doc.status === "verified" ? GOOD : WARN,
                     }}
                   >
                     {doc.status}

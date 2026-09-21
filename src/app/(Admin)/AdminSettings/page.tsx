@@ -1,18 +1,18 @@
 "use client";
 
-import React, { useState, ReactNode } from "react";
+import type React from "react";
+import { type ReactNode, useState } from "react";
 import {
-  ToggleIcon,
-  NAVY,
   BAD,
   BAD_BG,
-  WHITE,
-  TINT,
-  LINE,
-  SHADOW_SM,
   BORDER_SUBTLE,
-  s,
   MenuIcon,
+  NAVY,
+  SHADOW_SM,
+  s,
+  TINT,
+  ToggleIcon,
+  WHITE,
 } from "@/components/Adminshared";
 import { useSidebar } from "@/components/SidebarContext";
 
@@ -64,7 +64,7 @@ function SettingsRow({ label, desc, on, onToggle }: SettingsRowProps) {
         <p style={{ fontSize: "0.96rem", fontWeight: 600, color: NAVY, marginBottom: 4 }}>{label}</p>
         <p style={{ fontSize: "0.84rem", color: "#8a8a84", lineHeight: 1.5 }}>{desc}</p>
       </div>
-      <button onClick={onToggle} style={{ flexShrink: 0, cursor: "pointer" }}>
+      <button type="button" onClick={onToggle} style={{ flexShrink: 0, cursor: "pointer" }}>
         <ToggleIcon on={on} />
       </button>
     </div>
@@ -120,7 +120,7 @@ export default function AdminSettingsPage() {
     <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       {/* ---------------- Page-level navbar ---------------- */}
       <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -170,31 +170,41 @@ export default function AdminSettingsPage() {
                 <p style={{ fontSize: "0.96rem", fontWeight: 600, color: NAVY, marginBottom: 4 }}>Password</p>
                 <p style={{ fontSize: "0.84rem", color: "#8a8a84" }}>Last changed 1 month ago.</p>
               </div>
-              <button style={actionBtnStyle}>Change password</button>
+              <button type="button" style={actionBtnStyle}>
+                Change password
+              </button>
             </div>
           </SettingsSection>
 
           <SettingsSection title="Access control">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 24 }}>
               <div>
-                <p style={{ fontSize: "0.96rem", fontWeight: 600, color: NAVY, marginBottom: 4 }}>Coordinator permissions</p>
+                <p style={{ fontSize: "0.96rem", fontWeight: 600, color: NAVY, marginBottom: 4 }}>
+                  Coordinator permissions
+                </p>
                 <p style={{ fontSize: "0.84rem", color: "#8a8a84", lineHeight: 1.5 }}>
                   Manage what coordinators can approve without admin sign-off.
                 </p>
               </div>
-              <button style={actionBtnStyle}>Manage permissions</button>
+              <button type="button" style={actionBtnStyle}>
+                Manage permissions
+              </button>
             </div>
           </SettingsSection>
 
           <SettingsSection title="Account" danger>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 24 }}>
               <div>
-                <p style={{ fontSize: "0.96rem", fontWeight: 600, color: NAVY, marginBottom: 4 }}>Transfer admin role</p>
+                <p style={{ fontSize: "0.96rem", fontWeight: 600, color: NAVY, marginBottom: 4 }}>
+                  Transfer admin role
+                </p>
                 <p style={{ fontSize: "0.84rem", color: "#8a8a84", lineHeight: 1.5 }}>
                   Hand off main administrator access to another account.
                 </p>
               </div>
-              <button style={dangerBtnStyle}>Transfer role</button>
+              <button type="button" style={dangerBtnStyle}>
+                Transfer role
+              </button>
             </div>
           </SettingsSection>
         </div>

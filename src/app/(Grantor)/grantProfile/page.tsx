@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { CameraIcon, DrawerInfoRow, GRANTOR, FUNDED_SCHOLARS, s } from "@/components/Grantorshared";
+import { useState } from "react";
+import { CameraIcon, DrawerInfoRow, FUNDED_SCHOLARS, GRANTOR, s } from "@/components/Grantorshared";
 
 function ProfilePageStyles() {
   return (
@@ -39,7 +39,7 @@ export default function GrantorProfilePage() {
       <ProfilePageStyles />
 
       <div className="gr-profile-banner" style={{ ...s.profileBanner, background: GRANTOR.bannerGradient }}>
-        <button style={s.profileBannerEditBtn}>
+        <button type="button" style={s.profileBannerEditBtn}>
           <CameraIcon /> Change banner
         </button>
       </div>
@@ -49,26 +49,34 @@ export default function GrantorProfilePage() {
           <span className="gr-profile-avatar" style={{ ...s.profileAvatar, background: GRANTOR.avatarColor }}>
             {GRANTOR.initials}
           </span>
-          <button style={s.profileAvatarEditBtn}>
+          <button type="button" style={s.profileAvatarEditBtn}>
             <CameraIcon />
           </button>
         </div>
         <div className="gr-profile-header-info" style={s.profileHeaderInfo}>
-          <h2 className="gr-profile-name" style={s.profileName}>{GRANTOR.name}</h2>
+          <h2 className="gr-profile-name" style={s.profileName}>
+            {GRANTOR.name}
+          </h2>
           <p style={s.profileMeta}>{GRANTOR.title}</p>
         </div>
-        <button className="gr-profile-edit-btn" style={s.continueBtnSmall}>Edit profile</button>
+        <button type="button" className="gr-profile-edit-btn" style={s.continueBtnSmall}>
+          Edit profile
+        </button>
       </div>
 
       <div className="gr-profile-bio-card" style={s.profileBioCard}>
         <div style={s.profileBioHeader}>
           <p style={s.profileBioLabel}>About</p>
-          <button onClick={() => setEditingBio((v) => !v)} style={s.reviewEditLink}>
+          <button type="button" onClick={() => setEditingBio((v) => !v)} style={s.reviewEditLink}>
             {editingBio ? "Save" : "Edit"}
           </button>
         </div>
         {editingBio ? (
-          <textarea style={{ ...s.input, height: 90, resize: "vertical" }} value={bio} onChange={(e) => setBio(e.target.value)} />
+          <textarea
+            style={{ ...s.input, height: 90, resize: "vertical" }}
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+          />
         ) : (
           <p style={s.profileBioText}>{bio}</p>
         )}

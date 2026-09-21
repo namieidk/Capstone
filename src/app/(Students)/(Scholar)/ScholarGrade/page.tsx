@@ -1,23 +1,32 @@
 "use client";
 
-import React, { useState } from "react";
-import { useSidebar } from "@/components/SidebarContext";
+import { useState } from "react";
 import {
-  GRADE_HISTORY,
-  GRADE_CERTIFICATES,
-  CURRENT_TERM_LABEL,
-  CERTIFICATE_DUE_DATE,
-  PREDICTED_GWA,
-  GWA_THRESHOLD,
   AMBER_BG,
+  CERTIFICATE_DUE_DATE,
+  CURRENT_TERM_LABEL,
+  GRADE_CERTIFICATES,
+  GRADE_HISTORY,
+  GWA_THRESHOLD,
   LINE,
   MenuIcon,
+  PREDICTED_GWA,
   s,
 } from "@/components/ScholarShared";
+import { useSidebar } from "@/components/SidebarContext";
 
 function DocIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+      focusable="false"
+    >
       <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
       <path d="M9 12l2 2 4-4" />
     </svg>
@@ -85,7 +94,7 @@ export default function ScholarGradePage() {
   return (
     <div>
       <header style={s.topbar}>
-        <button className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -121,8 +130,8 @@ export default function ScholarGradePage() {
 
           <h3 style={{ ...s.cardHeading, marginBottom: 6 }}>Submit this semesters certificate</h3>
           <p style={{ ...s.pageSub, marginBottom: 18 }}>
-            Every semester, upload a Certificate of Grades or Scholarship Continuation issued by your school registrar for{" "}
-            <strong>{CURRENT_TERM_LABEL}</strong>. Due {CERTIFICATE_DUE_DATE}.
+            Every semester, upload a Certificate of Grades or Scholarship Continuation issued by your school registrar
+            for <strong>{CURRENT_TERM_LABEL}</strong>. Due {CERTIFICATE_DUE_DATE}.
           </p>
 
           <UploadRow
@@ -133,6 +142,7 @@ export default function ScholarGradePage() {
           />
 
           <button
+            type="button"
             onClick={handleSubmit}
             disabled={!canSubmit}
             style={{

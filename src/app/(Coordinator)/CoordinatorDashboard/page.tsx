@@ -1,27 +1,26 @@
 "use client";
 
-import React from "react";
 import { useRouter } from "next/navigation";
 import {
+  ACTIVITY_FEED,
+  AMBER,
   ArrowRightIcon,
-  PeopleIcon,
+  BAD,
+  BellIcon,
+  COORDINATOR,
+  GOOD,
   InterviewIcon,
+  LINE,
+  MenuIcon,
   MonitorIcon,
   PaymentsIcon,
-  TrendUpIcon,
-  TrendDownIcon,
+  PeopleIcon,
   PIPELINE_COUNTS,
-  ACTIVITY_FEED,
-  UPCOMING_INTERVIEWS,
-  TONE_MAP,
-  GOOD,
-  BAD,
-  LINE,
   s,
-  MenuIcon,
-  BellIcon,
-  AMBER,
-  COORDINATOR,
+  TONE_MAP,
+  TrendDownIcon,
+  TrendUpIcon,
+  UPCOMING_INTERVIEWS,
 } from "@/components/Coordinatorshared";
 import { useSidebar } from "@/components/SidebarContext";
 
@@ -35,7 +34,7 @@ export default function HomePage() {
     <div>
       {/* ---------------- Page-level navbar (no search) ---------------- */}
       <header style={s.topbar}>
-        <button className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -43,7 +42,7 @@ export default function HomePage() {
           <p style={s.topbarSub}>Heres whats happening across your pipeline today.</p>
         </div>
         <div style={s.topbarRight}>
-          <button style={s.bellBtn}>
+          <button type="button" style={s.bellBtn}>
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
           </button>
@@ -57,12 +56,16 @@ export default function HomePage() {
               <div style={s.pipelineTopRow}>
                 <div>
                   <p style={s.pipelineLabel}>{p.label}</p>
-                  <span style={{ ...s.pipelineTag, background: TONE_MAP[p.tone].bg, color: TONE_MAP[p.tone].text }}>applicants</span>
+                  <span style={{ ...s.pipelineTag, background: TONE_MAP[p.tone].bg, color: TONE_MAP[p.tone].text }}>
+                    applicants
+                  </span>
                 </div>
                 <p style={s.pipelineValue}>{p.value}</p>
               </div>
               <div style={s.pipelineKpiRow}>
-                <span style={{ color: p.kpiDirection === "up" ? GOOD : BAD, display: "flex", alignItems: "center", gap: 4 }}>
+                <span
+                  style={{ color: p.kpiDirection === "up" ? GOOD : BAD, display: "flex", alignItems: "center", gap: 4 }}
+                >
                   {p.kpiDirection === "up" ? <TrendUpIcon /> : <TrendDownIcon />}
                   {p.kpi}
                 </span>
@@ -76,13 +79,16 @@ export default function HomePage() {
           <section style={s.feedCard}>
             <div style={s.cardHeaderRow}>
               <h2 style={s.cardHeading}>Recent activity</h2>
-              <button onClick={() => router.push("/applicants")} style={s.viewAllBtn}>
+              <button type="button" onClick={() => router.push("/applicants")} style={s.viewAllBtn}>
                 View all <ArrowRightIcon />
               </button>
             </div>
             <div style={s.feedList}>
               {ACTIVITY_FEED.map((item, i) => (
-                <div key={i} style={{ ...s.feedRow, borderBottom: i === ACTIVITY_FEED.length - 1 ? "none" : `1px solid ${LINE}` }}>
+                <div
+                  key={`${item.text}-${item.time}`}
+                  style={{ ...s.feedRow, borderBottom: i === ACTIVITY_FEED.length - 1 ? "none" : `1px solid ${LINE}` }}
+                >
                   <span style={s.feedIconBox}>{item.icon}</span>
                   <div style={s.feedTextCol}>
                     <p style={s.feedText}>{item.text}</p>
@@ -96,7 +102,7 @@ export default function HomePage() {
           <section style={s.upcomingCard}>
             <div style={s.cardHeaderRow}>
               <h2 style={s.cardHeading}>Upcoming interviews</h2>
-              <button onClick={() => router.push("/meeting")} style={s.viewAllBtn}>
+              <button type="button" onClick={() => router.push("/meeting")} style={s.viewAllBtn}>
                 Manage <ArrowRightIcon />
               </button>
             </div>
@@ -116,7 +122,7 @@ export default function HomePage() {
 
             <div style={s.quickLinksWrap}>
               <p style={s.quickLinksHeading}>Quick actions</p>
-              <button onClick={() => router.push("/applicants")} style={s.quickLinkBtn}>
+              <button type="button" onClick={() => router.push("/applicants")} style={s.quickLinkBtn}>
                 <span style={s.quickLinkIcon}>
                   <PeopleIcon />
                 </span>
@@ -125,7 +131,7 @@ export default function HomePage() {
                   <ArrowRightIcon />
                 </span>
               </button>
-              <button onClick={() => router.push("/meeting")} style={s.quickLinkBtn}>
+              <button type="button" onClick={() => router.push("/meeting")} style={s.quickLinkBtn}>
                 <span style={s.quickLinkIcon}>
                   <InterviewIcon />
                 </span>
@@ -134,7 +140,7 @@ export default function HomePage() {
                   <ArrowRightIcon />
                 </span>
               </button>
-              <button onClick={() => router.push("/monitor")} style={s.quickLinkBtn}>
+              <button type="button" onClick={() => router.push("/monitor")} style={s.quickLinkBtn}>
                 <span style={s.quickLinkIcon}>
                   <MonitorIcon />
                 </span>
@@ -143,7 +149,7 @@ export default function HomePage() {
                   <ArrowRightIcon />
                 </span>
               </button>
-              <button onClick={() => router.push("/payment")} style={s.quickLinkBtn}>
+              <button type="button" onClick={() => router.push("/payment")} style={s.quickLinkBtn}>
                 <span style={s.quickLinkIcon}>
                   <PaymentsIcon />
                 </span>

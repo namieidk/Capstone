@@ -1,18 +1,19 @@
 "use client";
 
-import React, { useState, ReactNode } from "react";
+import type React from "react";
+import { type ReactNode, useState } from "react";
 import {
-  ToggleIcon,
-  NAVY,
   BAD,
   BAD_BG,
-  WHITE,
-  TINT,
-  LINE,
-  SHADOW_SM,
   BORDER_SUBTLE,
-  s,
+  LINE,
   MenuIcon,
+  NAVY,
+  SHADOW_SM,
+  s,
+  TINT,
+  ToggleIcon,
+  WHITE,
 } from "@/components/Coordinatorshared";
 import { useSidebar } from "@/components/SidebarContext";
 
@@ -64,7 +65,7 @@ function SettingsRow({ label, desc, on, onToggle }: SettingsRowProps) {
         <p style={{ fontSize: "0.96rem", fontWeight: 600, color: NAVY, marginBottom: 4 }}>{label}</p>
         <p style={{ fontSize: "0.84rem", color: "#8a8a84", lineHeight: 1.5 }}>{desc}</p>
       </div>
-      <button onClick={onToggle} style={{ flexShrink: 0, cursor: "pointer" }}>
+      <button type="button" onClick={onToggle} style={{ flexShrink: 0, cursor: "pointer" }}>
         <ToggleIcon on={on} />
       </button>
     </div>
@@ -133,7 +134,7 @@ export default function SettingsPage() {
     <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       {/* ---------------- Page-level navbar ---------------- */}
       <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
+        <button type="button" className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
           <MenuIcon />
         </button>
         <div>
@@ -183,14 +184,18 @@ export default function SettingsPage() {
                 <p style={{ fontSize: "0.96rem", fontWeight: 600, color: NAVY, marginBottom: 4 }}>Password</p>
                 <p style={{ fontSize: "0.84rem", color: "#8a8a84" }}>Last changed 2 months ago.</p>
               </div>
-              <button style={actionBtnStyle}>Change password</button>
+              <button type="button" style={actionBtnStyle}>
+                Change password
+              </button>
             </div>
           </SettingsSection>
 
           <SettingsSection title="Review preferences">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 24 }}>
               <div>
-                <p style={{ fontSize: "0.96rem", fontWeight: 600, color: NAVY, marginBottom: 4 }}>Default GWA threshold</p>
+                <p style={{ fontSize: "0.96rem", fontWeight: 600, color: NAVY, marginBottom: 4 }}>
+                  Default GWA threshold
+                </p>
                 <p style={{ fontSize: "0.84rem", color: "#8a8a84", lineHeight: 1.5 }}>
                   Minimum GWA shown without a warning flag.
                 </p>
@@ -202,12 +207,16 @@ export default function SettingsPage() {
           <SettingsSection title="Account" danger>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 24 }}>
               <div>
-                <p style={{ fontSize: "0.96rem", fontWeight: 600, color: NAVY, marginBottom: 4 }}>Transfer coordinator role</p>
+                <p style={{ fontSize: "0.96rem", fontWeight: 600, color: NAVY, marginBottom: 4 }}>
+                  Transfer coordinator role
+                </p>
                 <p style={{ fontSize: "0.84rem", color: "#8a8a84", lineHeight: 1.5 }}>
                   Hand off your applicant queue to another coordinator.
                 </p>
               </div>
-              <button style={dangerBtnStyle}>Transfer role</button>
+              <button type="button" style={dangerBtnStyle}>
+                Transfer role
+              </button>
             </div>
           </SettingsSection>
         </div>
