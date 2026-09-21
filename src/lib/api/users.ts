@@ -45,6 +45,39 @@ export function getAuditLogs(params?: { page?: number; limit?: number }) {
   return apiGet<AuditLogsResponse>(`${B}/logs${query ? `?${query}` : ""}`);
 }
 
+export function getAdminDashboardData() {
+  return apiGet<{
+    metrics: {
+      totalStaff: number;
+      activeStaff: number;
+      coordinatorCount: number;
+      grantorCount: number;
+      adminCount: number;
+      totalStudents: number;
+      activeScholarsCount: number;
+      applicantCount: number;
+      totalSchools: number;
+      verifiedSchools: number;
+      gradeThreshold: number;
+    };
+    staff: Array<{
+      id: number;
+      name: string;
+      initials: string;
+      email: string;
+      type: "Coordinator" | "Grantor" | "Admin";
+      title: string;
+      department: string;
+      phone: string;
+      active: boolean;
+      joined: string;
+    }>;
+    schools: Array<import("./settings").SchoolGrading>;
+    settings: import("./settings").GlobalSettings | null;
+    recentLogs: Array<AuditLogEntry>;
+  }>(`${B}/admin/dashboard`);
+}
+
 export function createStaff(data: {
   email: string;
   password: string;
