@@ -229,7 +229,7 @@ function SignUpForm() {
 
 function SignedUpPanel() {
   const { user } = useAuth();
-  const continuePath = user?.role === "SCHOLAR" ? "/scholardashboard" : "/ApplicantsDashboard";
+  const continuePath = user?.role === "SCHOLAR" ? "/scholardashboard" : "/ApplicantsApplication";
 
   return (
     <SuccessPanel

@@ -4,6 +4,7 @@ import { Clock, HeartHandshake } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useSocket } from "@/contexts/SocketContext";
 import type { GrantorContact } from "@/lib/api/chat";
 import { getInitials } from "./chat-utils";
 
@@ -14,6 +15,8 @@ interface GrantorDirectoryListProps {
 }
 
 export function GrantorDirectoryList({ grantors, onSelect, onRequestGrantorAccess }: GrantorDirectoryListProps) {
+  const { isUserOnline } = useSocket();
+
   if (grantors.length === 0) {
     return (
       <div className="p-8 text-center text-xs text-muted-foreground">
@@ -26,6 +29,7 @@ export function GrantorDirectoryList({ grantors, onSelect, onRequestGrantorAcces
   return (
     <div className="space-y-1.5">
       {grantors.map((grantor) => {
+        const isOnline = isUserOnline(grantor.user_id);
         const name = `${grantor.first_name} ${grantor.last_name}`.trim();
         const isPending = grantor.status === "PENDING_REQUEST";
         const isActive = grantor.status === "ACTIVE";
@@ -37,11 +41,16 @@ export function GrantorDirectoryList({ grantors, onSelect, onRequestGrantorAcces
             className="flex items-center justify-between gap-3 rounded-xl border border-line/60 bg-white p-3 shadow-2xs hover:border-border transition-all"
           >
             <div className="flex items-center gap-2.5 min-w-0">
-              <Avatar className="size-9 shrink-0 ring-1 ring-purple-200">
-                <AvatarFallback className="bg-purple-50 text-purple-800 font-bold text-xs">
-                  {getInitials(name)}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative shrink-0">
+                <Avatar className="size-9 ring-1 ring-purple-200">
+                  <AvatarFallback className="bg-purple-50 text-purple-800 font-bold text-xs">
+                    {getInitials(name)}
+                  </AvatarFallback>
+                </Avatar>
+                {isOnline && (
+                  <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500 ring-2 ring-white animate-in zoom-in-50 duration-200" />
+                )}
+              </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span className="truncate text-xs font-bold text-navy">{name}</span>

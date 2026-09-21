@@ -16,6 +16,8 @@ export interface User {
   updated_at: string;
   scholar_profile?: {
     profile_id: number;
+    first_name?: string;
+    last_name?: string;
     phone_number?: string;
     student_address?: string;
     school_address?: string;
@@ -23,8 +25,25 @@ export interface User {
     course_of_study?: string;
     school_name?: string;
     current_year_level?: number;
+    year_level?: number;
     scholarship_track?: string;
     relative_employee?: string;
+    academic_baseline_status?: string;
+    avatar_url?: string | null;
+    banner_url?: string | null;
+    bio?: string | null;
+    home_address?: string | null;
+    school_grading_system?: {
+      school_id?: number;
+      school_name?: string;
+      grading_scale?: string;
+      passing_grade?: number;
+      highest_grade?: number;
+      failing_grade?: number;
+      min_grade?: number;
+      max_grade?: number;
+      special_codes?: Record<string, string>;
+    } | null;
   };
   employee?: {
     employee_id: number;
@@ -96,4 +115,19 @@ export function uploadBanner(file: File) {
 
 export function logout() {
   return apiPost<{ ok: boolean }>(`${B}/logout`);
+}
+
+export function requestPasswordReset(email: string) {
+  return apiPost<{ message: string }>(`${B}/forgot-password`, { email });
+}
+
+export function executePasswordReset(token: string, new_password: string) {
+  return apiPost<{ message: string }>(`${B}/reset-password`, {
+    token,
+    new_password,
+  });
+}
+
+export function googleLogin(credential: string) {
+  return apiPost<LoginResponse>(`${B}/google`, { credential });
 }

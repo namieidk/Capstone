@@ -68,12 +68,12 @@ export function DocumentSummaryForm({
             id="general-average"
             type="number"
             step="0.01"
-            min="50"
+            min="1.0"
             max="100"
             value={generalAverage}
             disabled={isReadOnly}
             onChange={(e) => onGeneralAverageChange(e.target.value)}
-            placeholder="e.g. 92.00"
+            placeholder="e.g. 92.00, 3.50, or 1.75"
             className="mt-1.5 h-10! bg-white! text-xs! sm:text-xs!"
           />
         </div>

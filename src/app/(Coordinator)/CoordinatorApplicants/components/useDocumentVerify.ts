@@ -81,14 +81,14 @@ export function useDocumentVerify(doc: ScholarDocument | null, open: boolean, on
 
   function buildPayload(): { academic_year?: string; general_average?: number; grade_items: GradeItem[] } {
     const parsedGa = generalAverage.trim() ? Number(generalAverage) : undefined;
-    if (parsedGa !== undefined && (Number.isNaN(parsedGa) || parsedGa < 50 || parsedGa > 100)) {
-      throw new Error("General Average must be a valid number between 50 and 100.");
+    if (parsedGa !== undefined && (Number.isNaN(parsedGa) || parsedGa <= 0 || parsedGa > 100)) {
+      throw new Error("General Average must be a valid number between 1.0 and 100.");
     }
     const invalid = gradeItems.find(
-      (i) => i.grade === "" || Number.isNaN(Number(i.grade)) || Number(i.grade) < 50 || Number(i.grade) > 100,
+      (i) => i.grade === "" || Number.isNaN(Number(i.grade)) || Number(i.grade) <= 0 || Number(i.grade) > 100,
     );
     if (invalid) {
-      throw new Error(`Grade for "${invalid.subject_name || "subject"}" must be between 50 and 100.`);
+      throw new Error(`Grade for "${invalid.subject_name || "subject"}" must be a valid score between 1.0 and 100.`);
     }
     return {
       academic_year: academicYear.trim() || undefined,

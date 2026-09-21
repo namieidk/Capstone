@@ -51,7 +51,7 @@ function SignInForm() {
     setLoading(true);
     try {
       const loggedInUser = await login(email, password, remember);
-      const dashboardPath = DASHBOARD_MAP[loggedInUser.role] ?? "/";
+      const dashboardPath = getRoleTarget(loggedInUser);
       router.push(dashboardPath);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Login failed. Please try again.";
@@ -107,12 +107,12 @@ function SignInForm() {
           onCheckedChange={(v) => setRemember(v === true)}
           label="Keep me signed in"
         />
-        <button
-          type="button"
+        <Link
+          href="/forgot-password"
           className="text-[0.88rem] font-medium text-muted-foreground underline underline-offset-2 hover:text-navy"
         >
           Forgot password?
-        </button>
+        </Link>
       </div>
 
       <Button type="submit" disabled={loading} className="mt-1 h-11 w-full rounded-full text-[0.96rem] font-semibold">
@@ -130,10 +130,27 @@ function SignInForm() {
   );
 }
 
+function getRoleTarget(
+  user: { role: string; scholar_profile?: { academic_baseline_status?: string } | null } | null,
+): string {
+  if (!user) return "/";
+  if (user.role === "SCHOLAR") {
+    const status = user.scholar_profile?.academic_baseline_status;
+    if (status && ["PENDING_SCHOOL_SELECTION", "PENDING_PROSPECTUS", "PENDING_HISTORICAL_CCG"].includes(status)) {
+      return "/scholar-onboarding";
+    }
+    return "/scholardashboard";
+  }
+  if (user.role === "APPLICANT") {
+    return "/ApplicantsApplication";
+  }
+  return DASHBOARD_MAP[user.role] ?? "/";
+}
+
 function SignedInPanel() {
   const { user } = useAuth();
   const role = user?.role ?? "";
-  const dashboardPath = DASHBOARD_MAP[role] ?? "/";
+  const dashboardPath = getRoleTarget(user);
 
   return (
     <SuccessPanel
@@ -155,7 +172,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      const target = DASHBOARD_MAP[user.role] ?? "/";
+      const target = getRoleTarget(user);
       router.replace(target);
     }
   }, [user, loading, router]);

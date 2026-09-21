@@ -133,13 +133,37 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       }
     };
 
-    const handleDocConfirmed = (data: { studentName?: string }) => {
+    const handleDocConfirmed = (data: { studentName?: string; documentType?: string }) => {
+      if (isStaff) {
+        const isGradeAudit =
+          data?.documentType === "CCG" ||
+          data?.documentType === "GRADE_REPORT" ||
+          data?.documentType === "GRADE_SLIP" ||
+          data?.documentType === "TOR" ||
+          data?.documentType === "CERTIFIED_COPY_OF_GRADES";
+
+        addNotification({
+          title: isGradeAudit ? "New Grade Audit Awaiting Review" : "Documents Confirmed",
+          message: isGradeAudit
+            ? `${data?.studentName || "A scholar"} confirmed their ${data?.documentType || "grade"} document. Ready for audit.`
+            : `${data?.studentName || "An applicant"} confirmed their document details.`,
+          category: "document",
+          link: isGradeAudit
+            ? user.role === "COORDINATOR"
+              ? "/CoordinatorMonitor"
+              : "/grantMonitor"
+            : staffApplicantLink,
+        });
+      }
+    };
+
+    const handleGradeReportSubmitted = (data?: { studentName?: string; documentType?: string }) => {
       if (isStaff) {
         addNotification({
-          title: "Documents Confirmed",
-          message: `${data?.studentName || "An applicant"} confirmed their document details.`,
+          title: "New Grade Audit Awaiting Review",
+          message: `${data?.studentName || "A scholar"} submitted ${data?.documentType || "grades"} for end-of-term audit.`,
           category: "document",
-          link: staffApplicantLink,
+          link: user.role === "COORDINATOR" ? "/CoordinatorMonitor" : "/grantMonitor",
         });
       }
     };
@@ -289,6 +313,40 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       });
     };
 
+    const handleDisbursementUpdated = (data: {
+      status?: string;
+      message?: string;
+      check_number?: string;
+      amount?: number | string;
+      voucher_number?: string;
+    }) => {
+      let title = "Tuition Disbursement Update";
+      let msg = data?.message || "There is an update on your tuition disbursement.";
+      if (data?.status === "CHECK_ISSUED") {
+        title = "Tuition Check Ready for Release 💳";
+        msg =
+          data.message ||
+          `Check #${data.check_number || ""} is ready. Please claim it and submit your Official Receipt once paid.`;
+      } else if (data?.status === "SETTLED") {
+        title = "Tuition Disbursement Settled ✅";
+        msg = data.message || "Your university Official Receipt has been verified. Tuition is fully settled.";
+      } else if (data?.status === "AUTHORIZED") {
+        title = "Tuition Grant Authorized 📜";
+        msg =
+          data.message ||
+          `Tuition voucher ${data.voucher_number || ""} has been authorized. Check preparation is underway.`;
+      }
+
+      const link = isStaff ? (user.role === "GRANTOR" ? "/grantPayment" : "/CoordinatorPayment") : "/ScholarPayment";
+
+      addNotification({
+        title,
+        message: msg,
+        category: "system",
+        link,
+      });
+    };
+
     socket.on("user:role_promoted", handleRolePromoted);
     socket.on("application:submitted", handleAppSubmitted);
     socket.on("document:confirmed_by_applicant", handleDocConfirmed);
@@ -302,6 +360,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     socket.on("forum:comment_notification", handleForumComment);
     socket.on("chat:message_request", handleMessageRequest);
     socket.on("chat:request_responded", handleRequestResponded);
+    socket.on("disbursement:updated", handleDisbursementUpdated);
+    socket.on("disbursement:authorized", handleDisbursementUpdated);
+    socket.on("grade_report:submitted", handleGradeReportSubmitted);
 
     return () => {
       socket.off("user:role_promoted", handleRolePromoted);
@@ -317,6 +378,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       socket.off("forum:comment_notification", handleForumComment);
       socket.off("chat:message_request", handleMessageRequest);
       socket.off("chat:request_responded", handleRequestResponded);
+      socket.off("disbursement:updated", handleDisbursementUpdated);
+      socket.off("disbursement:authorized", handleDisbursementUpdated);
+      socket.off("grade_report:submitted", handleGradeReportSubmitted);
     };
   }, [socket, user, addNotification]);
 

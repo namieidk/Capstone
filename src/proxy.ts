@@ -5,9 +5,14 @@ const PUBLIC_ROUTES = [
   "/login",
   "/signup",
   "/stafflogin",
+  "/forgot-password",
+  "/reset-password",
   "/api/auth/login",
   "/api/auth/register",
   "/api/auth/logout",
+  "/api/auth/google",
+  "/api/auth/forgot-password",
+  "/api/auth/reset-password",
 ];
 
 const ROLE_DASHBOARDS: Record<string, string> = {
@@ -15,7 +20,7 @@ const ROLE_DASHBOARDS: Record<string, string> = {
   COORDINATOR: "/CoordinatorDashboard",
   GRANTOR: "/grantDashboard",
   SCHOLAR: "/scholardashboard",
-  APPLICANT: "/ApplicantsDashboard",
+  APPLICANT: "/ApplicantsApplication",
 };
 
 interface JwtPayload {
@@ -44,13 +49,13 @@ function isPublicRoute(pathname: string): boolean {
 function isRouteAllowedForRole(pathname: string, role: string): boolean {
   const upper = role.toUpperCase();
 
+  // Shared Staff routes
+  if (pathname.startsWith("/GradingSystems")) {
+    return upper === "ADMIN" || upper === "COORDINATOR" || upper === "GRANTOR";
+  }
+
   // Admin routes
-  if (
-    pathname.startsWith("/Admin") ||
-    pathname.startsWith("/AuditLogs") ||
-    pathname.startsWith("/GlobalSettings") ||
-    pathname.startsWith("/GradingSystems")
-  ) {
+  if (pathname.startsWith("/Admin") || pathname.startsWith("/AuditLogs") || pathname.startsWith("/GlobalSettings")) {
     return upper === "ADMIN";
   }
 

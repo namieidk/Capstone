@@ -650,7 +650,7 @@ export interface HistoryPaymentRecord {
   term: string;
   amount: number;
   date: string;
-  status: "Paid" | "Pending" | "On hold";
+  status: "Paid" | "Pending" | "On hold" | "Settled";
 }
 
 export interface ActiveScholar {
@@ -666,7 +666,7 @@ export interface ActiveScholar {
   currentPayment: {
     term: string;
     amount: number;
-    status: "Paid" | "Pending" | "On hold";
+    status: "Paid" | "Pending" | "On hold" | "Settled";
   };
   gradeHistory: GradeRecord[];
   paymentHistory: HistoryPaymentRecord[];
@@ -744,7 +744,7 @@ export const NAV_ITEMS: NavItem[] = [
   { key: "applicants", label: "Applicants", icon: <PeopleIcon />, href: "/CoordinatorApplicants", badge: 12 },
   { key: "meeting", label: "Meeting", icon: <InterviewIcon />, href: "/CoordinatorMeeting", badge: 4 },
   { key: "monitor", label: "Monitor", icon: <MonitorIcon />, href: "/CoordinatorMonitor" },
-  { key: "payment", label: "Payment", icon: <PaymentsIcon />, href: "/CoordinatorPayment", badge: 2 },
+  { key: "payment", label: "Disbursements", icon: <PaymentsIcon />, href: "/CoordinatorPayment", badge: 2 },
   { key: "archive", label: "Archive", icon: <ArchiveIcon />, href: "/CoordinatorArchive" },
   { key: "reports", label: "Reports", icon: <ReportsIcon />, href: "/CoordinatorReports" },
   { key: "message", label: "Message", icon: <MailIcon />, href: "/CoordinatorMessage", badge: 3 },
@@ -1076,6 +1076,7 @@ export const PAYMENT_STATUS_COLORS: Record<
   { bg: string; text: string }
 > = {
   Paid: { bg: GOOD_BG, text: GOOD },
+  Settled: { bg: GOOD_BG, text: GOOD },
   Scheduled: { bg: AMBER_BG, text: "#7A5C0A" },
   Pending: { bg: WARN_BG, text: WARN },
   "On hold": { bg: BAD_BG, text: BAD },

@@ -1,35 +1,37 @@
 "use client";
 
-import { Eye, EyeOff, X } from "lucide-react";
+import { KeyRound, Power } from "lucide-react";
 import { useEffect, useState } from "react";
-import { PasswordChecklist } from "@/app/(Authentication)/components/PasswordChecklist";
-import { BAD, BAD_BG } from "@/components/Adminshared";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { StaffRow } from "./employee-helpers";
 
 interface EmployeeSheetProps {
   employee: StaffRow | null;
   onClose: () => void;
-  resetOpen: boolean;
-  onResetOpenChange: (open: boolean) => void;
-  newPassword: string;
-  onNewPasswordChange: (value: string) => void;
+  onOpenResetPassword: () => void;
   acting: boolean;
   actionError: string;
-  onResetPassword: () => void;
   onToggleStatus: () => void;
 }
 
-function InfoItem({ label, value }: { label: string; value: string }) {
+function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <p className="mb-1 text-xs text-[#9a9a94]">{label}</p>
-      <p className="text-sm font-bold text-navy">{value}</p>
+    <div className="rounded-lg border border-border bg-card p-3 space-y-1">
+      <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
+      <p className="text-xs font-semibold text-foreground">{value}</p>
     </div>
   );
 }
@@ -37,175 +39,139 @@ function InfoItem({ label, value }: { label: string; value: string }) {
 export function EmployeeSheet({
   employee,
   onClose,
-  resetOpen,
-  onResetOpenChange,
-  newPassword,
-  onNewPasswordChange,
+  onOpenResetPassword,
   acting,
   actionError,
-  onResetPassword,
   onToggleStatus,
 }: EmployeeSheetProps) {
-  const canConfirmReset = !acting && newPassword.trim().length >= 8;
-  const [showResetPw, setShowResetPw] = useState(false);
-  const [confirmDeactivate, setConfirmDeactivate] = useState(false);
+  const [confirmToggleStatus, setConfirmToggleStatus] = useState(false);
 
-  // The page closes the sheet on a successful status change — make sure a
-  // lingering confirmation dialog closes with it.
   useEffect(() => {
-    if (!employee) setConfirmDeactivate(false);
+    if (!employee) setConfirmToggleStatus(false);
   }, [employee]);
 
   return (
     <>
       <Sheet open={employee !== null} onOpenChange={(open) => !open && onClose()}>
-        <SheetContent
-          side="right"
-          showCloseButton={false}
-          className="w-110! max-w-[92vw]! gap-0 overflow-y-auto border-line bg-white p-8 text-sm!"
-        >
+        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto p-6 space-y-6">
           {employee && (
             <>
-              <div className="flex items-start gap-3.5">
-                <Avatar style={{ width: 64, height: 64 }} className="shrink-0">
-                  <AvatarFallback className="bg-navy text-xl! font-bold text-white!">
-                    {employee.initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <SheetTitle className="text-xl! text-navy!">{employee.name}</SheetTitle>
-                  <SheetDescription className="text-sm!">{employee.title}</SheetDescription>
+              <SheetHeader className="space-y-4">
+                <div className="flex items-center gap-3.5">
+                  <Avatar className="size-14 border border-border">
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-base">
+                      {employee.initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1 space-y-0.5">
+                    <SheetTitle className="text-base font-semibold">{employee.name}</SheetTitle>
+                    <SheetDescription className="text-xs text-muted-foreground">
+                      {employee.title || employee.type}
+                    </SheetDescription>
+                  </div>
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-9 shrink-0"
-                  onClick={onClose}
-                  aria-label="Close details"
-                >
-                  <X className="size-5 text-[#9a9a94]" />
-                </Button>
+              </SheetHeader>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <InfoCard label="Role" value={employee.type} />
+                <div className="rounded-lg border border-border bg-card p-3 space-y-1">
+                  <p className="text-[11px] font-medium text-muted-foreground">Status</p>
+                  <div className="pt-0.5">
+                    <Badge
+                      variant={employee.status === "Active" ? "default" : "secondary"}
+                      className={`text-[10px] px-2 py-0.5 font-medium ${
+                        employee.status === "Active"
+                          ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20"
+                          : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20"
+                      }`}
+                    >
+                      <span className="size-1.5 rounded-full bg-current mr-1.5" />
+                      {employee.status}
+                    </Badge>
+                  </div>
+                </div>
+                <InfoCard label="Department" value={employee.department || "—"} />
+                <InfoCard label="Joined" value={employee.joined} />
               </div>
 
-              <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-5 rounded-[14px] bg-tint p-5">
-                <InfoItem label="Role" value={employee.type} />
-                <InfoItem label="Status" value={employee.status} />
-                <InfoItem label="Department" value={employee.department} />
-                <InfoItem label="Joined" value={employee.joined} />
+              <div className="rounded-lg border border-border bg-card p-4 space-y-2">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Contact Information
+                </p>
+                <div className="text-xs space-y-1">
+                  <p className="text-foreground">
+                    <span className="text-muted-foreground font-medium">Email: </span>
+                    <strong>{employee.email}</strong>
+                  </p>
+                </div>
               </div>
-
-              <p className="mt-6 text-xs font-bold uppercase tracking-wider text-[#9a9a94]">Contact</p>
-              <p className="mt-2 text-sm text-[#2b2b28]">
-                <strong>Email:</strong> {employee.email}
-              </p>
 
               {actionError && (
-                <div className="mt-4 rounded-[10px] border border-[#f5c2c0] bg-[#fdebec] px-3.5 py-3 text-sm leading-relaxed text-[#b3261e]">
+                <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-xs font-medium text-destructive">
                   {actionError}
                 </div>
               )}
 
-              {resetOpen ? (
-                <div className="mt-6">
-                  <Label htmlFor="employee-new-password" className="text-sm! font-semibold text-navy">
-                    New password
-                  </Label>
-                  <div className="relative mt-2">
-                    <Input
-                      id="employee-new-password"
-                      type={showResetPw ? "text" : "password"}
-                      value={newPassword}
-                      onChange={(e) => onNewPasswordChange(e.target.value)}
-                      placeholder="At least 8 characters"
-                      className="h-11! border-line bg-[#f7f9fb]! pr-11 text-sm! md:text-sm!"
-                    />
-                    <button
-                      type="button"
-                      aria-label={showResetPw ? "Hide password" : "Show password"}
-                      onClick={() => setShowResetPw((v) => !v)}
-                      className="absolute top-1/2 right-2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground transition-colors hover:text-navy"
-                    >
-                      {showResetPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                    </button>
-                  </div>
-                  <p className="mt-1.5 text-xs text-muted-foreground">
-                    8+ characters with an uppercase, a lowercase, a number, and a special character.
-                  </p>
-                  <div className="mt-2">
-                    <PasswordChecklist password={newPassword} />
-                  </div>
-                  <div className="mt-4 flex flex-col gap-2.5">
-                    <Button
-                      type="button"
-                      className="h-11 w-full rounded-full text-sm!"
-                      onClick={onResetPassword}
-                      disabled={!canConfirmReset}
-                    >
-                      {acting ? "Resetting..." : "Confirm reset"}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-11 w-full rounded-full text-sm! text-navy"
-                      onClick={() => {
-                        onResetOpenChange(false);
-                        onNewPasswordChange("");
-                      }}
-                      disabled={acting}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-6 flex flex-col gap-2.5">
+              <div className="space-y-2 pt-4">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Account Actions</p>
+                <div className="flex flex-col gap-2">
                   <Button
                     type="button"
-                    className="h-11 w-full rounded-full text-sm!"
-                    onClick={() => onResetOpenChange(true)}
+                    variant="outline"
+                    className="w-full justify-start text-xs font-medium h-9"
+                    onClick={onOpenResetPassword}
                   >
-                    Reset password
+                    <KeyRound className="size-3.5 mr-2 text-primary" />
+                    Reset Password
                   </Button>
-                  {employee.user.is_active ? (
-                    <Button
-                      type="button"
-                      className="h-11 w-full rounded-full text-sm!"
-                      style={{ background: BAD_BG, color: BAD }}
-                      onClick={() => setConfirmDeactivate(true)}
-                      disabled={acting}
-                    >
-                      Deactivate
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      className="h-11 w-full rounded-full text-sm!"
-                      onClick={onToggleStatus}
-                      disabled={acting}
-                    >
-                      {acting ? "Updating..." : "Activate"}
-                    </Button>
-                  )}
+
+                  <Button
+                    type="button"
+                    variant={employee.user.is_active ? "destructive" : "default"}
+                    className="w-full justify-start text-xs font-medium h-9"
+                    onClick={() => setConfirmToggleStatus(true)}
+                    disabled={acting}
+                  >
+                    <Power className="size-3.5 mr-2" />
+                    {employee.user.is_active ? "Deactivate Account" : "Activate Account"}
+                  </Button>
                 </div>
-              )}
+              </div>
             </>
           )}
         </SheetContent>
       </Sheet>
-      <ConfirmDialog
-        open={confirmDeactivate}
-        onOpenChange={setConfirmDeactivate}
-        title="Deactivate employee?"
-        description={
-          employee
-            ? `${employee.name} will lose access immediately. You can reactivate this account later.`
-            : "This employee will lose access immediately."
-        }
-        confirmLabel="Deactivate"
-        acting={acting}
-        onConfirm={onToggleStatus}
-      />
+
+      {/* Confirmation Alert Dialog for Status Toggle */}
+      <AlertDialog open={confirmToggleStatus} onOpenChange={setConfirmToggleStatus}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {employee?.user.is_active ? "Deactivate employee account?" : "Activate employee account?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {employee?.user.is_active
+                ? `${employee.name} will immediately lose access to the portal until reactivated.`
+                : `${employee?.name} will regain access to login and manage scholarship workflows.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={acting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setConfirmToggleStatus(false);
+                onToggleStatus();
+              }}
+              disabled={acting}
+              className={
+                employee?.user.is_active ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""
+              }
+            >
+              {acting ? "Updating..." : employee?.user.is_active ? "Deactivate" : "Activate"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

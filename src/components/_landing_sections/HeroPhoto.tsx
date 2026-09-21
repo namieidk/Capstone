@@ -50,10 +50,7 @@ export function HeroPhoto() {
       />
       {/* Extra darkening on the left where the headline sits, so text
           contrast holds regardless of what's in the photo underneath. */}
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-linear-to-r from-[#0F2A1C]/55 via-[#0F2A1C]/15 to-transparent"
-      />
+      <div aria-hidden className="absolute inset-0 bg-linear-to-r from-[#0F2A1C]/55 via-[#0F2A1C]/15 to-transparent" />
     </div>
   );
 }

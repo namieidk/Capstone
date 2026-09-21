@@ -1,113 +1,136 @@
 "use client";
 
-import { useState } from "react";
-import { ACTIVE_SCHOLARS, CameraIcon, COORDINATOR, DrawerInfoRow, s } from "@/components/Coordinatorshared";
+import type React from "react";
+import { useCallback, useState } from "react";
+import EditProfileDrawer from "@/components/EditProfileDrawer";
+import { useToast } from "@/components/ToastContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { ApiError } from "@/lib/api";
+import { updateMe, uploadAvatar, uploadBanner } from "@/lib/api/auth";
+import { CoordinatorBanner } from "./components/CoordinatorBanner";
+import { CoordinatorBioCard } from "./components/CoordinatorBioCard";
+import { CoordinatorDetailsCards } from "./components/CoordinatorDetailsCards";
+import { CoordinatorHeader } from "./components/CoordinatorHeader";
+import { CoordinatorProfileSkeleton } from "./components/CoordinatorProfileSkeleton";
 
-function ProfilePageStyles() {
-  return (
-    <style>{`
-      .coor-profile-banner { height: 160px; }
-      .coor-profile-avatar { width: 88px; height: 88px; font-size: 1.8rem; }
-      .coor-profile-header-row { margin-top: -36px; }
+export default function CoordinatorProfilePage() {
+  const { user, refreshUser } = useAuth();
+  const { showToast } = useToast();
 
-      @media (max-width: 640px) {
-        .coor-profile-banner { height: 110px; }
-        .coor-profile-avatar { width: 68px; height: 68px; font-size: 1.4rem; }
-        .coor-profile-header-row {
-          margin-top: -30px;
-          align-items: flex-start;
-          flex-wrap: wrap;
-          gap: 12px;
-        }
-        .coor-profile-header-info { min-width: 0; flex-basis: 100%; order: 2; }
-        .coor-profile-edit-btn { order: 3; }
-        .coor-profile-bio-card, .coor-profile-contact-card {
-          padding: 16px 16px !important;
-        }
-        .coor-profile-name { font-size: 1.2rem !important; }
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const displayName = user ? `${user.first_name} ${user.last_name}`.trim() : "";
+  const displayInitials = user
+    ? ((user.first_name?.[0] ?? "") + (user.last_name?.[0] ?? "")).toUpperCase() || "CO"
+    : "CO";
+  const displayTitle = user?.employee?.title ?? "Scholarship Coordinator";
+
+  const handleBannerUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      setUploadingBanner(true);
+      try {
+        await uploadBanner(file);
+        await refreshUser();
+        showToast("Banner image updated successfully.");
+      } catch (err) {
+        console.error("Banner upload failed:", err);
+        showToast(err instanceof ApiError ? err.message : "Banner upload failed. Please try again.", "error");
+      } finally {
+        setUploadingBanner(false);
       }
-    `}</style>
+    },
+    [refreshUser, showToast],
   );
-}
 
-export default function ProfilePage() {
-  const [bio, setBio] = useState(COORDINATOR.bio);
-  const [editingBio, setEditingBio] = useState(false);
+  const handleAvatarUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      setUploadingAvatar(true);
+      try {
+        await uploadAvatar(file);
+        await refreshUser();
+        showToast("Profile picture updated successfully.");
+      } catch (err) {
+        console.error("Avatar upload failed:", err);
+        showToast(err instanceof ApiError ? err.message : "Avatar upload failed. Please try again.", "error");
+      } finally {
+        setUploadingAvatar(false);
+      }
+    },
+    [refreshUser, showToast],
+  );
+
+  const handleSaveProfile = useCallback(
+    async (values: { first_name: string; last_name: string; title: string; department: string; bio: string }) => {
+      setSavingProfile(true);
+      setSaveError("");
+      try {
+        await updateMe(values);
+        await refreshUser();
+        setDrawerOpen(false);
+        showToast("Profile information saved successfully.");
+      } catch (err) {
+        console.error("Profile update failed:", err);
+        setSaveError(err instanceof ApiError ? err.message : "Failed to save profile. Please try again.");
+      } finally {
+        setSavingProfile(false);
+      }
+    },
+    [refreshUser, showToast],
+  );
+
+  if (!user) {
+    return (
+      <div className="min-h-full bg-[#FAF9F7] px-4 py-6 sm:px-8 sm:py-8">
+        <CoordinatorProfileSkeleton />
+      </div>
+    );
+  }
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", width: "100%" }}>
-      <ProfilePageStyles />
+    <div className="min-h-full bg-[#FAF9F7] px-4 py-6 sm:px-8 sm:py-8">
+      <div className="mx-auto w-full max-w-4xl space-y-6">
+        <CoordinatorBanner bannerUrl={user.banner_url} uploading={uploadingBanner} onUpload={handleBannerUpload} />
 
-      <div className="coor-profile-banner" style={{ ...s.profileBanner, background: COORDINATOR.bannerGradient }}>
-        <button type="button" style={s.profileBannerEditBtn}>
-          <CameraIcon /> Change banner
-        </button>
-      </div>
+        <CoordinatorHeader
+          displayName={displayName}
+          displayInitials={displayInitials}
+          displayTitle={displayTitle}
+          avatarUrl={user.avatar_url}
+          uploadingAvatar={uploadingAvatar}
+          onAvatarUpload={handleAvatarUpload}
+          onEditProfile={() => {
+            setSaveError("");
+            setDrawerOpen(true);
+          }}
+        />
 
-      <div className="coor-profile-header-row" style={s.profileHeaderRow}>
-        <div style={s.profileAvatarWrap}>
-          <span className="coor-profile-avatar" style={{ ...s.profileAvatar, background: COORDINATOR.avatarColor }}>
-            {COORDINATOR.initials}
-          </span>
-          <button type="button" style={s.profileAvatarEditBtn}>
-            <CameraIcon />
-          </button>
-        </div>
-        <div className="coor-profile-header-info" style={s.profileHeaderInfo}>
-          <h2 className="coor-profile-name" style={s.profileName}>
-            {COORDINATOR.name}
-          </h2>
-          <p style={s.profileMeta}>{COORDINATOR.title}</p>
-        </div>
-        <button type="button" className="coor-profile-edit-btn" style={s.continueBtnSmall}>
-          Edit profile
-        </button>
-      </div>
+        <CoordinatorBioCard bio={user.bio} />
 
-      <div className="coor-profile-bio-card" style={s.profileBioCard}>
-        <div style={s.profileBioHeader}>
-          <p style={s.profileBioLabel}>Bio</p>
-          <button type="button" onClick={() => setEditingBio((v) => !v)} style={s.reviewEditLink}>
-            {editingBio ? "Save" : "Edit"}
-          </button>
-        </div>
-        {editingBio ? (
-          <textarea
-            style={{ ...s.input, height: 90, resize: "vertical" }}
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-          />
-        ) : (
-          <p style={s.profileBioText}>{bio}</p>
-        )}
-      </div>
+        <CoordinatorDetailsCards user={user} />
 
-      <div className="vc-stat-row" style={s.statRow}>
-        <div style={s.pipelineCard}>
-          <div style={s.pipelineTopRow}>
-            <p style={s.pipelineLabel}>Applicants reviewed</p>
-            <p style={s.pipelineValue}>148</p>
-          </div>
-        </div>
-        <div style={s.pipelineCard}>
-          <div style={s.pipelineTopRow}>
-            <p style={s.pipelineLabel}>Interviews conducted</p>
-            <p style={s.pipelineValue}>62</p>
-          </div>
-        </div>
-        <div style={s.pipelineCard}>
-          <div style={s.pipelineTopRow}>
-            <p style={s.pipelineLabel}>Active scholars managed</p>
-            <p style={s.pipelineValue}>{ACTIVE_SCHOLARS.length}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="coor-profile-contact-card" style={s.profileBioCard}>
-        <p style={s.profileBioLabel}>Contact</p>
-        <div style={{ marginTop: 10 }}>
-          <DrawerInfoRow label="Email" value={COORDINATOR.email} />
-        </div>
+        <EditProfileDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          initialValues={{
+            first_name: user.first_name,
+            last_name: user.last_name,
+            title: user.employee?.title ?? "",
+            department: user.employee?.department ?? "",
+            bio: user.bio ?? "",
+          }}
+          saving={savingProfile}
+          error={saveError}
+          onSave={handleSaveProfile}
+        />
       </div>
     </div>
   );

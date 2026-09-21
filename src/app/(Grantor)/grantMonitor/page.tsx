@@ -1,496 +1,204 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import {
-  AMBER,
-  ArrowRightIcon,
-  BAD,
-  BellIcon,
-  ClockIcon,
-  DrawerInfoRow,
-  FUNDED_SCHOLARS,
-  type FundedScholar,
-  GOOD,
-  GRADE_STATUS_COLORS,
-  HEALTH_TAG,
-  LINE,
-  MailIcon,
-  MenuIcon,
-  MonitorIcon,
-  NAVY,
-  PAYMENT_STATUS_COLORS,
-  SearchIcon,
-  s,
-  TINT,
-  TrendDownIcon,
-  TrendUpIcon,
-  WHITE,
-  XCircleIcon,
-} from "@/components/Grantorshared";
-import { useSidebar } from "@/components/SidebarContext";
-
-/* ------------------------------------------------------------------ */
-/* Local tokens not exported from Grantorshared                        */
-/* ------------------------------------------------------------------ */
-
-const BORDER_SUBTLE = `1px solid ${LINE}`;
-const SHADOW_SM = "0 1px 3px rgba(0,0,0,0.04)";
-
-type DrawerView = "overview" | "history";
+import { BookOpen, FileCheck, HeartHandshake, Users } from "lucide-react";
+import { useState } from "react";
+import { ActiveScholarsTab } from "@/app/(Coordinator)/CoordinatorMonitor/components/ActiveScholarsTab";
+import { BaselineAuditsTab } from "@/app/(Coordinator)/CoordinatorMonitor/components/BaselineAuditsTab";
+import type { ActiveScholar } from "@/components/Coordinatorshared";
+import { BaselineAuditDrawer } from "@/components/coordinator/baseline/BaselineAuditDrawer";
+import { ScholarMonitorDrawer } from "@/components/coordinator/monitor/ScholarMonitorDrawer";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { GradeReport } from "@/lib/api/documents";
+import { GrantorAppealDrawer } from "./components/GrantorAppealDrawer";
+import { GrantorAppealsTab } from "./components/GrantorAppealsTab";
+import { GrantorEnrollmentDrawer } from "./components/GrantorEnrollmentDrawer";
+import { GrantorEnrollmentsTab } from "./components/GrantorEnrollmentsTab";
+import { GrantorMonitorBanners } from "./components/GrantorMonitorBanners";
+import { GrantorMonitorHeader } from "./components/GrantorMonitorHeader";
+import { useGrantorMonitorData } from "./hooks/useGrantorMonitorData";
 
 export default function GrantorMonitorPage() {
-  const { toggleMobile } = useSidebar();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("active-scholars");
 
-  const [selected, setSelected] = useState<FundedScholar | null>(null);
-  const [view, setView] = useState<DrawerView>("overview");
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const PAGE_SIZE = 10;
+  // Selection & drawer states
+  const [selectedScholar, setSelectedScholar] = useState<ActiveScholar | null>(null);
+  const [openMonitorDrawer, setOpenMonitorDrawer] = useState(false);
+  const [selectedAuditProfileId, setSelectedAuditProfileId] = useState<number | null>(null);
+  const [openAuditDrawer, setOpenAuditDrawer] = useState(false);
+  const [selectedEnrollmentId, setSelectedEnrollmentId] = useState<number | null>(null);
+  const [openEnrollmentDrawer, setOpenEnrollmentDrawer] = useState(false);
+  const [selectedAppeal, setSelectedAppeal] = useState<GradeReport | null>(null);
+  const [openAppealDrawer, setOpenAppealDrawer] = useState(false);
 
-  const query = search.trim().toLowerCase();
+  const {
+    activeScholars,
+    loadingActiveScholars,
+    activeScholarsError,
+    fetchActiveScholars,
+    baselineItems,
+    loadingBaselines,
+    enrollmentItems,
+    loadingEnrollments,
+    appealItems,
+    loadingAppeals,
+    refreshAll,
+  } = useGrantorMonitorData();
 
-  const filteredScholars = useMemo(
-    () =>
-      query
-        ? FUNDED_SCHOLARS.filter(
-            (sch) => sch.name.toLowerCase().includes(query) || sch.course.toLowerCase().includes(query),
-          )
-        : FUNDED_SCHOLARS,
-    [query],
-  );
+  const pendingAuditCount = baselineItems.filter(
+    (i) => i.academic_baseline_status === "PENDING_COORDINATOR_REVIEW",
+  ).length;
 
-  const totalPages = Math.max(1, Math.ceil(filteredScholars.length / PAGE_SIZE));
-  const currentPage = Math.min(page, totalPages);
-  const paginated = filteredScholars.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const endorsedEnrollmentCount = enrollmentItems.filter(
+    (i) => i.status === "APPROVED" && (!i.disbursement || i.disbursement.status === "PENDING"),
+  ).length;
 
-  function openScholar(sch: FundedScholar) {
-    setSelected(sch);
-    setView("overview");
-  }
-
-  function closeDrawer() {
-    setSelected(null);
-    setView("overview");
-  }
-
-  function handleSearchChange(value: string) {
-    setSearch(value);
-    setPage(1);
-  }
+  const pendingAppealCount = appealItems.filter((i) => i.appeal_status === "PENDING_GRANTOR").length;
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-      <style>{`
-        .filter-select:focus { outline: none; }
-      `}</style>
+    <div className="min-h-full bg-[#faf8f5]">
+      {/* Page Header */}
+      <GrantorMonitorHeader />
 
-      {/* ---------------- Page-level navbar ---------------- */}
-      <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button type="button" className="vg-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
-          <MenuIcon />
-        </button>
-        <div>
-          <h1 style={s.topbarGreeting}>Monitor</h1>
-          <p style={s.topbarSub}>Scholars funded by your company and their current standing.</p>
-        </div>
-        <div style={s.topbarRight}>
-          <div className="vg-topbar-search" style={s.searchBox}>
-            <SearchIcon />
-            <input
-              placeholder="Search scholar name or course..."
-              style={s.searchInput}
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
+      {/* Main Content Area */}
+      <div className="px-5 pb-24 md:px-10 space-y-4">
+        {/* Action Callout Banners */}
+        <GrantorMonitorBanners
+          endorsedEnrollmentCount={endorsedEnrollmentCount}
+          pendingAuditCount={pendingAuditCount}
+          pendingAppealCount={pendingAppealCount}
+          activeTab={activeTab}
+          onSelectTab={setActiveTab}
+        />
+
+        {/* Main 4 Tabs: Active Scholars, Prospectus Audits, Term Enrollments, & Second Chance Appeals */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-5 w-full space-y-4">
+          <TabsList className="grid w-full sm:w-210 grid-cols-4">
+            <TabsTrigger value="active-scholars" className="text-xs gap-1.5 font-semibold">
+              <Users className="size-4" />
+              Active Scholars
+              {!loadingActiveScholars && activeScholars.length > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 rounded-full px-1.5 text-[10px]">
+                  {activeScholars.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="baseline-audits" className="text-xs gap-1.5 font-semibold">
+              <BookOpen className="size-4" />
+              Prospectus Audits
+              {pendingAuditCount > 0 && (
+                <Badge className="ml-1 h-5 rounded-full bg-amber-500 px-1.5 text-[10px] text-white">
+                  {pendingAuditCount}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="enrollment-audits" className="text-xs gap-1.5 font-semibold">
+              <FileCheck className="size-4" />
+              Term Enrollments
+              {endorsedEnrollmentCount > 0 && (
+                <Badge className="ml-1 h-5 rounded-full bg-[#0a4f42] px-1.5 text-[10px] text-white">
+                  {endorsedEnrollmentCount}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="academic-appeals" className="text-xs gap-1.5 font-semibold">
+              <HeartHandshake className="size-4" />
+              Appeals
+              {pendingAppealCount > 0 && (
+                <Badge className="ml-1 h-5 rounded-full bg-rose-600 px-1.5 text-[10px] text-white">
+                  {pendingAppealCount}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Tab 1: Active Scholars Directory */}
+          <TabsContent value="active-scholars">
+            <ActiveScholarsTab
+              scholars={activeScholars}
+              loading={loadingActiveScholars}
+              loadError={activeScholarsError}
+              onRetry={fetchActiveScholars}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onSelectScholar={(sch) => {
+                setSelectedScholar(sch);
+                setOpenMonitorDrawer(true);
+              }}
             />
-          </div>
-          <button type="button" style={s.bellBtn}>
-            <BellIcon />
-            <span style={{ ...s.bellDot, background: AMBER }} />
-          </button>
-        </div>
-      </header>
+          </TabsContent>
 
-      <div style={{ ...s.mainContent, padding: s.mainContent.padding, flexGrow: 1, minHeight: 0, overflowY: "auto" }}>
-        <div style={s.pageContentTop}>
-          {/* ---------------- Table card ---------------- */}
-          <div
-            style={{
-              background: WHITE,
-              border: BORDER_SUBTLE,
-              borderRadius: 18,
-              boxShadow: SHADOW_SM,
-              padding: "22px 22px 8px",
-            }}
-          >
-            <div className="vg-table-scroll" style={{ width: "100%", overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                  <tr style={{ borderBottom: `1px solid ${LINE}` }}>
-                    <th style={{ ...s.th, background: "none", padding: "14px 14px", textAlign: "center" }}>Scholar</th>
-                    <th style={{ ...s.th, background: "none", textAlign: "center" }}>GWA</th>
-                    <th style={{ ...s.th, background: "none", textAlign: "center" }}>Documents</th>
-                    <th style={{ ...s.th, background: "none", textAlign: "center" }}>Disbursement</th>
-                    <th style={{ ...s.th, background: "none", textAlign: "center" }}>Status</th>
-                    <th style={{ ...s.th, background: "none", textAlign: "center" }}>View</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginated.map((sch, i) => (
-                    <tr
-                      key={sch.id}
-                      onClick={() => openScholar(sch)}
-                      style={{
-                        borderBottom: i === paginated.length - 1 ? "none" : `1px solid ${TINT}`,
-                        cursor: "pointer",
-                        verticalAlign: "middle",
-                      }}
-                    >
-                      <td style={{ ...s.td, padding: "16px 14px", textAlign: "center" }}>
-                        <p style={s.tdName}>{sch.name}</p>
-                        <p style={s.tdSub}>{sch.course}</p>
-                      </td>
-                      <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>
-                        <span style={{ ...s.gwaTrendCell, justifyContent: "center" }}>
-                          {sch.gwa}%{" "}
-                          {sch.trend === "up" ? (
-                            <span style={{ color: GOOD }}>
-                              <TrendUpIcon />
-                            </span>
-                          ) : (
-                            <span style={{ color: BAD }}>
-                              <TrendDownIcon />
-                            </span>
-                          )}
-                        </span>
-                      </td>
-                      <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{sch.docs}</td>
-                      <td style={{ ...s.td, color: "#4a4a45", textAlign: "center" }}>{sch.disbursement}</td>
-                      <td style={{ ...s.td, textAlign: "center" }}>
-                        <span
-                          style={{
-                            ...s.stageTag,
-                            background: HEALTH_TAG[sch.health].bg,
-                            color: HEALTH_TAG[sch.health].text,
-                            fontWeight: 600,
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 6,
-                          }}
-                        >
-                          <span
-                            style={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: "50%",
-                              background: HEALTH_TAG[sch.health].text,
-                              flexShrink: 0,
-                            }}
-                          />
-                          {HEALTH_TAG[sch.health].label}
-                        </span>
-                      </td>
-                      <td style={{ ...s.td, textAlign: "center" }}>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openScholar(sch);
-                          }}
-                          aria-label="View scholar"
-                          style={{
-                            width: 34,
-                            height: 34,
-                            borderRadius: "50%",
-                            border: `1.5px solid ${LINE}`,
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            background: WHITE,
-                            color: "#7a7a74",
-                            cursor: "pointer",
-                          }}
-                        >
-                          <EyeIcon />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          {/* Tab 2: Academic Prospectus & Baseline Audits */}
+          <TabsContent value="baseline-audits">
+            <BaselineAuditsTab
+              items={baselineItems}
+              loading={loadingBaselines}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onSelectScholar={(id) => {
+                setSelectedAuditProfileId(id);
+                setOpenAuditDrawer(true);
+              }}
+            />
+          </TabsContent>
 
-            {filteredScholars.length === 0 && (
-              <p style={{ textAlign: "center", padding: "40px 0", color: "#9a9a94", fontSize: "0.9rem" }}>
-                {query ? `No scholars match "${search}".` : "No funded scholars yet."}
-              </p>
-            )}
+          {/* Tab 3: Term Enrollments & Disbursement Endorsement */}
+          <TabsContent value="enrollment-audits">
+            <GrantorEnrollmentsTab
+              items={enrollmentItems}
+              loading={loadingEnrollments}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onSelectAudit={(id) => {
+                setSelectedEnrollmentId(id);
+                setOpenEnrollmentDrawer(true);
+              }}
+            />
+          </TabsContent>
 
-            {filteredScholars.length > 0 && (
-              <div
-                style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, padding: "18px 0" }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 8,
-                    border: `1px solid ${LINE}`,
-                    background: WHITE,
-                    color: currentPage === 1 ? "#c7c7c2" : "#55554f",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: currentPage === 1 ? "default" : "pointer",
-                  }}
-                  aria-label="Previous page"
-                >
-                  <ChevronLeftIcon />
-                </button>
-                {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
-                  <button
-                    key={num}
-                    type="button"
-                    onClick={() => setPage(num)}
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 8,
-                      border: `1px solid ${num === currentPage ? NAVY : LINE}`,
-                      background: num === currentPage ? NAVY : WHITE,
-                      color: num === currentPage ? WHITE : "#55554f",
-                      fontSize: "0.82rem",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                    }}
-                  >
-                    {num}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 8,
-                    border: `1px solid ${LINE}`,
-                    background: WHITE,
-                    color: currentPage === totalPages ? "#c7c7c2" : "#55554f",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: currentPage === totalPages ? "default" : "pointer",
-                  }}
-                  aria-label="Next page"
-                >
-                  <ChevronRightIcon />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+          {/* Tab 4: Second Chance Academic Appeals */}
+          <TabsContent value="academic-appeals">
+            <GrantorAppealsTab
+              items={appealItems}
+              loading={loadingAppeals}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onSelectAppeal={(report) => {
+                setSelectedAppeal(report);
+                setOpenAppealDrawer(true);
+              }}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
 
-      {selected && (
-        <div
-          style={s.drawerOverlay}
-          role="dialog"
-          aria-modal="true"
-          onClick={closeDrawer}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              closeDrawer();
-            }
-          }}
-        >
-          <div style={s.drawerPanel} role="presentation" aria-hidden onClick={(e) => e.stopPropagation()}>
-            <div style={s.drawerHeader}>
-              <span style={s.profileAvatar}>{selected.initials}</span>
-              <div style={{ flexGrow: 1 }}>
-                <h3 style={s.drawerName}>{selected.name}</h3>
-                <p style={s.drawerMeta}>{selected.course}</p>
-              </div>
-              <button type="button" onClick={closeDrawer} style={s.drawerCloseBtn}>
-                <XCircleIcon />
-              </button>
-            </div>
+      {/* Side Baseline Audit Drawer */}
+      <BaselineAuditDrawer
+        scholarProfileId={selectedAuditProfileId}
+        open={openAuditDrawer}
+        onOpenChange={setOpenAuditDrawer}
+        onSuccess={refreshAll}
+      />
 
-            {view === "overview" ? (
-              <>
-                <p style={s.drawerSectionLabel}>Current standing</p>
-                <div style={s.drawerInfoGrid}>
-                  <DrawerInfoRow label="Current GWA" value={`${selected.gwa}%`} />
-                  <DrawerInfoRow label="Trend" value={selected.trend === "up" ? "Improving" : "Declining"} />
-                  <DrawerInfoRow label="Documents" value={selected.docs} />
-                  <DrawerInfoRow label="Disbursement" value={selected.disbursement} />
-                </div>
+      {/* Side Grantor Term Enrollment Drawer */}
+      <GrantorEnrollmentDrawer
+        enrollmentId={selectedEnrollmentId}
+        open={openEnrollmentDrawer}
+        onClose={() => setOpenEnrollmentDrawer(false)}
+        onReviewed={refreshAll}
+      />
 
-                <p style={s.drawerSectionLabel}>This semesters payment</p>
-                <div style={s.drawerCurrentPayCard}>
-                  <div style={s.drawerCurrentPayLeft}>
-                    <span style={s.drawerCurrentPayTerm}>{selected.currentPayment.term}</span>
-                    <span style={s.drawerCurrentPayAmount}>₱{selected.currentPayment.amount.toLocaleString()}</span>
-                  </div>
-                  <span
-                    style={{
-                      ...s.stageTag,
-                      background: PAYMENT_STATUS_COLORS[selected.currentPayment.status].bg,
-                      color: PAYMENT_STATUS_COLORS[selected.currentPayment.status].text,
-                    }}
-                  >
-                    {selected.currentPayment.status}
-                  </span>
-                </div>
+      {/* Side Second Chance Appeal Drawer */}
+      <GrantorAppealDrawer
+        report={selectedAppeal}
+        open={openAppealDrawer}
+        onClose={() => setOpenAppealDrawer(false)}
+        onReviewed={refreshAll}
+      />
 
-                <div style={s.drawerHistoryBtnRow}>
-                  <button type="button" onClick={() => setView("history")} style={s.drawerHistoryBtn}>
-                    <ClockIcon /> View full history <ArrowRightIcon />
-                  </button>
-                </div>
-
-                <p style={s.drawerSectionLabel}>Status</p>
-                <div style={s.appNoteCard}>
-                  <span style={s.appNoteIcon}>
-                    <MonitorIcon />
-                  </span>
-                  <p style={s.appNoteText}>
-                    {selected.health === "good" &&
-                      "This scholar is meeting all retention requirements. No action needed."}
-                    {selected.health === "warn" &&
-                      "Missing a required document. Consider following up with the coordinator."}
-                    {selected.health === "bad" &&
-                      "GWA trending down and documents incomplete. Disbursement is on hold pending review."}
-                  </p>
-                </div>
-
-                <div style={s.drawerStageActions}>
-                  <button type="button" style={s.continueBtnSmall}>
-                    <MailIcon small /> Message coordinator
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <button type="button" onClick={() => setView("overview")} style={s.backToOverviewBtn}>
-                  ← Back to overview
-                </button>
-
-                <div style={s.historySection}>
-                  <p style={s.drawerSectionLabel}>Grade history</p>
-                  <div style={s.historyList}>
-                    {selected.gradeHistory.map((g) => (
-                      <div key={g.term} style={s.historyRow}>
-                        <div style={s.historyRowLeft}>
-                          <span style={s.historyRowTerm}>{g.term}</span>
-                          <span style={s.historyRowSub}>GWA {g.gwa}%</span>
-                        </div>
-                        <div style={s.historyRowRight}>
-                          <span
-                            style={{
-                              ...s.stageTag,
-                              background: GRADE_STATUS_COLORS[g.status].bg,
-                              color: GRADE_STATUS_COLORS[g.status].text,
-                            }}
-                          >
-                            {g.status}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div style={s.historySection}>
-                  <p style={s.drawerSectionLabel}>Payment history</p>
-                  <div style={s.historyList}>
-                    {selected.paymentHistory.map((p) => (
-                      <div key={p.term} style={s.historyRow}>
-                        <div style={s.historyRowLeft}>
-                          <span style={s.historyRowTerm}>{p.term}</span>
-                          <span style={s.historyRowSub}>{p.date}</span>
-                        </div>
-                        <div style={s.historyRowRight}>
-                          <span style={s.historyRowValue}>₱{p.amount.toLocaleString()}</span>
-                          <span
-                            style={{
-                              ...s.stageTag,
-                              background: PAYMENT_STATUS_COLORS[p.status].bg,
-                              color: PAYMENT_STATUS_COLORS[p.status].text,
-                            }}
-                          >
-                            {p.status}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Active Scholar Monitor Drawer */}
+      <ScholarMonitorDrawer scholar={selectedScholar} open={openMonitorDrawer} onOpenChange={setOpenMonitorDrawer} />
     </div>
-  );
-}
-
-function EyeIcon() {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
-
-function ChevronLeftIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path d="M15 18l-6-6 6-6" />
-    </svg>
-  );
-}
-
-function ChevronRightIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path d="M9 18l6-6-6-6" />
-    </svg>
   );
 }

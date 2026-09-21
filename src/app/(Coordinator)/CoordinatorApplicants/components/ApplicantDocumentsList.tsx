@@ -95,17 +95,26 @@ export function ApplicantDocumentsList({
             <button
               type="button"
               onClick={() => onVerify(d)}
-              className="flex w-full items-center gap-2.5 rounded-md bg-muted px-3 py-2.5 text-left text-sm transition-colors hover:bg-tint"
+              className="group flex w-full items-center gap-3 rounded-lg border border-border/60 bg-muted/40 px-3.5 py-3 text-left text-sm transition-all hover:border-navy/40 hover:bg-white hover:shadow-xs"
             >
-              <FileText className="size-4 shrink-0 text-navy" />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-medium">{d.document_type}</span>
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-navy/10 text-navy transition-colors group-hover:bg-navy group-hover:text-white">
+                <FileText className="size-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="block truncate font-medium text-foreground">
+                    {d.document_type.replace(/_/g, " ")}
+                  </span>
+                  <Badge variant={meta.variant} className="h-5 shrink-0 px-1.5 text-[0.65rem]!">
+                    {meta.label}
+                  </Badge>
+                </div>
                 <span className="block truncate text-xs text-muted-foreground">{d.file_name ?? "Document"}</span>
+              </div>
+              <span className="flex shrink-0 items-center gap-1.5 rounded-md border border-border/70 bg-white px-2.5 py-1 text-xs font-semibold text-navy shadow-2xs transition-colors group-hover:border-navy group-hover:bg-navy group-hover:text-white">
+                <Eye className="size-3.5" />
+                <span>Inspect</span>
               </span>
-              <Badge variant={meta.variant} className="h-6 shrink-0 px-2 text-[0.7rem]!">
-                {meta.label}
-              </Badge>
-              <Eye className="size-4 shrink-0 text-muted-foreground" />
             </button>
           </li>
         );

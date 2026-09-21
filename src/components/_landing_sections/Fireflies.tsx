@@ -20,10 +20,7 @@ const FIREFLIES = [
 export function Fireflies() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const fireflyStyle = useMemo(
-    () => ({ transform: `translate3d(${tilt.x * 16}px, ${tilt.y * 16}px, 0)` }),
-    [tilt],
-  );
+  const fireflyStyle = useMemo(() => ({ transform: `translate3d(${tilt.x * 16}px, ${tilt.y * 16}px, 0)` }), [tilt]);
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
@@ -40,47 +37,33 @@ export function Fireflies() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  /* The field ignores pointer events so it never blocks section controls. */
-  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    const element = sectionRef.current;
-    if (!element) return;
-    const rect = element.getBoundingClientRect();
-    setTilt({
-      x: (event.clientX - rect.left) / rect.width - 0.5,
-      y: (event.clientY - rect.top) / rect.height - 0.5,
-    });
-  };
-
   return (
-    <div
-      ref={sectionRef}
-      aria-hidden
-      className="pointer-events-none absolute inset-0 z-0 transition-transform duration-700 ease-out"
-      style={fireflyStyle}
-    >
-      <style>{`
-        @keyframes vs-firefly-drift {
-          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.25; }
-          25% { transform: translate(6px, -10px) scale(1.15); opacity: 0.9; }
-          50% { transform: translate(-8px, 4px) scale(0.9); opacity: 0.4; }
-          75% { transform: translate(4px, 10px) scale(1.1); opacity: 0.85; }
-        }
-      `}</style>
-      {FIREFLIES.map((firefly, index) => (
-        <span
-          key={index}
-          className="absolute rounded-full bg-amber [animation:vs-firefly-drift_ease-in-out_infinite]"
-          style={{
-            left: firefly.left,
-            top: firefly.top,
-            width: firefly.size,
-            height: firefly.size,
-            animationDuration: `${firefly.duration}s`,
-            animationDelay: `${firefly.delay}s`,
-            boxShadow: "0 0 6px 2px rgba(241, 183, 30, 0.35)",
-          }}
-        />
-      ))}
+    <div ref={sectionRef} aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+      <div className="absolute inset-0 transition-transform duration-700 ease-out" style={fireflyStyle}>
+        <style>{`
+          @keyframes vs-firefly-drift {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.25; }
+            25% { transform: translate(6px, -10px) scale(1.15); opacity: 0.9; }
+            50% { transform: translate(-8px, 4px) scale(0.9); opacity: 0.4; }
+            75% { transform: translate(4px, 10px) scale(1.1); opacity: 0.85; }
+          }
+        `}</style>
+        {FIREFLIES.map((firefly) => (
+          <span
+            key={`firefly-${firefly.left}-${firefly.top}`}
+            className="absolute rounded-full bg-amber animate-[vs-firefly-drift_ease-in-out_infinite]"
+            style={{
+              left: firefly.left,
+              top: firefly.top,
+              width: firefly.size,
+              height: firefly.size,
+              animationDuration: `${firefly.duration}s`,
+              animationDelay: `${firefly.delay}s`,
+              boxShadow: "0 0 6px 2px rgba(241, 183, 30, 0.35)",
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 }

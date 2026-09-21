@@ -1,8 +1,8 @@
 "use client";
 
-import { Bell, Check, Menu } from "lucide-react";
+import { Check } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSidebar } from "@/components/SidebarContext";
+import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/components/ToastContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSocketEvent } from "@/contexts/SocketContext";
@@ -22,10 +22,9 @@ import { ApplicationStep } from "./components/ApplicationStep";
 import { DocumentsStep } from "./components/DocumentsStep";
 import { StatusStep } from "./components/StatusStep";
 import { WizardSkeleton } from "./components/WizardSkeleton";
-import { resolveStep, WIZARD_STEPS, type WizardStep } from "./components/wizard-helpers";
+import { getWizardSteps, resolveStep, type WizardStep } from "./components/wizard-helpers";
 
 export default function ApplicantsApplicationPage() {
-  const { toggleMobile } = useSidebar();
   const { user, refreshUser } = useAuth();
   const { showToast } = useToast();
 
@@ -121,6 +120,14 @@ export default function ApplicantsApplicationPage() {
     return () => clearInterval(interval);
   }, [documents]);
 
+  const currentYearLevel = useMemo(() => {
+    const raw = user?.scholar_profile?.current_year_level;
+    if (raw && !Number.isNaN(Number(raw))) return Number(raw);
+    return 1;
+  }, [user]);
+
+  const wizardSteps = useMemo(() => getWizardSteps(currentYearLevel), [currentYearLevel]);
+
   const prefill = useMemo(() => {
     const p = user?.scholar_profile;
     return {
@@ -198,7 +205,7 @@ export default function ApplicantsApplicationPage() {
   ): Promise<void> {
     await wrapAction(async () => {
       await confirmDocument(id, data ?? {});
-      await refreshDocuments();
+      await fetchAll();
     }, "Document details confirmed successfully!");
   }
 
@@ -212,26 +219,7 @@ export default function ApplicantsApplicationPage() {
 
   return (
     <div>
-      <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border bg-white px-5 py-3.5">
-        <div className="flex min-w-0 items-center">
-          <button
-            type="button"
-            className="vd-mobile-toggle mr-2 shrink-0 md:hidden"
-            onClick={toggleMobile}
-            aria-label="Open sidebar"
-          >
-            <Menu className="size-5" />
-          </button>
-          <div className="min-w-0">
-            <h1 className="truncate text-xl font-bold text-navy">Application</h1>
-            <p className="truncate text-sm text-muted-foreground">Apply in 3 quick steps.</p>
-          </div>
-        </div>
-        <span className="relative flex size-9 shrink-0 items-center justify-center rounded-full bg-muted">
-          <Bell className="size-4 text-navy" />
-          <span className="absolute top-2 right-2 size-1.75 rounded-full border-2 border-muted bg-amber" />
-        </span>
-      </header>
+      <PageHeader title="Application" subtitle="Apply in 3 quick steps." />
 
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-5 py-6">
         {loadError ? (
@@ -245,7 +233,7 @@ export default function ApplicantsApplicationPage() {
         ) : (
           <>
             <ol className="flex items-start rounded-[18px]! border border-border bg-white p-4 shadow-xs">
-              {WIZARD_STEPS.map((s, i) => {
+              {wizardSteps.map((s, i) => {
                 const done = s.step < step;
                 const active = s.step === step;
                 const unlocked = s.step === 1 || application !== null;
@@ -282,7 +270,7 @@ export default function ApplicantsApplicationPage() {
                         <span className="hidden text-[0.7rem] text-muted-foreground sm:block">{s.sub}</span>
                       </span>
                     </button>
-                    {i < WIZARD_STEPS.length - 1 && (
+                    {i < wizardSteps.length - 1 && (
                       <div className="mx-1 mt-4 h-1 flex-1 overflow-hidden rounded-full bg-border/70">
                         <div
                           className="h-full bg-navy transition-all duration-500 ease-out"
@@ -309,6 +297,7 @@ export default function ApplicantsApplicationPage() {
               {step === 2 && (
                 <DocumentsStep
                   documents={documents}
+                  currentYearLevel={currentYearLevel}
                   onUpload={handleUpload}
                   onReplace={handleReplace}
                   onDelete={handleDelete}
@@ -318,7 +307,13 @@ export default function ApplicantsApplicationPage() {
                 />
               )}
               {step === 3 && (
-                <StatusStep application={application} documents={documents} onBackToDocuments={() => changeStep(2)} />
+                <StatusStep
+                  application={application}
+                  documents={documents}
+                  scholarshipTrack={user?.scholar_profile?.scholarship_track ?? undefined}
+                  currentYearLevel={currentYearLevel}
+                  onBackToDocuments={() => changeStep(2)}
+                />
               )}
             </div>
           </>

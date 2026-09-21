@@ -45,7 +45,8 @@ export default function ApplicantsPage() {
     setLoadError("");
     try {
       const rows = await listApplications();
-      const mapped = rows.map(mapApplicationToApplicant);
+      const activeRows = rows.filter((r) => r.status !== "APPROVED");
+      const mapped = activeRows.map(mapApplicationToApplicant);
       setApplicants(mapped);
       setSelected((prev) => (prev ? (mapped.find((a) => a.id === prev.id) ?? prev) : null));
     } catch (err) {

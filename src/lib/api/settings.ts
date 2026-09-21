@@ -18,6 +18,7 @@ export interface SchoolGrading {
   passing_grade: number;
   highest_grade: number;
   failing_grade: number;
+  is_verified?: boolean;
   special_codes: Record<string, string> | null;
   notes: string | null;
   created_at: string;
@@ -30,6 +31,7 @@ export interface SchoolGradingInput {
   passing_grade: number;
   highest_grade: number;
   failing_grade: number;
+  is_verified?: boolean;
   special_codes?: Record<string, string>;
   notes?: string;
 }
@@ -74,6 +76,11 @@ export async function createSchoolGrading(data: SchoolGradingInput): Promise<Sch
 
 export async function updateSchoolGrading(id: number, data: Partial<SchoolGradingInput>): Promise<SchoolGrading> {
   const row = await apiPatch<SchoolGrading & { special_codes: unknown }>(`${B}/schools/${id}`, data);
+  return normalizeGrading(row);
+}
+
+export async function verifySchoolGrading(id: number): Promise<SchoolGrading> {
+  const row = await apiPatch<SchoolGrading & { special_codes: unknown }>(`${B}/schools/${id}/verify`, {});
   return normalizeGrading(row);
 }
 

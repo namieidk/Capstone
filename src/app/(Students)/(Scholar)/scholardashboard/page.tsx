@@ -277,7 +277,7 @@ export default function ScholarDashboardPage() {
           </section>
 
           <section style={s.feedCard}>
-            <PanelHeader title="Payments" href="/ScholarPayment" />
+            <PanelHeader title="Disbursements" href="/ScholarPayment" />
             <div style={{ display: "flex", gap: 24, marginBottom: 18, flexWrap: "wrap" }}>
               <div>
                 <p style={s.statCardLabel}>Total disbursed</p>

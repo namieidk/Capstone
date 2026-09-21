@@ -4,10 +4,12 @@ import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { useToast } from "@/components/ToastContext";
 import { useSocketEvent } from "@/contexts/SocketContext";
 import { ApiError } from "@/lib/api";
+import { requestPasswordReset } from "@/lib/api/auth";
 import { createStaff, listUsers, resetPassword, updateUserStatus } from "@/lib/api/users";
 import { getPasswordError } from "@/lib/validation";
 import { AddEmployeeSheet } from "./components/AddEmployeeSheet";
 import { EmployeeHeader } from "./components/EmployeeHeader";
+import { EmployeeResetPasswordDialog } from "./components/EmployeeResetPasswordDialog";
 import { EmployeeSheet } from "./components/EmployeeSheet";
 import { EmployeeTable } from "./components/EmployeeTable";
 import {
@@ -36,8 +38,7 @@ export default function AdminEmployeePage() {
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState("");
 
-  const [resetOpen, setResetOpen] = useState(false);
-  const [newPassword, setNewPassword] = useState("");
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [acting, setActing] = useState(false);
   const [actionError, setActionError] = useState("");
 
@@ -109,17 +110,29 @@ export default function AdminEmployeePage() {
     }
   };
 
-  const handleResetPassword = async () => {
-    if (!selected) return;
+  const handleDirectResetPassword = async (employeeId: number, newPass: string) => {
     setActing(true);
     setActionError("");
     try {
-      await resetPassword(selected.id, newPassword);
-      showToast(`Password successfully reset for ${selected.name}.`);
-      setSelected(null);
+      await resetPassword(employeeId, newPass);
+      showToast("Employee password updated successfully.");
     } catch (err) {
       console.error("Failed to reset password:", err);
       setActionError(err instanceof ApiError ? err.message : "Failed to reset password.");
+    } finally {
+      setActing(false);
+    }
+  };
+
+  const handleSendResetEmail = async (email: string) => {
+    setActing(true);
+    setActionError("");
+    try {
+      await requestPasswordReset(email);
+      showToast("Password reset email sent successfully.");
+    } catch (err) {
+      console.error("Failed to send reset email:", err);
+      setActionError(err instanceof ApiError ? err.message : "Failed to send reset email.");
     } finally {
       setActing(false);
     }
@@ -145,8 +158,6 @@ export default function AdminEmployeePage() {
 
   const closeSheet = () => {
     setSelected(null);
-    setResetOpen(false);
-    setNewPassword("");
     setActionError("");
   };
 
@@ -184,14 +195,20 @@ export default function AdminEmployeePage() {
       <EmployeeSheet
         employee={selected}
         onClose={closeSheet}
-        resetOpen={resetOpen}
-        onResetOpenChange={setResetOpen}
-        newPassword={newPassword}
-        onNewPasswordChange={setNewPassword}
+        onOpenResetPassword={() => setResetDialogOpen(true)}
         acting={acting}
         actionError={actionError}
-        onResetPassword={handleResetPassword}
         onToggleStatus={handleToggleStatus}
+      />
+
+      <EmployeeResetPasswordDialog
+        employee={selected}
+        open={resetDialogOpen}
+        onOpenChange={setResetDialogOpen}
+        onDirectReset={handleDirectResetPassword}
+        onSendResetEmail={handleSendResetEmail}
+        acting={acting}
+        actionError={actionError}
       />
 
       <AddEmployeeSheet

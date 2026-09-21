@@ -19,9 +19,7 @@ export function Eyebrow({ children }: { children: React.ReactNode }) {
 
 export function SectionHeading({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <h2 className={cn("mb-5 font-serif text-[2.5rem] font-medium leading-[1.15] text-navy", className)}>
-      {children}
-    </h2>
+    <h2 className={cn("mb-5 font-serif text-[2.5rem] font-medium leading-[1.15] text-navy", className)}>{children}</h2>
   );
 }
 
@@ -75,13 +73,7 @@ export function Reveal({
   );
 }
 
-export function SectionGlow({
-  className,
-  variant = "default",
-}: {
-  className?: string;
-  variant?: "default" | "warm";
-}) {
+export function SectionGlow({ className, variant = "default" }: { className?: string; variant?: "default" | "warm" }) {
   return (
     <div aria-hidden className={cn("pointer-events-none absolute inset-0 -z-10 overflow-hidden", className)}>
       <div
