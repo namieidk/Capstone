@@ -33,12 +33,17 @@ export function formatGradingScale(scale: string): string {
   }
 }
 
+export const isHighSchoolGrading = (s?: { school_name?: string; grading_scale?: string } | null): boolean =>
+  !s || /high\s*school|senior\s*high|deped/i.test(s.school_name || "") || s.grading_scale === "PERCENTAGE_100";
+
 export function Step1SchoolSelection({ currentSchool, onSuccess }: Step1SchoolSelectionProps) {
   const [schools, setSchools] = useState<SchoolGradingSystem[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [search, setSearch] = useState("");
-  const [selectedId, setSelectedId] = useState<number | null>(currentSchool?.school_id || null);
+  const [selectedId, setSelectedId] = useState<number | null>(
+    currentSchool && !isHighSchoolGrading(currentSchool) ? currentSchool.school_id : null,
+  );
   const [isProposing, setIsProposing] = useState(false);
 
   // Proposal form state
@@ -61,7 +66,13 @@ export function Step1SchoolSelection({ currentSchool, onSuccess }: Step1SchoolSe
       try {
         setLoading(true);
         const list = await listSchoolGradings();
-        setSchools(list || []);
+        const higherEdList = (list || []).filter((s) => !isHighSchoolGrading(s));
+        setSchools(higherEdList);
+
+        // If no school selected yet but there's a valid match
+        if (currentSchool && !isHighSchoolGrading(currentSchool)) {
+          setSelectedId(currentSchool.school_id);
+        }
       } catch (err) {
         console.error("Failed to load school grading systems:", err);
       } finally {
@@ -69,7 +80,7 @@ export function Step1SchoolSelection({ currentSchool, onSuccess }: Step1SchoolSe
       }
     }
     loadSchools();
-  }, []);
+  }, [currentSchool]);
 
   const handleScalePresetChange = (type: string) => {
     setGradingScale(type);
@@ -93,14 +104,6 @@ export function Step1SchoolSelection({ currentSchool, onSuccess }: Step1SchoolSe
         { id: `c-${Date.now()}-2`, code: "INC", status: "INCOMPLETE" },
         { id: `c-${Date.now()}-3`, code: "DRP", status: "DROPPED" },
         { id: `c-${Date.now()}-4`, code: "P", status: "PASSED" },
-      ]);
-    } else if (type === "PERCENTAGE_100") {
-      setHighestGrade("100.0");
-      setPassingGrade("75.0");
-      setFailingGrade("74.0");
-      setCodes([
-        { id: `c-${Date.now()}-1`, code: "INC", status: "INCOMPLETE" },
-        { id: `c-${Date.now()}-2`, code: "DRP", status: "DROPPED" },
       ]);
     } else if (type === "LETTER_GRADE") {
       setHighestGrade("4.0");
@@ -325,7 +328,6 @@ export function Step1SchoolSelection({ currentSchool, onSuccess }: Step1SchoolSe
                 <SelectContent>
                   <SelectItem value="NUMERIC_4_POINT">4.00 – 1.00 Point Scale (4.0 Highest, 2.0 Passing)</SelectItem>
                   <SelectItem value="NUMERIC_5_POINT">1.00 – 5.00 Point Scale (1.0 Highest, 3.0 Passing)</SelectItem>
-                  <SelectItem value="PERCENTAGE_100">0 – 100% Percentage Scale (100 Highest, 75 Passing)</SelectItem>
                   <SelectItem value="LETTER_GRADE">Letter Grade (A to F)</SelectItem>
                 </SelectContent>
               </Select>

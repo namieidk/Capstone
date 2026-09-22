@@ -56,6 +56,8 @@ export interface MessageItem {
   sender_name: string;
   sender_role: string;
   message_text: string;
+  message_type?: "TEXT" | "SYSTEM_APPEAL_SUBMITTED" | "SYSTEM_APPEAL_APPROVED" | "SYSTEM_APPEAL_DENIED" | string;
+  metadata?: Record<string, unknown>;
   is_read: boolean;
   sent_at: string;
   read_at?: string | null;

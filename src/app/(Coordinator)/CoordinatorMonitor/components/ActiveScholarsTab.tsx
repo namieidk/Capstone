@@ -91,9 +91,9 @@ export function ActiveScholarsTab({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">All Standings ({scholars.length})</SelectItem>
-              <SelectItem value="good">Good Standing</SelectItem>
-              <SelectItem value="needs_attention">Needs Attention</SelectItem>
-              <SelectItem value="critical">Critical Attention</SelectItem>
+              <SelectItem value="good">On Track</SelectItem>
+              <SelectItem value="warn">Needs Attention / Probation</SelectItem>
+              <SelectItem value="bad">Action Required</SelectItem>
             </SelectContent>
           </Select>
         </div>

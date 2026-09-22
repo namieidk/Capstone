@@ -13,6 +13,7 @@ export const WIZARD_STEPS: Array<{ step: WizardStep; label: string; sub: string 
 // Where the applicant should land based on backend state.
 export function resolveStep(app: Application | null, docs: ScholarDocument[]): WizardStep {
   if (!app) return 1;
+  if (app.status === "REJECTED" || app.status === "APPROVED") return 3;
   const progressed = docs.some((d) => d.status === "STUDENT_CONFIRMED" || d.status === "VERIFIED");
   return progressed ? 3 : 2;
 }

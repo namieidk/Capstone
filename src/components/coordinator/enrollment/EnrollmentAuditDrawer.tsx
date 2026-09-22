@@ -303,45 +303,75 @@ export function EnrollmentAuditDrawer({ enrollmentId, open, onClose, onReviewed 
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="pt-3 border-t border-slate-200 mt-auto flex items-center justify-between gap-3 shrink-0">
-                <div className="flex items-center gap-2">
+              {/* Action Buttons or Status Banner */}
+              {enrollment.status === "APPROVED" || enrollment.status === "COMPLETED" ? (
+                <div className="pt-3 border-t border-slate-200 mt-auto flex items-center justify-between gap-3 shrink-0">
+                  <div className="flex items-center gap-2.5 text-xs text-emerald-800 bg-emerald-50/90 border border-emerald-200 rounded-xl px-4 py-2.5 w-full shadow-2xs">
+                    <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <span className="font-bold">
+                        {enrollment.status === "COMPLETED" ? "Enrollment Completed" : "Endorsed to Grantor"}
+                      </span>
+                      <p className="text-[11px] text-emerald-700 mt-0.5">
+                        {enrollment.status === "COMPLETED"
+                          ? "This enrollment and tuition disbursement have been fully processed and settled."
+                          : "This enrollment was approved by the coordinator and endorsed to the Grantor."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : enrollment.status === "REJECTED" ? (
+                <div className="pt-3 border-t border-slate-200 mt-auto flex items-center justify-between gap-3 shrink-0">
+                  <div className="flex items-center gap-2.5 text-xs text-rose-800 bg-rose-50/90 border border-rose-200 rounded-xl px-4 py-2.5 w-full shadow-2xs">
+                    <X className="size-4 text-rose-600 shrink-0" />
+                    <div>
+                      <span className="font-bold">Enrollment Rejected</span>
+                      {enrollment.coordinator_notes && (
+                        <p className="text-[11px] text-rose-700 mt-0.5">{enrollment.coordinator_notes}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="pt-3 border-t border-slate-200 mt-auto flex items-center justify-between gap-3 shrink-0">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={isSubmitting}
+                      onClick={() => {
+                        setCoordinatorNotes("");
+                        setRejectOpen(true);
+                      }}
+                      className="h-9.5 rounded-xl border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800 text-xs font-semibold px-3.5"
+                    >
+                      Reject
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={isSubmitting}
+                      onClick={() => {
+                        setCoordinatorNotes("");
+                        setRequestChangesOpen(true);
+                      }}
+                      className="h-9.5 rounded-xl border-amber-300 bg-amber-50/60 hover:bg-amber-100 text-amber-900 text-xs font-semibold px-3.5"
+                    >
+                      Request Correction
+                    </Button>
+                  </div>
+
                   <Button
                     type="button"
-                    variant="outline"
                     disabled={isSubmitting}
-                    onClick={() => {
-                      setCoordinatorNotes("");
-                      setRejectOpen(true);
-                    }}
-                    className="h-9.5 rounded-xl border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800 text-xs font-semibold px-3.5"
+                    onClick={handleApprove}
+                    className="h-9.5 rounded-xl bg-[#0a4f42] hover:bg-[#083c32] text-white text-xs font-bold px-5 gap-2 shadow-xs"
                   >
-                    Reject
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={isSubmitting}
-                    onClick={() => {
-                      setCoordinatorNotes("");
-                      setRequestChangesOpen(true);
-                    }}
-                    className="h-9.5 rounded-xl border-amber-300 bg-amber-50/60 hover:bg-amber-100 text-amber-900 text-xs font-semibold px-3.5"
-                  >
-                    Request Correction
+                    <CheckCircle2 className="size-4" />
+                    <span>Accept & Endorse to Grantor</span>
                   </Button>
                 </div>
-
-                <Button
-                  type="button"
-                  disabled={isSubmitting}
-                  onClick={handleApprove}
-                  className="h-9.5 rounded-xl bg-[#0a4f42] hover:bg-[#083c32] text-white text-xs font-bold px-5 gap-2 shadow-xs"
-                >
-                  <CheckCircle2 className="size-4" />
-                  <span>Accept & Endorse to Grantor</span>
-                </Button>
-              </div>
+              )}
             </div>
           </div>
         )}

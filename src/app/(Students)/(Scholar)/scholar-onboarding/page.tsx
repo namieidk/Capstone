@@ -15,6 +15,13 @@ import { Step2ProspectusUpload } from "./components/Step2ProspectusUpload";
 import { Step3CreditsReview } from "./components/Step3CreditsReview";
 import { Step4FinalReview } from "./components/Step4FinalReview";
 
+const isHigherEducationSchool = (school?: { school_name?: string; grading_scale?: string } | null) => {
+  if (!school) return false;
+  if (/high\s*school|senior\s*high|deped/i.test(school.school_name || "")) return false;
+  if (school.grading_scale === "PERCENTAGE_100") return false;
+  return true;
+};
+
 export default function ScholarOnboardingPage() {
   const router = useRouter();
   const { refreshUser } = useAuth();
@@ -61,7 +68,7 @@ export default function ScholarOnboardingPage() {
         setCurrentStep(4);
       } else if (res.prospectus?.subjects && res.prospectus.subjects.length > 0) {
         setCurrentStep(3);
-      } else if (res.school_grading_system) {
+      } else if (isHigherEducationSchool(res.school_grading_system)) {
         setCurrentStep(2);
       } else {
         setCurrentStep(1);
@@ -99,9 +106,9 @@ export default function ScholarOnboardingPage() {
   }, [socket, refreshBaselineData, router]);
 
   // Max accessible step computation
-  const hasSchool = !!data?.school_grading_system;
+  const hasHigherEdSchool = isHigherEducationSchool(data?.school_grading_system);
   const hasProspectus = !!data?.prospectus?.subjects && data.prospectus.subjects.length > 0;
-  const maxAccessibleStep = hasProspectus ? 4 : hasSchool ? 2 : 1;
+  const maxAccessibleStep = hasProspectus ? 4 : hasHigherEdSchool ? 2 : 1;
 
   const handleStep1Success = async () => {
     await refreshBaselineData();

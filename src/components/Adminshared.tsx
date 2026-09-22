@@ -144,7 +144,7 @@ export function GlobalStyles() {
 // same logo green so headings, primary actions, and "on track" status
 // share one color. AMBER is the single warm highlight — CTAs, active
 // states, key numbers. WARN and BAD stay separate (amber-brown / red)
-// so "needs attention" and "at risk" scholars remain distinguishable
+// so "needs attention" and "action required" scholars remain distinguishable
 // from "on track" in tables and tags. Everything else (CREAM, WHITE,
 // GRAY, LINE, TINT) is neutral scaffolding.
 
@@ -694,7 +694,11 @@ export const ADMIN_ACTIVITY_FEED = [
   },
   { icon: <PeopleIcon />, text: "5 new applications submitted across all coordinators today.", time: "1 hour ago" },
   { icon: <BriefcaseIcon />, text: "Samantha Reyes was added as a new Office Administrator.", time: "3 hours ago" },
-  { icon: <MonitorIcon />, text: "Carlo Bautista flagged 'At risk' — missing 2 of 3 documents.", time: "5 hours ago" },
+  {
+    icon: <MonitorIcon />,
+    text: "Carlo Bautista flagged 'Action required' — missing 2 of 3 documents.",
+    time: "5 hours ago",
+  },
   { icon: <ArchiveIcon />, text: "Grace Tolentino's scholarship was terminated and archived.", time: "Yesterday" },
 ];
 
@@ -726,7 +730,7 @@ export const MONITOR_SCHOLARS: MonitorScholar[] = SCHOLARS_DIRECTORY.map((s2) =>
 export const HEALTH_TAG: Record<ScholarHealth, { bg: string; text: string; label: string }> = {
   good: { bg: GOOD_BG, text: GOOD, label: "On track" },
   warn: { bg: WARN_BG, text: WARN, label: "Needs attention" },
-  bad: { bg: BAD_BG, text: BAD, label: "At risk" },
+  bad: { bg: BAD_BG, text: BAD, label: "Action required" },
 };
 
 export const ARCHIVED_SCHOLARS: ArchivedScholar[] = [

@@ -1,6 +1,7 @@
 "use client";
 
-import { FileText } from "lucide-react";
+import { AlertCircle, FileText } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
@@ -10,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSocketEvent } from "@/contexts/SocketContext";
 import { ApiError } from "@/lib/api";
+import { type Application, getMyApplication } from "@/lib/api/applications";
 import { getMe } from "@/lib/api/auth";
 import { type Contract, getMyContracts } from "@/lib/api/contracts";
 import { ContractCard } from "./components/ContractCard";
@@ -18,14 +20,26 @@ export default function ApplicantsContractPage() {
   const router = useRouter();
   const { refreshUser } = useAuth();
   const [contracts, setContracts] = useState<Contract[]>([]);
+  const [application, setApplication] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
-  const fetchContracts = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setLoadError("");
     try {
-      setContracts(await getMyContracts());
+      const [fetchedContracts, fetchedApp] = await Promise.all([
+        getMyContracts().catch((err: unknown) => {
+          if (err instanceof ApiError && err.status === 404) return [];
+          throw err;
+        }),
+        getMyApplication().catch((err: unknown) => {
+          if (err instanceof ApiError && err.status === 404) return null;
+          return null;
+        }),
+      ]);
+      setContracts(fetchedContracts);
+      setApplication(fetchedApp);
     } catch (err) {
       setLoadError(err instanceof ApiError ? err.message : "Failed to load contracts.");
     } finally {
@@ -34,13 +48,13 @@ export default function ApplicantsContractPage() {
   }, []);
 
   useEffect(() => {
-    fetchContracts();
-  }, [fetchContracts]);
+    fetchData();
+  }, [fetchData]);
 
   // Real-time contract events
-  useSocketEvent("contract:created", fetchContracts);
-  useSocketEvent("contract:changes_requested", fetchContracts);
-  useSocketEvent("contract:signed", fetchContracts);
+  useSocketEvent("contract:created", fetchData);
+  useSocketEvent("contract:changes_requested", fetchData);
+  useSocketEvent("contract:signed", fetchData);
 
   // Signing promotes APPLICANT → SCHOLAR: sync auth state, then route by
   // the fresh role instead of the stale pre-sign one.
@@ -57,10 +71,12 @@ export default function ApplicantsContractPage() {
           router.push("/ApplicantsDashboard");
         }
       } catch {
-        fetchContracts();
+        fetchData();
       }
     }
   }
+
+  const isRejected = application?.status === "REJECTED";
 
   return (
     <div className="min-h-full bg-[#faf8f5]">
@@ -84,9 +100,27 @@ export default function ApplicantsContractPage() {
               <FileText className="size-10 text-muted-foreground" />
               <p className="text-base font-semibold">Could not load contracts</p>
               <p className="text-sm text-muted-foreground">{loadError}</p>
-              <Button type="button" className="h-11 px-5 text-sm!" onClick={fetchContracts}>
+              <Button type="button" className="h-11 px-5 text-sm!" onClick={fetchData}>
                 Try again
               </Button>
+            </CardContent>
+          </Card>
+        ) : isRejected ? (
+          <Card className="rounded-[18px]! border-destructive/30 shadow-va-sm">
+            <CardContent className="flex flex-col items-center gap-3 px-6 py-14 text-center">
+              <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+                <AlertCircle className="size-6" />
+              </div>
+              <p className="text-base font-bold text-navy">Agreement Not Available</p>
+              <p className="mt-1 max-w-md text-sm text-muted-foreground">
+                Your application for this cycle was not accepted. Scholarship contracts and agreements are only issued
+                to accepted applicants.
+              </p>
+              <Link href="/ApplicantsApplication" className="mt-2">
+                <Button variant="outline" className="h-10 text-sm font-semibold">
+                  View Application Details
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         ) : contracts.length === 0 ? (
@@ -102,7 +136,7 @@ export default function ApplicantsContractPage() {
           </Card>
         ) : (
           contracts.map((c) => (
-            <ContractCard key={c.contract_id} contract={c} onChanged={fetchContracts} onSigned={handleSigned} />
+            <ContractCard key={c.contract_id} contract={c} onChanged={fetchData} onSigned={handleSigned} />
           ))
         )}
       </div>

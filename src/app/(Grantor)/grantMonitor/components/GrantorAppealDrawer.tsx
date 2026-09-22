@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { type GradeReport, reviewAcademicAppeal } from "@/lib/api/documents";
+import { GrantorAppealConfirmDialog } from "./GrantorAppealConfirmDialog";
 
 interface GrantorAppealDrawerProps {
   report: GradeReport | null;
@@ -19,6 +20,8 @@ interface GrantorAppealDrawerProps {
 export function GrantorAppealDrawer({ report, open, onClose, onReviewed }: GrantorAppealDrawerProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [decisionNotes, setDecisionNotes] = useState("");
+  const [confirmDecision, setConfirmDecision] = useState<"APPROVED" | "DENIED" | null>(null);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
   if (!open || !report) return null;
 
@@ -44,6 +47,8 @@ export function GrantorAppealDrawer({ report, open, onClose, onReviewed }: Grant
           : "Appeal denied. Scholar academic record flagged as disqualified.",
       );
       setDecisionNotes("");
+      setConfirmDialogOpen(false);
+      setConfirmDecision(null);
       onReviewed();
       onClose();
     } catch (err) {
@@ -163,22 +168,29 @@ export function GrantorAppealDrawer({ report, open, onClose, onReviewed }: Grant
 
         {/* Footer Actions */}
         {isPending && (
-          <div className="bg-white px-6 py-4 border-t border-slate-200 flex items-center justify-between shrink-0">
+          <div className="bg-white px-6 py-3.5 border-t border-slate-200 flex items-center justify-between gap-3 shrink-0">
             <Button
               type="button"
               variant="outline"
               disabled={isSubmitting}
-              onClick={() => handleDecision("DENIED")}
-              className="border-rose-300 text-rose-700 hover:bg-rose-50 text-xs font-semibold"
+              onClick={() => {
+                setConfirmDecision("DENIED");
+                setConfirmDialogOpen(true);
+              }}
+              className="h-10 px-4 sm:px-5 rounded-lg border-rose-300 text-rose-700 hover:bg-rose-50 hover:border-rose-400 text-xs sm:text-sm font-semibold shadow-xs cursor-pointer transition-all"
             >
-              Deny Appeal & Disqualify
+              <X className="size-4" />
+              <span>Deny Appeal & Disqualify</span>
             </Button>
 
             <Button
               type="button"
               disabled={isSubmitting}
-              onClick={() => handleDecision("APPROVED")}
-              className="bg-[#0a4f42] hover:bg-[#083c32] text-white text-xs font-bold gap-1.5 shadow-xs"
+              onClick={() => {
+                setConfirmDecision("APPROVED");
+                setConfirmDialogOpen(true);
+              }}
+              className="h-10 px-4 sm:px-5 rounded-lg bg-[#0a4f42] hover:bg-[#083c32] text-white text-xs sm:text-sm font-semibold gap-1.5 shadow-xs cursor-pointer transition-all"
             >
               <CheckCircle2 className="size-4" />
               <span>Grant 1-Semester Probation</span>
@@ -186,6 +198,25 @@ export function GrantorAppealDrawer({ report, open, onClose, onReviewed }: Grant
           </div>
         )}
       </div>
+
+      {/* Confirmation Dialog for Denial & Probation Approvals */}
+      <GrantorAppealConfirmDialog
+        open={confirmDialogOpen}
+        onOpenChange={setConfirmDialogOpen}
+        decision={confirmDecision}
+        scholarName={`${scholar?.first_name || ""} ${scholar?.last_name || ""}`.trim() || "Scholar"}
+        academicYear={report.academic_year}
+        semester={report.semester}
+        computedGwa={Number(report.gpa || report.general_average || 0)}
+        decisionNotes={decisionNotes}
+        onDecisionNotesChange={setDecisionNotes}
+        onConfirm={() => {
+          if (confirmDecision) {
+            handleDecision(confirmDecision);
+          }
+        }}
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 }

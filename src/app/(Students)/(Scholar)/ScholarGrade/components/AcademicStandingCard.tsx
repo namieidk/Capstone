@@ -52,14 +52,23 @@ export function AcademicStandingCard({
   const isFlagged = latestReport && (!latestReport.is_eligible || latestReport.status === "FLAGGED");
   const hasPendingAppeal = latestReport?.appeal_status === "PENDING_GRANTOR";
   const appealApproved = latestReport?.appeal_status === "APPROVED";
+  const appealDenied = latestReport?.appeal_status === "DENIED";
 
   const gwaValue = latestReport ? Number(latestReport.gpa).toFixed(2) : "—";
   const scholarProfile = user?.scholar_profile;
+  const scholarName = `${user?.first_name || ""} ${user?.last_name || ""}`.trim() || "Scholar";
+  const studentNum = user?.scholar_profile?.student_number || "N/A";
   const schoolGrading =
     latestReport?.scholar_profile?.school_grading_system ??
     scholarProfile?.school_grading_system ??
     (scholarProfile?.school_name ? { school_name: scholarProfile.school_name } : null);
   const thresholdLabel = formatRetentionThreshold(gradeThreshold, schoolGrading);
+
+  const mailtoSubject = encodeURIComponent(`[Inquiry] Scholarship Status Appeal - ${scholarName} (${studentNum})`);
+  const mailtoBody = encodeURIComponent(
+    `Dear Grantor and Coordinator,\n\nI am writing to respectfully follow up regarding my scholarship status and the appeal decision for ${latestReport?.academic_year || "Academic Year"} ${latestReport?.semester || "Semester"}.\n\nStudent Details:\n- Name: ${scholarName}\n- Student Number: ${studentNum}\n- School: ${user?.scholar_profile?.school_name || "N/A"}\n- Term GWA: ${gwaValue}\n\nThank you for your guidance.\n\nSincerely,\n${scholarName}`,
+  );
+  const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=grantor@viascholar.edu&cc=coordinator@viascholar.edu&su=${mailtoSubject}&body=${mailtoBody}`;
 
   return (
     <Card className="rounded-[18px]! border-line bg-white shadow-va-sm">
@@ -76,7 +85,12 @@ export function AcademicStandingCard({
           </div>
 
           <div>
-            {appealApproved ? (
+            {appealDenied ? (
+              <Badge className="bg-rose-100 text-rose-900 border-rose-300 text-xs font-semibold gap-1.5 py-1">
+                <AlertTriangle className="size-3.5 text-rose-600" />
+                Scholarship Discontinued (Appeal Denied)
+              </Badge>
+            ) : appealApproved ? (
               <Badge className="bg-emerald-50 text-emerald-800 border-emerald-300 text-xs font-semibold gap-1.5 py-1">
                 <CheckCircle2 className="size-3.5 text-emerald-600" />
                 Probationary Clearance (Appeal Approved)
@@ -125,8 +139,44 @@ export function AcademicStandingCard({
           </div>
         </div>
 
-        {/* Non-compliance Alert & Appeal Trigger */}
-        {isFlagged && !appealApproved && (
+        {/* Appeal Denied Banner */}
+        {appealDenied ? (
+          <div className="rounded-xl border border-rose-300 bg-rose-50/80 p-4 space-y-3">
+            <div className="flex items-start gap-2.5">
+              <AlertTriangle className="size-4 text-rose-600 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <h4 className="text-xs font-bold text-rose-950">
+                  Second Chance Appeal Concluded: Scholarship Discontinued
+                </h4>
+                <p className="text-xs text-rose-800 leading-relaxed">
+                  The Grantor has reviewed your second chance appeal for {latestReport?.academic_year}{" "}
+                  {latestReport?.semester} and concluded that the scholarship agreement cannot be renewed.
+                </p>
+                {latestReport?.appeal_decision_notes && (
+                  <div className="mt-2 rounded-lg border border-rose-200 bg-white/70 p-2.5 text-xs text-rose-900">
+                    <span className="font-semibold text-rose-950">Grantor Remarks: </span>
+                    <em>"{latestReport.appeal_decision_notes}"</em>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-rose-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <span className="text-[11px] text-muted-foreground">
+                Your past term transcripts and records remain accessible in read-only mode.
+              </span>
+              <a
+                href={gmailUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-navy text-white text-xs font-semibold hover:bg-navy/90 transition-colors shrink-0"
+              >
+                <span>Contact Grantor (CC Coordinator)</span>
+              </a>
+            </div>
+          </div>
+        ) : isFlagged && !appealApproved ? (
+          /* Non-compliance Alert & Appeal Trigger */
           <div className="rounded-xl border border-rose-200 bg-rose-50/70 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1">
               <h4 className="text-xs font-bold text-rose-900 flex items-center gap-1.5">
@@ -135,7 +185,7 @@ export function AcademicStandingCard({
               </h4>
               <p className="text-xs text-rose-800">
                 Your latest computed term GWA ({gwaValue}) is below the required threshold or contains an incomplete
-                mark. You may submit an appeal directly to the Grantor for consideration.
+                mark. You may submit a Second Chance Request directly to the Grantor for consideration.
               </p>
             </div>
 
@@ -146,7 +196,7 @@ export function AcademicStandingCard({
                 className="h-9 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold px-4 shrink-0 shadow-xs gap-1.5 self-start sm:self-auto"
               >
                 <FileText className="size-3.5" />
-                <span>Appeal for Second Chance</span>
+                <span>Request Second Chance</span>
               </Button>
             ) : (
               <span className="text-xs font-bold text-amber-900 bg-amber-100/80 px-3 py-1.5 rounded-lg border border-amber-300 shrink-0">
@@ -154,7 +204,7 @@ export function AcademicStandingCard({
               </span>
             )}
           </div>
-        )}
+        ) : null}
       </CardContent>
     </Card>
   );

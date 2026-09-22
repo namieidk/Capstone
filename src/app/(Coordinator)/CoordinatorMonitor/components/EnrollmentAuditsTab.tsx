@@ -44,9 +44,12 @@ export function EnrollmentAuditsTab({
       const matchesSearch =
         !q || name.includes(q) || school.includes(q) || studentNum.includes(q) || course.includes(q);
 
-      if (filter === "PENDING") return matchesSearch && item.status === "PENDING_REVIEW";
+      if (filter === "PENDING")
+        return matchesSearch && (item.status === "PENDING_REVIEW" || item.status === "SUBMITTED");
       if (filter === "CHANGES_REQUESTED") return matchesSearch && item.status === "CHANGES_REQUESTED";
       if (filter === "APPROVED") return matchesSearch && item.status === "APPROVED";
+      if (filter === "COMPLETED") return matchesSearch && item.status === "COMPLETED";
+      if (filter === "REJECTED") return matchesSearch && item.status === "REJECTED";
       return matchesSearch;
     });
   }, [items, q, filter]);
@@ -64,11 +67,18 @@ export function EnrollmentAuditsTab({
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "APPROVED":
+      case "COMPLETED":
         return (
           <Badge className="bg-emerald-50 text-emerald-800 border-emerald-300 text-xs gap-1 font-semibold py-0.5">
             <CheckCircle2 className="size-3 text-emerald-600" />
-            Approved & Endorsed
+            Completed
+          </Badge>
+        );
+      case "APPROVED":
+        return (
+          <Badge className="bg-blue-50 text-blue-800 border-blue-300 text-xs gap-1 font-semibold py-0.5">
+            <CheckCircle2 className="size-3 text-blue-600" />
+            Endorsed to Grantor
           </Badge>
         );
       case "CHANGES_REQUESTED":
@@ -76,6 +86,13 @@ export function EnrollmentAuditsTab({
           <Badge className="bg-orange-50 text-orange-900 border-orange-300 text-xs gap-1 font-semibold py-0.5">
             <AlertTriangle className="size-3 text-orange-600" />
             Changes Requested
+          </Badge>
+        );
+      case "REJECTED":
+        return (
+          <Badge className="bg-rose-50 text-rose-900 border-rose-300 text-xs gap-1 font-semibold py-0.5">
+            <X className="size-3 text-rose-600" />
+            Rejected
           </Badge>
         );
       default:
@@ -88,7 +105,7 @@ export function EnrollmentAuditsTab({
     }
   };
 
-  const pendingCount = items.filter((i) => i.status === "PENDING_REVIEW").length;
+  const pendingCount = items.filter((i) => i.status === "PENDING_REVIEW" || i.status === "SUBMITTED").length;
 
   return (
     <div className="space-y-4">
@@ -126,8 +143,10 @@ export function EnrollmentAuditsTab({
             <SelectContent>
               <SelectItem value="ALL">All Enrollments ({items.length})</SelectItem>
               <SelectItem value="PENDING">Pending Review ({pendingCount})</SelectItem>
+              <SelectItem value="APPROVED">Endorsed to Grantor</SelectItem>
+              <SelectItem value="COMPLETED">Completed</SelectItem>
               <SelectItem value="CHANGES_REQUESTED">Changes Requested</SelectItem>
-              <SelectItem value="APPROVED">Approved & Endorsed</SelectItem>
+              <SelectItem value="REJECTED">Rejected</SelectItem>
             </SelectContent>
           </Select>
         </div>

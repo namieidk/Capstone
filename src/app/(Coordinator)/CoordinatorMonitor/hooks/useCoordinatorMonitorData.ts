@@ -11,6 +11,20 @@ import {
 import { getPendingDocuments, type ScholarDocument } from "@/lib/api/documents";
 import { getCoordinatorPendingEnrollments, type TermEnrollment } from "@/lib/api/enrollment";
 
+const NON_GRADE_DOC_TYPES = new Set([
+  "PROSPECTUS",
+  "CURRICULUM",
+  "HISTORICAL_CCG",
+  "SOA",
+  "COR",
+  "STATEMENT_OF_ACCOUNT",
+  "CERTIFICATE_OF_REGISTRATION",
+  "OFFICIAL_RECEIPT",
+  "RECEIPT",
+  "CONSOLIDATED_ASSESSMENT",
+  "CONSOLIDATED_MATRICULATION",
+]);
+
 export function useCoordinatorMonitorData() {
   const { socket } = useContext(SocketContext);
 
@@ -69,7 +83,8 @@ export function useCoordinatorMonitorData() {
     try {
       setLoadingGradeDocs(true);
       const data = await getPendingDocuments();
-      setGradeDocs(data || []);
+      const filtered = (data || []).filter((doc) => !NON_GRADE_DOC_TYPES.has((doc.document_type || "").toUpperCase()));
+      setGradeDocs(filtered);
     } catch (err) {
       console.error("Failed to load pending grade documents:", err);
     } finally {

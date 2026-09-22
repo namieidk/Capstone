@@ -106,6 +106,18 @@ export interface EnrollmentAuditResult {
   cross_doc_reconciliation?: CrossDocReconciliation;
 }
 
+export interface AcademicStandingLock {
+  is_locked: boolean;
+  reason?: "APPEAL_PENDING" | "APPEAL_REQUIRED" | "DISCONTINUED" | string;
+  appeal_status?: string;
+  report_id?: number;
+  academic_year?: string;
+  semester?: string;
+  gpa?: number;
+  evaluation_flag?: string;
+  message?: string;
+}
+
 export interface CurrentEnrollmentState {
   scholar: {
     profile_id: number;
@@ -121,6 +133,7 @@ export interface CurrentEnrollmentState {
   enrollment?: TermEnrollment | null;
   completed_previous_enrollment?: TermEnrollment | null;
   prospectus_frozen: boolean;
+  academic_lock?: AcademicStandingLock | null;
 }
 
 export interface SubmitEnrollmentPayload {
