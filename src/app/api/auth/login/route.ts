@@ -1,17 +1,34 @@
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+import { getBackendUrl } from "@/lib/backend-url";
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const { email, password, remember } = body;
+  let body: { email?: string; password?: string; remember?: boolean };
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ message: "Invalid request payload." }, { status: 400 });
+  }
 
-  const res = await fetch(`${BACKEND_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
+  const { email, password, remember } = body;
+  const backendUrl = getBackendUrl();
+
+  let res: Response;
+  try {
+    res = await fetch(`${backendUrl}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+  } catch (err) {
+    console.error(`[Auth Login Proxy Error] Failed to reach backend at "${backendUrl}/auth/login":`, err);
+    return Response.json(
+      {
+        message: `Unable to connect to the backend server at ${backendUrl}. Please check that the backend is deployed and running.`,
+      },
+      { status: 502 },
+    );
+  }
 
   const contentType = res.headers.get("content-type") ?? "";
   let data: unknown = null;

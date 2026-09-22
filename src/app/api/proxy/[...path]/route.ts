@@ -1,7 +1,6 @@
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+import { getBackendUrl } from "@/lib/backend-url";
 
 async function proxyRequest(method: string, path: string, request: NextRequest) {
   const cookieStore = await cookies();
@@ -28,10 +27,26 @@ async function proxyRequest(method: string, path: string, request: NextRequest) 
     }
   }
 
-  const url = new URL(path, BACKEND_URL);
-  url.search = request.nextUrl.search;
+  const backendBase = getBackendUrl();
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const targetUrl = new URL(`${backendBase}${normalizedPath}`);
+  targetUrl.search = request.nextUrl.search;
 
-  const res = await fetch(url.toString(), init);
+  let res: Response;
+  try {
+    res = await fetch(targetUrl.toString(), init);
+  } catch (err) {
+    console.error(`[API Proxy Error] Failed to proxy ${method} to "${targetUrl.toString()}":`, err);
+    return new Response(
+      JSON.stringify({
+        message: `Unable to reach backend server at ${backendBase}. Please ensure the backend is running and accessible.`,
+      }),
+      {
+        status: 502,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  }
 
   const resHeaders = new Headers();
   const setCookie = res.headers.get("set-cookie");

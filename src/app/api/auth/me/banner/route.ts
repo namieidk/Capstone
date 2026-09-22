@@ -1,7 +1,6 @@
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+import { getBackendUrl } from "@/lib/backend-url";
 
 export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
@@ -12,12 +11,19 @@ export async function POST(request: NextRequest) {
   }
 
   const formData = await request.formData();
+  const backendUrl = getBackendUrl();
 
-  const res = await fetch(`${BACKEND_URL}/auth/me/banner`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-    body: formData,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${backendUrl}/auth/me/banner`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+  } catch (err) {
+    console.error(`[Auth Banner Proxy Error] Failed to reach backend at "${backendUrl}/auth/me/banner":`, err);
+    return Response.json({ message: "Backend server is currently unreachable." }, { status: 502 });
+  }
 
   const text = await res.text();
   let data: unknown = null;

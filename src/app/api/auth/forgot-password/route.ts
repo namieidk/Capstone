@@ -1,16 +1,25 @@
 import type { NextRequest } from "next/server";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+import { getBackendUrl } from "@/lib/backend-url";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const { email } = body;
+  const backendUrl = getBackendUrl();
 
-  const res = await fetch(`${BACKEND_URL}/auth/forgot-password`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${backendUrl}/auth/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+  } catch (err) {
+    console.error(
+      `[Auth Forgot Password Proxy Error] Failed to reach backend at "${backendUrl}/auth/forgot-password":`,
+      err,
+    );
+    return Response.json({ message: `Unable to connect to backend server at ${backendUrl}.` }, { status: 502 });
+  }
 
   const contentType = res.headers.get("content-type") ?? "";
   let data: unknown = null;

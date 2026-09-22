@@ -1,16 +1,22 @@
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+import { getBackendUrl } from "@/lib/backend-url";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
+  const backendUrl = getBackendUrl();
 
-  const res = await fetch(`${BACKEND_URL}/auth/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${backendUrl}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  } catch (err) {
+    console.error(`[Auth Register Proxy Error] Failed to reach backend at "${backendUrl}/auth/register":`, err);
+    return Response.json({ message: `Unable to connect to backend server at ${backendUrl}.` }, { status: 502 });
+  }
 
   const data = await res.json();
 
