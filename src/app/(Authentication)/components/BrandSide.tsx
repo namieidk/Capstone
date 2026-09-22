@@ -7,8 +7,8 @@ interface BrandSideProps {
 
 const COPY: Record<AuthMode, { headline: string; sub: string }> = {
   signin: {
-    headline: "Find the scholarship\nthat fits you.",
-    sub: "Sign in to track your application, message your coordinator, and manage your scholar profile.",
+    headline: "Support for CRDC families, from school to graduation",
+    sub: "Sign in to check if you qualify, track your application, and manage your scholar profile.",
   },
   signup: {
     headline: "Apply for scholarships\nin minutes.",

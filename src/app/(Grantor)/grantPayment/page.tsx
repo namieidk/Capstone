@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { Building2, CheckCircle2, Clock, DollarSign, FileCheck } from "lucide-react";

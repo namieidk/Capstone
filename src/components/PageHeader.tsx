@@ -172,10 +172,10 @@ export function PageHeader({
 
   return (
     <header
-      className={`sticky top-0 z-20 flex shrink-0 items-center justify-between gap-4 border-b border-line bg-white/95 p-4 backdrop-blur-md ${className}`}
+      className={`sticky top-0 z-20 flex shrink-0 items-start justify-between gap-4 border-b border-line bg-white/95 p-4 backdrop-blur-md ${className}`}
     >
       {/* LEFT: Mobile Sidebar Trigger + Page Title/Subtitle */}
-      <div className="flex min-w-0 items-center gap-3">
+      <div className="flex min-w-0 flex-1 items-start gap-3">
         <Button
           type="button"
           variant="outline"
@@ -186,9 +186,11 @@ export function PageHeader({
         >
           <Menu className="size-4.5" />
         </Button>
-        <div className="min-w-0">
-          <h1 className="truncate text-lg font-bold tracking-tight text-navy sm:text-xl">{title}</h1>
-          {subtitle && <p className="truncate text-xs text-muted-foreground hidden sm:block">{subtitle}</p>}
+        <div className="min-w-0 flex-1">
+          <h1 className="break-words text-lg font-bold leading-tight tracking-tight text-navy sm:text-xl">
+            {title}
+          </h1>
+          {subtitle && <p className="mt-0.5 hidden text-xs text-muted-foreground sm:block">{subtitle}</p>}
         </div>
       </div>
 

@@ -1,17 +1,11 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { BookOpen, ExternalLink, FileText, Lock, Plus, Save, Trash2, Unlock } from "lucide-react";
+import { AlertTriangle, BookOpen, CheckCircle2, ExternalLink, FileText, Lock, Plus, Save, Trash2, Unlock, X } from "lucide-react";
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -189,33 +183,56 @@ export function BaselineAuditDrawer({ scholarProfileId, open, onOpenChange, onSu
     }
   };
 
+  if (!open || !scholarProfileId) return null;
+
   const docs = data?.documents || [];
   const currentDoc = docs[selectedDocIndex] || null;
   const isFrozen = data?.prospectus?.is_frozen || false;
   const school = data?.school_grading_system as SchoolGradingSystem | null;
+  const scholar = data?.scholar_profile;
+  const fileUrl = currentDoc?.file_url;
+
+  const totalUnits = subjectsList.reduce((acc, s) => acc + (Number(s.units) || 0), 0);
+  const creditedUnits = subjectsList
+    .filter((s) => s.status === "CREDITED" || s.status === "PASSED")
+    .reduce((acc, s) => acc + (Number(s.units) || 0), 0);
+  const remainingUnits = subjectsList
+    .filter((s) => s.status !== "CREDITED" && s.status !== "PASSED")
+    .reduce((acc, s) => acc + (Number(s.units) || 0), 0);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[95vw] lg:max-w-6xl max-h-[92vh] flex flex-col p-4 md:p-6">
-        <DialogHeader className="pb-3 border-b border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <div className="space-y-0.5">
-            <DialogTitle className="text-lg font-bold flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-primary" />
-              Academic Baseline Audit & Verification
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Verify curriculum prospectus against original document and freeze baseline.
-            </DialogDescription>
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end transition-opacity">
+      <div className="w-full max-w-6xl bg-slate-50 h-full flex flex-col shadow-2xl overflow-hidden border-l border-slate-200">
+        {/* Drawer Header */}
+        <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <BookOpen className="size-5 text-[#0a4f42]" />
+              <h2 className="text-lg font-bold text-slate-900">Academic Baseline Audit & Verification</h2>
+              {scholar && (
+                <Badge
+                  variant="outline"
+                  className="bg-[#0a4f42]/10 text-[#0a4f42] border-[#0a4f42]/30 text-xs font-bold"
+                >
+                  {scholar.student_name} {scholar.student_number ? `(${scholar.student_number})` : ""}
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {scholar?.course_of_study ? `${scholar.course_of_study} • ` : ""}
+              {scholar?.school_name || "Institution"} • Verify curriculum prospectus against original document and
+              freeze baseline.
+            </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {isFrozen ? (
               <div className="flex flex-col items-end">
-                <Badge className="bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border-emerald-600/30 gap-1 text-xs py-1">
+                <Badge className="bg-emerald-600/15 text-emerald-700 border-emerald-600/30 gap-1 text-xs py-1">
                   <Lock className="w-3.5 h-3.5" /> Baseline Locked
                 </Badge>
                 {data?.prospectus?.frozen_by_employee && (
-                  <span className="text-[11px] text-muted-foreground mt-0.5">
+                  <span className="text-[11px] text-slate-500 mt-0.5">
                     by {data.prospectus.frozen_by_employee.first_name} {data.prospectus.frozen_by_employee.last_name}
                     {data.prospectus.frozen_by_employee.user?.role
                       ? ` (${data.prospectus.frozen_by_employee.user.role.charAt(0) + data.prospectus.frozen_by_employee.user.role.slice(1).toLowerCase()})`
@@ -224,51 +241,60 @@ export function BaselineAuditDrawer({ scholarProfileId, open, onOpenChange, onSu
                 )}
               </div>
             ) : (
-              <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 text-xs py-1">
+              <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/30 text-xs py-1">
                 Awaiting Coordinator Approval
               </Badge>
             )}
-          </div>
-        </DialogHeader>
 
-        {loading ? (
-          <div className="flex-1 flex items-center justify-center py-24 text-xs text-muted-foreground">
-            Loading scholar curriculum documents and parsed subjects...
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+            >
+              <X className="size-5" />
+            </button>
           </div>
-        ) : !data ? (
-          <div className="flex-1 flex items-center justify-center py-24 text-xs text-muted-foreground">
-            No baseline submission found for this scholar.
+        </div>
+
+        {loading || !data ? (
+          <div className="flex-1 flex items-center justify-center py-24 text-xs text-slate-500">
+            {loading ? "Loading scholar curriculum documents and parsed subjects..." : "No baseline submission found for this scholar."}
           </div>
         ) : (
-          <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 py-2 min-h-0 overflow-hidden">
-            {/* Left Pane: Original Uploaded Document Viewer */}
-            <div className="lg:col-span-5 flex flex-col bg-muted/30 rounded-xl border border-border/60 overflow-hidden p-3 min-h-75">
-              <div className="flex items-center justify-between pb-2 border-b border-border text-xs">
-                <div className="flex items-center gap-1.5 font-semibold text-foreground">
-                  <FileText className="w-4 h-4 text-primary" />
+          <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0">
+            {/* Left: Document Preview */}
+            <div className="lg:col-span-6 bg-slate-900 border-r border-slate-800 flex flex-col h-full overflow-hidden">
+              <div className="bg-slate-800/80 px-4 py-2 flex items-center justify-between border-b border-slate-700 shrink-0">
+                <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                  <FileText className="size-3.5" />
                   Uploaded Documents ({docs.length})
-                </div>
+                </span>
                 {currentDoc && (
                   <a
                     href={currentDoc.file_url}
                     target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[11px] text-primary hover:underline flex items-center gap-1"
+                    rel="noreferrer"
+                    className="text-xs text-teal-400 hover:text-teal-300 flex items-center gap-1 font-medium"
                   >
-                    Open Tab <ExternalLink className="w-3 h-3" />
+                    <span>Open External</span>
+                    <ExternalLink className="size-3.5" />
                   </a>
                 )}
               </div>
 
               {docs.length > 1 && (
-                <div className="flex gap-1.5 pt-2 pb-1 overflow-x-auto">
+                <div className="flex gap-1.5 px-3 pt-2 pb-1 overflow-x-auto bg-slate-900 shrink-0">
                   {docs.map((d, idx) => (
                     <Button
                       key={d.document_id || `doc-tab-${idx}`}
                       variant={selectedDocIndex === idx ? "default" : "outline"}
                       size="sm"
                       onClick={() => setSelectedDocIndex(idx)}
-                      className="text-[11px] h-7 px-2.5 whitespace-nowrap"
+                      className={`text-[11px] h-7 px-2.5 whitespace-nowrap ${
+                        selectedDocIndex === idx
+                          ? "bg-[#0a4f42] hover:bg-[#083c32] text-white border-transparent"
+                          : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
+                      }`}
                     >
                       {d.label || d.document_type}
                     </Button>
@@ -276,153 +302,123 @@ export function BaselineAuditDrawer({ scholarProfileId, open, onOpenChange, onSu
                 </div>
               )}
 
-              <div className="flex-1 rounded-lg overflow-hidden bg-background border border-border/60 mt-2 flex items-center justify-center relative">
+              <div className="flex-1 p-2 bg-slate-950 flex items-center justify-center overflow-auto relative">
                 {currentDoc ? (
                   currentDoc.file_type?.includes("pdf") || currentDoc.file_url.endsWith(".pdf") ? (
                     <iframe
-                      src={currentDoc.file_url}
-                      className="w-full h-full border-0"
+                      src={`${fileUrl}#toolbar=0`}
+                      className="w-full h-full rounded-md border-0"
                       title="Uploaded Document Preview"
                     />
                   ) : (
-                    // biome-ignore lint/performance/noImgElement: Document preview from remote storage
-                    <img
+                    <Image
                       src={currentDoc.file_url}
                       alt="Document preview"
-                      className="max-w-full max-h-full object-contain"
+                      fill
+                      unoptimized
+                      className="object-contain rounded-md"
                     />
                   )
                 ) : (
-                  <p className="text-xs text-muted-foreground p-4 text-center">No document file uploaded.</p>
+                  <p className="text-xs text-slate-500">No document file uploaded.</p>
                 )}
               </div>
             </div>
 
-            {/* Right Pane: Extracted Subjects & Verification Controls */}
-            <div className="lg:col-span-7 flex flex-col min-h-0 overflow-hidden space-y-3">
-              {/* Scholar & School Banner */}
-              <div className="p-3 bg-muted/40 rounded-lg border border-border/60 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="space-y-0.5">
-                  <div className="font-bold text-foreground text-sm">{data.scholar_profile.student_name}</div>
-                  <div className="text-muted-foreground flex items-center gap-2">
-                    <span>{data.scholar_profile.course_of_study || "Degree"}</span>
-                    <span>•</span>
-                    <span>{data.scholar_profile.school_name || "Institution"}</span>
-                  </div>
-                </div>
-
-                {school && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-muted-foreground">
-                      Scale:{" "}
-                      <strong>
-                        {Number(school.highest_grade)} max / {Number(school.passing_grade)} pass
-                      </strong>
-                    </span>
-                    {!school.is_verified && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleVerifySchool(school.school_id)}
-                        className="text-[11px] h-6 px-2 text-emerald-600 hover:text-emerald-700"
-                      >
-                        Verify Scale
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Audit Lock Banner */}
-              {isFrozen && (
-                <div className="p-3 bg-emerald-50/80 border border-emerald-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-emerald-950">
-                  <div className="flex items-center gap-2.5">
-                    <div className="size-7 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
-                      <Lock className="size-3.5" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-emerald-900">Academic Baseline Frozen & Audited</p>
-                      <p className="text-[11px] text-emerald-800/90">
-                        Approved by{" "}
-                        <strong>
-                          {data.prospectus?.frozen_by_employee
-                            ? `${data.prospectus.frozen_by_employee.first_name} ${data.prospectus.frozen_by_employee.last_name}`
-                            : "Authorized Staff"}
-                        </strong>
-                        {data.prospectus?.frozen_by_employee?.user?.role && (
-                          <span>
-                            {" "}
-                            (
-                            {data.prospectus.frozen_by_employee.user.role.charAt(0) +
-                              data.prospectus.frozen_by_employee.user.role.slice(1).toLowerCase()}
-                            )
-                          </span>
-                        )}
-                        {data.prospectus?.frozen_by_employee?.title && (
-                          <span> • {data.prospectus.frozen_by_employee.title}</span>
-                        )}
-                        {data.prospectus?.frozen_at && (
-                          <span>
-                            {" "}
-                            on{" "}
-                            {new Date(data.prospectus.frozen_at).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge className="bg-emerald-600 text-white text-[10px] font-semibold self-start sm:self-auto">
-                    Verified Baseline
-                  </Badge>
+            {/* Right: Verification Panel */}
+            <div className="lg:col-span-6 flex flex-col h-full overflow-hidden p-5 space-y-4 bg-white">
+              {/* School Scale Banner */}
+              {school && (
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex items-center justify-between shrink-0">
+                  <span className="text-slate-500">
+                    Scale:{" "}
+                    <strong className="text-slate-900">
+                      {Number(school.highest_grade)} max / {Number(school.passing_grade)} pass
+                    </strong>
+                  </span>
+                  {!school.is_verified && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleVerifySchool(school.school_id)}
+                      className="text-[11px] h-6 px-2 text-emerald-600 hover:text-emerald-700"
+                    >
+                      Verify Scale
+                    </Button>
+                  )}
                 </div>
               )}
 
-              {/* Quick-Audit Metric Bar */}
-              <div className="grid grid-cols-4 gap-2 text-xs">
-                <div className="p-2.5 rounded-lg bg-card border border-border/60 text-center shadow-2xs">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block tracking-wider">
-                    Total Subjects
-                  </span>
-                  <span className="font-bold text-foreground text-sm mt-0.5 block">{subjectsList.length}</span>
+              {/* Metric Strip */}
+              <div className="grid grid-cols-4 gap-2.5 shrink-0">
+                <div className="bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-center">
+                  <span className="text-[10px] uppercase font-bold text-slate-500 block">Total Subjects</span>
+                  <span className="text-base font-black text-slate-900">{subjectsList.length}</span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-card border border-border/60 text-center shadow-2xs">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block tracking-wider">
-                    Total Units
-                  </span>
-                  <span className="font-bold text-foreground text-sm mt-0.5 block">
-                    {subjectsList.reduce((acc, s) => acc + (Number(s.units) || 0), 0).toFixed(1)}
-                  </span>
+                <div className="bg-teal-50/70 border border-teal-100 p-2.5 rounded-xl text-center">
+                  <span className="text-[10px] uppercase font-bold text-teal-700 block">Total Units</span>
+                  <span className="text-base font-black text-[#0a4f42]">{totalUnits.toFixed(1)}</span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-center shadow-2xs">
-                  <span className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-400 block tracking-wider">
-                    Credited Units
-                  </span>
-                  <span className="font-bold text-emerald-700 dark:text-emerald-400 text-sm mt-0.5 block">
-                    {subjectsList
-                      .filter((s) => s.status === "CREDITED" || s.status === "PASSED")
-                      .reduce((acc, s) => acc + (Number(s.units) || 0), 0)
-                      .toFixed(1)}
-                  </span>
+                <div className="bg-emerald-50/70 border border-emerald-100 p-2.5 rounded-xl text-center">
+                  <span className="text-[10px] uppercase font-bold text-emerald-700 block">Credited Units</span>
+                  <span className="text-base font-black text-emerald-900">{creditedUnits.toFixed(1)}</span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-center shadow-2xs">
-                  <span className="text-[10px] uppercase font-bold text-amber-700 dark:text-amber-400 block tracking-wider">
-                    Remaining Units
-                  </span>
-                  <span className="font-bold text-amber-700 dark:text-amber-400 text-sm mt-0.5 block">
-                    {subjectsList
-                      .filter((s) => s.status !== "CREDITED" && s.status !== "PASSED")
-                      .reduce((acc, s) => acc + (Number(s.units) || 0), 0)
-                      .toFixed(1)}
-                  </span>
+                <div className="bg-amber-50/70 border border-amber-100 p-2.5 rounded-xl text-center">
+                  <span className="text-[10px] uppercase font-bold text-amber-700 block">Remaining Units</span>
+                  <span className="text-base font-black text-amber-900">{remainingUnits.toFixed(1)}</span>
                 </div>
               </div>
 
+              {/* Audit Lock Banner */}
+              {isFrozen ? (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-3 flex items-start gap-2.5 shrink-0">
+                  <CheckCircle2 className="size-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5 text-xs text-emerald-900">
+                    <span className="font-bold block">Academic Baseline Frozen & Audited</span>
+                    <p className="text-[11px] text-emerald-700 leading-snug">
+                      Approved by{" "}
+                      <strong>
+                        {data.prospectus?.frozen_by_employee
+                          ? `${data.prospectus.frozen_by_employee.first_name} ${data.prospectus.frozen_by_employee.last_name}`
+                          : "Authorized Staff"}
+                      </strong>
+                      {data.prospectus?.frozen_by_employee?.user?.role && (
+                        <span>
+                          {" "}
+                          (
+                          {data.prospectus.frozen_by_employee.user.role.charAt(0) +
+                            data.prospectus.frozen_by_employee.user.role.slice(1).toLowerCase()}
+                          )
+                        </span>
+                      )}
+                      {data.prospectus?.frozen_by_employee?.title && (
+                        <span> • {data.prospectus.frozen_by_employee.title}</span>
+                      )}
+                      {data.prospectus?.frozen_at && (
+                        <span>
+                          {" "}
+                          on{" "}
+                          {new Date(data.prospectus.frozen_at).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-2.5 flex items-center gap-2 shrink-0">
+                  <AlertTriangle className="size-4 text-amber-600 shrink-0" />
+                  <span className="text-xs font-semibold text-amber-900">
+                    Prospectus pending review — verify subjects before freezing
+                  </span>
+                </div>
+              )}
+
               {/* Subject Table Column Headers */}
-              <div className="grid grid-cols-12 gap-2 px-3 pt-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              <div className="grid grid-cols-12 gap-2 px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider shrink-0">
                 <div className="col-span-3">Code</div>
                 <div className="col-span-4">Descriptive Title</div>
                 <div className="col-span-2">Status</div>
@@ -435,7 +431,7 @@ export function BaselineAuditDrawer({ scholarProfileId, open, onOpenChange, onSu
                 {subjectsList.map((sub, idx) => (
                   <div
                     key={sub.subject_id ? `subj-id-${sub.subject_id}` : `subj-idx-${sub.subject_code}-${idx}`}
-                    className="p-2.5 bg-card rounded-md border border-border/60 grid grid-cols-12 gap-2 items-center text-xs shadow-2xs"
+                    className="p-2.5 bg-white rounded-xl border border-slate-200 grid grid-cols-12 gap-2 items-center text-xs shadow-xs"
                   >
                     <div className="col-span-3">
                       <Input
@@ -490,7 +486,7 @@ export function BaselineAuditDrawer({ scholarProfileId, open, onOpenChange, onSu
                           variant="ghost"
                           size="icon"
                           onClick={() => handleRemoveSubject(idx)}
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          className="h-8 w-8 text-slate-400 hover:text-rose-600"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
@@ -511,53 +507,54 @@ export function BaselineAuditDrawer({ scholarProfileId, open, onOpenChange, onSu
                   </Button>
                 )}
               </div>
+
+              {/* Action Buttons */}
+              <div className="pt-3 border-t border-slate-200 mt-auto flex items-center justify-between gap-3 shrink-0">
+                <div className="text-xs text-slate-500">
+                  Total: <strong>{subjectsList.length}</strong> subjects
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {!isFrozen ? (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSaveSubjects}
+                        disabled={saving || !data?.prospectus}
+                        className="h-9.5 rounded-xl gap-1.5 text-xs font-semibold px-3.5"
+                      >
+                        <Save className="w-3.5 h-3.5" />
+                        {saving ? "Saving..." : "Save Edits"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleFreeze}
+                        disabled={actionLoading || !data?.prospectus}
+                        className="h-9.5 rounded-xl gap-1.5 text-xs font-bold px-4 bg-[#0a4f42] hover:bg-[#083c32] text-white shadow-xs"
+                      >
+                        <Lock className="w-3.5 h-3.5" />
+                        {actionLoading ? "Freezing..." : "Freeze & Approve Baseline"}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleUnfreeze}
+                      disabled={actionLoading}
+                      className="h-9.5 rounded-xl gap-1.5 text-xs font-semibold px-3.5 border-amber-300 bg-amber-50/60 hover:bg-amber-100 text-amber-900"
+                    >
+                      <Unlock className="w-3.5 h-3.5" />
+                      {actionLoading ? "Unfreezing..." : "Unlock / Unfreeze Baseline"}
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
-
-        <DialogFooter className="pt-3 border-t border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <div className="text-xs text-muted-foreground">
-            Total: <strong>{subjectsList.length}</strong> subjects
-          </div>
-
-          <div className="flex items-center gap-2">
-            {!isFrozen ? (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSaveSubjects}
-                  disabled={saving || !data?.prospectus}
-                  className="gap-1.5 text-xs h-8"
-                >
-                  <Save className="w-3.5 h-3.5" />
-                  {saving ? "Saving..." : "Save Edits"}
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleFreeze}
-                  disabled={actionLoading || !data?.prospectus}
-                  className="gap-1.5 text-xs h-8 bg-emerald-600 hover:bg-emerald-700 text-white"
-                >
-                  <Lock className="w-3.5 h-3.5" />
-                  {actionLoading ? "Freezing..." : "Freeze & Approve Baseline"}
-                </Button>
-              </>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleUnfreeze}
-                disabled={actionLoading}
-                className="gap-1.5 text-xs h-8 border-amber-500/50 text-amber-700 dark:text-amber-400"
-              >
-                <Unlock className="w-3.5 h-3.5" />
-                {actionLoading ? "Unfreezing..." : "Unlock / Unfreeze Baseline"}
-              </Button>
-            )}
-          </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }

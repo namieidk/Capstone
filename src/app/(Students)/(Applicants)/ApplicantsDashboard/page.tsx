@@ -1,3 +1,5 @@
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { ArrowRight, FileSignature, FileText, Mail, ShieldAlert } from "lucide-react";

@@ -7,8 +7,10 @@ import {
   CalendarClock,
   Eye,
   FileSignature,
+  FileText,
   Loader2,
   RotateCcw,
+  X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ApplicantDocumentsList } from "@/app/(Coordinator)/CoordinatorApplicants/components/ApplicantDocumentsList";
@@ -35,7 +37,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { type Contract, listContracts } from "@/lib/api/contracts";
@@ -76,6 +77,7 @@ export function GrantApplicantDialog({
   // Fetch existing contracts whenever the applicant's profile changes
   useEffect(() => {
     if (!applicant?.profileId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setExistingContract(null);
       return;
     }
@@ -102,6 +104,7 @@ export function GrantApplicantDialog({
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: applicant.id and applicant.stage intentionally reset dialog confirmation state on applicant or stage change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoadedDocs(null);
     setAcceptWarningText(null);
     setConfirmingReject(false);
@@ -134,6 +137,8 @@ export function GrantApplicantDialog({
     onMeetingScheduled();
   }
 
+  if (!applicant) return null;
+
   const isDocsLoading = loadedDocs === null;
   const hasNoDocs = loadedDocs !== null ? loadedDocs.length === 0 : (applicant?.documentsCount ?? 0) === 0;
   const hasConfirmedDocs = Boolean(
@@ -143,210 +148,223 @@ export function GrantApplicantDialog({
 
   return (
     <>
-      <Dialog open={applicant !== null} onOpenChange={(open) => !open && handleClose()}>
-        <DialogContent className="flex h-[90vh] max-h-[90vh] w-[95vw] max-w-3xl! flex-col gap-0 overflow-hidden p-0 rounded-2xl sm:max-w-3xl!">
-          <DialogHeader className="shrink-0 border-b border-border bg-white px-5 py-4 sm:px-6">
-            <div className="flex flex-wrap items-center justify-between gap-2 pr-6">
-              <DialogTitle className="text-xl! font-semibold">{applicant?.name}</DialogTitle>
-              {applicant && (
+      <div
+        className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end transition-opacity"
+        onClick={handleClose}
+      >
+        <div
+          className="w-full max-w-6xl bg-slate-50 h-full flex flex-col shadow-2xl overflow-hidden border-l border-slate-200"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Drawer Header */}
+          <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
+            <div>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <FileText className="size-5 text-[#0a4f42]" />
+                <h2 className="text-lg font-bold text-slate-900">{applicant.name}</h2>
                 <Badge variant={getStageVariant(applicant.stage)} className="h-6 px-2.5 text-xs!">
                   {applicant.stage}
                 </Badge>
-              )}
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {applicant.course} · {applicant.year} · Applied on {applicant.applied}
+              </p>
             </div>
-            <DialogDescription className="text-sm text-muted-foreground">
-              {applicant ? `${applicant.course} · ${applicant.year} · Applied on ${applicant.applied}` : ""}
-            </DialogDescription>
-          </DialogHeader>
 
-          {applicant && (
-            <>
-              <ScrollArea className="flex-1 min-h-0">
-                <div className="flex flex-col gap-5 px-5 py-5 sm:px-6">
-                  {/* Academic Eligibility Banner */}
-                  <ApplicantEligibilityBanner
-                    applicant={applicant}
-                    documents={loadedDocs}
-                    onInspectDocument={setVerifyingDoc}
-                  />
+            <button
+              type="button"
+              onClick={handleClose}
+              className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+            >
+              <X className="size-5" />
+            </button>
+          </div>
 
-                  {/* Academic & Institution Information */}
-                  <div className="rounded-lg border border-border/70 bg-muted/30 p-4">
-                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Academic & Institution Details
-                    </h3>
-                    <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 md:grid-cols-3 text-sm">
-                      <div>
-                        <dt className="text-xs text-muted-foreground">Scholarship Track</dt>
-                        <dd className="font-medium text-foreground">{applicant.track || "—"}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-muted-foreground">Course of Study</dt>
-                        <dd className="font-medium text-foreground">{applicant.course || "—"}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-muted-foreground">Current Year Level</dt>
-                        <dd className="font-medium text-foreground">{applicant.year || "—"}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-muted-foreground">General Weighted Average (GWA)</dt>
-                        <dd
-                          className="font-medium tabular-nums text-foreground"
-                          title={gwaSourceTitle(applicant.gwaSource)}
-                        >
-                          {applicant.gwa !== null ? formatGwa(applicant.gwa) : "—"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-muted-foreground">School Name</dt>
-                        <dd className="font-medium text-foreground">{applicant.schoolName || "—"}</dd>
-                      </div>
-                      <div className="sm:col-span-2 md:col-span-1">
-                        <dt className="text-xs text-muted-foreground">School Address</dt>
-                        <dd className="font-medium text-foreground">{applicant.schoolAddress || "—"}</dd>
-                      </div>
-                    </dl>
-                  </div>
+          <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0">
+            {/* Left: Documents Panel */}
+            <div className="lg:col-span-5 bg-white border-r border-slate-200 flex flex-col h-full overflow-hidden">
+              <div className="bg-slate-100 px-4 py-2 flex items-center justify-between border-b border-slate-200 shrink-0">
+                <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
+                  <FileText className="size-3.5" />
+                  Documents uploaded by student
+                </span>
+                <span className="text-xs text-slate-500">
+                  {loadedDocs?.length ?? applicant?.documentsCount ?? 0}{" "}
+                  {(loadedDocs?.length ?? applicant?.documentsCount ?? 0) === 1 ? "document" : "documents"}
+                </span>
+              </div>
 
-                  {/* Personal, Contact & Affiliation Details */}
-                  <div className="rounded-lg border border-border/70 bg-muted/30 p-4">
-                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Personal, Contact & Affiliation Details
-                    </h3>
-                    <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 text-sm">
-                      <div>
-                        <dt className="text-xs text-muted-foreground">Student Number</dt>
-                        <dd className="font-medium text-foreground">{applicant.studentNumber || "—"}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-muted-foreground">Phone Number</dt>
-                        <dd className="font-medium text-foreground">{applicant.phoneNumber || "—"}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-muted-foreground">Home Address</dt>
-                        <dd className="font-medium text-foreground">{applicant.studentAddress || "—"}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-muted-foreground">Relative Employed By Partner</dt>
-                        <dd className="font-medium text-foreground">{applicant.relativeEmployee || "None / N/A"}</dd>
-                      </div>
-                    </dl>
-                  </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                <ApplicantEligibilityBanner
+                  applicant={applicant}
+                  documents={loadedDocs}
+                  onInspectDocument={setVerifyingDoc}
+                />
 
-                  <Separator />
-                  <div>
-                    <div className="mb-2 flex items-center justify-between">
-                      <p className="text-sm font-semibold text-foreground">Documents uploaded by student</p>
-                      <span className="text-xs text-muted-foreground">
-                        {loadedDocs?.length ?? applicant?.documentsCount ?? 0}{" "}
-                        {(loadedDocs?.length ?? applicant?.documentsCount ?? 0) === 1 ? "document" : "documents"}
-                      </span>
+                <ApplicantDocumentsList
+                  applicationId={applicant.id}
+                  refreshToken={docsToken}
+                  onVerify={setVerifyingDoc}
+                  onDocumentsLoaded={setLoadedDocs}
+                />
+              </div>
+            </div>
+
+            {/* Right: Applicant Details & Actions */}
+            <div className="lg:col-span-7 flex flex-col h-full overflow-hidden bg-white">
+              <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                {/* Academic & Institution Information */}
+                <div className="rounded-lg border border-border/70 bg-muted/30 p-4">
+                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Academic & Institution Details
+                  </h3>
+                  <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 md:grid-cols-3 text-sm">
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Scholarship Track</dt>
+                      <dd className="font-medium text-foreground">{applicant.track || "—"}</dd>
                     </div>
-                    <ApplicantDocumentsList
-                      applicationId={applicant.id}
-                      refreshToken={docsToken}
-                      onVerify={setVerifyingDoc}
-                      onDocumentsLoaded={setLoadedDocs}
-                    />
-                  </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Course of Study</dt>
+                      <dd className="font-medium text-foreground">{applicant.course || "—"}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Current Year Level</dt>
+                      <dd className="font-medium text-foreground">{applicant.year || "—"}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">General Weighted Average (GWA)</dt>
+                      <dd
+                        className="font-medium tabular-nums text-foreground"
+                        title={gwaSourceTitle(applicant.gwaSource)}
+                      >
+                        {applicant.gwa !== null ? formatGwa(applicant.gwa) : "—"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">School Name</dt>
+                      <dd className="font-medium text-foreground">{applicant.schoolName || "—"}</dd>
+                    </div>
+                    <div className="sm:col-span-2 md:col-span-1">
+                      <dt className="text-xs text-muted-foreground">School Address</dt>
+                      <dd className="font-medium text-foreground">{applicant.schoolAddress || "—"}</dd>
+                    </div>
+                  </dl>
+                </div>
 
-                  {applicant.stage === "Accepted" && (
-                    <>
-                      <Separator />
-                      <div className="rounded-xl border border-navy/20 bg-navy/5 p-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                          <div className="flex items-start sm:items-center gap-3">
-                            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-navy/10 text-navy">
-                              {loadingContract ? (
-                                <Loader2 className="size-5 animate-spin" />
-                              ) : (
-                                <FileSignature className="size-5" />
-                              )}
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <h4 className="text-sm font-bold text-navy">Scholarship Agreement</h4>
-                                {existingContract && (
-                                  <Badge
-                                    variant="outline"
-                                    className={
-                                      existingContract.status === "SIGNED"
-                                        ? "border-good/30 bg-good-bg text-good text-[0.65rem]! font-semibold"
-                                        : "border-amber-300 bg-amber-50 text-amber-800 text-[0.65rem]! font-semibold"
-                                    }
-                                  >
-                                    {existingContract.status === "SIGNED" ? "Signed & Active" : `Awaiting Signature`}
-                                  </Badge>
-                                )}
-                              </div>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {existingContract
-                                  ? `Contract #${existingContract.contract_number} has been generated (${existingContract.status === "SIGNED" ? "Signed by student" : "Awaiting student signature"}).`
-                                  : "Application is approved. You can now issue the digital scholarship contract."}
-                              </p>
-                              {existingContract?.effective_date && (
-                                <p className="text-[0.7rem] text-muted-foreground mt-1">
-                                  Effective: {existingContract.effective_date}
-                                  {existingContract.expiry_date ? ` · Expiry: ${existingContract.expiry_date}` : ""}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            {existingContract ? (
-                              <>
-                                {(existingContract.signed_document_url || existingContract.document_url) && (
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-8 gap-1 text-xs! font-medium"
-                                    onClick={() =>
-                                      window.open(
-                                        existingContract.signed_document_url || existingContract.document_url || "",
-                                        "_blank",
-                                      )
-                                    }
-                                  >
-                                    <Eye className="size-3.5" />
-                                    <span>View PDF</span>
-                                  </Button>
-                                )}
-                                <Button
-                                  type="button"
-                                  variant="secondary"
-                                  size="sm"
-                                  className="h-8 gap-1 text-xs! font-medium"
-                                  onClick={() => setCreatingContract(true)}
-                                >
-                                  <FileSignature className="size-3.5" />
-                                  <span>Re-issue</span>
-                                </Button>
-                              </>
-                            ) : (
-                              <Button
-                                type="button"
-                                size="sm"
-                                className="h-9 gap-1.5 text-xs! font-semibold shadow-xs"
-                                onClick={() => setCreatingContract(true)}
+                {/* Personal, Contact & Affiliation Details */}
+                <div className="rounded-lg border border-border/70 bg-muted/30 p-4">
+                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Personal, Contact & Affiliation Details
+                  </h3>
+                  <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 text-sm">
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Student Number</dt>
+                      <dd className="font-medium text-foreground">{applicant.studentNumber || "—"}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Phone Number</dt>
+                      <dd className="font-medium text-foreground">{applicant.phoneNumber || "—"}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Home Address</dt>
+                      <dd className="font-medium text-foreground">{applicant.studentAddress || "—"}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Relative Employed By Partner</dt>
+                      <dd className="font-medium text-foreground">{applicant.relativeEmployee || "None / N/A"}</dd>
+                    </div>
+                  </dl>
+                </div>
+
+                {/* Scholarship Agreement / Contract */}
+                {applicant.stage === "Accepted" && (
+                  <div className="rounded-xl border border-navy/20 bg-navy/5 p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-start sm:items-center gap-3">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-navy/10 text-navy">
+                          {loadingContract ? (
+                            <Loader2 className="size-5 animate-spin" />
+                          ) : (
+                            <FileSignature className="size-5" />
+                          )}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-bold text-navy">Scholarship Agreement</h4>
+                            {existingContract && (
+                              <Badge
+                                variant="outline"
+                                className={
+                                  existingContract.status === "SIGNED"
+                                    ? "border-good/30 bg-good-bg text-good text-[0.65rem]! font-semibold"
+                                    : "border-amber-300 bg-amber-50 text-amber-800 text-[0.65rem]! font-semibold"
+                                }
                               >
-                                <FileSignature className="size-3.5" />
-                                <span>Issue Contract</span>
-                              </Button>
+                                {existingContract.status === "SIGNED" ? "Signed & Active" : `Awaiting Signature`}
+                              </Badge>
                             )}
                           </div>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {existingContract
+                              ? `Contract #${existingContract.contract_number} has been generated (${existingContract.status === "SIGNED" ? "Signed by student" : "Awaiting student signature"}).`
+                              : "Application is approved. You can now issue the digital scholarship contract."}
+                          </p>
+                          {existingContract?.effective_date && (
+                            <p className="text-[0.7rem] text-muted-foreground mt-1">
+                              Effective: {existingContract.effective_date}
+                              {existingContract.expiry_date ? ` · Expiry: ${existingContract.expiry_date}` : ""}
+                            </p>
+                          )}
                         </div>
                       </div>
-                    </>
-                  )}
-                </div>
-              </ScrollArea>
-
-              {/* Action Buttons Footer */}
-              <div className="shrink-0 border-t border-border bg-white px-5 py-3.5 sm:px-6 flex flex-col gap-2">
-                {actionError && (
-                  <p className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{actionError}</p>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {existingContract ? (
+                          <>
+                            {(existingContract.signed_document_url || existingContract.document_url) && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-8 gap-1 text-xs! font-medium"
+                                onClick={() =>
+                                  window.open(
+                                    existingContract.signed_document_url || existingContract.document_url || "",
+                                    "_blank",
+                                  )
+                                }
+                              >
+                                <Eye className="size-3.5" />
+                                <span>View PDF</span>
+                              </Button>
+                            )}
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="sm"
+                              className="h-8 gap-1 text-xs! font-medium"
+                              onClick={() => setCreatingContract(true)}
+                            >
+                              <FileSignature className="size-3.5" />
+                              <span>Re-issue</span>
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="h-9 gap-1.5 text-xs! font-semibold shadow-xs"
+                            onClick={() => setCreatingContract(true)}
+                          >
+                            <FileSignature className="size-3.5" />
+                            <span>Issue Contract</span>
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 )}
+
+                <Separator />
 
                 {/* Endorsed / Interview Stage Status Info */}
                 {(applicant.stage === "Interview" || applicant.stage === "Endorsed") && (
@@ -381,6 +399,13 @@ export function GrantApplicantDialog({
                       </Badge>
                     )}
                   </div>
+                )}
+              </div>
+
+              {/* Action Buttons Footer */}
+              <div className="shrink-0 border-t border-slate-200 bg-white px-5 py-3.5 flex flex-col gap-2">
+                {actionError && (
+                  <p className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{actionError}</p>
                 )}
 
                 {canSchedule && (
@@ -510,10 +535,10 @@ export function GrantApplicantDialog({
                   </div>
                 )}
               </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Accept Safeguard Alert Dialog */}
       <AlertDialog open={acceptWarningText !== null} onOpenChange={(open) => !open && setAcceptWarningText(null)}>
