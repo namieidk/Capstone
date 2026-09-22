@@ -16,7 +16,7 @@ export const DASHBOARD_MAP: Record<string, string> = {
   COORDINATOR: "/CoordinatorDashboard",
   GRANTOR: "/grantDashboard",
   SCHOLAR: "/scholardashboard",
-  APPLICANT: "/ApplicantsDashboard",
+  APPLICANT: "/ApplicantsApplication",
 };
 
 export function roleLabel(role: string): string {

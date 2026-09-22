@@ -13,6 +13,7 @@ export const WIZARD_STEPS: Array<{ step: WizardStep; label: string; sub: string 
 // Where the applicant should land based on backend state.
 export function resolveStep(app: Application | null, docs: ScholarDocument[]): WizardStep {
   if (!app) return 1;
+  if (app.status === "REJECTED" || app.status === "APPROVED") return 3;
   const progressed = docs.some((d) => d.status === "STUDENT_CONFIRMED" || d.status === "VERIFIED");
   return progressed ? 3 : 2;
 }
@@ -65,12 +66,91 @@ export function formatDateTime(iso: string): string {
 
 // Document types recognized by the backend verification engine.
 export const DOCUMENT_TYPE_OPTIONS = [
-  { value: "Form 138", label: "Form 138 / Report Card (High School)" },
+  { value: "Form 138", label: "Form 138 / Report Card (Senior High)" },
+  { value: "Form 9", label: "Form 9 / SF9 (Senior High School)" },
   { value: "TOR", label: "Transcript of Records / TOR (College)" },
-  { value: "Certificate of Grades", label: "Certificate of Grades" },
-  { value: "Form 137", label: "Form 137 (Permanent Record)" },
+  { value: "Certificate of Grades", label: "Certificate of Grades / COG" },
 ] as const;
 export const DEFAULT_DOCUMENT_TYPE = DOCUMENT_TYPE_OPTIONS[0].value;
+
+export function isHighSchoolDoc(docType: string): boolean {
+  return /138|137|form\s*9|sf9|report card|high school|shs|senior high/i.test(docType || "");
+}
+
+export function isInvalidOrMismatchedDoc(doc: ScholarDocument | null | undefined, yearLevel: number = 1): boolean {
+  if (!doc) return false;
+  const reason = (doc.rejection_reason || "").toLowerCase();
+  if (
+    reason.includes("document type mismatch") ||
+    reason.includes("invalid document type") ||
+    reason.includes("mismatch") ||
+    reason.includes("statement of account") ||
+    reason.includes("unsupported document") ||
+    reason.includes("form 138/sf9") ||
+    reason.includes("high school report card")
+  ) {
+    return true;
+  }
+
+  let detectedType: string | undefined;
+  if (doc.extracted_data) {
+    try {
+      const ext = typeof doc.extracted_data === "string" ? JSON.parse(doc.extracted_data) : doc.extracted_data;
+      detectedType = ext?.detected_document_type;
+    } catch {
+      // Ignore JSON parse error
+    }
+  }
+
+  if (detectedType === "STATEMENT_OF_ACCOUNT" || detectedType === "OTHER") {
+    return true;
+  }
+
+  if (yearLevel >= 2) {
+    if (isHighSchoolDoc(doc.document_type) || detectedType === "FORM_138") {
+      return true;
+    }
+  }
+
+  if (yearLevel === 1) {
+    if (
+      (!isHighSchoolDoc(doc.document_type) && doc.document_type) ||
+      detectedType === "TRANSCRIPT_OF_RECORDS" ||
+      detectedType === "CERTIFICATE_OF_GRADES"
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+export function getFilteredDocumentTypeOptions(yearLevel: number = 1) {
+  if (yearLevel >= 2) {
+    // 2nd to 4th year college: TOR or Certificate of Grades
+    return [
+      { value: "TOR", label: "Transcript of Records / TOR (College)" },
+      { value: "Certificate of Grades", label: "Certificate of Grades / COG" },
+    ];
+  }
+  // 1st year applicant: Form 138 or Form 9 from Senior High School
+  return [
+    { value: "Form 138", label: "Form 138 / Report Card (Senior High)" },
+    { value: "Form 9", label: "Form 9 / SF9 (Senior High School)" },
+  ];
+}
+
+export function getDefaultDocumentType(yearLevel: number = 1): string {
+  return yearLevel >= 2 ? "TOR" : "Form 138";
+}
+
+export function getWizardSteps(yearLevel: number = 1): Array<{ step: WizardStep; label: string; sub: string }> {
+  return [
+    { step: 1, label: "Application", sub: "Your details" },
+    { step: 2, label: "Documents", sub: yearLevel >= 2 ? "TOR / Grades" : "Form 138 / Form 9" },
+    { step: 3, label: "Status", sub: "Track progress" },
+  ];
+}
 
 const ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png", "webp", "pdf"];
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;

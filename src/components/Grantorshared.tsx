@@ -39,7 +39,7 @@ export interface PaymentRecord {
   term: string;
   amount: number;
   date: string;
-  status: "Paid" | "Pending" | "On hold";
+  status: "Paid" | "Pending" | "On hold" | "Settled";
 }
 
 export interface FundedScholar {
@@ -55,7 +55,7 @@ export interface FundedScholar {
   currentPayment: {
     term: string;
     amount: number;
-    status: "Paid" | "Pending" | "On hold";
+    status: "Paid" | "Pending" | "On hold" | "Settled";
   };
   gradeHistory: GradeRecord[];
   paymentHistory: PaymentRecord[];
@@ -114,7 +114,7 @@ export interface BudgetScholarRow {
   allocated: number;
   disbursed: number;
   remaining: number;
-  status: "On track" | "At risk" | "Needs attention";
+  status: "On track" | "Action required" | "Needs attention";
 }
 
 export interface FieldProps {
@@ -154,7 +154,7 @@ export const NAV_KEYS: Omit<NavItem, "icon">[] = [
   { key: "monitor", label: "Monitor", href: "/grantMonitor" },
   { key: "reports", label: "Reports", href: "/grantReports" },
   { key: "message", label: "Message", href: "/grantMessage", badge: 3 },
-  { key: "payments", label: "Payments", href: "/grantPayment", badge: 1 },
+  { key: "payments", label: "Disbursements", href: "/grantPayment", badge: 1 },
   { key: "settings", label: "Settings", href: "/grantSettings" },
   { key: "profile", label: "Profile", href: "/grantProfile" },
 ];
@@ -165,7 +165,7 @@ export const TITLES: Record<string, [string, string]> = {
   "/grantMonitor": ["Monitor", "Scholars funded by your company and their current standing."],
   "/grantReports": ["Reports", "Budget allocation and disbursement analytics for your scholarship fund."],
   "/grantMessage": ["Messages", "Conversations with your ViaScholar coordinator."],
-  "/grantPayment": ["Payments", "Review and approve scholar disbursements."],
+  "/grantPayment": ["Disbursements", "Review and approve scholar disbursements."],
   "/grantSettings": ["Settings", "Manage your notifications, approvals, and security."],
   "/grantProfile": ["Profile", "Your company profile and partnership activity."],
 };
@@ -300,7 +300,7 @@ export const FUNDED_SCHOLARS: FundedScholar[] = [
 export const HEALTH_TAG: Record<FundedScholar["health"], { bg: string; text: string; label: string }> = {
   good: { bg: GOOD_BG, text: GOOD, label: "On track" },
   warn: { bg: WARN_BG, text: WARN, label: "Needs attention" },
-  bad: { bg: BAD_BG, text: BAD, label: "At risk" },
+  bad: { bg: BAD_BG, text: BAD, label: "Action required" },
 };
 
 export const PAYMENT_STATUS_COLORS: Record<
@@ -311,6 +311,7 @@ export const PAYMENT_STATUS_COLORS: Record<
   "Pending approval": { bg: WARN_BG, text: WARN },
   "On hold": { bg: BAD_BG, text: BAD },
   Paid: { bg: GOOD_BG, text: GOOD },
+  Settled: { bg: GOOD_BG, text: GOOD },
   Pending: { bg: WARN_BG, text: WARN },
 };
 
@@ -403,7 +404,7 @@ export const BUDGET_SCHOLAR_ROWS: BudgetScholarRow[] = FUNDED_SCHOLARS.map((scho
     allocated,
     disbursed,
     remaining: allocated - disbursed,
-    status: scholar.health === "good" ? "On track" : scholar.health === "warn" ? "Needs attention" : "At risk",
+    status: scholar.health === "good" ? "On track" : scholar.health === "warn" ? "Needs attention" : "Action required",
   };
 });
 
@@ -420,7 +421,7 @@ export const GRANT_DISBURSEMENT_MONTHLY = [
 export const BUDGET_STATUS_COLORS: Record<BudgetScholarRow["status"], { bg: string; text: string }> = {
   "On track": { bg: GOOD_BG, text: GOOD },
   "Needs attention": { bg: WARN_BG, text: WARN },
-  "At risk": { bg: BAD_BG, text: BAD },
+  "Action required": { bg: BAD_BG, text: BAD },
 };
 
 export const CONVERSATIONS: Conversation[] = [

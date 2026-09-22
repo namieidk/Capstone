@@ -6,18 +6,31 @@ import { DialogFooter } from "@/components/ui/dialog";
 
 interface DialogFooterBarProps {
   isReadOnly: boolean;
+  isMismatch?: boolean;
   submitting: boolean;
   disabled?: boolean;
   onClose: () => void;
   onSubmit: () => void;
 }
 
-export function DialogFooterBar({ isReadOnly, submitting, disabled, onClose, onSubmit }: DialogFooterBarProps) {
+export function DialogFooterBar({
+  isReadOnly,
+  isMismatch,
+  submitting,
+  disabled,
+  onClose,
+  onSubmit,
+}: DialogFooterBarProps) {
   return (
     <DialogFooter className="shrink-0 border-t border-border bg-white px-4 py-3 sm:px-6 sm:py-3.5">
       <div className="flex w-full flex-col-reverse items-stretch justify-between gap-2.5 sm:flex-row sm:items-center sm:gap-3">
         <p className="text-center text-[0.7rem] text-muted-foreground sm:text-left sm:text-xs">
-          {isReadOnly ? (
+          {isMismatch ? (
+            <span className="flex items-center justify-center gap-1 font-medium text-destructive sm:justify-start">
+              <Info className="size-3.5 shrink-0" />
+              Invalid document type for your year level.
+            </span>
+          ) : isReadOnly ? (
             <span className="flex items-center justify-center gap-1 sm:justify-start">
               <Info className="size-3.5 shrink-0" />
               Document confirmed and locked.

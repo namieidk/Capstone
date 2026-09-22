@@ -29,6 +29,7 @@ import { COORDINATOR_SIDEBAR_CONFIG } from "./nav-coordinator";
 import { GRANTOR_SIDEBAR_CONFIG } from "./nav-grantor";
 import { SCHOLAR_SIDEBAR_CONFIG } from "./nav-scholar";
 import type { SidebarRole } from "./types";
+import { useStaffBadges } from "./useStaffBadges";
 
 const ROLE_CONFIG = {
   admin: ADMIN_SIDEBAR_CONFIG,
@@ -56,6 +57,8 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
   const { user, logout } = useAuth();
   const { setOpenMobile } = useSidebar();
   const config = ROLE_CONFIG[role];
+  const isStaffRole = role === "admin" || role === "coordinator" || role === "grantor";
+  const badges = useStaffBadges({ includeApplicants: isStaffRole, role });
 
   // On phones the sidebar opens as a sheet; close it after navigating.
   // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is the trigger on purpose
@@ -160,6 +163,16 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
                 const Icon = item.icon;
                 const isActive =
                   pathname === item.href || (item.href !== config.homeHref && pathname.startsWith(item.href));
+                const itemBadge =
+                  item.key === "applicants"
+                    ? badges.applicants
+                    : item.key === "meeting"
+                      ? badges.meetings
+                      : item.key === "scholars" || item.key === "monitor"
+                        ? badges.scholars
+                        : item.key === "disbursements" || item.key === "payments" || item.key === "payment"
+                          ? badges.disbursements
+                          : item.badge;
 
                 return (
                   <SidebarMenuItem key={item.key}>
@@ -180,13 +193,17 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
                         <span className="truncate group-data-[collapsible=icon]:hidden">{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
-                    {item.badge !== undefined && (
+                    {itemBadge !== undefined && (
                       <SidebarMenuBadge
                         className={`top-1/2! right-2! -translate-y-1/2 font-bold text-[0.7rem] px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden transition-colors ${
-                          isActive ? "bg-navy! text-white/80!" : "bg-amber text-navy"
+                          itemBadge === "!"
+                            ? "bg-amber-400! text-navy! font-black! animate-pulse shadow-xs"
+                            : isActive
+                              ? "bg-navy! text-white/80!"
+                              : "bg-amber text-navy"
                         }`}
                       >
-                        {item.badge}
+                        {itemBadge}
                       </SidebarMenuBadge>
                     )}
                   </SidebarMenuItem>

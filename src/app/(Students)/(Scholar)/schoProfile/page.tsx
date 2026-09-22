@@ -1,201 +1,171 @@
 "use client";
 
-import { useState } from "react";
-import {
-  AMBER_BG,
-  CameraIcon,
-  DownloadIcon,
-  GWA_THRESHOLD,
-  PREDICTED_GWA,
-  PROFILE_DOCUMENTS,
-  SCHOLAR,
-  SCHOLAR_DISBURSED_TO_DATE,
-  s,
-} from "@/components/ScholarShared";
-
-function ApplicationIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
-      <path d="M9 12l2 2 4-4" />
-    </svg>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "8px 0",
-        gap: 12,
-        flexWrap: "wrap",
-      }}
-    >
-      <span style={{ fontSize: "0.86rem", color: "#8a8a84" }}>{label}</span>
-      <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "#14213A", textAlign: "right" }}>{value}</span>
-    </div>
-  );
-}
-
-function ProfilePageStyles() {
-  return (
-    <style>{`
-      .scho-profile-banner { height: 160px; }
-      .scho-profile-avatar { width: 88px; height: 88px; font-size: 1.8rem; }
-      .scho-profile-header-row { margin-top: -36px; }
-      .scho-profile-doc-row { flex-wrap: wrap; }
-      .scho-profile-doc-info { min-width: 160px; }
-      .scho-profile-doc-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; margin-left: auto; }
-
-      @media (max-width: 640px) {
-        .scho-profile-banner { height: 110px; }
-        .scho-profile-avatar { width: 68px; height: 68px; font-size: 1.4rem; }
-        .scho-profile-header-row {
-          margin-top: -30px;
-          align-items: flex-start;
-          flex-wrap: wrap;
-          gap: 12px;
-        }
-        .scho-profile-header-info { min-width: 0; flex-basis: 100%; order: 2; }
-        .scho-profile-edit-btn { order: 3; }
-        .scho-profile-bio-card, .scho-profile-doc-row, .scho-profile-contact-card {
-          padding: 16px 16px !important;
-        }
-        .scho-profile-name { font-size: 1.2rem !important; }
-      }
-
-      @media (max-width: 480px) {
-        .scho-profile-doc-row { align-items: center; }
-        .scho-profile-doc-info { flex-basis: 100%; min-width: 0; order: 1; }
-        .scho-profile-doc-actions { order: 2; margin-left: 0; }
-      }
-    `}</style>
-  );
-}
+import type React from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useToast } from "@/components/ToastContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSocketEvent } from "@/contexts/SocketContext";
+import { ApiError } from "@/lib/api";
+import { updateMe, uploadAvatar, uploadBanner } from "@/lib/api/auth";
+import { getMyDocuments, type ScholarDocument } from "@/lib/api/documents";
+import { EditScholarProfileDrawer, type EditScholarProfileValues } from "./components/EditScholarProfileDrawer";
+import { ScholarBanner } from "./components/ScholarBanner";
+import { ScholarBioCard } from "./components/ScholarBioCard";
+import { ScholarDetailsCards } from "./components/ScholarDetailsCards";
+import { ScholarDocumentsList } from "./components/ScholarDocumentsList";
+import { ScholarHeader } from "./components/ScholarHeader";
+import { ScholarProfileSkeleton } from "./components/ScholarProfileSkeleton";
 
 export default function SchoProfilePage() {
-  const [bio, setBio] = useState(SCHOLAR.bio);
-  const [editingBio, setEditingBio] = useState(false);
+  const { user, refreshUser } = useAuth();
+  const { showToast } = useToast();
+
+  const [documents, setDocuments] = useState<ScholarDocument[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const fetchDocuments = useCallback(async () => {
+    try {
+      const docs = await getMyDocuments().catch((err: unknown) => {
+        if (err instanceof ApiError && err.status === 404) return [];
+        throw err;
+      });
+      setDocuments(docs || []);
+    } catch (err) {
+      console.error("Failed to load scholar documents:", err);
+    } finally {
+      setLoadingData(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDocuments();
+  }, [fetchDocuments]);
+
+  // Real-time updates
+  useSocketEvent("document:verified", fetchDocuments);
+  useSocketEvent("document:ocr_completed", fetchDocuments);
+  useSocketEvent("disbursement:updated", fetchDocuments);
+  useSocketEvent("grade_report:verified", fetchDocuments);
+
+  const handleBannerUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      setUploadingBanner(true);
+      try {
+        await uploadBanner(file);
+        await refreshUser();
+        showToast("Banner image updated successfully.");
+      } catch (err) {
+        console.error("Banner upload failed:", err);
+        showToast(err instanceof ApiError ? err.message : "Banner upload failed. Please try again.", "error");
+      } finally {
+        setUploadingBanner(false);
+      }
+    },
+    [refreshUser, showToast],
+  );
+
+  const handleAvatarUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      setUploadingAvatar(true);
+      try {
+        await uploadAvatar(file);
+        await refreshUser();
+        showToast("Profile picture updated successfully.");
+      } catch (err) {
+        console.error("Avatar upload failed:", err);
+        showToast(err instanceof ApiError ? err.message : "Avatar upload failed. Please try again.", "error");
+      } finally {
+        setUploadingAvatar(false);
+      }
+    },
+    [refreshUser, showToast],
+  );
+
+  const handleSaveProfile = useCallback(
+    async (values: EditScholarProfileValues) => {
+      setSavingProfile(true);
+      setSaveError("");
+      try {
+        await updateMe(values);
+        await refreshUser();
+        setDrawerOpen(false);
+        showToast("Profile details updated successfully.");
+      } catch (err) {
+        console.error("Profile update failed:", err);
+        setSaveError(err instanceof ApiError ? err.message : "Failed to update profile. Please try again.");
+      } finally {
+        setSavingProfile(false);
+      }
+    },
+    [refreshUser, showToast],
+  );
+
+  if (!user || loadingData) {
+    return (
+      <div className="min-h-full bg-[#FAF9F7] px-4 py-6 sm:px-8 sm:py-8">
+        <ScholarProfileSkeleton />
+      </div>
+    );
+  }
+
+  const scholar = user.scholar_profile;
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", width: "100%" }}>
-      <ProfilePageStyles />
+    <div className="min-h-full bg-[#FAF9F7] px-4 py-6 sm:px-8 sm:py-8 pb-24">
+      <div className="mx-auto w-full max-w-4xl space-y-6">
+        {/* Banner */}
+        <ScholarBanner
+          bannerUrl={scholar?.banner_url || user.banner_url}
+          uploading={uploadingBanner}
+          onUpload={handleBannerUpload}
+        />
 
-      <div className="scho-profile-banner" style={{ ...s.profileBanner, background: SCHOLAR.bannerGradient }}>
-        <button type="button" style={s.profileBannerEditBtn}>
-          <CameraIcon /> Change banner
-        </button>
-      </div>
+        {/* Profile Header (Avatar, Name, Actions) */}
+        <ScholarHeader
+          user={user}
+          uploadingAvatar={uploadingAvatar}
+          onAvatarUpload={handleAvatarUpload}
+          onEditClick={() => {
+            setSaveError("");
+            setDrawerOpen(true);
+          }}
+        />
 
-      <div className="scho-profile-header-row" style={s.profileHeaderRow}>
-        <div style={s.profileAvatarWrap}>
-          <span className="scho-profile-avatar" style={{ ...s.profileAvatar, background: SCHOLAR.avatarColor }}>
-            {SCHOLAR.initials}
-          </span>
-          <button type="button" style={s.profileAvatarEditBtn}>
-            <CameraIcon />
-          </button>
-        </div>
-        <div className="scho-profile-header-info" style={s.profileHeaderInfo}>
-          <h2 className="scho-profile-name" style={s.profileName}>
-            {SCHOLAR.name}
-          </h2>
-          <p style={s.profileMeta}>
-            {SCHOLAR.course} · {SCHOLAR.year}
-          </p>
-        </div>
-        <button type="button" className="scho-profile-edit-btn" style={s.continueBtnSmall}>
-          Edit profile
-        </button>
-      </div>
+        {/* Bio Card */}
+        <ScholarBioCard bio={scholar?.bio ?? user.bio} />
 
-      <div className="scho-profile-bio-card" style={s.profileBioCard}>
-        <div style={s.profileBioHeader}>
-          <p style={s.profileBioLabel}>Bio</p>
-          <button type="button" onClick={() => setEditingBio((v) => !v)} style={s.reviewEditLink}>
-            {editingBio ? "Save" : "Edit"}
-          </button>
-        </div>
-        {editingBio ? (
-          <textarea
-            style={{ ...s.input, height: 90, resize: "vertical" }}
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-          />
-        ) : (
-          <p style={s.profileBioText}>{bio}</p>
-        )}
-      </div>
+        {/* Academic and Contact Detail Cards */}
+        <ScholarDetailsCards user={user} />
 
-      <div className="vd-stat-row" style={s.statRow}>
-        <div style={s.statCard}>
-          <p style={s.statCardLabel}>Current GWA standing</p>
-          <p style={s.statCardValue}>{PREDICTED_GWA}</p>
-          <p style={s.statCardCaption}>Threshold: {GWA_THRESHOLD}</p>
-        </div>
-        <div style={s.statCard}>
-          <p style={s.statCardLabel}>Disbursed to date</p>
-          <p style={s.statCardValue}>₱{SCHOLAR_DISBURSED_TO_DATE.toLocaleString()}</p>
-          <p style={s.statCardCaption}>This academic year</p>
-        </div>
-        <div style={s.statCard}>
-          <p style={s.statCardLabel}>Documents verified</p>
-          <p style={s.statCardValue}>
-            {PROFILE_DOCUMENTS.filter((d) => d.status === "verified").length}/{PROFILE_DOCUMENTS.length}
-          </p>
-          <p style={s.statCardCaption}>Profile requirements</p>
-        </div>
-      </div>
+        {/* Uploaded Documents List */}
+        <ScholarDocumentsList documents={documents} />
 
-      <div className="scho-profile-contact-card" style={s.profileBioCard}>
-        <p style={s.profileBioLabel}>Contact</p>
-        <div style={{ marginTop: 10 }}>
-          <InfoRow label="Course" value={SCHOLAR.course} />
-          <InfoRow label="Year level" value={SCHOLAR.year} />
-        </div>
-      </div>
-
-      <h3 style={{ ...s.cardHeading, marginBottom: 14 }}>Documents</h3>
-      <div style={s.profileDocList}>
-        {PROFILE_DOCUMENTS.map((doc) => (
-          <div key={doc.file} className="scho-profile-doc-row" style={s.profileDocRow}>
-            <span style={s.feedIconBox}>
-              <ApplicationIcon />
-            </span>
-            <div className="scho-profile-doc-info" style={s.profileDocInfo}>
-              <p style={s.profileDocLabel}>{doc.label}</p>
-              <p style={s.profileDocFile}>
-                {doc.file} · {doc.size}
-              </p>
-            </div>
-            <div className="scho-profile-doc-actions">
-              <span
-                style={{
-                  ...s.statusTag,
-                  background: doc.status === "verified" ? AMBER_BG : "#F3E6C8",
-                  color: "#6b5220",
-                }}
-              >
-                {doc.status}
-              </span>
-              <button type="button" style={s.profileDocDownload}>
-                <DownloadIcon />
-              </button>
-            </div>
-          </div>
-        ))}
+        {/* Edit Profile Drawer */}
+        <EditScholarProfileDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          initialValues={{
+            first_name: user.first_name,
+            last_name: user.last_name,
+            phone_number: scholar?.phone_number || "",
+            student_address: scholar?.student_address || scholar?.home_address || "",
+            bio: scholar?.bio || user.bio || "",
+          }}
+          saving={savingProfile}
+          error={saveError}
+          onSave={handleSaveProfile}
+        />
       </div>
     </div>
   );

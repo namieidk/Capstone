@@ -1,7 +1,6 @@
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+import { getBackendUrl } from "@/lib/backend-url";
 
 export async function GET(_request: NextRequest) {
   const cookieStore = await cookies();
@@ -11,13 +10,27 @@ export async function GET(_request: NextRequest) {
     return Response.json({ message: "Not authenticated" }, { status: 401 });
   }
 
-  const res = await fetch(`${BACKEND_URL}/auth/me`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const backendUrl = getBackendUrl();
+  let res: Response;
+  try {
+    res = await fetch(`${backendUrl}/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch (err) {
+    console.error(`[Auth Me Proxy Error] Failed to reach backend at "${backendUrl}/auth/me":`, err);
+    return Response.json({ message: "Backend server is currently unreachable." }, { status: 502 });
+  }
 
-  const data = await res.json();
+  let data: unknown = null;
+  const contentType = res.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
+    data = await res.json().catch(() => null);
+  } else {
+    await res.text().catch(() => null);
+  }
 
-  if (res.ok && data?.role) {
+  if (res.ok && data && typeof data === "object" && "role" in data) {
+    const roleData = data as { role?: string };
     let tokenRole: string | undefined;
     try {
       const parts = token.split(".");
@@ -29,9 +42,9 @@ export async function GET(_request: NextRequest) {
       // ignore
     }
 
-    if (tokenRole && tokenRole !== data.role.toUpperCase()) {
+    if (tokenRole && roleData.role && tokenRole !== roleData.role.toUpperCase()) {
       try {
-        const refreshRes = await fetch(`${BACKEND_URL}/auth/refresh-token`, {
+        const refreshRes = await fetch(`${backendUrl}/auth/refresh-token`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -55,7 +68,7 @@ export async function GET(_request: NextRequest) {
     }
   }
 
-  return Response.json(data, { status: res.status });
+  return Response.json(data ?? { message: "Failed to fetch user profile" }, { status: res.status });
 }
 
 export async function PATCH(request: NextRequest) {
@@ -67,15 +80,22 @@ export async function PATCH(request: NextRequest) {
   }
 
   const body = await request.text();
+  const backendUrl = getBackendUrl();
 
-  const res = await fetch(`${BACKEND_URL}/auth/me`, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${backendUrl}/auth/me`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body,
+    });
+  } catch (err) {
+    console.error(`[Auth Me PATCH Proxy Error] Failed to reach backend at "${backendUrl}/auth/me":`, err);
+    return Response.json({ message: "Backend server is currently unreachable." }, { status: 502 });
+  }
 
   const text = await res.text();
   let data: unknown = null;

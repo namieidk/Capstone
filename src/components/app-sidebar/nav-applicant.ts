@@ -11,7 +11,7 @@ export const APPLICANT_NAV_ITEMS: NavItem[] = [
 ];
 
 export const APPLICANT_SIDEBAR_CONFIG: RoleSidebarConfig = {
-  homeHref: "/ApplicantsDashboard",
+  homeHref: "/ApplicantsApplication",
   profileHref: "/ApplicantsProfile",
   roleLabel: "Applicant",
   items: APPLICANT_NAV_ITEMS,

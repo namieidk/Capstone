@@ -2,6 +2,7 @@ import type { GradeItem, ScholarDocument } from "@/lib/api/documents";
 
 export interface DocumentReviewDialogProps {
   document: ScholarDocument | null;
+  currentYearLevel?: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (
@@ -31,6 +32,16 @@ export interface ExtractedGradeRaw {
   units?: number | string | null;
 }
 
+export interface ExtractedGradingLegend {
+  legend_title?: string | null;
+  grading_scale?: string | null;
+  highest_grade?: number | null;
+  passing_grade?: number | null;
+  failing_grade?: number | null;
+  special_codes?: Record<string, string> | null;
+  notes?: string | null;
+}
+
 export interface ExtractedDataShape {
   academic_year?: string | null;
   general_average?: number | string | null;
@@ -38,6 +49,7 @@ export interface ExtractedDataShape {
   school_name?: string | null;
   student_name?: string | null;
   course_name?: string | null;
+  grading_legend?: ExtractedGradingLegend | null;
   forensic_analysis?: {
     summary?: string | null;
     is_flagged?: boolean;

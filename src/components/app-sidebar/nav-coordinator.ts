@@ -1,12 +1,24 @@
-import { Activity, Archive, BarChart3, Calendar, CreditCard, Home, Mail, Settings, User, Users } from "lucide-react";
+import {
+  Archive,
+  BarChart3,
+  Calendar,
+  CreditCard,
+  GraduationCap,
+  Home,
+  Mail,
+  Settings,
+  User,
+  Users,
+} from "lucide-react";
 import type { NavItem, RoleSidebarConfig } from "./types";
 
 export const COORDINATOR_NAV_ITEMS: NavItem[] = [
   { key: "home", label: "Home", icon: Home, href: "/CoordinatorDashboard" },
   { key: "applicants", label: "Applicants", icon: Users, href: "/CoordinatorApplicants" },
+  { key: "grading-systems", label: "Grading Systems", icon: GraduationCap, href: "/GradingSystems" },
   { key: "meeting", label: "Meeting", icon: Calendar, href: "/CoordinatorMeeting" },
-  { key: "monitor", label: "Monitor", icon: Activity, href: "/CoordinatorMonitor" },
-  { key: "payment", label: "Payment", icon: CreditCard, href: "/CoordinatorPayment" },
+  { key: "scholars", label: "Scholars", icon: GraduationCap, href: "/CoordinatorMonitor" },
+  { key: "payment", label: "Disbursements", icon: CreditCard, href: "/CoordinatorPayment" },
   { key: "archive", label: "Archive", icon: Archive, href: "/CoordinatorArchive" },
   { key: "reports", label: "Reports", icon: BarChart3, href: "/CoordinatorReports" },
   { key: "message", label: "Message", icon: Mail, href: "/CoordinatorMessage" },

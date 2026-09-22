@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { useSocket } from "@/contexts/SocketContext";
 import type { ConversationItem } from "@/lib/api/chat";
 import { getInitials, getRoleBadgeVariant } from "./chat-utils";
 
@@ -11,6 +12,8 @@ interface ChatHeaderProps {
 }
 
 export function ChatHeader({ conversation, isPartnerTyping }: ChatHeaderProps) {
+  const { isUserOnline } = useSocket();
+  const isOnline = isUserOnline(conversation.partner.user_id);
   const partnerName = `${conversation.partner.first_name} ${conversation.partner.last_name}`.trim();
   const roleBadge = getRoleBadgeVariant(conversation.partner.role);
 
@@ -23,7 +26,9 @@ export function ChatHeader({ conversation, isPartnerTyping }: ChatHeaderProps) {
               {getInitials(partnerName)}
             </AvatarFallback>
           </Avatar>
-          <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+          {isOnline && (
+            <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500 ring-2 ring-white animate-in zoom-in-50 duration-200" />
+          )}
         </div>
 
         <div>
@@ -47,13 +52,23 @@ export function ChatHeader({ conversation, isPartnerTyping }: ChatHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <Badge
-          variant="secondary"
-          className="gap-1.5 rounded-full bg-emerald-50 text-emerald-700 border-emerald-200 text-[0.65rem] font-bold px-2.5 py-0.5"
-        >
-          <span className="size-1.5 rounded-full bg-emerald-500" />
-          Active now
-        </Badge>
+        {isOnline ? (
+          <Badge
+            variant="secondary"
+            className="gap-1.5 rounded-full bg-emerald-50 text-emerald-700 border-emerald-200 text-[0.65rem] font-bold px-2.5 py-0.5"
+          >
+            <span className="size-1.5 rounded-full bg-emerald-500" />
+            Active now
+          </Badge>
+        ) : (
+          <Badge
+            variant="secondary"
+            className="gap-1.5 rounded-full bg-muted/60 text-muted-foreground border-border/40 text-[0.65rem] font-medium px-2.5 py-0.5"
+          >
+            <span className="size-1.5 rounded-full bg-muted-foreground/50" />
+            Offline
+          </Badge>
+        )}
       </div>
     </div>
   );

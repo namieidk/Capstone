@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
+  images: {
+    qualities: [75, 100],
+  },
   allowedDevOrigins: ["http://localhost:3000", "making-bagel-riveting.ngrok-free.dev"],
   async redirects() {
     return [

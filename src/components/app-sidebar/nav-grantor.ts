@@ -1,14 +1,15 @@
-import { Activity, BarChart3, Calendar, CreditCard, Home, Mail, Settings, User, Users } from "lucide-react";
+import { BarChart3, Calendar, CreditCard, GraduationCap, Home, Mail, Settings, User, Users } from "lucide-react";
 import type { NavItem, RoleSidebarConfig } from "./types";
 
 export const GRANTOR_NAV_ITEMS: NavItem[] = [
   { key: "dashboard", label: "Dashboard", icon: Home, href: "/grantDashboard" },
   { key: "applicants", label: "Applicants", icon: Users, href: "/grantApplicants" },
+  { key: "grading-systems", label: "Grading Systems", icon: GraduationCap, href: "/GradingSystems" },
   { key: "meeting", label: "Meeting", icon: Calendar, href: "/grantMeeting" },
-  { key: "monitor", label: "Monitor", icon: Activity, href: "/grantMonitor" },
+  { key: "scholars", label: "Scholars", icon: GraduationCap, href: "/grantMonitor" },
   { key: "reports", label: "Reports", icon: BarChart3, href: "/grantReports" },
   { key: "message", label: "Message", icon: Mail, href: "/grantMessage" },
-  { key: "payments", label: "Payments", icon: CreditCard, href: "/grantPayment" },
+  { key: "payments", label: "Disbursements", icon: CreditCard, href: "/grantPayment" },
   { key: "settings", label: "Settings", icon: Settings, href: "/grantSettings" },
   { key: "profile", label: "Profile", icon: User, href: "/grantProfile" },
 ];

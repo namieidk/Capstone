@@ -1,166 +1,115 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import {
-  ACTIVITY_FEED,
-  AMBER,
-  AMBER_BG,
-  ArrowRightIcon,
-  BAD,
-  BellIcon,
-  DASHBOARD_STATS,
-  GOOD,
-  GOOD_BG,
-  InterviewIcon,
-  LINE,
-  MenuIcon,
-  MonitorIcon,
-  PaymentsIcon,
-  s,
-  TINT,
-  TITLES,
-  TrendDownIcon,
-  TrendUpIcon,
-  UPCOMING_MEETINGS,
-  WARN,
-  WARN_BG,
-} from "@/components/Grantorshared";
-import { useSidebar } from "@/components/SidebarContext";
-
-const TONE_MAP: Record<string, { bg: string; text: string }> = {
-  neutral: { bg: TINT, text: "#6b6b66" },
-  warn: { bg: WARN_BG, text: WARN },
-  amber: { bg: AMBER_BG, text: "#6b5220" },
-  good: { bg: GOOD_BG, text: GOOD },
-};
+import { AlertCircle } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
+import { useAuth } from "@/contexts/AuthContext";
+import { GrantorAppealsReviewCard } from "./components/GrantorAppealsReviewCard";
+import { GrantorDashboardHeader } from "./components/GrantorDashboardHeader";
+import { GrantorDashboardSkeleton } from "./components/GrantorDashboardSkeleton";
+import { GrantorDisbursementQueueCard } from "./components/GrantorDisbursementQueueCard";
+import { GrantorEndorsedApplicantsCard } from "./components/GrantorEndorsedApplicantsCard";
+import { GrantorKpiCards } from "./components/GrantorKpiCards";
+import { GrantorMeetingsAndCommsCard } from "./components/GrantorMeetingsAndCommsCard";
+import { GrantorScholarHealthCard } from "./components/GrantorScholarHealthCard";
+import { GrantorUrgentActionsBanner } from "./components/GrantorUrgentActionsBanner";
+import { useGrantorDashboardData } from "./hooks/useGrantorDashboardData";
 
 export default function GrantorDashboardPage() {
-  const router = useRouter();
-  const { toggleMobile } = useSidebar();
+  const { user } = useAuth();
+  const { loading, loadError, data, refetch } = useGrantorDashboardData();
 
-  const [title, subtitle] = TITLES["/grantDashboard"];
+  if (loading && !data) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Grantor Executive Dashboard"
+          subtitle="Scholarship program oversight, candidate verdicts & fund releases"
+        />
+        <GrantorDashboardSkeleton />
+      </div>
+    );
+  }
 
-  return (
-    <div>
-      {/* ---------------- Page-level navbar (no search) ---------------- */}
-      <header style={s.topbar}>
-        <button type="button" className="vg-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
-          <MenuIcon />
-        </button>
-        <div>
-          <h1 style={s.topbarGreeting}>{title}</h1>
-          <p style={s.topbarSub}>{subtitle}</p>
-        </div>
-        <div style={s.topbarRight}>
-          <button type="button" style={s.bellBtn}>
-            <BellIcon />
-            <span style={{ ...s.bellDot, background: AMBER }} />
+  if (loadError && !data) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Grantor Executive Dashboard"
+          subtitle="Scholarship program oversight, candidate verdicts & fund releases"
+        />
+        <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6 text-center text-sm text-destructive">
+          <AlertCircle className="mx-auto mb-2 size-6" />
+          <p className="font-semibold">Failed to load Grantor Dashboard data</p>
+          <p className="text-xs text-muted-foreground mt-1">{loadError}</p>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="mt-4 inline-flex items-center justify-center rounded-full bg-[#0a4f42] px-4 py-1.5 text-xs font-semibold text-white! shadow-xs hover:bg-[#083c32]"
+          >
+            Retry
           </button>
         </div>
-      </header>
-
-      <div style={{ ...s.mainContent, padding: s.mainContent.padding }}>
-        <div className="vg-stat-row" style={{ ...s.statRow, marginTop: 16 }}>
-          {DASHBOARD_STATS.map((p) => (
-            <div key={p.label} style={s.pipelineCard}>
-              <div style={s.pipelineTopRow}>
-                <p style={s.pipelineLabel}>{p.label}</p>
-                <span style={{ ...s.pipelineTag, background: TONE_MAP[p.tone].bg, color: TONE_MAP[p.tone].text }}>
-                  this term
-                </span>
-              </div>
-              <p style={s.pipelineValue}>{p.value}</p>
-              <div style={s.pipelineKpiRow}>
-                <span
-                  style={{ color: p.kpiDirection === "up" ? GOOD : BAD, display: "flex", alignItems: "center", gap: 4 }}
-                >
-                  {p.kpiDirection === "up" ? <TrendUpIcon /> : <TrendDownIcon />}
-                  {p.kpi}
-                </span>
-                <span style={s.pipelineKpiLabel}>vs last term</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="vg-content-grid" style={s.contentGrid}>
-          <section style={s.feedCard}>
-            <div style={s.cardHeaderRow}>
-              <h2 style={s.cardHeading}>Recent activity</h2>
-              <button type="button" onClick={() => router.push("/grantorMonitor")} style={s.viewAllBtn}>
-                View all <ArrowRightIcon />
-              </button>
-            </div>
-            <div style={s.feedList}>
-              {ACTIVITY_FEED.map((item, i) => (
-                <div
-                  key={item.text}
-                  style={{ ...s.feedRow, borderBottom: i === ACTIVITY_FEED.length - 1 ? "none" : `1px solid ${LINE}` }}
-                >
-                  <span style={s.feedIconBox}>{item.icon}</span>
-                  <div style={s.feedTextCol}>
-                    <p style={s.feedText}>{item.text}</p>
-                    <p style={s.feedTime}>{item.time}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section style={s.upcomingCard}>
-            <div style={s.cardHeaderRow}>
-              <h2 style={s.cardHeading}>Upcoming meetings</h2>
-              <button type="button" onClick={() => router.push("/grantorMeeting")} style={s.viewAllBtn}>
-                Manage <ArrowRightIcon />
-              </button>
-            </div>
-            <div style={s.upcomingList}>
-              {UPCOMING_MEETINGS.map((m) => (
-                <div key={m.id} style={s.upcomingRow}>
-                  <span style={s.convoAvatar}>PR</span>
-                  <div>
-                    <p style={s.upcomingLabel}>{m.title}</p>
-                    <p style={s.upcomingDetail}>
-                      {m.date} · {m.time}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div style={s.quickLinksWrap}>
-              <p style={s.quickLinksHeading}>Quick actions</p>
-              <button type="button" onClick={() => router.push("/grantorMonitor")} style={s.quickLinkBtn}>
-                <span style={s.quickLinkIcon}>
-                  <MonitorIcon />
-                </span>
-                <span>Check scholar standing</span>
-                <span style={{ marginLeft: "auto", color: "#9a9a94" }}>
-                  <ArrowRightIcon />
-                </span>
-              </button>
-              <button type="button" onClick={() => router.push("/grantorMeeting")} style={s.quickLinkBtn}>
-                <span style={s.quickLinkIcon}>
-                  <InterviewIcon />
-                </span>
-                <span>Schedule a meeting</span>
-                <span style={{ marginLeft: "auto", color: "#9a9a94" }}>
-                  <ArrowRightIcon />
-                </span>
-              </button>
-              <button type="button" onClick={() => router.push("/grantorPayments")} style={s.quickLinkBtn}>
-                <span style={s.quickLinkIcon}>
-                  <PaymentsIcon />
-                </span>
-                <span>Review pending payments</span>
-                <span style={{ marginLeft: "auto", color: "#9a9a94" }}>
-                  <ArrowRightIcon />
-                </span>
-              </button>
-            </div>
-          </section>
-        </div>
       </div>
+    );
+  }
+
+  const grantorName =
+    user?.employee?.first_name && user?.employee?.last_name
+      ? `${user.employee.first_name} ${user.employee.last_name}`
+      : user?.email?.split("@")[0] || "Executive Sponsor";
+
+  const grantorTitle = user?.employee?.title || "Scholarship Grantor & Sponsor";
+  const grantorOrg = user?.employee?.department || "Executive Board";
+
+  const kpis = data?.kpis || {
+    endorsedApplicantsCount: 0,
+    totalApplicants: 0,
+    pendingAppealsCount: 0,
+    pendingDisbursementsCount: 0,
+    pendingDisbursementsSum: 0,
+    totalScholars: 0,
+    goodStandingCount: 0,
+    probationCount: 0,
+    actionRequiredCount: 0,
+    totalDisbursedSum: 0,
+    pendingOrCount: 0,
+  };
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Grantor Executive Dashboard"
+        subtitle="Scholarship program oversight, candidate verdicts & fund releases"
+      />
+
+      {/* 1. Header Banner */}
+      <GrantorDashboardHeader
+        grantorName={grantorName}
+        grantorTitle={grantorTitle}
+        grantorOrg={grantorOrg}
+        onRefresh={() => refetch(true)}
+      />
+
+      {/* 2. Operational Verdict Banner */}
+      <GrantorUrgentActionsBanner kpis={kpis} />
+
+      {/* 3. Top Row KPI Meters */}
+      <GrantorKpiCards kpis={kpis} />
+
+      {/* 4. Primary Decision Queues (Endorsed Candidates + Academic Appeals) */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <GrantorEndorsedApplicantsCard applicants={data?.endorsedApplicants || []} />
+        <GrantorAppealsReviewCard appeals={data?.pendingAppeals || []} />
+      </div>
+
+      {/* 5. Financial Authorizations & Scholar Program Retention */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <GrantorDisbursementQueueCard disbursements={data?.pendingDisbursements || []} />
+        <GrantorScholarHealthCard scholars={data?.scholars || []} />
+      </div>
+
+      {/* 6. Executive Meetings & Comms */}
+      <GrantorMeetingsAndCommsCard meetings={data?.meetings || []} conversations={data?.recentConversations || []} />
     </div>
   );
 }

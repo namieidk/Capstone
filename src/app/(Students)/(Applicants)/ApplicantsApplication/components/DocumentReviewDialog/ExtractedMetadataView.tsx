@@ -15,6 +15,8 @@ export function ExtractedMetadataView({ extractedData, showConfirmedNotice = fal
   const schoolName = extractedData.school_name ? String(extractedData.school_name) : null;
   const courseName = extractedData.course_name ? String(extractedData.course_name) : null;
 
+  const legend = extractedData.grading_legend;
+
   return (
     <div className="flex flex-col gap-3">
       {/* Advisory / Flags Banner */}
@@ -56,6 +58,48 @@ export function ExtractedMetadataView({ extractedData, showConfirmedNotice = fal
           </p>
         </div>
       </div>
+
+      {/* Detected Grading Legend if present */}
+      {legend && (legend.legend_title || legend.grading_scale) && (
+        <div className="flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50/70 p-3 text-xs text-navy dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-200">
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-blue-900 dark:text-blue-300">Detected Grading Scale:</span>
+              <span className="rounded bg-blue-100 px-1.5 py-0.5 font-mono text-[0.7rem] font-semibold text-blue-800 dark:bg-blue-900/60 dark:text-blue-200">
+                {legend.grading_scale === "NUMERIC_4_POINT"
+                  ? "4.00 Point Direct Scale (UM)"
+                  : legend.grading_scale === "NUMERIC_5_POINT"
+                    ? "5.00 Point Inverse Scale (USEP/UP)"
+                    : legend.grading_scale === "PERCENTAGE_100"
+                      ? "100% Percentage Scale"
+                      : (legend.grading_scale ?? "Standard")}
+              </span>
+            </div>
+            {legend.legend_title && (
+              <p className="mt-1 text-[0.7rem] text-muted-foreground">
+                Policy: <span className="italic">{legend.legend_title}</span>
+              </p>
+            )}
+            <div className="mt-1.5 flex flex-wrap gap-3 text-[0.7rem] text-muted-foreground">
+              {legend.highest_grade != null && (
+                <span>
+                  Highest: <strong className="text-navy dark:text-white">{legend.highest_grade}</strong>
+                </span>
+              )}
+              {legend.passing_grade != null && (
+                <span>
+                  Passing: <strong className="text-navy dark:text-white">{legend.passing_grade}</strong>
+                </span>
+              )}
+              {legend.failing_grade != null && (
+                <span>
+                  Failing: <strong className="text-navy dark:text-white">{legend.failing_grade}</strong>
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

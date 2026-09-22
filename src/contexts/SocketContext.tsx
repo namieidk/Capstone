@@ -11,11 +11,15 @@ import { useAuth } from "./AuthContext";
 interface SocketContextValue {
   socket: Socket | null;
   isConnected: boolean;
+  onlineUserIds: number[];
+  isUserOnline: (userId?: number | null) => boolean;
 }
 
-const SocketContext = createContext<SocketContextValue>({
+export const SocketContext = createContext<SocketContextValue>({
   socket: null,
   isConnected: false,
+  onlineUserIds: [],
+  isUserOnline: () => false,
 });
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
@@ -23,8 +27,14 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const { showToast } = useToast();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [onlineUserIds, setOnlineUserIds] = useState<number[]>([]);
   const activeSocketRef = useRef<Socket | null>(null);
   const activeUserIdRef = useRef<number | null>(null);
+
+  const isUserOnline = (targetUserId?: number | null) => {
+    if (!targetUserId) return false;
+    return onlineUserIds.includes(targetUserId);
+  };
 
   const userRef = useRef(user);
   userRef.current = user;
@@ -95,6 +105,28 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
               socketInstance.emit("ping");
             }
           }, 25000);
+
+          socketInstance.emit("presence:get_online");
+        });
+
+        socketInstance.on("presence:state", (data?: { onlineUserIds?: number[] }) => {
+          if (data?.onlineUserIds) {
+            setOnlineUserIds(data.onlineUserIds);
+          }
+        });
+
+        socketInstance.on("presence:user_online", (data?: { userId?: number }) => {
+          const userId = data?.userId;
+          if (typeof userId === "number") {
+            setOnlineUserIds((prev) => (prev.includes(userId) ? prev : [...prev, userId]));
+          }
+        });
+
+        socketInstance.on("presence:user_offline", (data?: { userId?: number }) => {
+          const userId = data?.userId;
+          if (typeof userId === "number") {
+            setOnlineUserIds((prev) => prev.filter((id) => id !== userId));
+          }
         });
 
         socketInstance.on("disconnect", (reason) => {
@@ -255,6 +287,63 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           );
         });
 
+        socketInstance.on(
+          "baseline:prospectus_processed",
+          (data?: { subjectsCount?: number; studentName?: string }) => {
+            const staffRoles = ["ADMIN", "COORDINATOR", "GRANTOR"];
+            if (staffRoles.includes(userRef.current?.role || "")) {
+              const student = data?.studentName ? ` for ${data.studentName}` : "";
+              showToastRef.current(
+                `Curriculum prospectus extracted (${data?.subjectsCount ?? 0} subjects)${student}.`,
+                "success",
+              );
+            } else {
+              showToastRef.current(
+                `Your curriculum prospectus was extracted successfully with ${data?.subjectsCount ?? 0} subjects!`,
+                "success",
+              );
+            }
+          },
+        );
+
+        socketInstance.on("baseline:submitted_for_review", (data?: { studentName?: string }) => {
+          const staffRoles = ["ADMIN", "COORDINATOR", "GRANTOR"];
+          if (staffRoles.includes(userRef.current?.role || "")) {
+            const student = data?.studentName ? ` from ${data.studentName}` : "";
+            showToastRef.current(`Academic baseline submitted for review${student}.`, "info");
+          } else {
+            showToastRef.current("Your academic baseline was submitted for coordinator review.", "info");
+          }
+        });
+
+        socketInstance.on("baseline:frozen", (data?: { studentName?: string }) => {
+          const staffRoles = ["ADMIN", "COORDINATOR", "GRANTOR"];
+          if (staffRoles.includes(userRef.current?.role || "")) {
+            const student = data?.studentName ? ` for ${data.studentName}` : "";
+            showToastRef.current(`Academic baseline frozen & locked${student}.`, "success");
+          } else {
+            showToastRef.current(
+              "Your academic baseline curriculum has been verified and locked by your coordinator!",
+              "success",
+            );
+          }
+        });
+
+        socketInstance.on("baseline:unfrozen", () => {
+          showToastRef.current("Academic baseline unlocked for curriculum modifications.", "warning");
+        });
+
+        socketInstance.on("school_grading:created", (data?: { school_name?: string }) => {
+          const staffRoles = ["ADMIN", "COORDINATOR", "GRANTOR"];
+          if (staffRoles.includes(userRef.current?.role || "")) {
+            showToastRef.current(`New institution grading system created: ${data?.school_name || "School"}`, "info");
+          }
+        });
+
+        socketInstance.on("school_grading:verified", (data?: { school_name?: string }) => {
+          showToastRef.current(`Institution grading system verified: ${data?.school_name || "School"}`, "success");
+        });
+
         activeSocketRef.current = socketInstance;
         activeUserIdRef.current = userId;
         setSocket(socketInstance);
@@ -277,7 +366,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     };
   }, [userId, userRole]);
 
-  return <SocketContext.Provider value={{ socket, isConnected }}>{children}</SocketContext.Provider>;
+  return (
+    <SocketContext.Provider value={{ socket, isConnected, onlineUserIds, isUserOnline }}>
+      {children}
+    </SocketContext.Provider>
+  );
 }
 
 export function useSocket() {

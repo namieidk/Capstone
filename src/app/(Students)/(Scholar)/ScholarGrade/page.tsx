@@ -1,216 +1,96 @@
 "use client";
 
-import { useState } from "react";
-import {
-  AMBER_BG,
-  CERTIFICATE_DUE_DATE,
-  CURRENT_TERM_LABEL,
-  GRADE_CERTIFICATES,
-  GRADE_HISTORY,
-  GWA_THRESHOLD,
-  LINE,
-  MenuIcon,
-  PREDICTED_GWA,
-  s,
-} from "@/components/ScholarShared";
-import { useSidebar } from "@/components/SidebarContext";
-
-function DocIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
-      <path d="M9 12l2 2 4-4" />
-    </svg>
-  );
-}
-
-const STATUS_STYLE: Record<string, { background: string; color: string }> = {
-  verified: { background: "#E3EEDB", color: "#3f6b2c" },
-  passed: { background: "#E3EEDB", color: "#3f6b2c" },
-  pending: { background: AMBER_BG, color: "#6b5220" },
-  not_submitted: { background: "#F6E4DF", color: "#8a3a2e" },
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  verified: "Verified",
-  pending: "Pending",
-  not_submitted: "Not submitted",
-};
-
-interface UploadRowProps {
-  label: string;
-  hint: string;
-  fileName: string | null;
-  onChoose: (file: File | null) => void;
-}
-
-function UploadRow({ label, hint, fileName, onChoose }: UploadRowProps) {
-  const inputId = `upload-${label.replace(/\s+/g, "-").toLowerCase()}`;
-  return (
-    <div>
-      <p style={s.fieldLabel}>{label}</p>
-      <label htmlFor={inputId} style={s.uploadBox}>
-        <span style={s.uploadIconBox}>
-          <DocIcon />
-        </span>
-        <span style={s.uploadTextCol}>
-          <span style={s.uploadMainText}>{fileName ?? "No file selected"}</span>
-          <span style={s.uploadHintText}>{hint}</span>
-        </span>
-        <span style={s.browseBtn}>Browse</span>
-      </label>
-      <input
-        id={inputId}
-        type="file"
-        accept=".pdf,.jpg,.jpeg,.png"
-        style={{ display: "none" }}
-        onChange={(e) => onChoose(e.target.files?.[0] ?? null)}
-      />
-    </div>
-  );
-}
+import { useCallback, useContext, useEffect, useState } from "react";
+import { SocketContext } from "@/contexts/SocketContext";
+import { type GradeReport, getGradeReportsMe } from "@/lib/api/documents";
+import { getSettings } from "@/lib/api/settings";
+import { AcademicAppealModal } from "./components/AcademicAppealModal";
+import { AcademicStandingCard } from "./components/AcademicStandingCard";
+import { CcgUploadCard } from "./components/CcgUploadCard";
+import { ScholarGradeHeader } from "./components/ScholarGradeHeader";
+import { TermGradesHistoryTable } from "./components/TermGradesHistoryTable";
 
 export default function ScholarGradePage() {
-  const { toggleMobile } = useSidebar();
-  const [certFile, setCertFile] = useState<File | null>(null);
-  const [submitted, setSubmitted] = useState(false);
+  const { socket } = useContext(SocketContext);
+  const [reports, setReports] = useState<GradeReport[]>([]);
+  const [gradeThreshold, setGradeThreshold] = useState<number>(90);
+  const [loading, setLoading] = useState(true);
+  const [appealModalOpen, setAppealModalOpen] = useState(false);
 
-  const canSubmit = Boolean(certFile);
+  const fetchReports = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [data, settings] = await Promise.all([
+        getGradeReportsMe(),
+        getSettings().catch(() => ({ grade_threshold: 90 })),
+      ]);
+      setReports(data || []);
+      if (settings?.grade_threshold) {
+        setGradeThreshold(Number(settings.grade_threshold));
+      }
+    } catch (err) {
+      console.error("Failed to load scholar grade reports:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const handleSubmit = () => {
-    if (!canSubmit) return;
-    setSubmitted(true);
-  };
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
+
+  // Real-time socket updates
+  useEffect(() => {
+    if (!socket) return;
+    const handleRefresh = () => fetchReports();
+
+    socket.on("grade_report:verified", handleRefresh);
+    socket.on("document:verified", handleRefresh);
+    socket.on("grade_report:appeal_decided", handleRefresh);
+    socket.on("settings:updated", handleRefresh);
+
+    return () => {
+      socket.off("grade_report:verified", handleRefresh);
+      socket.off("document:verified", handleRefresh);
+      socket.off("grade_report:appeal_decided", handleRefresh);
+      socket.off("settings:updated", handleRefresh);
+    };
+  }, [socket, fetchReports]);
+
+  const latestReport = reports.length > 0 ? reports[0] : null;
 
   return (
-    <div>
-      <header style={s.topbar}>
-        <button type="button" className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
-          <MenuIcon />
-        </button>
-        <div>
-          <h1 style={s.topbarGreeting}>Grades</h1>
-          <p style={s.topbarSub}>Submit your certificate of grades and track your academic standing.</p>
-        </div>
-      </header>
+    <div className="min-h-full bg-[#faf8f5] pb-24">
+      <ScholarGradeHeader />
 
-      <div style={s.mainContent}>
-        <div style={s.pageWrap}>
-          <div className="vd-stat-row" style={{ ...s.statRow, marginTop: 16 }}>
-            <div style={s.statCard}>
-              <p style={s.statCardLabel}>Current GWA</p>
-              <p style={s.statCardValue}>{PREDICTED_GWA}%</p>
-              <div style={s.statProgressTrack}>
-                <div style={{ ...s.statProgressFill, width: "88%" }} />
-              </div>
-              <p style={s.statCardCaption}>Above the {GWA_THRESHOLD}% threshold</p>
-            </div>
-            <div style={s.statCard}>
-              <p style={s.statCardLabel}>Terms passed</p>
-              <p style={s.statCardValue}>
-                {GRADE_HISTORY.filter((g) => g.status === "passed").length} of {GRADE_HISTORY.length}
-              </p>
-              <p style={{ ...s.statCardCaption, color: "#6b8a3e", marginTop: "auto" }}>No failing marks on record</p>
-            </div>
-            <div style={s.statCard}>
-              <p style={s.statCardLabel}>Retention threshold</p>
-              <p style={s.statCardValue}>{GWA_THRESHOLD}%</p>
-              <p style={{ ...s.statCardCaption, marginTop: "auto" }}>Minimum required every semester</p>
-            </div>
-          </div>
+      <div className="px-5 pt-6 md:px-10 space-y-6 max-w-6xl mx-auto">
+        {/* Top: Academic Standing & Retention Evaluation Summary */}
+        <AcademicStandingCard
+          latestReport={latestReport}
+          reportsCount={reports.length}
+          onOpenAppeal={() => setAppealModalOpen(true)}
+          loading={loading}
+          gradeThreshold={gradeThreshold}
+        />
 
-          <h3 style={{ ...s.cardHeading, marginBottom: 6 }}>Submit this semesters certificate</h3>
-          <p style={{ ...s.pageSub, marginBottom: 18 }}>
-            Every semester, upload a Certificate of Grades or Scholarship Continuation issued by your school registrar
-            for <strong>{CURRENT_TERM_LABEL}</strong>. Due {CERTIFICATE_DUE_DATE}.
-          </p>
+        {/* Center: CCG Ingestion & OCR Precheck Card */}
+        <CcgUploadCard
+          onSuccess={fetchReports}
+          latestReport={latestReport}
+          onOpenAppeal={() => setAppealModalOpen(true)}
+        />
 
-          <UploadRow
-            label="Certificate of Grades / Scholarship Continuation"
-            hint="PDF, JPG, or PNG · Max 5MB"
-            fileName={certFile?.name ?? null}
-            onChoose={setCertFile}
-          />
-
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!canSubmit}
-            style={{
-              ...s.continueBtn,
-              marginTop: 18,
-              opacity: canSubmit ? 1 : 0.5,
-              cursor: canSubmit ? "pointer" : "not-allowed",
-            }}
-          >
-            Submit certificate
-          </button>
-
-          {submitted && (
-            <div style={s.sentBanner}>
-              <DocIcon />
-              <span>Thanks — your certificate was submitted and is now pending review.</span>
-            </div>
-          )}
-
-          <h3 style={{ ...s.cardHeading, margin: "36px 0 14px" }}>Term history</h3>
-          <div style={s.gradeTable}>
-            {GRADE_HISTORY.map((term, i) => {
-              const tone = STATUS_STYLE[term.status] ?? STATUS_STYLE.pending;
-              return (
-                <div
-                  key={term.term}
-                  style={{ ...s.gradeRow, borderBottom: i === GRADE_HISTORY.length - 1 ? "none" : `1px solid ${LINE}` }}
-                >
-                  <div style={s.gradeTermCol}>
-                    <p style={s.gradeTerm}>{term.term}</p>
-                    <p style={s.gradeNote}>{term.note}</p>
-                  </div>
-                  <span style={{ ...s.statusTag, background: tone.background, color: tone.color, marginRight: 4 }}>
-                    {term.status}
-                  </span>
-                  <span style={s.gradeValue}>{term.gwa}%</span>
-                </div>
-              );
-            })}
-          </div>
-
-          <h3 style={{ ...s.cardHeading, margin: "36px 0 14px" }}>Certificate submissions</h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {GRADE_CERTIFICATES.map((cert) => {
-              const tone = STATUS_STYLE[cert.status] ?? STATUS_STYLE.pending;
-              return (
-                <div key={cert.term} style={s.submissionRow}>
-                  <span style={s.feedIconBox}>
-                    <DocIcon />
-                  </span>
-                  <div style={s.profileDocInfo}>
-                    <p style={s.profileDocLabel}>Certificate of Grades · {cert.term}</p>
-                    <p style={s.profileDocFile}>
-                      {cert.file} {cert.size !== "—" ? `· ${cert.size}` : ""}
-                    </p>
-                    <p style={s.submissionMeta}>
-                      {cert.submittedDate !== "—" ? `Submitted ${cert.submittedDate}` : "Not yet submitted"}
-                    </p>
-                  </div>
-                  <span style={{ ...s.statusTag, background: tone.background, color: tone.color, flexShrink: 0 }}>
-                    {STATUS_LABEL[cert.status]}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        {/* Bottom: Semestral Credited Grades History */}
+        <TermGradesHistoryTable reports={reports} loading={loading} />
       </div>
+
+      {/* Appeal Dialog */}
+      <AcademicAppealModal
+        open={appealModalOpen}
+        onOpenChange={setAppealModalOpen}
+        report={latestReport}
+        onSuccess={fetchReports}
+      />
     </div>
   );
 }

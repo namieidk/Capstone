@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { useSocket } from "@/contexts/SocketContext";
 import type { ConversationItem } from "@/lib/api/chat";
 import { formatMessageTime, getInitials, getRoleBadgeVariant } from "./chat-utils";
 
@@ -12,6 +13,8 @@ interface ConversationItemCardProps {
 }
 
 export function ConversationItemCard({ conversation, isActive, onSelect }: ConversationItemCardProps) {
+  const { isUserOnline } = useSocket();
+  const isOnline = isUserOnline(conversation.partner.user_id);
   const partnerName = `${conversation.partner.first_name} ${conversation.partner.last_name}`.trim();
   const roleBadge = getRoleBadgeVariant(conversation.partner.role);
   const isPending = conversation.status === "PENDING_REQUEST";
@@ -37,7 +40,9 @@ export function ConversationItemCard({ conversation, isActive, onSelect }: Conve
             {getInitials(partnerName)}
           </AvatarFallback>
         </Avatar>
-        <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+        {isOnline && (
+          <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500 ring-2 ring-white animate-in zoom-in-50 duration-200" />
+        )}
       </div>
 
       <div className="flex-1 min-w-0">

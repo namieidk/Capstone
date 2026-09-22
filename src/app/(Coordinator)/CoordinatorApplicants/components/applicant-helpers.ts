@@ -6,12 +6,11 @@ export type StageFilter = Stage | "all";
 export type BadgeVariant = "default" | "secondary" | "outline" | "destructive";
 
 export const STAGE_FILTERS: { value: StageFilter; label: string }[] = [
-  { value: "all", label: "All stages" },
+  { value: "all", label: "All active" },
   { value: "Submitted", label: "Submitted" },
   { value: "Under review", label: "Under review" },
   { value: "Interview", label: "Interview" },
   { value: "Endorsed", label: "Endorsed" },
-  { value: "Accepted", label: "Accepted" },
   { value: "Rejected", label: "Rejected" },
 ];
 

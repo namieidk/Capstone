@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import type React from "react";
 import { useEffect } from "react";
 import { DASHBOARD_MAP } from "@/app/(Authentication)/components/data";
+import { VerifyingPermissionScreen } from "@/components/VerifyingPermissionScreen";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface RoleGuardProps {
@@ -33,14 +34,7 @@ export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
   }, [user, loading, isAuthorized, router]);
 
   if (loading || !isAuthorized) {
-    return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3">
-          <div className="size-8 animate-spin rounded-full border-4 border-amber border-t-transparent" />
-          <span className="text-sm font-medium text-muted-foreground">Verifying permissions…</span>
-        </div>
-      </div>
-    );
+    return <VerifyingPermissionScreen />;
   }
 
   return <>{children}</>;

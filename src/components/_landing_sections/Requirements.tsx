@@ -79,10 +79,7 @@ export function Requirements() {
                     scale were affordances promising an interaction that
                     doesn't exist. Left as a plain static card instead. */}
                 <div className="h-full overflow-hidden rounded-[20px] border border-line bg-card shadow-va-sm">
-                  <div
-                    className="relative h-40 overflow-hidden"
-                    style={{ clipPath: `url(#${clipId})` }}
-                  >
+                  <div className="relative h-40 overflow-hidden" style={{ clipPath: `url(#${clipId})` }}>
                     <Image
                       src={r.image}
                       alt={r.title}

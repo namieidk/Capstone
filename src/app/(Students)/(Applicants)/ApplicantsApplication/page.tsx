@@ -1,8 +1,8 @@
 "use client";
 
-import { Bell, Check, Menu } from "lucide-react";
+import { Check } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSidebar } from "@/components/SidebarContext";
+import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/components/ToastContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSocketEvent } from "@/contexts/SocketContext";
@@ -22,10 +22,9 @@ import { ApplicationStep } from "./components/ApplicationStep";
 import { DocumentsStep } from "./components/DocumentsStep";
 import { StatusStep } from "./components/StatusStep";
 import { WizardSkeleton } from "./components/WizardSkeleton";
-import { resolveStep, WIZARD_STEPS, type WizardStep } from "./components/wizard-helpers";
+import { getWizardSteps, resolveStep, type WizardStep } from "./components/wizard-helpers";
 
 export default function ApplicantsApplicationPage() {
-  const { toggleMobile } = useSidebar();
   const { user, refreshUser } = useAuth();
   const { showToast } = useToast();
 
@@ -121,6 +120,14 @@ export default function ApplicantsApplicationPage() {
     return () => clearInterval(interval);
   }, [documents]);
 
+  const currentYearLevel = useMemo(() => {
+    const raw = user?.scholar_profile?.current_year_level;
+    if (raw && !Number.isNaN(Number(raw))) return Number(raw);
+    return 1;
+  }, [user]);
+
+  const wizardSteps = useMemo(() => getWizardSteps(currentYearLevel), [currentYearLevel]);
+
   const prefill = useMemo(() => {
     const p = user?.scholar_profile;
     return {
@@ -198,11 +205,14 @@ export default function ApplicantsApplicationPage() {
   ): Promise<void> {
     await wrapAction(async () => {
       await confirmDocument(id, data ?? {});
-      await refreshDocuments();
+      await fetchAll();
     }, "Document details confirmed successfully!");
   }
 
+  const isRejected = application?.status === "REJECTED";
+
   function goTo(target: WizardStep) {
+    if (isRejected) return; // Locked on decision status
     if (target === 1 || application) changeStep(target);
   }
 
@@ -212,26 +222,10 @@ export default function ApplicantsApplicationPage() {
 
   return (
     <div>
-      <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border bg-white px-5 py-3.5">
-        <div className="flex min-w-0 items-center">
-          <button
-            type="button"
-            className="vd-mobile-toggle mr-2 shrink-0 md:hidden"
-            onClick={toggleMobile}
-            aria-label="Open sidebar"
-          >
-            <Menu className="size-5" />
-          </button>
-          <div className="min-w-0">
-            <h1 className="truncate text-xl font-bold text-navy">Application</h1>
-            <p className="truncate text-sm text-muted-foreground">Apply in 3 quick steps.</p>
-          </div>
-        </div>
-        <span className="relative flex size-9 shrink-0 items-center justify-center rounded-full bg-muted">
-          <Bell className="size-4 text-navy" />
-          <span className="absolute top-2 right-2 size-1.75 rounded-full border-2 border-muted bg-amber" />
-        </span>
-      </header>
+      <PageHeader
+        title="Application"
+        subtitle={isRejected ? "Your application review has concluded." : "Apply in 3 quick steps."}
+      />
 
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-5 py-6">
         {loadError ? (
@@ -245,26 +239,30 @@ export default function ApplicantsApplicationPage() {
         ) : (
           <>
             <ol className="flex items-start rounded-[18px]! border border-border bg-white p-4 shadow-xs">
-              {WIZARD_STEPS.map((s, i) => {
-                const done = s.step < step;
-                const active = s.step === step;
-                const unlocked = s.step === 1 || application !== null;
+              {wizardSteps.map((s, i) => {
+                const done = isRejected ? s.step < 3 : s.step < step;
+                const active = isRejected ? s.step === 3 : s.step === step;
+                const unlocked = !isRejected && (s.step === 1 || application !== null);
                 return (
                   <li key={s.step} className="flex flex-1 items-start last:flex-none">
                     <button
                       type="button"
                       onClick={() => goTo(s.step)}
-                      disabled={!unlocked}
+                      disabled={!unlocked || isRejected}
                       aria-current={active ? "step" : undefined}
-                      className={`flex flex-col items-center gap-1.5 rounded-lg px-1 ${unlocked ? "cursor-pointer" : "cursor-default opacity-60"}`}
+                      className={`flex flex-col items-center gap-1.5 rounded-lg px-1 ${
+                        unlocked && !isRejected ? "cursor-pointer" : "cursor-default opacity-60"
+                      }`}
                     >
                       <span
                         className={`flex size-9 items-center justify-center rounded-full text-sm font-bold transition-all duration-300 transform ${
-                          done
-                            ? "bg-navy text-white shadow-xs"
-                            : active
-                              ? "bg-amber! text-navy! ring-4 ring-amber/25 scale-105 shadow-xs"
-                              : "bg-muted text-muted-foreground scale-95"
+                          isRejected && s.step === 3
+                            ? "bg-destructive text-white ring-4 ring-destructive/20 scale-105 shadow-xs"
+                            : done
+                              ? "bg-navy text-white shadow-xs"
+                              : active
+                                ? "bg-amber! text-navy! ring-4 ring-amber/25 scale-105 shadow-xs"
+                                : "bg-muted text-muted-foreground scale-95"
                         }`}
                       >
                         {done ? (
@@ -275,18 +273,26 @@ export default function ApplicantsApplicationPage() {
                       </span>
                       <span className="flex flex-col items-center">
                         <span
-                          className={`text-xs transition-colors duration-200 ${active || done ? "font-semibold text-navy" : "text-muted-foreground"}`}
+                          className={`text-xs transition-colors duration-200 ${
+                            isRejected && s.step === 3
+                              ? "font-semibold text-destructive"
+                              : active || done
+                                ? "font-semibold text-navy"
+                                : "text-muted-foreground"
+                          }`}
                         >
-                          {s.label}
+                          {isRejected && s.step === 3 ? "Decision" : s.label}
                         </span>
-                        <span className="hidden text-[0.7rem] text-muted-foreground sm:block">{s.sub}</span>
+                        <span className="hidden text-[0.7rem] text-muted-foreground sm:block">
+                          {isRejected && s.step === 3 ? "Review concluded" : s.sub}
+                        </span>
                       </span>
                     </button>
-                    {i < WIZARD_STEPS.length - 1 && (
+                    {i < wizardSteps.length - 1 && (
                       <div className="mx-1 mt-4 h-1 flex-1 overflow-hidden rounded-full bg-border/70">
                         <div
                           className="h-full bg-navy transition-all duration-500 ease-out"
-                          style={{ width: s.step < step ? "100%" : "0%" }}
+                          style={{ width: (isRejected ? 3 : step) > s.step ? "100%" : "0%" }}
                         />
                       </div>
                     )}
@@ -309,6 +315,7 @@ export default function ApplicantsApplicationPage() {
               {step === 2 && (
                 <DocumentsStep
                   documents={documents}
+                  currentYearLevel={currentYearLevel}
                   onUpload={handleUpload}
                   onReplace={handleReplace}
                   onDelete={handleDelete}
@@ -318,7 +325,13 @@ export default function ApplicantsApplicationPage() {
                 />
               )}
               {step === 3 && (
-                <StatusStep application={application} documents={documents} onBackToDocuments={() => changeStep(2)} />
+                <StatusStep
+                  application={application}
+                  documents={documents}
+                  scholarshipTrack={user?.scholar_profile?.scholarship_track ?? undefined}
+                  currentYearLevel={currentYearLevel}
+                  onBackToDocuments={() => changeStep(2)}
+                />
               )}
             </div>
           </>

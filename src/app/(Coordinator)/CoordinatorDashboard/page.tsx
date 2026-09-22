@@ -1,166 +1,104 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import {
-  ACTIVITY_FEED,
-  AMBER,
-  ArrowRightIcon,
-  BAD,
-  BellIcon,
-  COORDINATOR,
-  GOOD,
-  InterviewIcon,
-  LINE,
-  MenuIcon,
-  MonitorIcon,
-  PaymentsIcon,
-  PeopleIcon,
-  PIPELINE_COUNTS,
-  s,
-  TONE_MAP,
-  TrendDownIcon,
-  TrendUpIcon,
-  UPCOMING_INTERVIEWS,
-} from "@/components/Coordinatorshared";
-import { useSidebar } from "@/components/SidebarContext";
+import { PageHeader } from "@/components/PageHeader";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { CoordinatorApplicantPipelineCard } from "./components/CoordinatorApplicantPipelineCard";
+import { CoordinatorDashboardHeader } from "./components/CoordinatorDashboardHeader";
+import { CoordinatorDashboardSkeleton } from "./components/CoordinatorDashboardSkeleton";
+import { CoordinatorDisbursementClearanceCard } from "./components/CoordinatorDisbursementClearanceCard";
+import { CoordinatorEnrollmentQueueCard } from "./components/CoordinatorEnrollmentQueueCard";
+import { CoordinatorKpiCards } from "./components/CoordinatorKpiCards";
+import { CoordinatorMeetingsAndMessagesCard } from "./components/CoordinatorMeetingsAndMessagesCard";
+import { CoordinatorScholarHealthCard } from "./components/CoordinatorScholarHealthCard";
+import { CoordinatorUrgentActionsBanner } from "./components/CoordinatorUrgentActionsBanner";
+import { useCoordinatorDashboardData } from "./hooks/useCoordinatorDashboardData";
 
-export default function HomePage() {
-  const router = useRouter();
-  const { toggleMobile } = useSidebar();
+export default function CoordinatorDashboardPage() {
+  const { user } = useAuth();
+  const { data, loading, loadError, refetch } = useCoordinatorDashboardData();
 
-  const firstName = COORDINATOR.name.split(" ")[0];
+  const coordinatorName = user ? `${user.first_name} ${user.last_name}`.trim() : "Coordinator";
+
+  if (loading && !data) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAF8F5]">
+        <PageHeader title="Coordinator Dashboard" subtitle="Intake Pipeline, Scholar Monitoring & Disbursements" />
+        <CoordinatorDashboardSkeleton />
+      </div>
+    );
+  }
+
+  if (loadError && !data) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAF8F5]">
+        <PageHeader title="Coordinator Dashboard" subtitle="Intake Pipeline, Scholar Monitoring & Disbursements" />
+        <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
+          <div className="max-w-md space-y-3 rounded-2xl border border-rose-200 bg-rose-50/70 p-6 text-rose-950">
+            <h2 className="text-base font-bold">Failed to Load Coordinator Dashboard</h2>
+            <p className="text-xs text-rose-800/80 leading-relaxed">{loadError}</p>
+            <Button
+              type="button"
+              onClick={() => refetch()}
+              className="mt-2 rounded-full bg-rose-700 px-5 text-xs font-semibold text-white! hover:bg-rose-800"
+            >
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAF8F5]">
+        <PageHeader title="Coordinator Dashboard" subtitle="Intake Pipeline, Scholar Monitoring & Disbursements" />
+        <CoordinatorDashboardSkeleton />
+      </div>
+    );
+  }
 
   return (
-    <div>
-      {/* ---------------- Page-level navbar (no search) ---------------- */}
-      <header style={s.topbar}>
-        <button type="button" className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
-          <MenuIcon />
-        </button>
-        <div>
-          <h1 style={s.topbarGreeting}>Good morning, {firstName}.</h1>
-          <p style={s.topbarSub}>Heres whats happening across your pipeline today.</p>
-        </div>
-        <div style={s.topbarRight}>
-          <button type="button" style={s.bellBtn}>
-            <BellIcon />
-            <span style={{ ...s.bellDot, background: AMBER }} />
-          </button>
-        </div>
-      </header>
+    <div className="flex flex-col min-h-screen bg-[#FAF8F5]">
+      {/* Top Header */}
+      <PageHeader
+        title="Coordinator Dashboard"
+        subtitle="Applicant Pipeline, Scholar Baseline Monitoring & Disbursement Clearance"
+      />
 
-      <div style={{ ...s.mainContent, padding: s.mainContent.padding }}>
-        <div className="vc-stat-row" style={{ ...s.statRow, marginTop: 16 }}>
-          {PIPELINE_COUNTS.map((p) => (
-            <div key={p.label} style={s.pipelineCard}>
-              <div style={s.pipelineTopRow}>
-                <div>
-                  <p style={s.pipelineLabel}>{p.label}</p>
-                  <span style={{ ...s.pipelineTag, background: TONE_MAP[p.tone].bg, color: TONE_MAP[p.tone].text }}>
-                    applicants
-                  </span>
-                </div>
-                <p style={s.pipelineValue}>{p.value}</p>
-              </div>
-              <div style={s.pipelineKpiRow}>
-                <span
-                  style={{ color: p.kpiDirection === "up" ? GOOD : BAD, display: "flex", alignItems: "center", gap: 4 }}
-                >
-                  {p.kpiDirection === "up" ? <TrendUpIcon /> : <TrendDownIcon />}
-                  {p.kpi}
-                </span>
-                <span style={s.pipelineKpiLabel}>vs last month</span>
-              </div>
-            </div>
-          ))}
+      {/* Main Content Body */}
+      <div className="flex-1 space-y-6 p-4 sm:p-6 max-w-7xl w-full mx-auto">
+        {/* 1. Header & Identity */}
+        <CoordinatorDashboardHeader
+          coordinatorName={coordinatorName}
+          onRefresh={() => refetch(true)}
+          isRefreshing={loading}
+        />
+
+        {/* 2. Urgent Actions Alert Banner */}
+        <CoordinatorUrgentActionsBanner kpis={data.kpis} />
+
+        {/* 3. Core Operational KPI Cards (4 metrics) */}
+        <CoordinatorKpiCards kpis={data.kpis} />
+
+        {/* 4. Row 1: Applicant Pipeline Funnel + Scholar Academic Standing */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <CoordinatorApplicantPipelineCard
+            applicantStages={data.applicantStages}
+            recentApplicants={data.recentApplicants}
+          />
+          <CoordinatorScholarHealthCard scholars={data.scholars} />
         </div>
 
-        <div className="vc-content-grid" style={s.contentGrid}>
-          <section style={s.feedCard}>
-            <div style={s.cardHeaderRow}>
-              <h2 style={s.cardHeading}>Recent activity</h2>
-              <button type="button" onClick={() => router.push("/applicants")} style={s.viewAllBtn}>
-                View all <ArrowRightIcon />
-              </button>
-            </div>
-            <div style={s.feedList}>
-              {ACTIVITY_FEED.map((item, i) => (
-                <div
-                  key={`${item.text}-${item.time}`}
-                  style={{ ...s.feedRow, borderBottom: i === ACTIVITY_FEED.length - 1 ? "none" : `1px solid ${LINE}` }}
-                >
-                  <span style={s.feedIconBox}>{item.icon}</span>
-                  <div style={s.feedTextCol}>
-                    <p style={s.feedText}>{item.text}</p>
-                    <p style={s.feedTime}>{item.time}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section style={s.upcomingCard}>
-            <div style={s.cardHeaderRow}>
-              <h2 style={s.cardHeading}>Upcoming interviews</h2>
-              <button type="button" onClick={() => router.push("/meeting")} style={s.viewAllBtn}>
-                Manage <ArrowRightIcon />
-              </button>
-            </div>
-            <div style={s.upcomingList}>
-              {UPCOMING_INTERVIEWS.map((iv) => (
-                <div key={iv.id} style={s.upcomingRow}>
-                  <span style={s.convoAvatar}>{iv.initials}</span>
-                  <div>
-                    <p style={s.upcomingLabel}>{iv.name}</p>
-                    <p style={s.upcomingDetail}>
-                      {iv.date} · {iv.time}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div style={s.quickLinksWrap}>
-              <p style={s.quickLinksHeading}>Quick actions</p>
-              <button type="button" onClick={() => router.push("/applicants")} style={s.quickLinkBtn}>
-                <span style={s.quickLinkIcon}>
-                  <PeopleIcon />
-                </span>
-                <span>Review new applicants</span>
-                <span style={{ marginLeft: "auto", color: "#9a9a94" }}>
-                  <ArrowRightIcon />
-                </span>
-              </button>
-              <button type="button" onClick={() => router.push("/meeting")} style={s.quickLinkBtn}>
-                <span style={s.quickLinkIcon}>
-                  <InterviewIcon />
-                </span>
-                <span>Schedule an interview</span>
-                <span style={{ marginLeft: "auto", color: "#9a9a94" }}>
-                  <ArrowRightIcon />
-                </span>
-              </button>
-              <button type="button" onClick={() => router.push("/monitor")} style={s.quickLinkBtn}>
-                <span style={s.quickLinkIcon}>
-                  <MonitorIcon />
-                </span>
-                <span>Check scholar standing</span>
-                <span style={{ marginLeft: "auto", color: "#9a9a94" }}>
-                  <ArrowRightIcon />
-                </span>
-              </button>
-              <button type="button" onClick={() => router.push("/payment")} style={s.quickLinkBtn}>
-                <span style={s.quickLinkIcon}>
-                  <PaymentsIcon />
-                </span>
-                <span>Review pending payments</span>
-                <span style={{ marginLeft: "auto", color: "#9a9a94" }}>
-                  <ArrowRightIcon />
-                </span>
-              </button>
-            </div>
-          </section>
+        {/* 5. Row 2: Term Enrollment Queue + Disbursements & OR Clearance */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <CoordinatorEnrollmentQueueCard enrollmentQueue={data.enrollmentQueue} />
+          <CoordinatorDisbursementClearanceCard disbursements={data.disbursements} />
         </div>
+
+        {/* 6. Row 3: Upcoming Interviews & Direct Messages */}
+        <CoordinatorMeetingsAndMessagesCard meetings={data.meetings} conversations={data.recentConversations} />
       </div>
     </div>
   );

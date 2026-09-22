@@ -1,317 +1,98 @@
 "use client";
 
-import Link from "next/link";
-import {
-  AMBER,
-  AMBER_BG,
-  ArrowRightIcon,
-  BellIcon,
-  CalendarIcon,
-  CONVERSATIONS,
-  GRADE_HISTORY,
-  GradeIcon,
-  LINE,
-  MailIcon,
-  MEETINGS_HOSTING,
-  MEETINGS_INVITED,
-  MenuIcon,
-  PAYMENT_HISTORY,
-  PAYMENT_SUMMARY,
-  PaymentIcon,
-  SCHOLAR,
-  s,
-} from "@/components/ScholarShared";
-import { useSidebar } from "@/components/SidebarContext";
-
-interface StatCardProps {
-  label: string;
-  value: string;
-  caption: string;
-  progress: number;
-}
-
-function StatCard({ label, value, caption, progress }: StatCardProps) {
-  return (
-    <div style={s.statCard}>
-      <p style={s.statCardLabel}>{label}</p>
-      <p style={s.statCardValue}>{value}</p>
-      <div style={s.statProgressTrack}>
-        <div style={{ ...s.statProgressFill, width: `${progress}%` }} />
-      </div>
-      <p style={s.statCardCaption}>{caption}</p>
-    </div>
-  );
-}
-
-interface InfoCardProps {
-  label: string;
-  value: string;
-  caption: string;
-  tone?: "good" | "neutral";
-}
-
-function InfoCard({ label, value, caption, tone }: InfoCardProps) {
-  return (
-    <div style={s.statCard}>
-      <p style={s.statCardLabel}>{label}</p>
-      <p style={s.statCardValue}>{value}</p>
-      <p style={{ ...s.statCardCaption, color: tone === "good" ? "#6b8a3e" : "#7a7a74", marginTop: "auto" }}>
-        {caption}
-      </p>
-    </div>
-  );
-}
-
-interface PanelHeaderProps {
-  title: string;
-  href: string;
-}
-
-function PanelHeader({ title, href }: PanelHeaderProps) {
-  return (
-    <div style={s.cardHeaderRow}>
-      <h2 style={s.cardHeading}>{title}</h2>
-      <Link href={href} style={s.viewAllBtn}>
-        View all <ArrowRightIcon />
-      </Link>
-    </div>
-  );
-}
-
-function formatDateParts(date: string) {
-  const [month, dayWithComma] = date.split(" ");
-  return { month: month?.toUpperCase() ?? "", day: (dayWithComma ?? "").replace(",", "") };
-}
-
-const GRADE_STATUS_STYLE: Record<string, { background: string; color: string }> = {
-  passed: { background: "#E3EEDB", color: "#3f6b2c" },
-  pending: { background: AMBER_BG, color: "#6b5220" },
-};
-
-const PAYMENT_STATUS_STYLE: Record<string, { background: string; color: string }> = {
-  paid: { background: "#E3EEDB", color: "#3f6b2c" },
-  upcoming: { background: AMBER_BG, color: "#6b5220" },
-  processing: { background: "#EAE3F6", color: "#5a3f8a" },
-};
+import { PageHeader } from "@/components/PageHeader";
+import { Button } from "@/components/ui/button";
+import { ScholarAcademicStandingBanner } from "./components/ScholarAcademicStandingBanner";
+import { ScholarAnnouncementsCard } from "./components/ScholarAnnouncementsCard";
+import { ScholarCoordinatorAndMeetingsCard } from "./components/ScholarCoordinatorAndMeetingsCard";
+import { ScholarCurriculumProgressCard } from "./components/ScholarCurriculumProgressCard";
+import { ScholarDashboardHeader } from "./components/ScholarDashboardHeader";
+import { ScholarDashboardSkeleton } from "./components/ScholarDashboardSkeleton";
+import { ScholarDisbursementCard } from "./components/ScholarDisbursementCard";
+import { ScholarEnrollmentQuickHub } from "./components/ScholarEnrollmentQuickHub";
+import { ScholarKpiCards } from "./components/ScholarKpiCards";
+import { useScholarDashboardData } from "./hooks/useScholarDashboardData";
 
 export default function ScholarDashboardPage() {
-  const { toggleMobile } = useSidebar();
+  const { data, loading, loadError, refetch } = useScholarDashboardData();
 
-  const firstName = SCHOLAR.name.split(" ")[0];
+  if (loading && !data) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAF8F5]">
+        <PageHeader title="Scholar Dashboard" subtitle="Academic Standing & Grant Management" />
+        <ScholarDashboardSkeleton />
+      </div>
+    );
+  }
 
-  const latestPassed = [...GRADE_HISTORY].reverse().find((g) => g.status === "passed") ?? GRADE_HISTORY[0];
-  const gwaProgress = Math.min(100, Math.max(0, Math.round(((latestPassed.gwa - 75) / 25) * 100)));
+  if (loadError && !data) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAF8F5]">
+        <PageHeader title="Scholar Dashboard" subtitle="Academic Standing & Grant Management" />
+        <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
+          <div className="max-w-md space-y-3 rounded-2xl border border-rose-200 bg-rose-50/70 p-6 text-rose-950">
+            <h2 className="text-base font-bold">Failed to Load Scholar Dashboard</h2>
+            <p className="text-xs text-rose-800/80 leading-relaxed">{loadError}</p>
+            <Button
+              type="button"
+              onClick={() => refetch()}
+              className="mt-2 rounded-full bg-rose-700 px-5 text-xs font-semibold text-white! hover:bg-rose-800"
+            >
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const recentMessages = CONVERSATIONS.slice(0, 3);
-
-  const upcomingMeetings = [
-    ...MEETINGS_HOSTING.map((m) => ({
-      id: `h-${m.id}`,
-      title: m.title,
-      date: m.date,
-      time: m.time,
-      person: m.invitee,
-      status: m.status,
-    })),
-    ...MEETINGS_INVITED.map((m) => ({
-      id: `i-${m.id}`,
-      title: m.title,
-      date: m.date,
-      time: m.time,
-      person: m.host,
-      status: m.status,
-    })),
-  ]
-    .filter((m) => m.status !== "completed")
-    .slice(0, 2);
-
-  const recentGrades = [...GRADE_HISTORY].reverse().slice(0, 3);
-  const recentPayments = PAYMENT_HISTORY.slice(0, 2);
+  if (!data) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAF8F5]">
+        <PageHeader title="Scholar Dashboard" subtitle="Academic Standing & Grant Management" />
+        <ScholarDashboardSkeleton />
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <header style={s.topbar}>
-        <button type="button" className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
-          <MenuIcon />
-        </button>
-        <div>
-          <h1 style={s.topbarGreeting}>Good morning, {firstName}.</h1>
-          <p style={s.topbarSub}>Heres a look at your grades, payments, and schedule.</p>
-        </div>
-        <div style={s.topbarRight}>
-          <button type="button" style={s.bellBtn}>
-            <BellIcon />
-            <span style={{ ...s.bellDot, background: AMBER }} />
-          </button>
-        </div>
-      </header>
+    <div className="flex flex-col min-h-screen bg-[#FAF8F5]">
+      {/* Top Header */}
+      <PageHeader title="Scholar Dashboard" subtitle="Academic Standing, Curriculum & Grant Management" />
 
-      <div style={s.mainContent}>
-        <div className="vd-stat-row" style={{ ...s.statRow, marginTop: 16 }}>
-          <StatCard
-            label="Latest passed GWA"
-            value={`${latestPassed.gwa}%`}
-            caption={`${latestPassed.term} · Above threshold`}
-            progress={gwaProgress}
-          />
-          <InfoCard label="Documents verified" value="3 of 3" caption="All requirements complete" tone="good" />
-          <InfoCard
-            label="Next tuition disbursement"
-            value={PAYMENT_SUMMARY.nextAmount}
-            caption={`Due ${PAYMENT_SUMMARY.nextDate}`}
-            tone="neutral"
+      {/* Main Content Body */}
+      <div className="flex-1 space-y-6 p-4 sm:p-6 max-w-7xl w-full mx-auto">
+        {/* 1. Scholar Identity & Program Header */}
+        <ScholarDashboardHeader profile={data.profile} onRefresh={() => refetch(true)} isRefreshing={loading} />
+
+        {/* 2. Dynamic Academic Standing / Probation / Appeal Alert Banner */}
+        <ScholarAcademicStandingBanner standing={data.academic_standing} />
+
+        {/* 3. Core Metric KPI Cards (4 metrics) */}
+        <ScholarKpiCards
+          standing={data.academic_standing}
+          curriculum={data.curriculum}
+          latestEnrollment={data.latest_enrollment}
+          disbursements={data.disbursements}
+        />
+
+        {/* 4. Row 1 Operational Grid: Curriculum Roadmap & Term Operations */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ScholarCurriculumProgressCard curriculum={data.curriculum} />
+          <ScholarEnrollmentQuickHub
+            latestEnrollment={data.latest_enrollment}
+            pendingOrCount={data.disbursements.pending_or_count}
           />
         </div>
 
-        {/* Messages + Meetings */}
-        <div className="vd-content-grid" style={s.contentGrid}>
-          <section style={s.feedCard}>
-            <PanelHeader title="Recent messages" href="/scholarMessage" />
-            <div style={s.feedList}>
-              {recentMessages.map((c, i) => (
-                <div
-                  key={c.id}
-                  style={{
-                    ...s.convoListItem,
-                    padding: "14px 0",
-                    borderBottom: i === recentMessages.length - 1 ? "none" : `1px solid ${LINE}`,
-                  }}
-                >
-                  <span style={s.convoAvatar}>{c.initials}</span>
-                  <div style={s.convoListTextCol}>
-                    <div style={s.convoListTopRow}>
-                      <span style={s.convoListName}>{c.name}</span>
-                      <span style={s.convoListTime}>{c.time}</span>
-                    </div>
-                    <p style={s.convoListPreview}>{c.lastMessage}</p>
-                  </div>
-                  {c.unread > 0 && <span style={{ ...s.convoUnreadDot, top: 14 }}>{c.unread}</span>}
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section style={s.upcomingCard}>
-            <PanelHeader title="Upcoming meetings" href="/scholarMeeting" />
-            <div style={s.upcomingList}>
-              {upcomingMeetings.map((m) => {
-                const { month, day } = formatDateParts(m.date);
-                return (
-                  <div key={m.id} style={s.upcomingRow}>
-                    <div style={s.meetingDateBox}>
-                      <span style={s.meetingDateMonth}>{month}</span>
-                      <span style={s.meetingDateDay}>{day}</span>
-                    </div>
-                    <div>
-                      <p style={s.upcomingLabel}>{m.title}</p>
-                      <p style={s.upcomingDetail}>
-                        {m.time} · with {m.person}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-              {upcomingMeetings.length === 0 && <p style={s.meetingMeta}>No upcoming meetings scheduled.</p>}
-            </div>
-
-            <div style={s.quickLinksWrap}>
-              <p style={s.quickLinksHeading}>Quick actions</p>
-              <Link href="/scholarMessage" style={s.quickLinkBtn}>
-                <span style={s.quickLinkIcon}>
-                  <MailIcon small />
-                </span>
-                <span>Message your coordinator</span>
-                <span style={{ marginLeft: "auto", color: "#9a9a94" }}>
-                  <ArrowRightIcon />
-                </span>
-              </Link>
-              <Link href="/scholarMeeting" style={s.quickLinkBtn}>
-                <span style={s.quickLinkIcon}>
-                  <CalendarIcon small />
-                </span>
-                <span>Request a meeting</span>
-                <span style={{ marginLeft: "auto", color: "#9a9a94" }}>
-                  <ArrowRightIcon />
-                </span>
-              </Link>
-              <Link href="/ScholarGrade" style={s.quickLinkBtn}>
-                <span style={s.quickLinkIcon}>
-                  <GradeIcon />
-                </span>
-                <span>View full grade history</span>
-                <span style={{ marginLeft: "auto", color: "#9a9a94" }}>
-                  <ArrowRightIcon />
-                </span>
-              </Link>
-            </div>
-          </section>
+        {/* 5. Row 2 Operational Grid: Financial Aid Disbursements + Coordinator Guidance & Advisory */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ScholarDisbursementCard disbursements={data.disbursements} />
+          <ScholarCoordinatorAndMeetingsCard communication={data.communication} meetings={data.upcoming_meetings} />
         </div>
 
-        {/* Grades + Payments */}
-        <div className="vd-content-grid" style={s.contentGrid}>
-          <section style={s.feedCard}>
-            <PanelHeader title="Grade history" href="/ScholarGrade" />
-            <div style={s.gradeTable}>
-              {recentGrades.map((g, i) => {
-                const tone = GRADE_STATUS_STYLE[g.status];
-                return (
-                  <div
-                    key={g.term}
-                    style={{
-                      ...s.gradeRow,
-                      borderBottom: i === recentGrades.length - 1 ? "none" : `1px solid ${LINE}`,
-                    }}
-                  >
-                    <div style={s.gradeTermCol}>
-                      <p style={s.gradeTerm}>{g.term}</p>
-                      <p style={s.gradeNote}>{g.note}</p>
-                    </div>
-                    <span style={{ ...s.statusTag, background: tone.background, color: tone.color, marginRight: 4 }}>
-                      {g.status}
-                    </span>
-                    <span style={s.gradeValue}>{g.gwa}%</span>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-
-          <section style={s.feedCard}>
-            <PanelHeader title="Payments" href="/ScholarPayment" />
-            <div style={{ display: "flex", gap: 24, marginBottom: 18, flexWrap: "wrap" }}>
-              <div>
-                <p style={s.statCardLabel}>Total disbursed</p>
-                <p style={{ ...s.statCardValue, fontSize: "1.4rem", marginBottom: 0 }}>
-                  {PAYMENT_SUMMARY.totalDisbursed}
-                </p>
-              </div>
-              <div>
-                <p style={s.statCardLabel}>Next semester</p>
-                <p style={{ ...s.statCardValue, fontSize: "1.4rem", marginBottom: 0 }}>{PAYMENT_SUMMARY.nextAmount}</p>
-              </div>
-            </div>
-            <div style={s.paymentList}>
-              {recentPayments.map((p) => {
-                const tone = PAYMENT_STATUS_STYLE[p.status];
-                return (
-                  <div key={p.term} style={s.paymentRow}>
-                    <span style={s.paymentIconBox}>
-                      <PaymentIcon />
-                    </span>
-                    <div style={s.paymentInfoCol}>
-                      <p style={s.paymentTerm}>{p.term}</p>
-                      <p style={s.paymentMeta}>{p.date}</p>
-                    </div>
-                    <span style={{ ...s.statusTag, background: tone.background, color: tone.color, marginRight: 10 }}>
-                      {p.status}
-                    </span>
-                    <span style={s.paymentAmount}>{p.amount}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        </div>
+        {/* 6. Row 3: Announcements & Community Forum */}
+        <ScholarAnnouncementsCard announcements={data.announcements} />
       </div>
     </div>
   );

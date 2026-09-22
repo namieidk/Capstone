@@ -1,10 +1,15 @@
 "use client";
 
+import { AlertCircle, Loader2, UserCog, X } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
-import { s, XCircleIcon } from "@/components/Adminshared";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
 
-interface EditProfileDrawerProps {
+export interface EditProfileDrawerProps {
   open: boolean;
   onClose: () => void;
   initialValues?: {
@@ -19,6 +24,8 @@ interface EditProfileDrawerProps {
   error?: string;
   onSave: (values: { first_name: string; last_name: string; title: string; department: string; bio: string }) => void;
 }
+
+const FIELD_INPUT = "mt-1.5 h-11! border-line bg-[#f7f9fb]! text-sm! md:text-sm!";
 
 export default function EditProfileDrawer({
   open,
@@ -44,123 +51,146 @@ export default function EditProfileDrawer({
     }
   }, [open, initialValues]);
 
-  if (!open) return null;
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({
+      first_name: firstName,
+      last_name: lastName,
+      title,
+      department,
+      bio,
+    });
+  };
 
   return (
-    // biome-ignore lint/a11y/useSemanticElements: full-screen backdrop; a button cannot contain the panel's form controls
-    <div
-      style={s.drawerOverlay}
-      role="button"
-      tabIndex={0}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onClose();
-        }
-      }}
-    >
-      <div style={s.drawerPanel}>
-        <div style={s.drawerHeader}>
-          <div style={{ flexGrow: 1 }}>
-            <h3 style={s.drawerName}>Edit profile</h3>
-            <p style={s.drawerMeta}>Update your personal information</p>
+    <Sheet open={open} onOpenChange={(val) => !val && onClose()}>
+      <SheetContent
+        side="right"
+        showCloseButton={false}
+        className="w-110! max-w-[92vw]! gap-0 overflow-y-auto border-line bg-white p-8 text-sm!"
+      >
+        <div className="flex items-start gap-3.5">
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-navy text-white shadow-xs">
+            <UserCog className="size-6" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <SheetTitle className="text-xl! font-bold text-navy!">Edit profile</SheetTitle>
+            <SheetDescription className="text-sm!">Update your personal information and biography.</SheetDescription>
           </div>
-          <button type="button" style={s.drawerCloseBtn} onClick={onClose} aria-label="Close">
-            <XCircleIcon />
-          </button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-9 shrink-0 text-muted-foreground hover:text-navy"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            <X className="size-5" />
+          </Button>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr",
-            gap: 16,
-            marginBottom: 24,
-          }}
-        >
-          <div>
-            <p style={drawerFieldLabel}>First name</p>
-            <input style={s.input} value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+        <form onSubmit={handleSubmit} className="mt-6 flex flex-1 flex-col gap-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="edit-first-name" className="text-sm! font-semibold text-navy">
+                First name <span className="text-amber">*</span>
+              </Label>
+              <Input
+                id="edit-first-name"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+                className={FIELD_INPUT}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-last-name" className="text-sm! font-semibold text-navy">
+                Last name <span className="text-amber">*</span>
+              </Label>
+              <Input
+                id="edit-last-name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+                className={FIELD_INPUT}
+              />
+            </div>
           </div>
+
           <div>
-            <p style={drawerFieldLabel}>Last name</p>
-            <input style={s.input} value={lastName} onChange={(e) => setLastName(e.target.value)} />
-          </div>
-          <div>
-            <p style={drawerFieldLabel}>Title</p>
-            <input style={s.input} value={title} onChange={(e) => setTitle(e.target.value)} />
-          </div>
-          <div>
-            <p style={drawerFieldLabel}>Department</p>
-            <input style={s.input} value={department} onChange={(e) => setDepartment(e.target.value)} />
-          </div>
-          <div>
-            <p style={drawerFieldLabel}>Bio</p>
-            <textarea
-              style={{ ...s.input, height: 90, resize: "vertical" }}
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
+            <Label htmlFor="edit-title" className="text-sm! font-semibold text-navy">
+              Title
+            </Label>
+            <Input
+              id="edit-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. System Administrator"
+              className={FIELD_INPUT}
             />
           </div>
-        </div>
 
-        {error && <div style={drawerErrorBanner}>{error}</div>}
+          <div>
+            <Label htmlFor="edit-department" className="text-sm! font-semibold text-navy">
+              Department
+            </Label>
+            <Input
+              id="edit-department"
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              placeholder="e.g. IT Department"
+              className={FIELD_INPUT}
+            />
+          </div>
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: 10,
-            borderTop: "1px solid #ECE7DA",
-            paddingTop: 20,
-          }}
-        >
-          <button type="button" style={s.reviewEditLink} onClick={onClose} disabled={saving}>
-            Cancel
-          </button>
-          <button
-            type="button"
-            style={{
-              ...s.continueBtnSmall,
-              opacity: saving ? 0.6 : 1,
-              cursor: saving ? "not-allowed" : "pointer",
-            }}
-            disabled={saving}
-            onClick={() =>
-              onSave({
-                first_name: firstName,
-                last_name: lastName,
-                title,
-                department,
-                bio,
-              })
-            }
-          >
-            {saving ? "Saving..." : "Save changes"}
-          </button>
-        </div>
-      </div>
-    </div>
+          <div>
+            <Label htmlFor="edit-bio" className="text-sm! font-semibold text-navy">
+              Bio
+            </Label>
+            <Textarea
+              id="edit-bio"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="A brief bio about your role and responsibilities..."
+              rows={4}
+              className="mt-1.5 min-h-24! resize-y border-line bg-[#f7f9fb]! text-sm! md:text-sm!"
+            />
+          </div>
+
+          {error && (
+            <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              <AlertCircle className="size-4 shrink-0 text-red-600" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <div className="mt-auto flex items-center justify-end gap-3 border-t border-line pt-6">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={saving}
+              className="h-11 border-line px-5 text-sm font-medium text-navy hover:bg-tint"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={saving}
+              className="h-11 bg-navy px-6 text-sm font-medium text-white hover:bg-navy/90"
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save changes"
+              )}
+            </Button>
+          </div>
+        </form>
+      </SheetContent>
+    </Sheet>
   );
 }
-
-const drawerFieldLabel: React.CSSProperties = {
-  fontSize: "0.78rem",
-  fontWeight: 700,
-  color: "#9a9a94",
-  marginBottom: 6,
-};
-
-const drawerErrorBanner: React.CSSProperties = {
-  background: "#FDEBEC",
-  color: "#B3261E",
-  border: "1px solid #F5C2C0",
-  borderRadius: 10,
-  padding: "12px 14px",
-  fontSize: "0.88rem",
-  lineHeight: 1.5,
-  marginBottom: 20,
-};

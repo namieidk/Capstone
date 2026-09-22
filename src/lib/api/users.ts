@@ -28,9 +28,10 @@ export interface AuditLogsResponse {
   limit: number;
 }
 
-export function listUsers(params?: { role?: string; search?: string }) {
+export function listUsers(params?: { role?: string; roles?: string; search?: string }) {
   const qs = new URLSearchParams();
   if (params?.role) qs.set("role", params.role);
+  if (params?.roles) qs.set("roles", params.roles);
   if (params?.search) qs.set("search", params.search);
   const query = qs.toString();
   return apiGet<import("./auth").User[]>(`${B}${query ? `?${query}` : ""}`);
@@ -42,6 +43,39 @@ export function getAuditLogs(params?: { page?: number; limit?: number }) {
   if (params?.limit) qs.set("limit", String(params.limit));
   const query = qs.toString();
   return apiGet<AuditLogsResponse>(`${B}/logs${query ? `?${query}` : ""}`);
+}
+
+export function getAdminDashboardData() {
+  return apiGet<{
+    metrics: {
+      totalStaff: number;
+      activeStaff: number;
+      coordinatorCount: number;
+      grantorCount: number;
+      adminCount: number;
+      totalStudents: number;
+      activeScholarsCount: number;
+      applicantCount: number;
+      totalSchools: number;
+      verifiedSchools: number;
+      gradeThreshold: number;
+    };
+    staff: Array<{
+      id: number;
+      name: string;
+      initials: string;
+      email: string;
+      type: "Coordinator" | "Grantor" | "Admin";
+      title: string;
+      department: string;
+      phone: string;
+      active: boolean;
+      joined: string;
+    }>;
+    schools: Array<import("./settings").SchoolGrading>;
+    settings: import("./settings").GlobalSettings | null;
+    recentLogs: Array<AuditLogEntry>;
+  }>(`${B}/admin/dashboard`);
 }
 
 export function createStaff(data: {

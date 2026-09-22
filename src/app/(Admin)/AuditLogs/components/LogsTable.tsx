@@ -79,7 +79,9 @@ function FilterDropdown({ label, icon: Icon, value, options, formatOption, onCha
           aria-label={label}
         >
           <Icon className="size-4 text-navy" />
-          {isActive && <span className="absolute -top-0.5 -right-0.5 size-2.25 rounded-full border-2 border-white bg-navy" />}
+          {isActive && (
+            <span className="absolute -top-0.5 -right-0.5 size-2.25 rounded-full border-2 border-white bg-navy" />
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56!">
@@ -177,7 +179,6 @@ export function LogsTable({
                 <Skeleton className="h-3.5 w-10 shrink-0" />
                 <Skeleton className="h-6 w-28 shrink-0 rounded-full" />
                 <Skeleton className="h-3.5 w-40 shrink-0" />
-                <Skeleton className="hidden h-3.5 flex-1 md:block" />
                 <Skeleton className="h-3.5 w-32 shrink-0" />
                 <Skeleton className="ml-auto size-9 shrink-0 rounded-full" />
               </div>
@@ -210,9 +211,6 @@ export function LogsTable({
                     User
                   </TableHead>
                   <TableHead className="text-center! text-xs font-semibold! tracking-wide text-[#8a8a84]!">
-                    Details
-                  </TableHead>
-                  <TableHead className="text-center! text-xs font-semibold! tracking-wide text-[#8a8a84]!">
                     Timestamp
                   </TableHead>
                   <TableHead className="pr-6 text-center! text-xs font-semibold! tracking-wide text-[#8a8a84]!">
@@ -236,11 +234,6 @@ export function LogsTable({
                     <TableCell className="py-3 text-center!">
                       <p className="mx-auto max-w-52 truncate text-sm font-medium" title={getDisplayName(log)}>
                         {getDisplayName(log)}
-                      </p>
-                    </TableCell>
-                    <TableCell className="py-3 text-center!">
-                      <p className="mx-auto max-w-72 truncate text-sm text-muted-foreground md:max-w-96">
-                        {log.details}
                       </p>
                     </TableCell>
                     <TableCell className="py-3 text-center! text-sm whitespace-nowrap tabular-nums">
