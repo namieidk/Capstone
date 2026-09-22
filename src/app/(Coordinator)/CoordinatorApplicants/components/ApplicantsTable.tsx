@@ -5,11 +5,10 @@ import type { Applicant } from "@/components/Coordinatorshared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ApplicantsPagination } from "./ApplicantsPagination";
-import { formatGwa, getStageVariant, gwaSourceTitle, STAGE_FILTERS, type StageFilter } from "./applicant-helpers";
+import { formatGwa, getStageVariant, gwaSourceTitle } from "./applicant-helpers";
 
 interface ApplicantsTableProps {
   applicants: Applicant[];
@@ -17,8 +16,6 @@ interface ApplicantsTableProps {
   loading: boolean;
   loadError: string;
   onRetry: () => void;
-  stageFilter: StageFilter;
-  onStageChange: (value: StageFilter) => void;
   hasActiveFilters: boolean;
   onClearFilters: () => void;
   currentPage: number;
@@ -27,7 +24,6 @@ interface ApplicantsTableProps {
   onSelect: (applicant: Applicant) => void;
 }
 
-const CONTROL_CLASSES = "h-11 border-line bg-card! text-sm shadow-xs";
 const SKELETON_ROWS = ["row-1", "row-2", "row-3", "row-4", "row-5", "row-6"];
 
 export function ApplicantsTable({
@@ -36,8 +32,6 @@ export function ApplicantsTable({
   loading,
   loadError,
   onRetry,
-  stageFilter,
-  onStageChange,
   hasActiveFilters,
   onClearFilters,
   currentPage,
@@ -48,33 +42,11 @@ export function ApplicantsTable({
   return (
     <Card className="mt-5 rounded-[18px]! shadow-va-sm">
       <CardHeader>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
-            {!loading &&
-              !loadError &&
-              (hasActiveFilters ? `${totalFiltered} matches` : `${totalFiltered} total applicants`)}
-          </p>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Select value={stageFilter} onValueChange={(v) => onStageChange(v as StageFilter)}>
-              <SelectTrigger size="lg" className={`${CONTROL_CLASSES} w-full sm:w-44`} aria-label="Filter by stage">
-                <SelectValue placeholder="All stages" />
-              </SelectTrigger>
-              <SelectContent>
-                {STAGE_FILTERS.map((f) => (
-                  <SelectItem key={f.value} value={f.value} className="text-sm!">
-                    {f.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {hasActiveFilters && (
-              <Button type="button" variant="ghost" className="h-11 px-3 text-sm!" onClick={onClearFilters}>
-                <RotateCcw className="size-4" />
-                Clear
-              </Button>
-            )}
-          </div>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          {!loading &&
+            !loadError &&
+            (hasActiveFilters ? `${totalFiltered} matches` : `${totalFiltered} total applicants`)}
+        </p>
       </CardHeader>
       <CardContent className="px-0!">
         {loading ? (

@@ -3,12 +3,15 @@
 import {
   Bell,
   Calendar,
+  Check,
   CheckCheck,
   FileCheck2,
   FileText,
+  Filter,
   Menu,
   MessageCircle,
   MessageSquare,
+  RotateCcw,
   Search,
   Trash2,
   Users,
@@ -23,12 +26,27 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { type NotificationCategory, useNotifications } from "@/contexts/NotificationContext";
 
+export interface HeaderFilterOption {
+  value: string;
+  label: string;
+}
+
+export interface HeaderFilterProps {
+  value: string;
+  onChange: (value: string) => void;
+  options: HeaderFilterOption[];
+  label?: string;
+  hasActive?: boolean;
+  onClear?: () => void;
+}
+
 interface PageHeaderProps {
   title: React.ReactNode;
   subtitle?: React.ReactNode;
   searchValue?: string;
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
+  filter?: HeaderFilterProps;
   actions?: React.ReactNode;
   children?: React.ReactNode;
   className?: string;
@@ -69,12 +87,81 @@ function getCategoryIcon(cat: NotificationCategory) {
   }
 }
 
+function HeaderFilterButton({ value, onChange, options, label = "Filter", hasActive, onClear }: HeaderFilterProps) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="relative size-9 shrink-0 rounded-full border-line/80 bg-white text-navy hover:bg-tint hover:text-navy"
+          aria-label={label}
+        >
+          <Filter className="size-4" />
+          {hasActive && (
+            <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-amber ring-2 ring-white" />
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent
+        align="end"
+        sideOffset={8}
+        className="w-56 rounded-2xl border border-line bg-white p-0 shadow-xl"
+      >
+        <div className="flex items-center justify-between border-b border-line/60 px-4 py-2.5 bg-[#FAF9F7]/60">
+          <span className="text-xs font-bold text-navy">{label}</span>
+          {hasActive && onClear && (
+            <button
+              type="button"
+              onClick={() => {
+                onClear();
+                setOpen(false);
+              }}
+              className="flex items-center gap-1 text-[0.68rem] font-semibold text-muted-foreground hover:text-navy transition-colors"
+            >
+              <RotateCcw className="size-3" />
+              Clear
+            </button>
+          )}
+        </div>
+
+        <div className="p-1.5">
+          {options.map((opt) => {
+            const isSelected = opt.value === value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  onChange(opt.value);
+                  setOpen(false);
+                }}
+                className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-tint/60 ${
+                  isSelected ? "font-semibold text-navy" : "text-foreground"
+                }`}
+              >
+                {opt.label}
+                {isSelected && <Check className="size-3.5 shrink-0 text-amber" />}
+              </button>
+            );
+          })}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function PageHeader({
   title,
   subtitle,
   searchValue,
   onSearchChange,
   searchPlaceholder = "Search...",
+  filter,
   actions,
   children,
   className = "",
@@ -105,7 +192,7 @@ export function PageHeader({
         </div>
       </div>
 
-      {/* RIGHT: Search Bar + Notifications + Actions / Custom Children */}
+      {/* RIGHT: Search Bar + Filter + Notifications + Actions / Custom Children */}
       <div className="flex shrink-0 items-center gap-2.5 sm:gap-3">
         {/* Optional Search Bar */}
         {onSearchChange && (
@@ -131,6 +218,9 @@ export function PageHeader({
           </div>
         )}
 
+        {/* Optional icon-only filter dropdown */}
+        {filter && <HeaderFilterButton {...filter} />}
+
         {/* Global Notification Bell Dropdown */}
         <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
           <DropdownMenuTrigger asChild>
@@ -155,7 +245,6 @@ export function PageHeader({
             sideOffset={8}
             className="w-80 sm:w-96 rounded-2xl border border-line bg-white p-0 shadow-xl"
           >
-            {/* Notification Dropdown Header */}
             <div className="flex items-center justify-between border-b border-line/60 px-4 py-3 bg-[#FAF9F7]/60">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-navy">Notifications</span>
@@ -189,7 +278,6 @@ export function PageHeader({
               </div>
             </div>
 
-            {/* Notification Items Stream */}
             <div className="max-h-80 overflow-y-auto divide-y divide-line/40">
               {notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground">

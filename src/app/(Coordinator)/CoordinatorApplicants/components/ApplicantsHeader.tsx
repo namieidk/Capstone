@@ -1,13 +1,16 @@
+// ApplicantsHeader.tsx
+
 "use client";
 
-import { PageHeader } from "@/components/PageHeader";
+import { PageHeader, type HeaderFilterProps } from "@/components/PageHeader";
 
 interface ApplicantsHeaderProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
+  filter?: HeaderFilterProps;
 }
 
-export function ApplicantsHeader({ searchQuery, onSearchChange }: ApplicantsHeaderProps) {
+export function ApplicantsHeader({ searchQuery, onSearchChange, filter }: ApplicantsHeaderProps) {
   return (
     <PageHeader
       title="Applicants"
@@ -15,6 +18,7 @@ export function ApplicantsHeader({ searchQuery, onSearchChange }: ApplicantsHead
       searchValue={searchQuery}
       onSearchChange={onSearchChange}
       searchPlaceholder="Search name, track, stage..."
+      filter={filter}
     />
   );
 }
