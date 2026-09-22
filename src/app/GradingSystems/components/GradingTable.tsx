@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, Plus } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -14,33 +14,22 @@ interface GradingTableProps {
   loading: boolean;
   loadError: string;
   onRetry: () => void;
-  onAdd: () => void;
   onSelect: (school: SchoolGrading) => void;
 }
 
 const SKELETON_ROWS = ["row-1", "row-2", "row-3", "row-4", "row-5", "row-6"];
 
-export function GradingTable({ schools, totalCount, loading, loadError, onRetry, onAdd, onSelect }: GradingTableProps) {
+export function GradingTable({ schools, totalCount, loading, loadError, onRetry, onSelect }: GradingTableProps) {
   return (
     <Card className="mt-5 rounded-[18px]! shadow-va-sm">
       <CardHeader>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
-            {!loading && !loadError && (
-              <>
-                {totalCount} {totalCount === 1 ? "grading system" : "grading systems"}
-              </>
-            )}
-          </p>
-          <Button
-            type="button"
-            className="h-11 rounded-full bg-navy px-5 text-sm! text-white shadow-xs hover:bg-navy/90"
-            onClick={onAdd}
-          >
-            <Plus className="size-4" strokeWidth={2.5} />
-            Add System
-          </Button>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          {!loading && !loadError && (
+            <>
+              {totalCount} {totalCount === 1 ? "grading system" : "grading systems"}
+            </>
+          )}
+        </p>
       </CardHeader>
 
       <CardContent className="px-0!">

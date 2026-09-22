@@ -13,6 +13,7 @@ import {
   mapApplicationToApplicant,
   matchesQuery,
   resolveDisplayStage,
+  STAGE_FILTERS,
   type StageFilter,
   stageToUpdatePayload,
 } from "./components/applicant-helpers";
@@ -131,6 +132,20 @@ export default function ApplicantsPage() {
           setQuery(v);
           setPage(1);
         }}
+        filter={{
+          value: stageFilter,
+          onChange: (v) => {
+            setStageFilter(v as StageFilter);
+            setPage(1);
+          },
+          options: STAGE_FILTERS,
+          label: "Filter by stage",
+          hasActive: stageFilter !== "all",
+          onClear: () => {
+            setStageFilter("all");
+            setPage(1);
+          },
+        }}
       />
       <div className="px-5 pb-24 md:px-10">
         <div className="mt-4 flex h-10 items-center gap-2 rounded-full border border-line bg-tint px-3.5 md:hidden">
@@ -152,11 +167,6 @@ export default function ApplicantsPage() {
           loading={loading}
           loadError={loadError}
           onRetry={fetchApplicants}
-          stageFilter={stageFilter}
-          onStageChange={(v) => {
-            setStageFilter(v);
-            setPage(1);
-          }}
           hasActiveFilters={hasActiveFilters}
           onClearFilters={resetFilters}
           currentPage={safePage}

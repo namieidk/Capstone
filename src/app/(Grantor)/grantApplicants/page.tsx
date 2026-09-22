@@ -152,11 +152,6 @@ export default function GrantApplicantsPage() {
           loading={loading}
           loadError={loadError}
           onRetry={fetchApplicants}
-          stageFilter={stageFilter}
-          onStageChange={(v) => {
-            setStageFilter(v);
-            setPage(1);
-          }}
           hasActiveFilters={hasActiveFilters}
           onClearFilters={resetFilters}
           currentPage={safePage}
