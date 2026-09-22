@@ -1,9 +1,9 @@
 "use client";
 
 import { CheckCircle2, Clock, CreditCard, FileCheck } from "lucide-react";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { PageHeader } from "@/components/PageHeader";
+import { PageHeader, type HeaderFilterProps } from "@/components/PageHeader";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SocketContext } from "@/contexts/SocketContext";
@@ -19,6 +19,9 @@ export default function CoordinatorDisbursementsPage() {
   const [items, setItems] = useState<DisbursementItem[]>([]);
   const [checkModalItem, setCheckModalItem] = useState<DisbursementItem | null>(null);
   const [verifyModalItem, setVerifyModalItem] = useState<DisbursementItem | null>(null);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
 
   const fetchData = useCallback(async () => {
     try {
@@ -64,12 +67,34 @@ export default function CoordinatorDisbursementsPage() {
   const settledCount = items.filter((i) => i.status === "SETTLED").length;
   const settledTotalAmount = items.filter((i) => i.status === "SETTLED").reduce((sum, i) => sum + Number(i.amount), 0);
 
+  const headerFilter: HeaderFilterProps = useMemo(
+    () => ({
+      value: statusFilter,
+      onChange: setStatusFilter,
+      label: "Disbursement Status",
+      hasActive: statusFilter !== "ALL",
+      onClear: () => setStatusFilter("ALL"),
+      options: [
+        { value: "ALL", label: `All Disbursements (${items.length})` },
+        { value: "READY_FOR_CHECK", label: `Ready for Check Issuance (${readyForCheckCount})` },
+        { value: "CHECK_ISSUED", label: `Check Issued (Awaiting OR) (${awaitingORCount})` },
+        { value: "OR_SUBMITTED", label: `OR Submitted (Audit Queue) (${orAuditQueueCount})` },
+        { value: "SETTLED", label: `Settled Transactions (${settledCount})` },
+      ],
+    }),
+    [statusFilter, items.length, readyForCheckCount, awaitingORCount, orAuditQueueCount, settledCount],
+  );
+
   return (
     <div className="min-h-full bg-[#faf8f5]">
       {/* Page Header */}
       <PageHeader
         title="Check Issuance & Tuition Settlement"
         subtitle="Phase 3 • Record direct-to-school crossed checks, manage student handovers, and verify university official receipts."
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Search scholar, school, check, or OR #..."
+        filter={headerFilter}
       />
 
       <div className="px-5 pt-6 pb-24 md:px-10 space-y-6">
@@ -149,6 +174,8 @@ export default function CoordinatorDisbursementsPage() {
         <CoordinatorDisbursementsTable
           items={items}
           loading={loading}
+          searchQuery={searchQuery}
+          filter={statusFilter}
           onRecordCheck={(item) => setCheckModalItem(item)}
           onVerifyOR={(item) => setVerifyModalItem(item)}
         />

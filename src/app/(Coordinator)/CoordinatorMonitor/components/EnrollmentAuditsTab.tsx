@@ -1,12 +1,10 @@
 "use client";
 
-import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Clock, Eye, Search, X } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Clock, Eye, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { TermEnrollment } from "@/lib/api/enrollment";
@@ -16,7 +14,7 @@ interface EnrollmentAuditsTabProps {
   loading: boolean;
   onSelectAudit: (enrollmentId: number) => void;
   searchQuery?: string;
-  onSearchChange?: (value: string) => void;
+  filter?: string;
 }
 
 const PAGE_SIZE = 8;
@@ -27,10 +25,9 @@ export function EnrollmentAuditsTab({
   loading,
   onSelectAudit,
   searchQuery = "",
-  onSearchChange,
+  filter = "ALL",
 }: EnrollmentAuditsTabProps) {
   const [page, setPage] = useState(1);
-  const [filter, setFilter] = useState<string>("ALL");
 
   const q = searchQuery.trim().toLowerCase();
 
@@ -105,54 +102,8 @@ export function EnrollmentAuditsTab({
     }
   };
 
-  const pendingCount = items.filter((i) => i.status === "PENDING_REVIEW" || i.status === "SUBMITTED").length;
-
   return (
     <div className="space-y-4">
-      {/* Top Filter & Search Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        {onSearchChange ? (
-          <div className="relative w-full sm:w-72 md:w-80">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search scholar, course, or school..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="h-9 w-full rounded-xl border-line bg-white pl-9 pr-8 text-xs placeholder:text-muted-foreground"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => onSearchChange("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="size-3.5" />
-              </button>
-            )}
-          </div>
-        ) : (
-          <div />
-        )}
-
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="h-9 w-48 sm:w-52 rounded-xl border-line bg-white text-xs font-semibold">
-              <SelectValue placeholder="Filter Term Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All Enrollments ({items.length})</SelectItem>
-              <SelectItem value="PENDING">Pending Review ({pendingCount})</SelectItem>
-              <SelectItem value="APPROVED">Endorsed to Grantor</SelectItem>
-              <SelectItem value="COMPLETED">Completed</SelectItem>
-              <SelectItem value="CHANGES_REQUESTED">Changes Requested</SelectItem>
-              <SelectItem value="REJECTED">Rejected</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Main Table Card */}
       <Card className="rounded-[18px]! border-line bg-white shadow-va-sm">
         <CardContent className="px-0!">
           {loading ? (

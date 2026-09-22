@@ -8,7 +8,7 @@ interface BaselineAuditsTabProps {
   loading: boolean;
   onSelectScholar: (scholarProfileId: number) => void;
   searchQuery?: string;
-  onSearchChange?: (value: string) => void;
+  filter?: string;
 }
 
 export function BaselineAuditsTab({
@@ -16,7 +16,7 @@ export function BaselineAuditsTab({
   loading,
   onSelectScholar,
   searchQuery,
-  onSearchChange,
+  filter,
 }: BaselineAuditsTabProps) {
   return (
     <div className="space-y-4">
@@ -25,7 +25,7 @@ export function BaselineAuditsTab({
         loading={loading}
         onSelectScholar={onSelectScholar}
         searchQuery={searchQuery}
-        onSearchChange={onSearchChange}
+        filter={filter}
       />
     </div>
   );

@@ -1,11 +1,9 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ScholarDocument } from "@/lib/api/documents";
@@ -16,7 +14,7 @@ interface CoordinatorGradeAuditsTabProps {
   loading: boolean;
   onSelectAudit: (documentId: number) => void;
   searchQuery?: string;
-  onSearchChange?: (value: string) => void;
+  filter?: string;
 }
 
 const PAGE_SIZE = 8;
@@ -27,10 +25,9 @@ export function CoordinatorGradeAuditsTab({
   loading,
   onSelectAudit,
   searchQuery = "",
-  onSearchChange,
+  filter = "ALL",
 }: CoordinatorGradeAuditsTabProps) {
   const [page, setPage] = useState(1);
-  const [filter, setFilter] = useState<string>("ALL");
 
   const q = searchQuery.trim().toLowerCase();
 
@@ -76,57 +73,6 @@ export function CoordinatorGradeAuditsTab({
 
   return (
     <div className="space-y-4">
-      {/* Controls Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-          <Input
-            value={searchQuery}
-            onChange={(e) => onSearchChange?.(e.target.value)}
-            placeholder="Search by scholar name, student number, or school..."
-            className="pl-9 h-9.5 text-xs rounded-xl border-line bg-white shadow-xs"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => onSearchChange?.("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600"
-            >
-              <X className="size-3.5" />
-            </button>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Select
-            value={filter}
-            onValueChange={(val) => {
-              setFilter(val);
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className="h-9.5 min-h-9.5! py-1.5! w-44 rounded-xl border-line bg-white text-xs font-semibold text-navy shadow-xs px-3">
-              <SelectValue placeholder="Filter Status" />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl border-line">
-              <SelectItem value="ALL" className="text-xs font-medium">
-                All Submissions
-              </SelectItem>
-              <SelectItem value="PENDING" className="text-xs font-medium">
-                Awaiting Audit
-              </SelectItem>
-              <SelectItem value="VERIFIED" className="text-xs font-medium">
-                Verified
-              </SelectItem>
-              <SelectItem value="NEEDS_REUPLOAD" className="text-xs font-medium">
-                Needs Re-upload
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Main Table Card */}
       <Card className="rounded-[18px]! border-line bg-white shadow-va-sm">
         <CardContent className="px-0!">
           {loading ? (

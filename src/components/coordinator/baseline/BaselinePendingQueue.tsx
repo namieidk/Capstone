@@ -1,12 +1,10 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Clock, Eye, FileUp, History, Lock, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Eye, FileUp, History, Lock } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { PendingBaselineItem } from "@/lib/api/baseline";
@@ -16,10 +14,8 @@ interface BaselinePendingQueueProps {
   loading: boolean;
   onSelectScholar: (scholarProfileId: number) => void;
   searchQuery?: string;
-  onSearchChange?: (value: string) => void;
+  filter?: string;
 }
-
-type FilterStatus = "ALL" | "PENDING_COORDINATOR_REVIEW" | "PENDING_PROSPECTUS" | "BASELINE_FROZEN";
 
 const PAGE_SIZE = 8;
 const SKELETON_ROWS = ["sk-1", "sk-2", "sk-3", "sk-4", "sk-5"];
@@ -29,10 +25,9 @@ export function BaselinePendingQueue({
   loading,
   onSelectScholar,
   searchQuery = "",
-  onSearchChange,
+  filter = "ALL",
 }: BaselinePendingQueueProps) {
   const [page, setPage] = useState(1);
-  const [filter, setFilter] = useState<FilterStatus>("ALL");
 
   const q = searchQuery.trim().toLowerCase();
 
@@ -102,52 +97,8 @@ export function BaselinePendingQueue({
     }
   };
 
-  const pendingCount = items.filter((i) => i.academic_baseline_status === "PENDING_COORDINATOR_REVIEW").length;
-
   return (
     <div className="space-y-4">
-      {/* Top Filter & Search Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        {onSearchChange ? (
-          <div className="relative w-full sm:w-72 md:w-80">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search scholar, course, school..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="h-9 w-full rounded-xl border-line bg-white pl-9 pr-8 text-xs placeholder:text-muted-foreground"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => onSearchChange("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="size-3.5" />
-              </button>
-            )}
-          </div>
-        ) : (
-          <div />
-        )}
-
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <Select value={filter} onValueChange={(v) => setFilter(v as FilterStatus)}>
-            <SelectTrigger className="h-9 w-48 sm:w-52 rounded-xl border-line bg-white text-xs font-semibold">
-              <SelectValue placeholder="Filter Baseline Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All Baselines ({items.length})</SelectItem>
-              <SelectItem value="PENDING_COORDINATOR_REVIEW">Ready for Audit ({pendingCount})</SelectItem>
-              <SelectItem value="PENDING_PROSPECTUS">Draft Ingestion</SelectItem>
-              <SelectItem value="BASELINE_FROZEN">Locked Baselines</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Main Table Card matching ActiveScholars styling */}
       <Card className="rounded-[18px]! border-line bg-white shadow-va-sm">
         <CardContent className="px-0!">
           {loading ? (

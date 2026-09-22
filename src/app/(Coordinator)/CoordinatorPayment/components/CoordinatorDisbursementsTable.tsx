@@ -1,12 +1,10 @@
 "use client";
 
-import { CheckCircle2, ChevronLeft, ChevronRight, CreditCard, Eye, FileCheck, Search, X } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, CreditCard, Eye, FileCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { DisbursementItem } from "@/lib/api/disbursements";
@@ -16,6 +14,8 @@ interface CoordinatorDisbursementsTableProps {
   loading: boolean;
   onRecordCheck: (disbursement: DisbursementItem) => void;
   onVerifyOR: (disbursement: DisbursementItem) => void;
+  searchQuery?: string;
+  filter?: string;
 }
 
 const PAGE_SIZE = 8;
@@ -25,9 +25,9 @@ export function CoordinatorDisbursementsTable({
   loading,
   onRecordCheck,
   onVerifyOR,
+  searchQuery = "",
+  filter = "ALL",
 }: CoordinatorDisbursementsTableProps) {
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
   const [page, setPage] = useState(1);
 
   const formatCurrency = (val: number) => {
@@ -35,7 +35,7 @@ export function CoordinatorDisbursementsTable({
   };
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = searchQuery.trim().toLowerCase();
     return items.filter((item) => {
       const name = `${item.scholar_profile?.first_name || ""} ${item.scholar_profile?.last_name || ""}`.toLowerCase();
       const school = (item.scholar_profile?.school_name || "").toLowerCase();
@@ -44,13 +44,13 @@ export function CoordinatorDisbursementsTable({
 
       const matchesSearch = !q || name.includes(q) || school.includes(q) || check.includes(q) || orNum.includes(q);
 
-      if (statusFilter === "ALL") return matchesSearch;
-      if (statusFilter === "READY_FOR_CHECK") {
+      if (filter === "ALL") return matchesSearch;
+      if (filter === "READY_FOR_CHECK") {
         return matchesSearch && (item.status === "AUTHORIZED" || item.status === "RELEASED");
       }
-      return matchesSearch && item.status === statusFilter;
+      return matchesSearch && item.status === filter;
     });
-  }, [items, search, statusFilter]);
+  }, [items, searchQuery, filter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -58,52 +58,6 @@ export function CoordinatorDisbursementsTable({
 
   return (
     <div className="space-y-4">
-      {/* Search & Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="relative w-full sm:w-80">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search scholar, school, check, or OR #..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="h-9 w-full rounded-xl border-line bg-white pl-9 pr-8 text-xs placeholder:text-muted-foreground"
-          />
-          {search && (
-            <button
-              type="button"
-              onClick={() => setSearch("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              <X className="size-3.5" />
-            </button>
-          )}
-        </div>
-
-        <Select
-          value={statusFilter}
-          onValueChange={(val) => {
-            setStatusFilter(val);
-            setPage(1);
-          }}
-        >
-          <SelectTrigger className="h-9 w-52 rounded-xl border-line bg-white text-xs font-semibold">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">All Disbursements ({items.length})</SelectItem>
-            <SelectItem value="READY_FOR_CHECK">Ready for Check Issuance</SelectItem>
-            <SelectItem value="CHECK_ISSUED">Check Issued (Awaiting OR)</SelectItem>
-            <SelectItem value="OR_SUBMITTED">OR Submitted (Audit Queue)</SelectItem>
-            <SelectItem value="SETTLED">Settled Transactions</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Main Table Card */}
       <Card className="rounded-[18px]! border-line bg-white shadow-va-sm">
         <CardContent className="p-0">
           <Table className="text-xs">

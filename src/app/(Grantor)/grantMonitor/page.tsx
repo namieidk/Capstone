@@ -121,7 +121,6 @@ export default function GrantorMonitorPage() {
               loadError={activeScholarsError}
               onRetry={fetchActiveScholars}
               searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
               onSelectScholar={(sch) => {
                 setSelectedScholar(sch);
                 setOpenMonitorDrawer(true);
@@ -135,7 +134,6 @@ export default function GrantorMonitorPage() {
               items={baselineItems}
               loading={loadingBaselines}
               searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
               onSelectScholar={(id) => {
                 setSelectedAuditProfileId(id);
                 setOpenAuditDrawer(true);

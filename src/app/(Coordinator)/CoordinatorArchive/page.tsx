@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Filter } from "lucide-react";
 import {
   AMBER,
   ARCHIVE_STATUS_STYLE,
@@ -25,6 +26,7 @@ import {
   PeopleIcon,
   s,
   SearchIcon,
+  SHADOW_MD,
   SHADOW_SM,
   TINT,
   WHITE,
@@ -42,7 +44,8 @@ const ARCHIVE_FILTERS: ArchiveFilter[] = ["All", "Graduated", "Terminated", "Wit
 // fit on screen so the table adapts to the device instead of overflowing.
 const ROW_HEIGHT = 72;
 // Reserved space below the table card's top edge for its own header row
-// (count + filter), the column headings, the pagination row, and page padding.
+// (count row only now — the filter moved to the navbar), the column
+// headings, the pagination row, and page padding.
 const RESERVED_HEIGHT = 250;
 const MIN_ROWS = 3;
 
@@ -62,8 +65,10 @@ export default function ArchivePage() {
   const [view, setView] = useState<DrawerView>("overview");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const tableCardRef = useRef<HTMLDivElement>(null);
+  const filterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function recalcPageSize() {
@@ -77,6 +82,27 @@ export default function ArchivePage() {
     window.addEventListener("resize", recalcPageSize);
     return () => window.removeEventListener("resize", recalcPageSize);
   }, []);
+
+  // Close the filter popover on outside click or Escape.
+  useEffect(() => {
+    if (!filterOpen) return;
+
+    function handlePointerDown(e: MouseEvent) {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
+        setFilterOpen(false);
+      }
+    }
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setFilterOpen(false);
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [filterOpen]);
 
   const query = search.trim().toLowerCase();
 
@@ -123,18 +149,19 @@ export default function ArchivePage() {
   function handleFilterChange(f: ArchiveFilter) {
     setFilter(f);
     setPage(1);
+    setFilterOpen(false);
   }
 
   const paidPayments = selected ? selected.paymentHistory.filter((p) => p.status === "Paid") : [];
   const totalDisbursed = paidPayments.reduce((sum, p) => sum + p.amount, 0);
   const finalGwa = selected?.gradeHistory[0]?.gwa;
 
+  const filterLabel = filter === "All" ? `All statuses (${counts.All})` : `${filter} (${counts[filter]})`;
+  const filterActive = filter !== "All";
+
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <style>{`
-        .filter-select:focus { outline: none; }
-        .filter-select option { color: ${NAVY}; background: ${WHITE}; }
-
         @keyframes archiveOverlayFadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -149,6 +176,54 @@ export default function ArchivePage() {
         @media (max-width: 720px) {
           .archive-table th, .archive-table td { padding-left: 8px !important; padding-right: 8px !important; font-size: 0.78rem !important; }
           .archive-col-track, .archive-col-joined { display: none; }
+        }
+
+        /* Icon-only filter button: circular, matches the bell button, with a
+           CSS-only tooltip on hover showing the currently selected status. */
+        .archive-filter-btn {
+          position: relative;
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .archive-filter-btn::after {
+          content: attr(data-tooltip);
+          position: absolute;
+          top: calc(100% + 8px);
+          right: 0;
+          white-space: nowrap;
+          background: ${NAVY};
+          color: ${WHITE};
+          font-size: 0.72rem;
+          font-weight: 600;
+          padding: 6px 10px;
+          border-radius: 8px;
+          opacity: 0;
+          pointer-events: none;
+          transform: translateY(-4px);
+          transition: opacity 0.12s ease, transform 0.12s ease;
+          z-index: 40;
+        }
+        .archive-filter-btn:hover::after {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        .archive-filter-dot {
+          position: absolute;
+          top: 6px;
+          right: 6px;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: ${AMBER};
+          border: 2px solid ${WHITE};
+        }
+        .archive-filter-option:hover {
+          background: ${TINT};
         }
       `}</style>
 
@@ -171,6 +246,90 @@ export default function ArchivePage() {
               onChange={(e) => handleSearchChange(e.target.value)}
             />
           </div>
+
+          {/* ---------------- Icon-only status filter ---------------- */}
+          <div ref={filterRef} style={{ position: "relative" }}>
+            <button
+              type="button"
+              className="archive-filter-btn border border-line/80 bg-white text-navy transition-colors hover:bg-tint hover:text-navy"
+              data-tooltip={filterLabel}
+              onClick={() => setFilterOpen((v) => !v)}
+              aria-label={`Filter by status: ${filterLabel}`}
+              aria-expanded={filterOpen}
+            >
+              <Filter className="size-4" />
+              {filterActive && <span className="archive-filter-dot ring-2 ring-white" />}
+            </button>
+
+            {filterOpen && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "calc(100% + 8px)",
+                  right: 0,
+                  width: 220,
+                  background: WHITE,
+                  border: BORDER_SUBTLE,
+                  borderRadius: 14,
+                  boxShadow: SHADOW_MD,
+                  padding: 6,
+                  zIndex: 50,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "8px 10px 6px",
+                  }}
+                >
+                  <span style={{ fontSize: "0.72rem", fontWeight: 700, color: NAVY }}>Filter by status</span>
+                  {filterActive && (
+                    <button
+                      type="button"
+                      onClick={() => handleFilterChange("All")}
+                      style={{ fontSize: "0.68rem", fontWeight: 600, color: "#9a9a94" }}
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                {ARCHIVE_FILTERS.map((f) => {
+                  const isSelected = f === filter;
+                  return (
+                    <button
+                      key={f}
+                      type="button"
+                      className="archive-filter-option"
+                      onClick={() => handleFilterChange(f)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 8,
+                        width: "100%",
+                        padding: "8px 10px",
+                        borderRadius: 8,
+                        fontSize: "0.86rem",
+                        fontWeight: isSelected ? 700 : 500,
+                        color: isSelected ? NAVY : "#3a3a36",
+                        textAlign: "left",
+                      }}
+                    >
+                      <span>{f === "All" ? `All statuses (${counts[f]})` : `${f} (${counts[f]})`}</span>
+                      {isSelected && (
+                        <span style={{ display: "flex", color: AMBER }}>
+                          <CheckIcon />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           <button type="button" style={s.bellBtn} aria-label="Notifications">
             <BellIcon />
             <span style={{ ...s.bellDot, background: AMBER }} />
@@ -193,24 +352,6 @@ export default function ArchivePage() {
           >
             <div style={s.tableHeaderRow}>
               <p style={s.tableHeaderCount}>{filtered.length} total scholars</p>
-              <div style={s.tableFilterWrap}>
-                <select
-                  className="filter-select"
-                  value={filter}
-                  onChange={(e) => handleFilterChange(e.target.value as ArchiveFilter)}
-                  style={s.tableFilterSelect}
-                  aria-label="Filter by status"
-                >
-                  {ARCHIVE_FILTERS.map((f) => (
-                    <option key={f} value={f}>
-                      {f === "All" ? `All statuses (${counts[f]})` : `${f} (${counts[f]})`}
-                    </option>
-                  ))}
-                </select>
-                <span style={s.tableFilterChevron}>
-                  <ChevronDownIcon />
-                </span>
-              </div>
             </div>
 
             <div className="vc-table-scroll" style={{ width: "100%", overflowX: "auto" }}>
@@ -666,6 +807,25 @@ function ChevronRightIcon() {
       strokeLinejoin="round"
     >
       <path d="M9 18l6-6-6-6" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M20 6L9 17l-5-5" />
     </svg>
   );
 }

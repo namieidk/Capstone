@@ -1,14 +1,12 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Eye, Search, TrendingDown, TrendingUp, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { ActiveScholar } from "@/components/Coordinatorshared";
 import { HEALTH_TAG } from "@/components/Coordinatorshared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -18,7 +16,7 @@ interface ActiveScholarsTabProps {
   loadError?: string;
   onRetry?: () => void;
   searchQuery?: string;
-  onSearchChange?: (value: string) => void;
+  healthFilter?: string;
   onSelectScholar: (scholar: ActiveScholar) => void;
 }
 
@@ -31,11 +29,10 @@ export function ActiveScholarsTab({
   loadError,
   onRetry,
   searchQuery = "",
-  onSearchChange,
+  healthFilter = "ALL",
   onSelectScholar,
 }: ActiveScholarsTabProps) {
   const [page, setPage] = useState(1);
-  const [healthFilter, setHealthFilter] = useState<string>("ALL");
 
   const query = searchQuery.trim().toLowerCase();
 
@@ -58,47 +55,6 @@ export function ActiveScholarsTab({
 
   return (
     <div className="space-y-4">
-      {/* Top Filter & Search Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        {onSearchChange ? (
-          <div className="relative w-full sm:w-72 md:w-80">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search scholar, course, or ID..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="h-9 w-full rounded-xl border-line bg-white pl-9 pr-8 text-xs placeholder:text-muted-foreground"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => onSearchChange("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="size-3.5" />
-              </button>
-            )}
-          </div>
-        ) : (
-          <div />
-        )}
-
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <Select value={healthFilter} onValueChange={setHealthFilter}>
-            <SelectTrigger className="h-9 w-48 sm:w-52 rounded-xl border-line bg-white text-xs font-semibold">
-              <SelectValue placeholder="Health Standing" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All Standings ({scholars.length})</SelectItem>
-              <SelectItem value="good">On Track</SelectItem>
-              <SelectItem value="warn">Needs Attention / Probation</SelectItem>
-              <SelectItem value="bad">Action Required</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
       <Card className="rounded-[18px]! border-line bg-white shadow-va-sm">
         <CardContent className="px-0!">
           {loading ? (
