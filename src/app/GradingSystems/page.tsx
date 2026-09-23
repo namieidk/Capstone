@@ -102,11 +102,7 @@ export default function GradingSystemsPage() {
 
   return (
     <div className="min-h-full bg-[#faf8f5]">
-      <GradingHeader
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        onAdd={() => setShowAdd(true)}
-      />
+      <GradingHeader searchQuery={searchQuery} onSearchChange={setSearchQuery} onAdd={() => setShowAdd(true)} />
 
       <div className="px-5 pb-24 md:px-10">
         <GradingTable

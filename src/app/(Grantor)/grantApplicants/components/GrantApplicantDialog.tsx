@@ -148,14 +148,14 @@ export function GrantApplicantDialog({
 
   return (
     <>
-      <div
-        className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end transition-opacity"
-        onClick={handleClose}
-      >
-        <div
-          className="w-full max-w-6xl bg-slate-50 h-full flex flex-col shadow-2xl overflow-hidden border-l border-slate-200"
-          onClick={(e) => e.stopPropagation()}
-        >
+      <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true">
+        <button
+          type="button"
+          aria-label="Close applicant details"
+          className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity w-full h-full cursor-default"
+          onClick={handleClose}
+        />
+        <div className="relative z-10 w-full max-w-6xl bg-slate-50 h-full flex flex-col shadow-2xl overflow-hidden border-l border-slate-200">
           {/* Drawer Header */}
           <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
             <div>

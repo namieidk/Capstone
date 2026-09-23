@@ -15,14 +15,14 @@ export function DetailDialog({ log, onClose }: DetailDialogProps) {
   if (!log) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end transition-opacity"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-lg bg-slate-50 h-full flex flex-col shadow-2xl overflow-hidden border-l border-slate-200"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true">
+      <button
+        type="button"
+        aria-label="Close details"
+        className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity w-full h-full cursor-default"
+        onClick={onClose}
+      />
+      <div className="relative z-10 w-full max-w-lg bg-slate-50 h-full flex flex-col shadow-2xl overflow-hidden border-l border-slate-200">
         {/* Drawer Header */}
         <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">

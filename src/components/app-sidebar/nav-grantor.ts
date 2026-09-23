@@ -7,7 +7,7 @@ export const GRANTOR_NAV_ITEMS: NavItem[] = [
   { key: "grading-systems", label: "Grading Systems", icon: GraduationCap, href: "/GradingSystems" },
   { key: "meeting", label: "Meeting", icon: Calendar, href: "/grantMeeting" },
   { key: "scholars", label: "Scholars", icon: GraduationCap, href: "/grantMonitor" },
-  { key: "reports", label: "Reports", icon: BarChart3, href: "/grantReports" },
+  { key: "reports", label: "Analytics", icon: BarChart3, href: "/grantReports" },
   { key: "message", label: "Message", icon: Mail, href: "/grantMessage" },
   { key: "payments", label: "Disbursements", icon: CreditCard, href: "/grantPayment" },
   { key: "settings", label: "Settings", icon: Settings, href: "/grantSettings" },

@@ -295,8 +295,7 @@ h6 {
       transparent 1px,
       transparent 30px
     ),
-    /* five blobs spread across the strip */
-    radial-gradient(circle at 4% 4%, var(--auth-mint) 0%, transparent 42%),
+    /* five blobs spread across the strip */ radial-gradient(circle at 4% 4%, var(--auth-mint) 0%, transparent 42%),
     radial-gradient(circle at 92% 12%, var(--auth-tan) 0%, transparent 30%),
     radial-gradient(circle at 2% 55%, var(--auth-mint-soft) 0%, transparent 28%),
     radial-gradient(circle at 88% 82%, var(--auth-tan-soft) 0%, transparent 28%),
@@ -328,12 +327,7 @@ h6 {
 /* Brand panel (right side): diagonal gradient + dot-grid + amber glow */
 .auth-brand-bg {
   position: relative;
-  background: linear-gradient(
-    155deg,
-    var(--auth-panel-1) 0%,
-    var(--auth-panel-2) 55%,
-    var(--auth-panel-3) 100%
-  );
+  background: linear-gradient(155deg, var(--auth-panel-1) 0%, var(--auth-panel-2) 55%, var(--auth-panel-3) 100%);
 }
 
 .auth-brand-bg::before {
@@ -342,10 +336,7 @@ h6 {
   inset: 0;
   pointer-events: none;
   opacity: 0.5;
-  background-image: radial-gradient(
-    color-mix(in srgb, var(--navy) 9%, transparent) 1px,
-    transparent 1px
-  );
+  background-image: radial-gradient(color-mix(in srgb, var(--navy) 9%, transparent) 1px, transparent 1px);
   background-size: 20px 20px;
 }
 
@@ -383,9 +374,5 @@ h6 {
   pointer-events: none;
   height: 4rem;
   margin-top: -0.5rem;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    color-mix(in srgb, var(--amber) 10%, transparent) 100%
-  );
+  background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--amber) 10%, transparent) 100%);
 }

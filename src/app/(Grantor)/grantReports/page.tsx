@@ -1,364 +1,298 @@
-/* eslint-disable react-hooks/immutability */
 "use client";
 
-import { DownloadIcon, MenuIcon, TrendUpIcon } from "@/components/Grantorshared";
+import { DollarSign, RefreshCw, Sparkles } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { AiChartExplanationModal } from "@/components/analytics/AiChartExplanationModal";
+import { AnalyticsKpiCards } from "@/components/analytics/AnalyticsKpiCards";
+import { CohortCategoryTable } from "@/components/analytics/CohortCategoryTable";
+import { ExportAnalyticsButton } from "@/components/analytics/ExportAnalyticsButton";
+import { GwaDispersionChart } from "@/components/analytics/GwaDispersionChart";
+import { ScholarPercentileRankCard } from "@/components/analytics/ScholarPercentileRankCard";
+import { PageHeader } from "@/components/PageHeader";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
-  AMBER,
-  BUDGET_SCHOLAR_ROWS,
-  BUDGET_STATUS_COLORS,
-  GOOD,
-  GOOD_BG,
-  GRANT_ALLOCATED,
-  GRANT_DISBURSEMENT_MONTHLY,
-  GRANT_NON_ALLOCATED,
-  GRANT_REPORT_KPIS,
-  GRANT_TOTAL_BUDGET,
-  LINE,
-  NAVY,
-  s,
-  TINT,
-  WHITE,
-} from "@/components/Grantorshared.data";
-import { useSidebar } from "@/components/SidebarContext";
+  type AiExplanationResponse,
+  type AnalyticsSummaryResponse,
+  type CategoryBreakdownItem,
+  explainAnalyticsChart,
+  getAnalyticsSummary,
+} from "@/lib/api/analytics";
 
-const _BORDER_SUBTLE = `1px solid ${LINE}`;
-const _SHADOW_SM = "0 1px 3px rgba(0,0,0,0.04)";
+export default function GrantAnalyticsPage() {
+  const [data, setData] = useState<AnalyticsSummaryResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-function fmt(n: number) {
-  return `₱${n.toLocaleString("en-PH")}`;
-}
+  // AI Explanation Modal State
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiTitle, setAiTitle] = useState("");
+  const [aiCategory, setAiCategory] = useState<string | undefined>(undefined);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiExplanation, setAiExplanation] = useState<AiExplanationResponse | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
 
-// ── SVG pie chart (pure, no library) ──────────────────────────
-function PieChart({
-  slices,
-  size = 180,
-  thickness = 44,
-}: {
-  slices: { value: number; color: string; label: string }[];
-  size?: number;
-  thickness?: number;
-}) {
-  const r = size / 2;
-  const inner = r - thickness;
-  const total = slices.reduce((s, sl) => s + sl.value, 0);
+  const fetchAnalytics = useCallback(async () => {
+    try {
+      setError(null);
+      const res = await getAnalyticsSummary();
+      setData(res);
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Failed to load analytics data.";
+      setError(errMsg);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
 
-  let cumAngle = -Math.PI / 2; // start at top
+  useEffect(() => {
+    fetchAnalytics();
+  }, [fetchAnalytics]);
 
-  const paths = slices.map((sl) => {
-    const sweep = (sl.value / total) * 2 * Math.PI;
-    const startAngle = cumAngle;
-    const endAngle = cumAngle + sweep;
-    cumAngle = endAngle;
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchAnalytics();
+  };
 
-    const x1 = r + r * Math.cos(startAngle);
-    const y1 = r + r * Math.sin(startAngle);
-    const x2 = r + r * Math.cos(endAngle);
-    const y2 = r + r * Math.sin(endAngle);
-    const ix1 = r + inner * Math.cos(startAngle);
-    const iy1 = r + inner * Math.sin(startAngle);
-    const ix2 = r + inner * Math.cos(endAngle);
-    const iy2 = r + inner * Math.sin(endAngle);
-    const largeArc = sweep > Math.PI ? 1 : 0;
+  const handleExplain = async (
+    chartType: string,
+    title: string,
+    metrics: Record<string, unknown>,
+    category?: string,
+  ) => {
+    setAiTitle(title);
+    setAiCategory(category);
+    setAiExplanation(null);
+    setAiError(null);
+    setAiLoading(true);
+    setAiModalOpen(true);
 
-    const d = [
-      `M ${x1} ${y1}`,
-      `A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`,
-      `L ${ix2} ${iy2}`,
-      `A ${inner} ${inner} 0 ${largeArc} 0 ${ix1} ${iy1}`,
-      "Z",
-    ].join(" ");
+    try {
+      const res = await explainAnalyticsChart({
+        chartType,
+        title,
+        category,
+        metrics,
+      });
+      setAiExplanation(res);
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Could not generate AI explanation.";
+      setAiError(errMsg);
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
-    return <path key={sl.label} d={d} fill={sl.color} />;
-  });
+  const handleExplainCategory = (categoryType: string, item: CategoryBreakdownItem) => {
+    handleExplain(
+      "CATEGORY_BREAKDOWN",
+      `${categoryType}: ${item.category}`,
+      {
+        category: item.category,
+        mean: item.mean,
+        standardDeviation: item.standardDeviation,
+        complianceRate: item.complianceRate,
+        count: item.count,
+        goodStandingCount: item.goodStandingCount,
+        probationCount: item.probationCount,
+        flaggedCount: item.flaggedCount,
+      },
+      item.category,
+    );
+  };
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-label="Budget allocation pie chart">
-      {paths}
-    </svg>
-  );
-}
-
-export default function GrantReportsPage() {
-  const { toggleMobile } = useSidebar();
-
-  const allocatedPct = (GRANT_ALLOCATED / GRANT_TOTAL_BUDGET) * 100;
-  const maxDisbursement = Math.max(...GRANT_DISBURSEMENT_MONTHLY.map((m) => m.amount));
-
-  const pieSlices = [
-    { value: GRANT_ALLOCATED, color: NAVY, label: "Allocated" },
-    { value: GRANT_NON_ALLOCATED, color: AMBER, label: "Non-allocated" },
-  ];
-
-  return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-      {/* ---------------- Page-level navbar ---------------- */}
-      <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button type="button" className="vg-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
-          <MenuIcon />
-        </button>
-        <div>
-          <h1 style={s.topbarGreeting}>Reports</h1>
-          <p style={s.topbarSub}>Budget allocation and disbursement analytics for your scholarship fund.</p>
-        </div>
-        <div style={{ ...s.topbarRight, marginLeft: "auto", gap: 12 }}>
-          <button
-            type="button"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              background: TINT,
-              color: NAVY,
-              fontWeight: 600,
-              fontSize: "0.86rem",
-              padding: "11px 20px",
-              borderRadius: 999,
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-            }}
-          >
-            <DownloadIcon /> Budget report (CSV)
-          </button>
-          <button
-            type="button"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              background: NAVY,
-              color: WHITE,
-              fontWeight: 600,
-              fontSize: "0.86rem",
-              padding: "11px 22px",
-              borderRadius: 999,
-              cursor: "pointer",
-              boxShadow: "0 6px 16px rgba(30,58,95,0.25)",
-              whiteSpace: "nowrap",
-            }}
-          >
-            <DownloadIcon /> Disbursement report (CSV)
-          </button>
-        </div>
-      </header>
-
-      <div style={{ ...s.mainContent, padding: s.mainContent.padding, flexGrow: 1, minHeight: 0, overflowY: "auto" }}>
-        <div style={s.pageContentTop}>
-          {/* ── KPI row ── */}
-          <div className="vg-stat-row" style={s.statRow}>
-            {GRANT_REPORT_KPIS.map((k) => (
-              <div key={k.label} style={s.pipelineCard}>
-                <div style={s.pipelineTopRow}>
-                  <p style={s.pipelineLabel}>{k.label}</p>
-                </div>
-                <p style={s.pipelineValue}>{k.value}</p>
-                <div style={s.pipelineKpiRow}>
-                  <span style={{ color: GOOD, display: "flex", alignItems: "center", gap: 4 }}>
-                    <TrendUpIcon />
-                    {k.kpi}
-                  </span>
-                </div>
-              </div>
-            ))}
+    <div className="flex h-screen flex-col overflow-hidden bg-[#FAF8F5]">
+      {/* Top Navigation Bar */}
+      <PageHeader
+        title="Analytics"
+        subtitle="Scholar performance, passing rates & scholarship spending"
+        actions={
+          <div className="flex items-center gap-2.5">
+            <ExportAnalyticsButton data={data} userRole="GRANTOR" />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={refreshing || loading}
+              onClick={handleRefresh}
+              className="h-8 gap-1.5 rounded-xl border-line/80 bg-white text-xs font-semibold text-[#14213a] hover:bg-[#FAF8F5] shadow-2xs"
+            >
+              <RefreshCw className={`size-3.5 ${refreshing ? "animate-spin text-[#0a4f42]" : ""}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </Button>
           </div>
+        }
+      />
 
-          <div className="vg-content-grid" style={s.contentGrid}>
-            {/* ── Left column ── */}
-            <section style={s.feedCard}>
-              {/* Budget allocation pie chart */}
-              <div style={s.cardHeaderRow}>
-                <h2 style={s.cardHeading}>Budget allocation</h2>
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto p-6 space-y-6">
+        {loading ? (
+          <div className="flex h-96 flex-col items-center justify-center gap-3 text-center">
+            <div className="size-9 animate-spin rounded-full border-3 border-[#0a4f42] border-t-transparent" />
+            <p className="text-xs font-bold text-[#14213a]">Loading analytics...</p>
+            <p className="text-[11px] text-muted-foreground">
+              Calculating scholar grades, passing rates, and spending data.
+            </p>
+          </div>
+        ) : error ? (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-center text-xs text-rose-800">
+            <p className="font-bold">Failed to load analytics</p>
+            <p className="mt-1 text-muted-foreground">{error}</p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={fetchAnalytics}
+              className="mt-4 rounded-xl text-xs"
+            >
+              Retry
+            </Button>
+          </div>
+        ) : data ? (
+          <>
+            {/* 1. Descriptive Analytics KPI Cards */}
+            <AnalyticsKpiCards
+              stats={data.overallStats}
+              globalThreshold={data.globalThresholdPercent}
+              financialAnalytics={data.financialAnalytics}
+              userRole="GRANTOR"
+              onExplain={(type, title, metrics) => handleExplain(type, title, metrics)}
+            />
+
+            {/* 2. Main Grid: Grade Overview & Scholar Rankings */}
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+              <div className="xl:col-span-7">
+                <GwaDispersionChart
+                  stats={data.overallStats}
+                  scholars={data.scholars}
+                  globalThreshold={data.globalThresholdPercent}
+                  onExplain={() =>
+                    handleExplain("GRADE_DISTRIBUTION", "Grade Overview", {
+                      mean: data.overallStats.mean,
+                      standardDeviation: data.overallStats.standardDeviation,
+                      complianceRate: data.overallStats.complianceRate,
+                      min: data.overallStats.min,
+                      max: data.overallStats.max,
+                      median: data.overallStats.median,
+                      count: data.overallStats.count,
+                    })
+                  }
+                />
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: 32, marginBottom: 30 }}>
-                {/* Pie */}
-                <div style={{ flexShrink: 0 }}>
-                  <PieChart slices={pieSlices} size={180} thickness={44} />
-                </div>
+              {/* Scholar Rankings Leaderboard */}
+              <div className="xl:col-span-5">
+                <ScholarPercentileRankCard scholars={data.scholars} globalThreshold={data.globalThresholdPercent} />
+              </div>
+            </div>
 
-                {/* Legend + summary */}
-                <div style={{ flexGrow: 1 }}>
-                  {pieSlices.map((sl) => {
-                    const pct = ((sl.value / GRANT_TOTAL_BUDGET) * 100).toFixed(1);
-                    return (
-                      <div key={sl.label} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                        <span
-                          style={{
-                            width: 12,
-                            height: 12,
-                            borderRadius: 3,
-                            background: sl.color,
-                            flexShrink: 0,
-                          }}
-                        />
-                        <div>
-                          <p style={{ fontSize: "0.84rem", fontWeight: 700, color: NAVY, marginBottom: 1 }}>
-                            {sl.label}
-                          </p>
-                          <p style={{ fontSize: "0.78rem", color: "#7a7a74" }}>
-                            {fmt(sl.value)} · {pct}%
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
+            {/* 3. Categorical Descriptive Statistics Table */}
+            <CohortCategoryTable
+              courseBreakdown={data.courseBreakdown}
+              trackBreakdown={data.trackBreakdown}
+              schoolBreakdown={data.schoolBreakdown}
+              globalThreshold={data.globalThresholdPercent}
+              onExplainCategory={handleExplainCategory}
+            />
 
-                  <div
-                    style={{
-                      borderTop: `1px solid ${LINE}`,
-                      paddingTop: 12,
-                      marginTop: 4,
-                      fontSize: "0.78rem",
-                      color: "#9a9a94",
-                    }}
-                  >
-                    Total budget: <strong style={{ color: NAVY }}>{fmt(GRANT_TOTAL_BUDGET)}</strong>
+            {/* 4. Financial Capital Deployment by Track */}
+            <Card className="rounded-2xl border-line/80 bg-white shadow-2xs hover:shadow-xs transition-all">
+              <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between p-5 pb-3 gap-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex size-8.5 items-center justify-center rounded-xl bg-[#f1b71e]/20 text-[#8a6410]">
+                    <DollarSign className="size-4" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-bold text-[#14213a]">Funds Released by Track</h2>
+                    <p className="text-xs text-muted-foreground">
+                      Scholarship grant spending across program tracks · Total Released:{" "}
+                      <strong className="text-[#0a4f42]">
+                        ₱{data.financialAnalytics.totalDisbursedSum.toLocaleString()}
+                      </strong>
+                    </p>
                   </div>
                 </div>
-              </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  title="Explain with AI"
+                  onClick={() =>
+                    handleExplain("FINANCIAL_ALLOCATION", "Funds Released by Track", {
+                      totalDisbursed: data.financialAnalytics.totalDisbursedSum,
+                      disbByTrack: data.financialAnalytics.disbByTrack,
+                    })
+                  }
+                  className="h-8 gap-1.5 rounded-lg border-[#8a6410]/30 bg-[#fceec4]/40 text-xs font-semibold text-[#8a6410] hover:bg-[#fceec4]"
+                >
+                  <Sparkles className="size-3.5" />
+                  <span>Explain</span>
+                </Button>
+              </CardHeader>
 
-              {/* Two summary tiles */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 30 }}>
-                <div style={{ background: GOOD_BG, borderRadius: 14, padding: "18px 20px" }}>
-                  <p style={{ fontSize: "0.78rem", color: "#4a6b2a", marginBottom: 6 }}>Allocated</p>
-                  <p
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: "1.6rem",
-                      fontWeight: 700,
-                      color: "#2a4a1a",
-                      lineHeight: 1,
-                      marginBottom: 4,
-                    }}
-                  >
-                    {fmt(GRANT_ALLOCATED)}
-                  </p>
-                  <p style={{ fontSize: "0.78rem", color: "#4a6b2a" }}>{allocatedPct.toFixed(1)}% of total</p>
-                </div>
-                <div style={{ background: TINT, borderRadius: 14, padding: "18px 20px" }}>
-                  <p style={{ fontSize: "0.78rem", color: "#7a7a74", marginBottom: 6 }}>Non-allocated</p>
-                  <p
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: "1.6rem",
-                      fontWeight: 700,
-                      color: NAVY,
-                      lineHeight: 1,
-                      marginBottom: 4,
-                    }}
-                  >
-                    {fmt(GRANT_NON_ALLOCATED)}
-                  </p>
-                  <p style={{ fontSize: "0.78rem", color: "#9a9a94" }}>available balance</p>
-                </div>
-              </div>
-
-              {/* Monthly disbursement bar chart */}
-              <div style={s.cardHeaderRow}>
-                <h2 style={s.cardHeading}>Monthly disbursements</h2>
-              </div>
-              <div style={s.barChartRow}>
-                {GRANT_DISBURSEMENT_MONTHLY.map((m) => (
-                  <div key={m.month} style={s.barChartCol}>
-                    <span style={s.barChartValue}>{fmt(m.amount)}</span>
-                    <div style={s.barChartTrack}>
-                      <div
-                        style={{
-                          ...s.barChartFill,
-                          height: `${(m.amount / maxDisbursement) * 100}%`,
-                          background: NAVY,
-                        }}
-                      />
-                    </div>
-                    <span style={s.barChartLabel}>{m.month}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* ── Right column ── */}
-            <section style={s.upcomingCard}>
-              <div style={s.cardHeaderRow}>
-                <h2 style={s.cardHeading}>Per-scholar budget</h2>
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
-                {BUDGET_SCHOLAR_ROWS.map((row) => {
-                  const tone = BUDGET_STATUS_COLORS[row.status];
-                  const disbPct = Math.min((row.disbursed / row.allocated) * 100, 100);
+              <CardContent className="p-5 pt-2">
+                {(() => {
+                  const DEFAULT_TRACKS = ["Academic Track", "Financial Need Track", "Returning Scholar"];
+                  const trackList = [...(data.financialAnalytics.disbByTrack || [])];
+                  for (const t of DEFAULT_TRACKS) {
+                    if (!trackList.some((item) => item.track.toLowerCase() === t.toLowerCase())) {
+                      trackList.push({ track: t, amount: 0 });
+                    }
+                  }
+                  const total = data.financialAnalytics.totalDisbursedSum || 1;
                   return (
-                    <div
-                      key={row.name}
-                      style={{ background: WHITE, border: `1px solid ${LINE}`, borderRadius: 14, padding: "14px 16px" }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          marginBottom: 8,
-                        }}
-                      >
-                        <div>
-                          <p style={{ ...s.tdName, fontSize: "0.88rem" }}>{row.name}</p>
-                          <p style={{ ...s.tdSub, fontSize: "0.74rem" }}>{row.course}</p>
-                        </div>
-                        <span style={{ ...s.stageTag, background: tone.bg, color: tone.text, fontSize: "0.7rem" }}>
-                          {row.status}
-                        </span>
-                      </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {trackList.map((item) => {
+                        const pct =
+                          data.financialAnalytics.totalDisbursedSum > 0 ? Math.round((item.amount / total) * 100) : 0;
+                        return (
+                          <div
+                            key={item.track}
+                            className="rounded-xl border border-line/70 bg-[#FAF8F5]/70 p-4 space-y-3"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-[#14213a] text-xs">{item.track}</span>
+                              <Badge className="rounded-full bg-white border border-line/70 text-[10px] font-bold text-[#14213a]">
+                                {pct}% of total
+                              </Badge>
+                            </div>
 
-                      <div
-                        style={{
-                          background: "#F0EAD9",
-                          borderRadius: 6,
-                          height: 6,
-                          marginBottom: 8,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <div style={{ width: `${disbPct}%`, height: "100%", background: AMBER, borderRadius: 6 }} />
-                      </div>
+                            <p className="text-xl font-black text-[#0a4f42]">₱{item.amount.toLocaleString()}</p>
 
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          fontSize: "0.78rem",
-                          color: "#7a7a74",
-                        }}
-                      >
-                        <span>
-                          Disbursed: <strong style={{ color: NAVY }}>{fmt(row.disbursed)}</strong>
-                        </span>
-                        <span>
-                          Remaining: <strong style={{ color: NAVY }}>{fmt(row.remaining)}</strong>
-                        </span>
-                      </div>
+                            <div className="space-y-1">
+                              <div className="h-2 w-full rounded-full bg-white border border-line/60 overflow-hidden">
+                                <div
+                                  className="h-full rounded-full bg-[#0a4f42] transition-all"
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   );
-                })}
-              </div>
+                })()}
+              </CardContent>
+            </Card>
+          </>
+        ) : null}
+      </main>
 
-              {/* Export */}
-              <div style={s.quickLinksWrap}>
-                <p style={s.quickLinksHeading}>Export</p>
-                <button type="button" style={s.quickLinkBtn}>
-                  <span style={s.quickLinkIcon}>
-                    <DownloadIcon />
-                  </span>
-                  <span>Download budget report (CSV)</span>
-                </button>
-                <button type="button" style={s.quickLinkBtn}>
-                  <span style={s.quickLinkIcon}>
-                    <DownloadIcon />
-                  </span>
-                  <span>Download disbursement report (CSV)</span>
-                </button>
-              </div>
-            </section>
-          </div>
-        </div>
-      </div>
+      {/* AI Explanation Modal */}
+      <AiChartExplanationModal
+        isOpen={aiModalOpen}
+        onClose={() => setAiModalOpen(false)}
+        title={aiTitle}
+        category={aiCategory}
+        loading={aiLoading}
+        explanation={aiExplanation}
+        error={aiError}
+      />
     </div>
   );
 }

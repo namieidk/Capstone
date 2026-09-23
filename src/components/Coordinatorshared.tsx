@@ -746,7 +746,7 @@ export const NAV_ITEMS: NavItem[] = [
   { key: "monitor", label: "Monitor", icon: <MonitorIcon />, href: "/CoordinatorMonitor" },
   { key: "payment", label: "Disbursements", icon: <PaymentsIcon />, href: "/CoordinatorPayment", badge: 2 },
   { key: "archive", label: "Archive", icon: <ArchiveIcon />, href: "/CoordinatorArchive" },
-  { key: "reports", label: "Reports", icon: <ReportsIcon />, href: "/CoordinatorReports" },
+  { key: "reports", label: "Analytics", icon: <ReportsIcon />, href: "/CoordinatorReports" },
   { key: "message", label: "Message", icon: <MailIcon />, href: "/CoordinatorMessage", badge: 3 },
   { key: "settings", label: "Settings", icon: <SettingsIcon />, href: "/CoordinatorSettings" },
   { key: "profile", label: "Profile", icon: <ProfileIcon />, href: "/CoordinatorProfile" },

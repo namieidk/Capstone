@@ -2,7 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,6 +29,9 @@ export function GoogleIcon() {
 
 declare global {
   interface Window {
+    __googleGisInitialized?: boolean;
+    __googleGisClientId?: string;
+    __googleGisCallback?: (response: { credential: string }) => void;
     google?: {
       accounts?: {
         id: {
@@ -71,7 +74,6 @@ export function SocialBlock() {
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("Connecting to Google…");
   const [error, setError] = useState("");
-  const isInitialized = useRef(false);
 
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
@@ -96,7 +98,7 @@ export function SocialBlock() {
   }, [loading, loadingMessage]);
 
   useEffect(() => {
-    if (!clientId || isInitialized.current) return;
+    if (!clientId) return;
 
     const handleCredentialResponse = async (response: { credential: string }) => {
       if (response?.credential) {
@@ -119,48 +121,64 @@ export function SocialBlock() {
       }
     };
 
-    const initGis = () => {
-      if (window.google?.accounts?.id && !isInitialized.current) {
-        isInitialized.current = true;
+    // Update active callback reference for the global GIS handler
+    window.__googleGisCallback = handleCredentialResponse;
+
+    const setupGis = () => {
+      if (!window.google?.accounts?.id) return;
+
+      // Only initialize once globally across tab switches and route changes
+      if (!window.__googleGisInitialized || window.__googleGisClientId !== clientId) {
+        window.__googleGisInitialized = true;
+        window.__googleGisClientId = clientId;
         window.google.accounts.id.initialize({
           client_id: clientId,
-          callback: handleCredentialResponse,
+          callback: (response) => {
+            window.__googleGisCallback?.(response);
+          },
           auto_select: false,
           cancel_on_tap_outside: true,
           use_fedcm_for_prompt: false,
         });
+      }
 
-        const btnContainer = document.getElementById("google-signin-btn-container");
-        if (btnContainer) {
-          btnContainer.innerHTML = "";
-          window.google.accounts.id.renderButton(btnContainer, {
-            theme: "outline",
-            size: "large",
-            text: "continue_with",
-            shape: "pill",
-            logo_alignment: "left",
-            width: 320,
-          });
-        }
+      // Render the button into current container whenever component mounts
+      const btnContainer = document.getElementById("google-signin-btn-container");
+      if (btnContainer) {
+        btnContainer.innerHTML = "";
+        window.google.accounts.id.renderButton(btnContainer, {
+          theme: "outline",
+          size: "large",
+          text: "continue_with",
+          shape: "pill",
+          logo_alignment: "left",
+          width: 320,
+        });
       }
     };
 
     if (window.google?.accounts?.id) {
-      initGis();
+      setupGis();
       return;
     }
 
-    if (!document.getElementById("google-gis-script")) {
-      const script = document.createElement("script");
-      script.id = "google-gis-script";
-      script.src = "https://accounts.google.com/gsi/client?hl=en";
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        initGis();
+    const existingScript = document.getElementById("google-gis-script") as HTMLScriptElement | null;
+    if (existingScript) {
+      existingScript.addEventListener("load", setupGis);
+      return () => {
+        existingScript.removeEventListener("load", setupGis);
       };
-      document.body.appendChild(script);
     }
+
+    const script = document.createElement("script");
+    script.id = "google-gis-script";
+    script.src = "https://accounts.google.com/gsi/client?hl=en";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      setupGis();
+    };
+    document.body.appendChild(script);
   }, [clientId, loginWithGoogle, router]);
 
   const handleManualGoogleClick = async () => {

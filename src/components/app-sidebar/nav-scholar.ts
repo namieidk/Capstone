@@ -1,5 +1,4 @@
 import {
-  BarChart3,
   BookOpen,
   Calendar,
   CreditCard,
@@ -18,7 +17,6 @@ export const SCHOLAR_NAV_ITEMS: NavItem[] = [
   { key: "prospectus", label: "Prospectus", icon: BookOpen, href: "/scholarProspectus" },
   { key: "enrollment", label: "Enrollment", icon: FileCheck, href: "/scholar-enrollment" },
   { key: "grade", label: "Grades", icon: GraduationCap, href: "/ScholarGrade" },
-  { key: "reports", label: "Reports", icon: BarChart3, href: "/scholarReports" },
   { key: "message", label: "Messages", icon: Mail, href: "/scholarMessage" },
   { key: "meeting", label: "Meetings", icon: Calendar, href: "/scholarMeeting" },
   { key: "forum", label: "Forum", icon: MessageSquare, href: "/SchoForum" },

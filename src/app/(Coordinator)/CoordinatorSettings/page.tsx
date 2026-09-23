@@ -22,8 +22,8 @@ import {
   LINE,
   MenuIcon,
   NAVY,
-  s,
   SHADOW_SM,
+  s,
   TINT,
   ToggleIcon,
   WARN,
@@ -279,12 +279,7 @@ function NumberRow({ icon, label, desc, value, onChange }: NumberRowProps) {
           <p style={{ fontSize: "0.8rem", color: MUTED, lineHeight: 1.5 }}>{desc}</p>
         </div>
       </div>
-      <input
-        type="number"
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        style={numberInputStyle}
-      />
+      <input type="number" value={value} onChange={(e) => onChange(Number(e.target.value))} style={numberInputStyle} />
     </div>
   );
 }

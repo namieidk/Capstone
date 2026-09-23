@@ -187,7 +187,7 @@ export function PageHeader({
           <Menu className="size-4.5" />
         </Button>
         <div className="min-w-0 flex-1">
-          <h1 className="break-words text-lg font-bold leading-tight tracking-tight text-navy sm:text-xl">
+          <h1 className="wrap-break-word text-lg font-bold leading-tight tracking-tight text-navy sm:text-xl">
             {title}
           </h1>
           {subtitle && <p className="mt-0.5 hidden text-xs text-muted-foreground sm:block">{subtitle}</p>}

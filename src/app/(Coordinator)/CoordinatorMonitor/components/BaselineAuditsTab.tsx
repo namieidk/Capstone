@@ -11,13 +11,7 @@ interface BaselineAuditsTabProps {
   filter?: string;
 }
 
-export function BaselineAuditsTab({
-  items,
-  loading,
-  onSelectScholar,
-  searchQuery,
-  filter,
-}: BaselineAuditsTabProps) {
+export function BaselineAuditsTab({ items, loading, onSelectScholar, searchQuery, filter }: BaselineAuditsTabProps) {
   return (
     <div className="space-y-4">
       <BaselinePendingQueue

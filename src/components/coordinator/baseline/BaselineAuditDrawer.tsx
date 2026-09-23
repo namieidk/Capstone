@@ -1,7 +1,19 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { AlertTriangle, BookOpen, CheckCircle2, ExternalLink, FileText, Lock, Plus, Save, Trash2, Unlock, X } from "lucide-react";
+import {
+  AlertTriangle,
+  BookOpen,
+  CheckCircle2,
+  ExternalLink,
+  FileText,
+  Lock,
+  Plus,
+  Save,
+  Trash2,
+  Unlock,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -258,7 +270,9 @@ export function BaselineAuditDrawer({ scholarProfileId, open, onOpenChange, onSu
 
         {loading || !data ? (
           <div className="flex-1 flex items-center justify-center py-24 text-xs text-slate-500">
-            {loading ? "Loading scholar curriculum documents and parsed subjects..." : "No baseline submission found for this scholar."}
+            {loading
+              ? "Loading scholar curriculum documents and parsed subjects..."
+              : "No baseline submission found for this scholar."}
           </div>
         ) : (
           <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0">

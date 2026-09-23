@@ -20,7 +20,7 @@ export const COORDINATOR_NAV_ITEMS: NavItem[] = [
   { key: "scholars", label: "Scholars", icon: GraduationCap, href: "/CoordinatorMonitor" },
   { key: "payment", label: "Disbursements", icon: CreditCard, href: "/CoordinatorPayment" },
   { key: "archive", label: "Archive", icon: Archive, href: "/CoordinatorArchive" },
-  { key: "reports", label: "Reports", icon: BarChart3, href: "/CoordinatorReports" },
+  { key: "reports", label: "Analytics", icon: BarChart3, href: "/CoordinatorReports" },
   { key: "message", label: "Message", icon: Mail, href: "/CoordinatorMessage" },
   { key: "settings", label: "Settings", icon: Settings, href: "/CoordinatorSettings" },
   { key: "profile", label: "Profile", icon: User, href: "/CoordinatorProfile" },

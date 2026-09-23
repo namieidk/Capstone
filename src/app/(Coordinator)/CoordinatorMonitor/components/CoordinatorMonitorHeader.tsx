@@ -1,6 +1,6 @@
 "use client";
 
-import { PageHeader, type HeaderFilterProps } from "@/components/PageHeader";
+import { type HeaderFilterProps, PageHeader } from "@/components/PageHeader";
 
 interface CoordinatorMonitorHeaderProps {
   searchQuery: string;
@@ -8,11 +8,7 @@ interface CoordinatorMonitorHeaderProps {
   filter?: HeaderFilterProps;
 }
 
-export function CoordinatorMonitorHeader({
-  searchQuery,
-  onSearchChange,
-  filter,
-}: CoordinatorMonitorHeaderProps) {
+export function CoordinatorMonitorHeader({ searchQuery, onSearchChange, filter }: CoordinatorMonitorHeaderProps) {
   return (
     <PageHeader
       title="Monitor"

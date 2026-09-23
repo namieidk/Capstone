@@ -111,7 +111,6 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { key: "dashboard", label: "Home", icon: <HomeIcon />, href: "/scholardashboard" },
   { key: "grade", label: "Grades", icon: <GradeIcon />, href: "/ScholarGrade" },
-  { key: "reports", label: "Reports", icon: <ReportsIcon />, href: "/scholarReports" },
   { key: "message", label: "Messages", icon: <MailIcon />, href: "/scholarMessage" },
   { key: "meeting", label: "Meetings", icon: <CalendarIcon />, href: "/scholarMeeting" },
   { key: "forum", label: "Forum", icon: <ForumIcon />, href: "/SchoForum" },

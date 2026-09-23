@@ -4,8 +4,8 @@ import { useMemo, useState } from "react";
 import type { ArchivedScholar } from "@/components/Coordinatorshared";
 import { ARCHIVED_SCHOLARS } from "@/components/Coordinatorshared";
 import type { HeaderFilterProps } from "@/components/PageHeader";
-import { ArchivedScholarDrawer } from "./components/Archivescholardrawer";
 import { ArchivedScholarsTab } from "./components/Archivedscholarstab";
+import { ArchivedScholarDrawer } from "./components/Archivescholardrawer";
 import { CoordinatorArchiveHeader } from "./components/Coordinatorarchiveheader";
 
 const ARCHIVE_STATUS_OPTIONS: { label: string; value: string }[] = [

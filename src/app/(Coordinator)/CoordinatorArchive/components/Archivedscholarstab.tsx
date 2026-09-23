@@ -128,13 +128,9 @@ export function ArchivedScholarsTab({
 
                         <TableCell className="py-4 text-center! text-xs font-medium text-navy/80">{a.track}</TableCell>
 
-                        <TableCell className="py-4 text-center! text-xs font-medium text-navy/80">
-                          {a.joined}
-                        </TableCell>
+                        <TableCell className="py-4 text-center! text-xs font-medium text-navy/80">{a.joined}</TableCell>
 
-                        <TableCell className="py-4 text-center! text-xs font-medium text-navy/80">
-                          {a.exited}
-                        </TableCell>
+                        <TableCell className="py-4 text-center! text-xs font-medium text-navy/80">{a.exited}</TableCell>
 
                         <TableCell className="py-4 text-center!">
                           <Badge
