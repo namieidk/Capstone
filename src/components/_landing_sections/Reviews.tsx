@@ -48,35 +48,6 @@ export function Reviews() {
         <div className="absolute inset-0 backdrop-blur-[2px]" />
       </div>
 
-      {/* Top edge: a torn-paper edge rather than the smooth horizon used
-          elsewhere on the page — jagged, uneven facets instead of curves,
-          so this section reads as its own distinct moment. */}
-      <svg
-        aria-hidden
-        viewBox="0 0 1440 48"
-        preserveAspectRatio="none"
-        className="pointer-events-none absolute inset-x-0 top-0 z-10 h-10 w-full text-background sm:h-12"
-      >
-        <path
-          d="M0,0 L0,18 L52,9 L104,22 L163,6 L221,20 L278,4 L339,17 L402,3 L461,19 L523,8 L588,23 L649,5 L712,16 L771,2 L836,21 L899,7 L958,18 L1021,4 L1083,20 L1144,9 L1206,22 L1269,6 L1332,19 L1393,3 L1440,15 L1440,0 Z"
-          fill="currentColor"
-        />
-      </svg>
-
-      {/* Bottom edge: same torn-paper language, independent jitter so it
-          doesn't mirror the top and read as a stamped duplicate. */}
-      <svg
-        aria-hidden
-        viewBox="0 0 1440 48"
-        preserveAspectRatio="none"
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-10 w-full text-background sm:h-12"
-      >
-        <path
-          d="M0,48 L0,30 L58,39 L119,26 L176,42 L233,28 L296,44 L358,29 L419,43 L479,27 L541,41 L602,25 L664,40 L727,26 L788,44 L848,30 L912,42 L974,27 L1037,41 L1099,25 L1161,40 L1223,28 L1286,43 L1349,29 L1440,38 L1440,48 Z"
-          fill="currentColor"
-        />
-      </svg>
-
       <Fireflies />
       <Container className="relative">
         <Reveal>

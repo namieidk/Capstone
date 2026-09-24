@@ -288,3 +288,24 @@ h6 {
 .auth-form-bg {
   background-color: var(--cream);
 }
+
+/* ================================================================
+   About section panel
+   ================================================================ */
+
+/* Light cream card with a soft amber glow, built from the brand tokens */
+.about-panel-bg {
+  background: linear-gradient(155deg, var(--auth-panel-1) 0%, var(--auth-panel-2) 55%, var(--auth-panel-3) 100%);
+}
+
+.about-panel-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    60% 55% at 50% 85%,
+    color-mix(in srgb, var(--amber) 22%, transparent) 0%,
+    transparent 70%
+  );
+}
