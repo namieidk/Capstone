@@ -1,25 +1,37 @@
 "use client";
 
-import { Award, Building2, Calendar, Mail } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Award, Building2, CalendarDays, type LucideIcon, Mail } from "lucide-react";
 import type { User } from "@/lib/api/auth";
+import { LINE, SECTION_HEADING } from "./profile-styles";
 
-function InfoRow({
+function DetailRow({
   icon: Icon,
   label,
   value,
+  href,
 }: {
-  icon?: React.ComponentType<{ className?: string }>;
+  icon: LucideIcon;
   label: string;
   value: string;
+  href?: string;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 py-2.5 border-b border-line/60 last:border-0">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        {Icon && <Icon className="size-4 text-navy/70" />}
-        <span className="text-xs">{label}</span>
+    <div className="flex items-start gap-3">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-good-bg text-good">
+        <Icon className="size-4" />
+      </span>
+      <div className="min-w-0">
+        <dt className="text-xs text-muted-foreground">{label}</dt>
+        <dd className="mt-0.5 text-sm font-medium [overflow-wrap:anywhere]">
+          {href ? (
+            <a href={href} className="hover:underline">
+              {value}
+            </a>
+          ) : (
+            value
+          )}
+        </dd>
       </div>
-      <span className="text-sm font-semibold text-navy text-right">{value}</span>
     </div>
   );
 }
@@ -34,28 +46,16 @@ export function CoordinatorDetailsCards({ user }: CoordinatorDetailsCardsProps) 
   const title = user.employee?.title || "Scholarship Coordinator";
 
   return (
-    <>
-      {/* Account Details */}
-      <Card className="rounded-xl border border-line bg-white shadow-xs">
-        <CardContent className="p-5 space-y-3">
-          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Account Details</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
-            <InfoRow icon={Award} label="Role" value={title} />
-            <InfoRow icon={Building2} label="Department" value={department} />
-            <InfoRow icon={Calendar} label="Since" value={String(memberSince)} />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Contact Information */}
-      <Card className="rounded-xl border border-line bg-white shadow-xs">
-        <CardContent className="p-5 space-y-3">
-          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contact Information</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
-            <InfoRow icon={Mail} label="Email" value={user.email} />
-          </div>
-        </CardContent>
-      </Card>
-    </>
+    <section aria-labelledby="profile-details" className={`self-start rounded-2xl border bg-cream p-6 ${LINE}`}>
+      <h2 id="profile-details" className={SECTION_HEADING}>
+        Details
+      </h2>
+      <dl className="mt-4 space-y-4">
+        <DetailRow icon={Award} label="Role" value={title} />
+        <DetailRow icon={Building2} label="Department" value={department} />
+        <DetailRow icon={CalendarDays} label="Member since" value={String(memberSince)} />
+        <DetailRow icon={Mail} label="Email" value={user.email} href={`mailto:${user.email}`} />
+      </dl>
+    </section>
   );
 }

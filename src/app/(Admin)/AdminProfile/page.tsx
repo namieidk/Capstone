@@ -1,40 +1,110 @@
 "use client";
 
+import { Building2, CalendarDays, Camera, type LucideIcon, Mail, Pencil, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import type React from "react";
 import { useCallback, useRef, useState } from "react";
-import { CameraIcon, DrawerInfoRow, s } from "@/components/Adminshared";
 import EditProfileDrawer from "@/components/EditProfileDrawer";
 import { useToast } from "@/components/ToastContext";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { ApiError } from "@/lib/api";
 import { updateMe, uploadAvatar, uploadBanner } from "@/lib/api/auth";
 
-function ProfilePageStyles() {
-  return (
-    <style>{`
-      .admin-profile-banner { height: 220px; }
-      .admin-profile-avatar { width: 120px; height: 120px; font-size: 2.2rem; }
-      .admin-profile-header-row { margin-top: -56px; }
+// Soft green-tinted border (built from --forest, no blue-grey)
+const LINE = "border-[color-mix(in_srgb,var(--forest)_14%,white)]";
+const SECTION_HEADING = "text-base font-semibold text-navy";
+const FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy";
+const BODY_GRID = "grid flex-1 content-start gap-8 px-5 py-8 sm:px-10 sm:py-10 md:grid-cols-[minmax(0,1fr)_360px]";
 
-      @media (max-width: 640px) {
-        .admin-profile-banner { height: 150px !important; }
-        .admin-profile-avatar { width: 88px !important; height: 88px !important; font-size: 1.6rem !important; }
-        .admin-profile-header-row {
-          margin-top: -38px !important;
-          align-items: flex-end !important;
-          flex-wrap: wrap;
-          gap: 12px !important;
-        }
-        .admin-profile-header-info { min-width: 0; flex-grow: 1; flex-basis: 0; }
-        .admin-profile-edit-btn { flex-basis: 100%; justify-content: center; margin-top: 6px; }
-        .admin-profile-card {
-          padding: 16px 16px !important;
-        }
-        .admin-profile-name { font-size: 1.35rem !important; }
-        .admin-profile-details-grid { grid-template-columns: 1fr !important; }
-      }
-    `}</style>
+// Default banner themes: light tones only, built from the brand CSS variables in globals.css.
+// Change BANNER_THEME to "gold", "clay" or "forest" to switch the default look.
+function makeBanner(base: string, layers: string[]): React.CSSProperties {
+  return {
+    backgroundColor: base,
+    backgroundImage: layers.join(", "),
+    backgroundSize: "22px 22px, auto, auto, auto",
+  };
+}
+
+const BANNERS = {
+  gold: makeBanner("var(--amber-bg)", [
+    "radial-gradient(rgba(138,100,16,0.10) 1px, transparent 1px)",
+    "radial-gradient(55% 140% at 12% 0%, color-mix(in srgb, white 70%, transparent) 0%, transparent 62%)",
+    "radial-gradient(45% 110% at 100% 100%, color-mix(in srgb, var(--amber) 35%, transparent) 0%, transparent 65%)",
+    "linear-gradient(120deg, var(--amber-bg) 0%, color-mix(in srgb, var(--amber) 45%, white) 100%)",
+  ]),
+  clay: makeBanner("var(--bad-bg)", [
+    "radial-gradient(rgba(138,58,46,0.10) 1px, transparent 1px)",
+    "radial-gradient(55% 140% at 12% 0%, color-mix(in srgb, white 70%, transparent) 0%, transparent 62%)",
+    "radial-gradient(45% 110% at 100% 100%, color-mix(in srgb, var(--amber) 28%, transparent) 0%, transparent 65%)",
+    "linear-gradient(120deg, var(--bad-bg) 0%, color-mix(in srgb, var(--bad) 22%, white) 100%)",
+  ]),
+  forest: makeBanner("var(--good-bg)", [
+    "radial-gradient(rgba(10,79,66,0.10) 1px, transparent 1px)",
+    "radial-gradient(55% 140% at 12% 0%, color-mix(in srgb, white 70%, transparent) 0%, transparent 62%)",
+    "radial-gradient(45% 110% at 100% 100%, color-mix(in srgb, var(--amber) 26%, transparent) 0%, transparent 65%)",
+    "linear-gradient(120deg, var(--good-bg) 0%, var(--auth-mint-soft) 100%)",
+  ]),
+} satisfies Record<string, React.CSSProperties>;
+
+const BANNER_THEME: keyof typeof BANNERS = "gold";
+
+function DetailRow({
+  icon: Icon,
+  label,
+  value,
+  href,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  href?: string;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-good-bg text-good">
+        <Icon className="size-4" />
+      </span>
+      <div className="min-w-0">
+        <dt className="text-xs text-muted-foreground">{label}</dt>
+        <dd className="mt-0.5 text-sm font-medium [overflow-wrap:anywhere]">
+          {href ? (
+            <a href={href} className="hover:underline">
+              {value}
+            </a>
+          ) : (
+            value
+          )}
+        </dd>
+      </div>
+    </div>
+  );
+}
+
+function ProfileSkeleton() {
+  return (
+    <div className="flex min-h-dvh w-full flex-col bg-white">
+      <Skeleton className="h-52 w-full rounded-none sm:h-72" />
+      <div className="flex flex-col gap-4 px-5 pb-8 sm:flex-row sm:items-start sm:gap-6 sm:px-10">
+        <Skeleton className="-mt-16 size-32 shrink-0 rounded-full border-4 border-white sm:-mt-[4.5rem] sm:size-36" />
+        <div className="min-w-0 flex-1 sm:pt-6">
+          <Skeleton className="h-7 w-56 max-w-full" />
+          <Skeleton className="mt-3 h-4 w-40 max-w-full" />
+        </div>
+      </div>
+      <div className={`${BODY_GRID} border-t ${LINE}`}>
+        <div className="space-y-3">
+          <Skeleton className="h-5 w-16" />
+          <Skeleton className="h-3.5 w-full" />
+          <Skeleton className="h-3.5 w-11/12" />
+          <Skeleton className="h-3.5 w-2/3" />
+        </div>
+        <Skeleton className="h-64 w-full rounded-2xl" />
+      </div>
+    </div>
   );
 }
 
@@ -118,151 +188,130 @@ export default function AdminProfilePage() {
     [refreshUser, showToast],
   );
 
-  if (!user) {
-    return (
-      <div style={{ maxWidth: 900, margin: "clamp(20px, 3vw, 36px) auto 0", width: "100%" }}>
-        <ProfilePageStyles />
+  const openDrawer = () => {
+    setSaveError("");
+    setDrawerOpen(true);
+  };
 
-        <div className="va-skeleton admin-profile-banner" style={{ borderRadius: 18 }} />
+  if (!user) return <ProfileSkeleton />;
 
-        <div className="admin-profile-header-row" style={{ ...s.profileHeaderRow, marginTop: -56 }}>
-          <div
-            className="va-skeleton"
-            style={{
-              width: 120,
-              height: 120,
-              borderRadius: "50%",
-              border: "4px solid #FFFFFF",
-              boxSizing: "border-box",
-            }}
-          />
-          <div style={{ flexGrow: 1 }}>
-            <div className="va-skeleton" style={{ width: "55%", height: 30, borderRadius: 9, marginBottom: 12 }} />
-            <div className="va-skeleton" style={{ width: "34%", height: 15, borderRadius: 7 }} />
-          </div>
-        </div>
-
-        <div className="va-skeleton" style={{ height: 170, borderRadius: 16, marginBottom: 24 }} />
-        <div className="va-skeleton" style={{ height: 170, borderRadius: 16, marginBottom: 24 }} />
-        <div className="va-skeleton" style={{ height: 120, borderRadius: 16 }} />
-      </div>
-    );
-  }
-
-  const bannerStyle = user.banner_url
+  const bannerStyle: React.CSSProperties = user.banner_url
     ? { backgroundImage: `url(${user.banner_url})`, backgroundSize: "cover", backgroundPosition: "center" }
-    : { background: "linear-gradient(120deg, #14283F 0%, #1E3A5F 100%)" };
+    : BANNERS[BANNER_THEME];
 
   return (
-    <div style={{ maxWidth: 900, margin: "clamp(20px, 3vw, 36px) auto 0", width: "100%" }}>
-      <ProfilePageStyles />
-
+    <div className="flex min-h-dvh w-full flex-col bg-white">
       <input
         ref={bannerInputRef}
         type="file"
         accept="image/jpeg,image/png,image/webp"
-        style={{ display: "none" }}
+        className="hidden"
         onChange={handleBannerUpload}
       />
       <input
         ref={avatarInputRef}
         type="file"
         accept="image/jpeg,image/png,image/webp"
-        style={{ display: "none" }}
+        className="hidden"
         onChange={handleAvatarUpload}
       />
 
-      <div className="admin-profile-banner" style={{ ...s.profileBanner, height: 220, ...bannerStyle }}>
+      {/* Banner (full width) */}
+      <div className="relative h-52 shrink-0 sm:h-72" style={bannerStyle}>
         <button
           type="button"
-          style={s.profileBannerEditBtn}
+          className={`absolute bottom-4 right-4 z-10 inline-flex h-9 items-center gap-2 rounded-lg border bg-white px-3 text-sm font-medium text-navy shadow-sm transition-colors hover:bg-field disabled:opacity-60 sm:bottom-6 sm:right-8 ${LINE} ${FOCUS}`}
           onClick={() => bannerInputRef.current?.click()}
           disabled={uploadingBanner}
         >
-          <CameraIcon /> {uploadingBanner ? "Uploading..." : "Change banner"}
+          <Camera className="size-4" />
+          {uploadingBanner ? "Uploading…" : "Change banner"}
         </button>
       </div>
 
-      <div className="admin-profile-header-row" style={{ ...s.profileHeaderRow, marginTop: -56 }}>
-        <div style={s.profileAvatarWrap}>
+      {/* Identity */}
+      <div className="flex shrink-0 flex-col gap-4 px-5 pb-8 sm:flex-row sm:items-start sm:gap-6 sm:px-10">
+        <div className="relative -mt-16 size-32 shrink-0 sm:-mt-[4.5rem] sm:size-36">
           {user.avatar_url ? (
             <Image
               src={user.avatar_url}
               alt={displayName}
-              className="admin-profile-avatar"
-              width={120}
-              height={120}
+              width={144}
+              height={144}
               unoptimized
-              style={{
-                width: 120,
-                height: 120,
-                borderRadius: "50%",
-                border: "4px solid #FFFFFF",
-                objectFit: "cover",
-              }}
+              className="size-full rounded-full border-4 border-white bg-white object-cover shadow-md"
             />
           ) : (
-            <span
-              className="admin-profile-avatar"
-              style={{
-                ...s.profileAvatar,
-                width: 120,
-                height: 120,
-                fontSize: "2.2rem",
-                background: "#F3E6C8",
-                color: "#7A5C0A",
-              }}
-            >
+            <span className="flex size-full items-center justify-center rounded-full border-4 border-white bg-amber-bg text-4xl font-semibold text-warn shadow-md">
               {displayInitials}
             </span>
           )}
           <button
             type="button"
-            style={{ ...s.profileAvatarEditBtn, width: 34, height: 34, bottom: 0, right: 0 }}
+            aria-label="Change profile picture"
+            className={`absolute bottom-2 right-2 flex size-9 items-center justify-center rounded-full border bg-white text-navy shadow-sm transition-colors hover:bg-field disabled:opacity-60 ${LINE} ${FOCUS}`}
             onClick={() => avatarInputRef.current?.click()}
             disabled={uploadingAvatar}
           >
-            <CameraIcon />
+            <Camera className="size-4" />
           </button>
         </div>
-        <div className="admin-profile-header-info" style={s.profileHeaderInfo}>
-          <h2 className="admin-profile-name" style={s.profileName}>
-            {displayName}
-          </h2>
-          <p style={s.profileMeta}>{displayTitle}</p>
+
+        <div className="min-w-0 flex-1 sm:pt-6">
+          <h1 className="truncate text-2xl font-semibold tracking-tight text-navy sm:text-3xl">{displayName}</h1>
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            <p className="text-sm text-muted-foreground">{displayTitle}</p>
+            <Badge
+              className="h-6 gap-1.5 px-2.5 text-xs!"
+              style={{ background: "var(--good-bg)", color: "var(--good)" }}
+            >
+              <ShieldCheck className="size-3.5" />
+              {displayRole}
+            </Badge>
+          </div>
         </div>
-        <button
-          type="button"
-          className="admin-profile-edit-btn"
-          style={s.continueBtnSmall}
-          onClick={() => {
-            setSaveError("");
-            setDrawerOpen(true);
-          }}
-        >
+
+        <Button type="button" className="h-10 w-full gap-2 px-4 text-sm! sm:mt-6 sm:w-auto" onClick={openDrawer}>
+          <Pencil className="size-4" />
           Edit profile
-        </button>
+        </Button>
       </div>
 
-      <div className="admin-profile-card" style={s.profileBioCard}>
-        <p style={s.profileBioLabel}>Bio</p>
-        <p style={{ ...s.profileBioText, marginTop: 12 }}>{user.bio || "No bio yet. Click Edit profile to add one."}</p>
-      </div>
+      {/* Body */}
+      <div className={`${BODY_GRID} border-t ${LINE}`}>
+        <section aria-labelledby="profile-about">
+          <h2 id="profile-about" className={SECTION_HEADING}>
+            About
+          </h2>
+          {user.bio ? (
+            <p className="mt-3 max-w-[68ch] whitespace-pre-line text-[0.95rem] leading-relaxed text-foreground">
+              {user.bio}
+            </p>
+          ) : (
+            <div className={`mt-3 rounded-xl border border-dashed bg-cream px-5 py-5 ${LINE}`}>
+              <p className="text-sm text-muted-foreground">Add a short bio so people know who you are.</p>
+              <button
+                type="button"
+                className={`mt-1 text-sm font-medium text-navy underline-offset-4 hover:underline ${FOCUS}`}
+                onClick={openDrawer}
+              >
+                Add a bio
+              </button>
+            </div>
+          )}
+        </section>
 
-      <div className="admin-profile-card" style={s.profileBioCard}>
-        <p style={s.profileBioLabel}>Details</p>
-        <div className="admin-profile-details-grid" style={{ ...s.drawerInfoGrid, marginTop: 18, rowGap: 22 }}>
-          <DrawerInfoRow label="Role" value={displayRole} />
-          <DrawerInfoRow label="Department" value={user.employee?.department ?? "N/A"} />
-          <DrawerInfoRow label="Since" value={String(memberSince)} />
-        </div>
-      </div>
-
-      <div className="admin-profile-card" style={s.profileBioCard}>
-        <p style={s.profileBioLabel}>Contact</p>
-        <div style={{ marginTop: 12 }}>
-          <DrawerInfoRow label="Email" value={user.email} />
-        </div>
+        <section aria-labelledby="profile-details" className={`self-start rounded-2xl border bg-cream p-6 ${LINE}`}>
+          <h2 id="profile-details" className={SECTION_HEADING}>
+            Details
+          </h2>
+          <dl className="mt-4 space-y-4">
+            <DetailRow icon={ShieldCheck} label="Role" value={displayRole} />
+            <DetailRow icon={Building2} label="Department" value={user.employee?.department ?? "N/A"} />
+            <DetailRow icon={CalendarDays} label="Member since" value={String(memberSince)} />
+            <DetailRow icon={Mail} label="Email" value={user.email} href={`mailto:${user.email}`} />
+          </dl>
+        </section>
       </div>
 
       <EditProfileDrawer

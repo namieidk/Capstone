@@ -12,6 +12,7 @@ import { CoordinatorBioCard } from "./components/CoordinatorBioCard";
 import { CoordinatorDetailsCards } from "./components/CoordinatorDetailsCards";
 import { CoordinatorHeader } from "./components/CoordinatorHeader";
 import { CoordinatorProfileSkeleton } from "./components/CoordinatorProfileSkeleton";
+import { BODY_GRID, LINE } from "./components/profile-styles";
 
 export default function CoordinatorProfilePage() {
   const { user, refreshUser } = useAuth();
@@ -87,51 +88,46 @@ export default function CoordinatorProfilePage() {
     [refreshUser, showToast],
   );
 
-  if (!user) {
-    return (
-      <div className="min-h-full bg-[#FAF9F7] px-4 py-6 sm:px-8 sm:py-8">
-        <CoordinatorProfileSkeleton />
-      </div>
-    );
-  }
+  const openDrawer = () => {
+    setSaveError("");
+    setDrawerOpen(true);
+  };
+
+  if (!user) return <CoordinatorProfileSkeleton />;
 
   return (
-    <div className="min-h-full bg-[#FAF9F7] px-4 py-6 sm:px-8 sm:py-8">
-      <div className="mx-auto w-full max-w-4xl space-y-6">
-        <CoordinatorBanner bannerUrl={user.banner_url} uploading={uploadingBanner} onUpload={handleBannerUpload} />
+    <div className="flex min-h-dvh w-full flex-col bg-white">
+      <CoordinatorBanner bannerUrl={user.banner_url} uploading={uploadingBanner} onUpload={handleBannerUpload} />
 
-        <CoordinatorHeader
-          displayName={displayName}
-          displayInitials={displayInitials}
-          displayTitle={displayTitle}
-          avatarUrl={user.avatar_url}
-          uploadingAvatar={uploadingAvatar}
-          onAvatarUpload={handleAvatarUpload}
-          onEditProfile={() => {
-            setSaveError("");
-            setDrawerOpen(true);
-          }}
-        />
+      <CoordinatorHeader
+        displayName={displayName}
+        displayInitials={displayInitials}
+        displayTitle={displayTitle}
+        avatarUrl={user.avatar_url}
+        uploadingAvatar={uploadingAvatar}
+        onAvatarUpload={handleAvatarUpload}
+        onEditProfile={openDrawer}
+      />
 
-        <CoordinatorBioCard bio={user.bio} />
-
+      <div className={`${BODY_GRID} border-t ${LINE}`}>
+        <CoordinatorBioCard bio={user.bio} onEditProfile={openDrawer} />
         <CoordinatorDetailsCards user={user} />
-
-        <EditProfileDrawer
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          initialValues={{
-            first_name: user.first_name,
-            last_name: user.last_name,
-            title: user.employee?.title ?? "",
-            department: user.employee?.department ?? "",
-            bio: user.bio ?? "",
-          }}
-          saving={savingProfile}
-          error={saveError}
-          onSave={handleSaveProfile}
-        />
       </div>
+
+      <EditProfileDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        initialValues={{
+          first_name: user.first_name,
+          last_name: user.last_name,
+          title: user.employee?.title ?? "",
+          department: user.employee?.department ?? "",
+          bio: user.bio ?? "",
+        }}
+        saving={savingProfile}
+        error={saveError}
+        onSave={handleSaveProfile}
+      />
     </div>
   );
 }

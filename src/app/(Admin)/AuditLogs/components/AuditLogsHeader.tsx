@@ -1,13 +1,14 @@
 "use client";
 
-import { PageHeader } from "@/components/PageHeader";
+import { type HeaderFilterProps, PageHeader } from "@/components/PageHeader";
 
 interface AuditLogsHeaderProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
+  filter?: HeaderFilterProps;
 }
 
-export function AuditLogsHeader({ searchQuery, onSearchChange }: AuditLogsHeaderProps) {
+export function AuditLogsHeader({ searchQuery, onSearchChange, filter }: AuditLogsHeaderProps) {
   return (
     <PageHeader
       title="Audit Logs"
@@ -15,6 +16,7 @@ export function AuditLogsHeader({ searchQuery, onSearchChange }: AuditLogsHeader
       searchValue={searchQuery}
       onSearchChange={onSearchChange}
       searchPlaceholder="Search logs..."
+      filter={filter}
     />
   );
 }

@@ -12,6 +12,7 @@ import { GrantorBioCard } from "./components/GrantorBioCard";
 import { GrantorDetailsCards } from "./components/GrantorDetailsCards";
 import { GrantorHeader } from "./components/GrantorHeader";
 import { GrantorProfileSkeleton } from "./components/GrantorProfileSkeleton";
+import { BODY_GRID, LINE } from "./components/profile-styles";
 
 export default function GrantorProfilePage() {
   const { user, refreshUser } = useAuth();
@@ -87,51 +88,46 @@ export default function GrantorProfilePage() {
     [refreshUser, showToast],
   );
 
-  if (!user) {
-    return (
-      <div className="min-h-full bg-[#FAF9F7] px-4 py-6 sm:px-8 sm:py-8">
-        <GrantorProfileSkeleton />
-      </div>
-    );
-  }
+  const openDrawer = () => {
+    setSaveError("");
+    setDrawerOpen(true);
+  };
+
+  if (!user) return <GrantorProfileSkeleton />;
 
   return (
-    <div className="min-h-full bg-[#FAF9F7] px-4 py-6 sm:px-8 sm:py-8">
-      <div className="mx-auto w-full max-w-4xl space-y-6">
-        <GrantorBanner bannerUrl={user.banner_url} uploading={uploadingBanner} onUpload={handleBannerUpload} />
+    <div className="flex min-h-dvh w-full flex-col bg-white">
+      <GrantorBanner bannerUrl={user.banner_url} uploading={uploadingBanner} onUpload={handleBannerUpload} />
 
-        <GrantorHeader
-          displayName={displayName}
-          displayInitials={displayInitials}
-          displayTitle={displayTitle}
-          avatarUrl={user.avatar_url}
-          uploadingAvatar={uploadingAvatar}
-          onAvatarUpload={handleAvatarUpload}
-          onEditProfile={() => {
-            setSaveError("");
-            setDrawerOpen(true);
-          }}
-        />
+      <GrantorHeader
+        displayName={displayName}
+        displayInitials={displayInitials}
+        displayTitle={displayTitle}
+        avatarUrl={user.avatar_url}
+        uploadingAvatar={uploadingAvatar}
+        onAvatarUpload={handleAvatarUpload}
+        onEditProfile={openDrawer}
+      />
 
-        <GrantorBioCard bio={user.bio} />
-
+      <div className={`${BODY_GRID} border-t ${LINE}`}>
+        <GrantorBioCard bio={user.bio} onEditProfile={openDrawer} />
         <GrantorDetailsCards user={user} />
-
-        <EditProfileDrawer
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          initialValues={{
-            first_name: user.first_name,
-            last_name: user.last_name,
-            title: user.employee?.title ?? "",
-            department: user.employee?.department ?? "",
-            bio: user.bio ?? "",
-          }}
-          saving={savingProfile}
-          error={saveError}
-          onSave={handleSaveProfile}
-        />
       </div>
+
+      <EditProfileDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        initialValues={{
+          first_name: user.first_name,
+          last_name: user.last_name,
+          title: user.employee?.title ?? "",
+          department: user.employee?.department ?? "",
+          bio: user.bio ?? "",
+        }}
+        saving={savingProfile}
+        error={saveError}
+        onSave={handleSaveProfile}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { KeyRound, Power } from "lucide-react";
+import { KeyRound, Mail, Power } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   AlertDialog,
@@ -27,11 +27,13 @@ interface EmployeeSheetProps {
   onToggleStatus: () => void;
 }
 
-function InfoCard({ label, value }: { label: string; value: string }) {
+const SECTION_LABEL = "text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/80";
+
+function MetricCard({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-3 space-y-1">
-      <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
-      <p className="text-xs font-semibold text-foreground">{value}</p>
+    <div className="rounded-xl border border-border/70 bg-card px-4 py-3.5">
+      <p className="text-left text-[11px] font-medium text-muted-foreground">{label}</p>
+      <div className="mt-1.5 flex items-center justify-center">{children}</div>
     </div>
   );
 }
@@ -53,18 +55,18 @@ export function EmployeeSheet({
   return (
     <>
       <Sheet open={employee !== null} onOpenChange={(open) => !open && onClose()}>
-        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto p-6 space-y-6">
+        <SheetContent side="right" className="w-full overflow-y-auto p-0 sm:max-w-md">
           {employee && (
-            <>
-              <SheetHeader className="space-y-4">
-                <div className="flex items-center gap-3.5">
+            <div className="space-y-7 px-6 py-7">
+              <SheetHeader className="space-y-0">
+                <div className="flex items-center gap-4">
                   <Avatar className="size-14 border border-border">
-                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-base">
+                    <AvatarFallback className="bg-primary/10 text-base font-bold text-primary">
                       {employee.initials}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="min-w-0 flex-1 space-y-0.5">
-                    <SheetTitle className="text-base font-semibold">{employee.name}</SheetTitle>
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <SheetTitle className="text-base font-semibold leading-tight">{employee.name}</SheetTitle>
                     <SheetDescription className="text-xs text-muted-foreground">
                       {employee.title || employee.type}
                     </SheetDescription>
@@ -72,72 +74,76 @@ export function EmployeeSheet({
                 </div>
               </SheetHeader>
 
-              <div className="grid grid-cols-2 gap-2.5">
-                <InfoCard label="Role" value={employee.type} />
-                <div className="rounded-lg border border-border bg-card p-3 space-y-1">
-                  <p className="text-[11px] font-medium text-muted-foreground">Status</p>
-                  <div className="pt-0.5">
-                    <Badge
-                      variant={employee.status === "Active" ? "default" : "secondary"}
-                      className={`text-[10px] px-2 py-0.5 font-medium ${
-                        employee.status === "Active"
-                          ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20"
-                          : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20"
-                      }`}
-                    >
-                      <span className="size-1.5 rounded-full bg-current mr-1.5" />
-                      {employee.status}
-                    </Badge>
-                  </div>
-                </div>
-                <InfoCard label="Department" value={employee.department || "—"} />
-                <InfoCard label="Joined" value={employee.joined} />
+              {/* Quick Metrics */}
+              <div className="grid grid-cols-2 gap-3">
+                <MetricCard label="Role">
+                  <p className="text-sm font-medium text-foreground">{employee.type}</p>
+                </MetricCard>
+                <MetricCard label="Status">
+                  <Badge
+                    className={`gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+                      employee.status === "Active"
+                        ? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                        : "border border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                    }`}
+                  >
+                    <span className="size-1.5 rounded-full bg-current" />
+                    {employee.status}
+                  </Badge>
+                </MetricCard>
+                <MetricCard label="Department">
+                  <p className="text-sm font-medium text-foreground truncate">{employee.department || "—"}</p>
+                </MetricCard>
+                <MetricCard label="Joined">
+                  <p className="text-sm font-medium text-foreground">{employee.joined}</p>
+                </MetricCard>
               </div>
 
-              <div className="rounded-lg border border-border bg-card p-4 space-y-2">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              {/* Contact Information */}
+              <div className="space-y-4 rounded-xl border border-border/70 bg-card p-5">
+                <p className={`${SECTION_LABEL} flex items-center gap-1.5`}>
+                  <Mail className="size-3.5" />
                   Contact Information
                 </p>
-                <div className="text-xs space-y-1">
-                  <p className="text-foreground">
-                    <span className="text-muted-foreground font-medium">Email: </span>
-                    <strong>{employee.email}</strong>
-                  </p>
+                <div className="flex items-center gap-2.5 text-sm">
+                  <Mail className="size-3.5 shrink-0 text-muted-foreground" />
+                  <span className="truncate font-medium text-foreground">{employee.email}</span>
                 </div>
               </div>
 
               {actionError && (
-                <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-xs font-medium text-destructive">
+                <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-xs font-medium text-destructive">
                   {actionError}
                 </div>
               )}
 
-              <div className="space-y-2 pt-4">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Account Actions</p>
-                <div className="flex flex-col gap-2">
+              {/* Account Actions */}
+              <div className="space-y-3">
+                <p className={SECTION_LABEL}>Account Actions</p>
+                <div className="flex flex-col gap-2.5">
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full justify-start text-xs font-medium h-9"
+                    className="h-11 w-full justify-start rounded-xl text-sm font-medium"
                     onClick={onOpenResetPassword}
                   >
-                    <KeyRound className="size-3.5 mr-2 text-primary" />
+                    <KeyRound className="size-4 mr-2.5 text-primary" />
                     Reset Password
                   </Button>
 
                   <Button
                     type="button"
                     variant={employee.user.is_active ? "destructive" : "default"}
-                    className="w-full justify-start text-xs font-medium h-9"
+                    className="h-11 w-full justify-start rounded-xl text-sm font-medium"
                     onClick={() => setConfirmToggleStatus(true)}
                     disabled={acting}
                   >
-                    <Power className="size-3.5 mr-2" />
+                    <Power className="size-4 mr-2.5" />
                     {employee.user.is_active ? "Deactivate Account" : "Activate Account"}
                   </Button>
                 </div>
               </div>
-            </>
+            </div>
           )}
         </SheetContent>
       </Sheet>

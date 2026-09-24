@@ -1,10 +1,12 @@
 "use client";
 
-import { Camera } from "lucide-react";
+import { Camera, Pencil, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import type React from "react";
 import { useRef } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { FOCUS, LINE } from "./profile-styles";
 
 interface CoordinatorHeaderProps {
   displayName: string;
@@ -28,7 +30,7 @@ export function CoordinatorHeader({
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-14 sm:-mt-16 px-2 sm:px-4">
+    <div className="flex shrink-0 flex-col gap-4 px-5 pb-8 sm:flex-row sm:items-start sm:gap-6 sm:px-10">
       <input
         ref={avatarInputRef}
         type="file"
@@ -37,50 +39,45 @@ export function CoordinatorHeader({
         onChange={onAvatarUpload}
       />
 
-      <div className="flex items-end gap-3.5 sm:gap-4">
-        <div className="relative shrink-0">
-          {avatarUrl ? (
-            <Image
-              src={avatarUrl}
-              alt={displayName}
-              width={112}
-              height={112}
-              unoptimized
-              className="size-24 sm:size-28 rounded-full border-4 border-white object-cover shadow-md bg-white"
-            />
-          ) : (
-            <div className="flex size-24 sm:size-28 items-center justify-center rounded-full border-4 border-white bg-[#F3E6C8] text-[#7A5C0A] text-2xl sm:text-3xl font-bold shadow-md">
-              {displayInitials}
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={() => avatarInputRef.current?.click()}
-            disabled={uploadingAvatar}
-            style={{
-              backgroundColor: "#ffffff",
-              border: "2px solid #ffffff",
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.22)",
-            }}
-            className="absolute bottom-0 right-0 z-10 flex size-8 sm:size-9 items-center justify-center rounded-full bg-white text-navy cursor-pointer"
-            aria-label="Change profile photo"
-            title="Change profile picture"
-          >
-            <Camera className="size-4 text-navy stroke-[2.2]" />
-          </button>
-        </div>
+      <div className="relative -mt-16 size-32 shrink-0 sm:-mt-[4.5rem] sm:size-36">
+        {avatarUrl ? (
+          <Image
+            src={avatarUrl}
+            alt={displayName}
+            width={144}
+            height={144}
+            unoptimized
+            className="size-full rounded-full border-4 border-white bg-white object-cover shadow-md"
+          />
+        ) : (
+          <span className="flex size-full items-center justify-center rounded-full border-4 border-white bg-amber-bg text-4xl font-semibold text-warn shadow-md">
+            {displayInitials}
+          </span>
+        )}
+        <button
+          type="button"
+          aria-label="Change profile picture"
+          className={`absolute bottom-2 right-2 flex size-9 items-center justify-center rounded-full border bg-white text-navy shadow-sm transition-colors hover:bg-field disabled:opacity-60 ${LINE} ${FOCUS}`}
+          onClick={() => avatarInputRef.current?.click()}
+          disabled={uploadingAvatar}
+        >
+          <Camera className="size-4" />
+        </button>
+      </div>
 
-        <div className="min-w-0 pb-1">
-          <h1 className="truncate text-xl sm:text-2xl font-bold text-navy">{displayName}</h1>
-          <p className="truncate text-xs sm:text-sm text-muted-foreground">{displayTitle}</p>
+      <div className="min-w-0 flex-1 sm:pt-6">
+        <h1 className="truncate text-2xl font-semibold tracking-tight text-navy sm:text-3xl">{displayName}</h1>
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <p className="text-sm text-muted-foreground">{displayTitle}</p>
+          <Badge className="h-6 gap-1.5 px-2.5 text-xs!" style={{ background: "var(--good-bg)", color: "var(--good)" }}>
+            <ShieldCheck className="size-3.5" />
+            Coordinator
+          </Badge>
         </div>
       </div>
 
-      <Button
-        type="button"
-        onClick={onEditProfile}
-        className="self-start sm:self-end bg-navy hover:bg-navy/90 text-white font-medium px-5 h-10 shadow-xs"
-      >
+      <Button type="button" className="h-10 w-full gap-2 px-4 text-sm! sm:mt-6 sm:w-auto" onClick={onEditProfile}>
+        <Pencil className="size-4" />
         Edit profile
       </Button>
     </div>

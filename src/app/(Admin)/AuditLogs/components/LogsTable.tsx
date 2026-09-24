@@ -1,17 +1,10 @@
 "use client";
 
-import { Check, ChevronLeft, ChevronRight, Eye, ListFilter, RotateCcw, ScrollText, Users } from "lucide-react";
-import type React from "react";
+import { Eye, RotateCcw, ScrollText } from "lucide-react";
+import { ApplicantsPagination } from "@/app/(Coordinator)/CoordinatorApplicants/components/ApplicantsPagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { AuditLogEntry as AuditLog } from "@/lib/api/users";
@@ -24,12 +17,6 @@ interface LogsTableProps {
   loading: boolean;
   loadError: string;
   onRetry: () => void;
-  actions: string[];
-  roles: string[];
-  actionFilter: string;
-  roleFilter: string;
-  onActionChange: (value: string) => void;
-  onRoleChange: (value: string) => void;
   onClearFilters: () => void;
   currentPage: number;
   totalPages: number;
@@ -39,75 +26,20 @@ interface LogsTableProps {
 
 const SKELETON_ROWS = ["row-1", "row-2", "row-3", "row-4", "row-5", "row-6"];
 
-// Same shape as EmployeeTable's RoleBadge/StatusBadge — fixed-width,
-// centered, colored via explicit background/color rather than a shadcn
-// Badge variant, so it reads as the same badge language site-wide.
+const HEAD = "text-center! text-xs font-bold! uppercase tracking-wider text-[#8a8a84]!";
+
 function ActionBadge({ action }: { action: string }) {
   const colors = getActionColors(action);
+  const label = formatActionLabel(action);
   return (
     <Badge
-      className="mx-auto h-6 w-fit max-w-48 justify-center truncate px-3 text-xs! font-medium!"
+      className="h-6 max-w-48 gap-1.5 px-2.5 text-xs!"
       style={{ background: colors.background, color: colors.color }}
-      title={formatActionLabel(action)}
+      title={label}
     >
-      {formatActionLabel(action)}
+      <span className="size-1.5 shrink-0 rounded-full bg-current" />
+      <span className="truncate">{label}</span>
     </Badge>
-  );
-}
-
-interface FilterDropdownProps {
-  label: string;
-  icon: React.ElementType;
-  value: string;
-  options: string[];
-  formatOption?: (option: string) => string;
-  onChange: (value: string) => void;
-}
-
-// Same round amber icon-button + checklist pattern as EmployeeTable's role
-// filter, reused here for both the Action and Role filters.
-function FilterDropdown({ label, icon: Icon, value, options, formatOption, onChange }: FilterDropdownProps) {
-  const isActive = value !== "all";
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="relative size-9 rounded-full bg-amber shadow-xs hover:bg-[#d9a316]"
-          aria-label={label}
-        >
-          <Icon className="size-4 text-navy" />
-          {isActive && (
-            <span className="absolute -top-0.5 -right-0.5 size-2.25 rounded-full border-2 border-white bg-navy" />
-          )}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56!">
-        <DropdownMenuLabel>{label}</DropdownMenuLabel>
-        <DropdownMenuItem
-          onSelect={() => onChange("all")}
-          className={`text-sm! ${value === "all" ? "bg-tint font-semibold text-navy" : "text-[#4a4a45]"}`}
-        >
-          <span className="flex-1">All</span>
-          {value === "all" && <Check className="size-4 text-navy" />}
-        </DropdownMenuItem>
-        {options.map((opt) => {
-          const active = value === opt;
-          return (
-            <DropdownMenuItem
-              key={opt}
-              onSelect={() => onChange(opt)}
-              className={`text-sm! ${active ? "bg-tint font-semibold text-navy" : "text-[#4a4a45]"}`}
-            >
-              <span className="flex-1">{formatOption ? formatOption(opt) : opt}</span>
-              {active && <Check className="size-4 text-navy" />}
-            </DropdownMenuItem>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }
 
@@ -118,12 +50,6 @@ export function LogsTable({
   loading,
   loadError,
   onRetry,
-  actions,
-  roles,
-  actionFilter,
-  roleFilter,
-  onActionChange,
-  onRoleChange,
   onClearFilters,
   currentPage,
   totalPages,
@@ -133,42 +59,13 @@ export function LogsTable({
   return (
     <Card className="mt-5 rounded-[18px]! shadow-va-sm">
       <CardHeader>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
-            {!loading &&
-              !loadError &&
-              (hasActiveFilters ? (
-                <>
-                  {logs.length} {logs.length === 1 ? "match" : "matches"} on this page
-                </>
-              ) : (
-                <>{totalEvents} total events</>
-              ))}
-          </p>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <FilterDropdown
-              label="Filter by action"
-              icon={ListFilter}
-              value={actionFilter}
-              options={actions}
-              formatOption={formatActionLabel}
-              onChange={onActionChange}
-            />
-            <FilterDropdown
-              label="Filter by role"
-              icon={Users}
-              value={roleFilter}
-              options={roles}
-              onChange={onRoleChange}
-            />
-            {hasActiveFilters && (
-              <Button type="button" variant="ghost" className="h-11 px-3 text-sm!" onClick={onClearFilters}>
-                <RotateCcw className="size-4" />
-                Clear
-              </Button>
-            )}
-          </div>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          {!loading &&
+            !loadError &&
+            (hasActiveFilters
+              ? `${logs.length} ${logs.length === 1 ? "match" : "matches"} on this page`
+              : `${totalEvents} total ${totalEvents === 1 ? "event" : "events"}`)}
+        </p>
       </CardHeader>
 
       <CardContent className="px-0!">
@@ -179,7 +76,7 @@ export function LogsTable({
                 <Skeleton className="h-3.5 w-10 shrink-0" />
                 <Skeleton className="h-6 w-28 shrink-0 rounded-full" />
                 <Skeleton className="h-3.5 w-40 shrink-0" />
-                <Skeleton className="h-3.5 w-32 shrink-0" />
+                <Skeleton className="hidden h-3.5 flex-1 md:block" />
                 <Skeleton className="ml-auto size-9 shrink-0 rounded-full" />
               </div>
             ))}
@@ -189,7 +86,7 @@ export function LogsTable({
             <ScrollText className="size-10 text-muted-foreground" />
             <div>
               <p className="text-base font-semibold">Could not load audit logs</p>
-              <p className="mt-1 text-sm font-medium text-[#8a3a2e]">{loadError}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{loadError}</p>
             </div>
             <Button type="button" className="h-11 px-5 text-sm!" onClick={onRetry}>
               <RotateCcw className="size-4" />
@@ -201,57 +98,42 @@ export function LogsTable({
             <Table className="text-sm!">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="pl-6 text-center! text-xs font-semibold! tracking-wide text-[#8a8a84]!">
-                    ID
-                  </TableHead>
-                  <TableHead className="text-center! text-xs font-semibold! tracking-wide text-[#8a8a84]!">
-                    Action
-                  </TableHead>
-                  <TableHead className="text-center! text-xs font-semibold! tracking-wide text-[#8a8a84]!">
-                    User
-                  </TableHead>
-                  <TableHead className="text-center! text-xs font-semibold! tracking-wide text-[#8a8a84]!">
-                    Timestamp
-                  </TableHead>
-                  <TableHead className="pr-6 text-center! text-xs font-semibold! tracking-wide text-[#8a8a84]!">
-                    View
-                  </TableHead>
+                  <TableHead className={`${HEAD} pl-6`}>ID</TableHead>
+                  <TableHead className={HEAD}>Action</TableHead>
+                  <TableHead className={HEAD}>User</TableHead>
+                  <TableHead className={`${HEAD} hidden md:table-cell`}>Timestamp</TableHead>
+                  <TableHead className={`${HEAD} pr-6`}>View</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {logs.map((log) => (
-                  <TableRow
-                    key={log.log_id}
-                    className="cursor-pointer transition-colors hover:bg-tint/70"
-                    onClick={() => onSelect(log)}
-                  >
-                    <TableCell className="py-3 pl-6 text-center! text-xs font-medium tabular-nums text-muted-foreground">
+                  <TableRow key={log.log_id} className="cursor-pointer" onClick={() => onSelect(log)}>
+                    <TableCell className="py-3 pl-6 text-center! text-sm tabular-nums text-muted-foreground">
                       #{log.log_id}
                     </TableCell>
                     <TableCell className="py-3 text-center!">
                       <ActionBadge action={log.action} />
                     </TableCell>
                     <TableCell className="py-3 text-center!">
-                      <p className="mx-auto max-w-52 truncate text-sm font-medium" title={getDisplayName(log)}>
+                      <p className="mx-auto max-w-52 truncate text-sm font-semibold" title={getDisplayName(log)}>
                         {getDisplayName(log)}
                       </p>
                     </TableCell>
-                    <TableCell className="py-3 text-center! text-sm whitespace-nowrap tabular-nums">
+                    <TableCell className="hidden whitespace-nowrap py-3 text-center! text-sm tabular-nums md:table-cell">
                       {formatDateTime(log.created_at)}
                     </TableCell>
                     <TableCell className="py-3 pr-6 text-center!">
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="ghost"
                         size="icon"
-                        className="size-9 rounded-full"
                         aria-label={`View log ${log.log_id}`}
                         onClick={(e) => {
                           e.stopPropagation();
                           onSelect(log);
                         }}
                       >
-                        <Eye className="size-4 text-[#7a7a74]" />
+                        <Eye className="size-4.5" />
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -263,9 +145,11 @@ export function LogsTable({
               <div className="flex flex-col items-center gap-3 px-6 py-14 text-center">
                 <ScrollText className="size-10 text-muted-foreground" />
                 <div>
-                  <p className="text-base font-semibold">No audit logs on this page match your filters</p>
+                  <p className="text-base font-semibold">No audit logs found</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Try a different search term, clear the filters, or turn the page.
+                    {hasActiveFilters
+                      ? "Try a different search term or clear the filters."
+                      : "Activity will show up here as people use the platform."}
                   </p>
                 </div>
                 {hasActiveFilters && (
@@ -278,35 +162,7 @@ export function LogsTable({
             )}
 
             {totalPages > 1 && (
-              <div className="flex items-center justify-end gap-4 px-6 pt-4 pb-5">
-                <p className="text-sm text-muted-foreground tabular-nums">
-                  Page {currentPage} of {totalPages}
-                </p>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="h-9 gap-1.5 px-3.5 text-sm!"
-                    onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                    aria-label="Previous page"
-                  >
-                    <ChevronLeft className="size-4" />
-                    Prev
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="h-9 gap-1.5 px-3.5 text-sm!"
-                    onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                    aria-label="Next page"
-                  >
-                    Next
-                    <ChevronRight className="size-4" />
-                  </Button>
-                </div>
-              </div>
+              <ApplicantsPagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
             )}
           </>
         )}

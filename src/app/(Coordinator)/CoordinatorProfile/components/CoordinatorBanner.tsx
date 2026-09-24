@@ -3,7 +3,7 @@
 import { Camera } from "lucide-react";
 import type React from "react";
 import { useRef } from "react";
-import { Button } from "@/components/ui/button";
+import { BANNER_THEME, BANNERS, FOCUS, LINE } from "./profile-styles";
 
 interface CoordinatorBannerProps {
   bannerUrl?: string;
@@ -14,15 +14,12 @@ interface CoordinatorBannerProps {
 export function CoordinatorBanner({ bannerUrl, uploading, onUpload }: CoordinatorBannerProps) {
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
-  const bannerStyle = bannerUrl
+  const bannerStyle: React.CSSProperties = bannerUrl
     ? { backgroundImage: `url(${bannerUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
-    : { background: "linear-gradient(120deg, #14283F 0%, #1E3A5F 100%)" };
+    : BANNERS[BANNER_THEME];
 
   return (
-    <div
-      className="relative h-44 sm:h-52 w-full rounded-2xl shadow-xs border border-line flex items-end justify-end p-3.5 overflow-hidden"
-      style={bannerStyle}
-    >
+    <div className="relative h-52 shrink-0 sm:h-72" style={bannerStyle}>
       <input
         ref={bannerInputRef}
         type="file"
@@ -30,17 +27,15 @@ export function CoordinatorBanner({ bannerUrl, uploading, onUpload }: Coordinato
         className="hidden"
         onChange={onUpload}
       />
-      <Button
+      <button
         type="button"
-        size="sm"
-        variant="secondary"
+        className={`absolute bottom-4 right-4 z-10 inline-flex h-9 items-center gap-2 rounded-lg border bg-white px-3 text-sm font-medium text-navy shadow-sm transition-colors hover:bg-field disabled:opacity-60 sm:bottom-6 sm:right-8 ${LINE} ${FOCUS}`}
         onClick={() => bannerInputRef.current?.click()}
         disabled={uploading}
-        className="bg-white/95 hover:bg-white text-navy font-semibold shadow-md backdrop-blur-xs gap-1.5"
       >
-        <Camera className="size-4 text-navy" />
-        {uploading ? "Uploading..." : "Change banner"}
-      </Button>
+        <Camera className="size-4" />
+        {uploading ? "Uploading…" : "Change banner"}
+      </button>
     </div>
   );
 }

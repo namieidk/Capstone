@@ -1,26 +1,28 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { BODY_GRID, LINE } from "./profile-styles";
 
 export function GrantorProfileSkeleton() {
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6">
-      <Skeleton className="h-44 sm:h-52 w-full rounded-2xl" />
-
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-14 sm:-mt-16 px-2 sm:px-4">
-        <div className="flex items-end gap-3.5 sm:gap-4">
-          <Skeleton className="size-24 sm:size-28 rounded-full border-4 border-white" />
-          <div className="space-y-2 pb-1">
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-32" />
-          </div>
+    <div className="flex min-h-dvh w-full flex-col bg-white">
+      <Skeleton className="h-52 w-full rounded-none sm:h-72" />
+      <div className="flex flex-col gap-4 px-5 pb-8 sm:flex-row sm:items-start sm:gap-6 sm:px-10">
+        <Skeleton className="-mt-16 size-32 shrink-0 rounded-full border-4 border-white sm:-mt-[4.5rem] sm:size-36" />
+        <div className="min-w-0 flex-1 sm:pt-6">
+          <Skeleton className="h-7 w-56 max-w-full" />
+          <Skeleton className="mt-3 h-4 w-40 max-w-full" />
         </div>
-        <Skeleton className="h-10 w-28 rounded-lg" />
       </div>
-
-      <Skeleton className="h-28 w-full rounded-xl" />
-      <Skeleton className="h-36 w-full rounded-xl" />
-      <Skeleton className="h-28 w-full rounded-xl" />
+      <div className={`${BODY_GRID} border-t ${LINE}`}>
+        <div className="space-y-3">
+          <Skeleton className="h-5 w-16" />
+          <Skeleton className="h-3.5 w-full" />
+          <Skeleton className="h-3.5 w-11/12" />
+          <Skeleton className="h-3.5 w-2/3" />
+        </div>
+        <Skeleton className="h-64 w-full rounded-2xl" />
+      </div>
     </div>
   );
 }

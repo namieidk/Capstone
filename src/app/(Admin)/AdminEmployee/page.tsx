@@ -14,6 +14,7 @@ import { EmployeeSheet } from "./components/EmployeeSheet";
 import { EmployeeTable } from "./components/EmployeeTable";
 import {
   type AddEmployeeFields,
+  EMPLOYEE_FILTERS,
   type EmployeeFilter,
   INITIAL_ADD_FIELDS,
   type StaffRow,
@@ -86,6 +87,8 @@ export default function AdminEmployeePage() {
     Coordinator: staff.filter((e) => e.type === "Coordinator").length,
     Grantor: staff.filter((e) => e.type === "Grantor").length,
   };
+
+  const hasActiveFilters = filter !== "All" || searchQuery.trim() !== "";
 
   const handleAddEmployee = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -169,6 +172,24 @@ export default function AdminEmployeePage() {
           setSearchQuery(v);
           setPage(1);
         }}
+        onAdd={() => setShowAddModal(true)}
+        filter={{
+          value: filter,
+          onChange: (value) => {
+            setFilter(value as EmployeeFilter);
+            setPage(1);
+          },
+          options: EMPLOYEE_FILTERS.map((value) => ({
+            value,
+            label: `${value} (${counts[value]})`,
+          })),
+          hasActive: hasActiveFilters,
+          onClear: () => {
+            setFilter("All");
+            setSearchQuery("");
+            setPage(1);
+          },
+        }}
       />
 
       <div className="px-5 pb-24 md:px-10">
@@ -178,13 +199,12 @@ export default function AdminEmployeePage() {
           loading={loading}
           loadError={loadError}
           onRetry={fetchStaff}
-          filter={filter}
-          counts={counts}
-          onFilterChange={(f) => {
-            setFilter(f);
+          hasActiveFilters={hasActiveFilters}
+          onClearFilters={() => {
+            setFilter("All");
+            setSearchQuery("");
             setPage(1);
           }}
-          onAdd={() => setShowAddModal(true)}
           onSelect={setSelected}
           currentPage={currentPage}
           totalPages={totalPages}
