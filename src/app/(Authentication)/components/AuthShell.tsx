@@ -38,9 +38,7 @@ export function AuthShell({ mode, title, subtitle, children }: AuthShellProps) {
             <div className="mx-auto mt-8 w-full max-w-sm">
               <div className="mb-4">
                 <span className="mb-2.5 block h-1 w-9 rounded-full bg-amber" />
-                <h1 className="font-serif text-[1.6rem] font-medium tracking-tight text-navy">
-                  {title}
-                </h1>
+                <h1 className="font-serif text-[1.6rem] font-medium tracking-tight text-navy">{title}</h1>
                 <p className="mt-1.5 text-sm text-muted-foreground">{subtitle}</p>
               </div>
               {children}

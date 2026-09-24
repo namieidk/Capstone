@@ -33,9 +33,7 @@ export function BrandSide({ mode }: BrandSideProps) {
           <h2 className="whitespace-pre-line font-serif text-[1.85rem] leading-[1.15] font-medium tracking-tight text-navy">
             {copy.headline}
           </h2>
-          <p className="mt-3 text-[0.9rem] leading-relaxed text-muted-foreground">
-            {copy.sub}
-          </p>
+          <p className="mt-3 text-[0.9rem] leading-relaxed text-muted-foreground">{copy.sub}</p>
         </div>
 
         <div className="relative mt-auto flex justify-center">
@@ -48,24 +46,91 @@ export function BrandSide({ mode }: BrandSideProps) {
             >
               <path d="M78 78 L70 58" stroke="var(--navy)" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.55" />
               <path d="M92 70 L98 46" stroke="var(--amber)" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.8" />
-              <path d="M108 76 L118 56" stroke="var(--navy)" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.4" />
+              <path
+                d="M108 76 L118 56"
+                stroke="var(--navy)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeOpacity="0.4"
+              />
               <circle cx="66" cy="44" r="3" fill="var(--amber)" />
-              <rect x="106" y="38" width="6" height="6" rx="1.5" transform="rotate(25 109 41)" fill="var(--navy)" fillOpacity="0.5" />
+              <rect
+                x="106"
+                y="38"
+                width="6"
+                height="6"
+                rx="1.5"
+                transform="rotate(25 109 41)"
+                fill="var(--navy)"
+                fillOpacity="0.5"
+              />
               <circle cx="120" cy="60" r="2.5" fill="var(--amber)" fillOpacity="0.85" />
 
-              <path d="M262 62 L254 34" stroke="var(--amber)" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.85" />
-              <path d="M280 56 L280 26" stroke="var(--navy)" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.5" />
-              <path d="M298 62 L308 36" stroke="var(--amber)" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.7" />
+              <path
+                d="M262 62 L254 34"
+                stroke="var(--amber)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeOpacity="0.85"
+              />
+              <path
+                d="M280 56 L280 26"
+                stroke="var(--navy)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeOpacity="0.5"
+              />
+              <path
+                d="M298 62 L308 36"
+                stroke="var(--amber)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeOpacity="0.7"
+              />
               <circle cx="250" cy="24" r="3" fill="var(--navy)" fillOpacity="0.45" />
               <rect x="276" y="16" width="7" height="7" rx="1.5" transform="rotate(-10 279 19)" fill="var(--amber)" />
               <circle cx="312" cy="28" r="2.5" fill="var(--navy)" fillOpacity="0.5" />
-              <path d="M264 20 q6 -8 12 0" stroke="var(--amber)" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeOpacity="0.7" />
+              <path
+                d="M264 20 q6 -8 12 0"
+                stroke="var(--amber)"
+                strokeWidth="1.6"
+                fill="none"
+                strokeLinecap="round"
+                strokeOpacity="0.7"
+              />
 
-              <path d="M448 78 L440 54" stroke="var(--navy)" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.4" />
-              <path d="M462 70 L468 44" stroke="var(--amber)" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.8" />
-              <path d="M478 76 L490 58" stroke="var(--navy)" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.55" />
+              <path
+                d="M448 78 L440 54"
+                stroke="var(--navy)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeOpacity="0.4"
+              />
+              <path
+                d="M462 70 L468 44"
+                stroke="var(--amber)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeOpacity="0.8"
+              />
+              <path
+                d="M478 76 L490 58"
+                stroke="var(--navy)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeOpacity="0.55"
+              />
               <circle cx="436" cy="50" r="2.5" fill="var(--amber)" fillOpacity="0.8" />
-              <rect x="474" y="38" width="6" height="6" rx="1.5" transform="rotate(15 477 41)" fill="var(--navy)" fillOpacity="0.45" />
+              <rect
+                x="474"
+                y="38"
+                width="6"
+                height="6"
+                rx="1.5"
+                transform="rotate(15 477 41)"
+                fill="var(--navy)"
+                fillOpacity="0.45"
+              />
               <circle cx="492" cy="52" r="3" fill="var(--amber)" />
             </svg>
 

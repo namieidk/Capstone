@@ -1,6 +1,6 @@
 "use client";
 
-import { PageHeader, type HeaderFilterProps } from "@/components/PageHeader";
+import { type HeaderFilterProps, PageHeader } from "@/components/PageHeader";
 
 interface CoordinatorArchiveHeaderProps {
   searchQuery: string;

@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetClose, SheetContent } from "@/components/ui/sheet";
 import type { GlobalSettings } from "@/lib/api/settings";
 import { thresholdSchema } from "@/lib/validation";
 
@@ -117,90 +118,83 @@ export function ThresholdCard({ settings, canEdit, onSave }: ThresholdCardProps)
       </Card>
 
       {/* Edit Drawer */}
-      {editing && (
-        <div
-          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end transition-opacity"
-          onClick={closeDrawer}
-        >
-          <div
-            className="w-full max-w-md bg-slate-50 h-full flex flex-col shadow-2xl overflow-hidden border-l border-slate-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Drawer Header */}
-            <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2.5">
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-navy text-white shadow-xs">
-                  <SlidersHorizontal className="size-4.5" />
-                </span>
-                <div>
-                  <h2 className="text-base font-bold text-slate-900">Edit grade threshold</h2>
-                  <p className="text-xs text-slate-500">Minimum GWA required to stay eligible</p>
-                </div>
+      <Sheet open={editing} onOpenChange={(open) => !open && closeDrawer()}>
+        <SheetContent side="right" className="w-full max-w-md! bg-slate-50 p-0 gap-0" showCloseButton={false}>
+          {/* Drawer Header */}
+          <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2.5">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-navy text-white shadow-xs">
+                <SlidersHorizontal className="size-4.5" />
+              </span>
+              <div>
+                <h2 className="text-base font-bold text-slate-900">Edit grade threshold</h2>
+                <p className="text-xs text-slate-500">Minimum GWA required to stay eligible</p>
               </div>
+            </div>
 
+            <SheetClose asChild>
               <button
                 type="button"
-                onClick={closeDrawer}
                 disabled={saving}
                 className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
               >
                 <X className="size-5" />
               </button>
-            </div>
-
-            {/* Drawer Body */}
-            <div className="flex-1 overflow-y-auto p-6">
-              <Label htmlFor="grade-threshold" className="text-sm! font-semibold text-navy">
-                Threshold (%)
-              </Label>
-              <Input
-                id="grade-threshold"
-                type="number"
-                min={0}
-                max={100}
-                step={0.01}
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                autoFocus
-                className="mt-2 h-11! border-line bg-[#f7f9fb]! text-sm! md:text-sm!"
-              />
-              <p className="mt-1.5 text-xs text-muted-foreground">Enter a value between 0 and 100.</p>
-
-              {error && (
-                <div className="mt-3 rounded-[10px] border border-[#f5c2c0] bg-[#fdebec] px-3.5 py-3 text-sm leading-relaxed text-[#b3261e]">
-                  {error}
-                </div>
-              )}
-
-              <Separator className="my-5" />
-
-              <p className="text-xs text-muted-foreground">
-                Current value: <strong className="text-navy">{formatThreshold(settings.grade_threshold)}</strong>
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Last updated {formatDateTime(settings.updated_at)}
-                {settings.updated_by_user_id ? ` · by user ID ${settings.updated_by_user_id}` : ""}
-              </p>
-            </div>
-
-            {/* Drawer Footer */}
-            <div className="shrink-0 border-t border-slate-200 bg-white px-6 py-3.5 flex justify-end gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                className="h-10 text-sm! text-navy"
-                onClick={closeDrawer}
-                disabled={saving}
-              >
-                Cancel
-              </Button>
-              <Button type="button" className="h-10 px-6 text-sm!" onClick={handleSave} disabled={saving}>
-                {saving ? "Saving..." : "Save threshold"}
-              </Button>
-            </div>
+            </SheetClose>
           </div>
-        </div>
-      )}
+
+          {/* Drawer Body */}
+          <div className="flex-1 overflow-y-auto p-6">
+            <Label htmlFor="grade-threshold" className="text-sm! font-semibold text-navy">
+              Threshold (%)
+            </Label>
+            <Input
+              id="grade-threshold"
+              type="number"
+              min={0}
+              max={100}
+              step={0.01}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              autoFocus
+              className="mt-2 h-11! border-line bg-[#f7f9fb]! text-sm! md:text-sm!"
+            />
+            <p className="mt-1.5 text-xs text-muted-foreground">Enter a value between 0 and 100.</p>
+
+            {error && (
+              <div className="mt-3 rounded-[10px] border border-[#f5c2c0] bg-[#fdebec] px-3.5 py-3 text-sm leading-relaxed text-[#b3261e]">
+                {error}
+              </div>
+            )}
+
+            <Separator className="my-5" />
+
+            <p className="text-xs text-muted-foreground">
+              Current value: <strong className="text-navy">{formatThreshold(settings.grade_threshold)}</strong>
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Last updated {formatDateTime(settings.updated_at)}
+              {settings.updated_by_user_id ? ` · by user ID ${settings.updated_by_user_id}` : ""}
+            </p>
+          </div>
+
+          {/* Drawer Footer */}
+          <div className="shrink-0 border-t border-slate-200 bg-white px-6 py-3.5 flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10 text-sm! text-navy"
+              onClick={closeDrawer}
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+            <Button type="button" className="h-10 px-6 text-sm!" onClick={handleSave} disabled={saving}>
+              {saving ? "Saving..." : "Save threshold"}
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }
