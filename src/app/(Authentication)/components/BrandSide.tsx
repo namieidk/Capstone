@@ -1,18 +1,22 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { AuthMode } from "./ModeTabs";
 
 interface BrandSideProps {
   mode: AuthMode;
 }
 
-const COPY: Record<AuthMode, { headline: string; sub: string }> = {
+// Same wording as before, split into two lines so line 2 can use the amber accent color.
+const COPY: Record<AuthMode, { line1: string; line2: string; sub: string }> = {
   signin: {
-    headline: "Support for CRDC families, from school to graduation",
+    line1: "Support for CRDC families,",
+    line2: "from school to graduation",
     sub: "Sign in to check if you qualify, track your application, and manage your scholar profile.",
   },
   signup: {
-    headline: "Apply for scholarships\nin minutes.",
-    sub: "Create your student account to start matching with partner-company scholarships.",
+    line1: "Apply for scholarships",
+    line2: "in minutes.",
+    sub: "Create your student account to apply for CRDC scholarships and track your application in one place.",
   },
 };
 
@@ -21,131 +25,45 @@ export function BrandSide({ mode }: BrandSideProps) {
 
   return (
     <aside className="auth-brand-bg relative hidden overflow-hidden lg:block">
-      <div aria-hidden="true" className="auth-brand-scatter" />
+      {/* Amber blob, bottom right (sits behind the image card) */}
+      <div aria-hidden="true" className="absolute -right-20 -bottom-24 size-80 rounded-full bg-amber" />
 
-      <div className="relative flex h-full flex-col px-10 pt-9 pb-0">
-        <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-navy/10 bg-white/50 px-3 py-1 text-[0.7rem] font-medium tracking-wide text-navy/70">
-          <span className="size-1.5 rounded-full bg-amber" />
-          Davao City student portal
-        </span>
+      <div className="relative z-10 flex h-full flex-col px-10 pt-8 pb-8 xl:px-14">
+        <Link href="/" className="flex w-fit items-center gap-3 text-lg font-semibold text-white">
+          <Image
+            src="/logo_cropped.png"
+            alt="ViaScholar logo"
+            width={44}
+            height={44}
+            unoptimized
+            className="size-11 object-contain"
+          />
+          ViaScholar
+        </Link>
 
-        <div className="mx-auto mt-8 max-w-sm text-center">
-          <h2 className="whitespace-pre-line font-serif text-[1.85rem] leading-[1.15] font-medium tracking-tight text-navy">
-            {copy.headline}
+        {/* Centered text, font size scales with the screen so everything fits */}
+        <div className="mx-auto mt-6 max-w-lg text-center xl:mt-8">
+          <h2 className="font-serif text-[clamp(1.6rem,2.3vw,2.25rem)] leading-[1.15] font-semibold tracking-tight text-white">
+            {copy.line1}
+            <br />
+            <span className="text-amber">{copy.line2}</span>
           </h2>
-          <p className="mt-3 text-[0.9rem] leading-relaxed text-muted-foreground">{copy.sub}</p>
+          <p className="mx-auto mt-3 max-w-md text-[clamp(0.8rem,1vw,0.92rem)] leading-relaxed text-white/75">
+            {copy.sub}
+          </p>
         </div>
 
-        <div className="relative mt-auto flex justify-center">
-          <div className="relative w-[185%] max-w-3xl -mb-4">
-            <svg
-              aria-hidden="true"
-              className="pointer-events-none absolute -top-14 left-0 h-36 w-full"
-              viewBox="0 0 560 120"
-              fill="none"
-            >
-              <path d="M78 78 L70 58" stroke="var(--navy)" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.55" />
-              <path d="M92 70 L98 46" stroke="var(--amber)" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.8" />
-              <path
-                d="M108 76 L118 56"
-                stroke="var(--navy)"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeOpacity="0.4"
-              />
-              <circle cx="66" cy="44" r="3" fill="var(--amber)" />
-              <rect
-                x="106"
-                y="38"
-                width="6"
-                height="6"
-                rx="1.5"
-                transform="rotate(25 109 41)"
-                fill="var(--navy)"
-                fillOpacity="0.5"
-              />
-              <circle cx="120" cy="60" r="2.5" fill="var(--amber)" fillOpacity="0.85" />
-
-              <path
-                d="M262 62 L254 34"
-                stroke="var(--amber)"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeOpacity="0.85"
-              />
-              <path
-                d="M280 56 L280 26"
-                stroke="var(--navy)"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeOpacity="0.5"
-              />
-              <path
-                d="M298 62 L308 36"
-                stroke="var(--amber)"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeOpacity="0.7"
-              />
-              <circle cx="250" cy="24" r="3" fill="var(--navy)" fillOpacity="0.45" />
-              <rect x="276" y="16" width="7" height="7" rx="1.5" transform="rotate(-10 279 19)" fill="var(--amber)" />
-              <circle cx="312" cy="28" r="2.5" fill="var(--navy)" fillOpacity="0.5" />
-              <path
-                d="M264 20 q6 -8 12 0"
-                stroke="var(--amber)"
-                strokeWidth="1.6"
-                fill="none"
-                strokeLinecap="round"
-                strokeOpacity="0.7"
-              />
-
-              <path
-                d="M448 78 L440 54"
-                stroke="var(--navy)"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeOpacity="0.4"
-              />
-              <path
-                d="M462 70 L468 44"
-                stroke="var(--amber)"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeOpacity="0.8"
-              />
-              <path
-                d="M478 76 L490 58"
-                stroke="var(--navy)"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeOpacity="0.55"
-              />
-              <circle cx="436" cy="50" r="2.5" fill="var(--amber)" fillOpacity="0.8" />
-              <rect
-                x="474"
-                y="38"
-                width="6"
-                height="6"
-                rx="1.5"
-                transform="rotate(15 477 41)"
-                fill="var(--navy)"
-                fillOpacity="0.45"
-              />
-              <circle cx="492" cy="52" r="3" fill="var(--amber)" />
-            </svg>
-
-            <Image
-              src="/toga.png"
-              alt="Graduates celebrating with diplomas"
-              width={560}
-              height={360}
-              unoptimized
-              className="relative h-auto w-full object-contain"
-            />
-          </div>
+        {/* Medium-width cream card, centered. The image inside is never cropped. */}
+        <div className="mx-auto mt-6 flex min-h-0 w-full max-w-md flex-1 items-center justify-center overflow-hidden rounded-[2rem] bg-[#fef8ea] shadow-va-md xl:max-w-lg">
+          <Image
+            src="/sclr.png"
+            alt="Students studying together and celebrating a scholarship"
+            width={900}
+            height={900}
+            unoptimized
+            className="h-full w-auto max-w-full object-contain"
+          />
         </div>
-
-        <div aria-hidden="true" className="auth-panel-ground" />
       </div>
     </aside>
   );
