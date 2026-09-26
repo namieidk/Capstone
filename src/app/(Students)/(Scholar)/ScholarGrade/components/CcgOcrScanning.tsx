@@ -16,8 +16,8 @@ export function CcgOcrScanning({ fileName, discarding, onDiscard }: CcgOcrScanni
       <div className="space-y-1">
         <h4 className="text-sm font-bold text-navy">Reading Grades & Academic Period...</h4>
         <p className="text-xs text-muted-foreground max-w-md mx-auto">
-          Reading course codes, credit units, grades, and semester details from {fileName || "your CCG"}.
-          This usually takes a few seconds.
+          Reading course codes, credit units, grades, and semester details from {fileName || "your CCG"}. This usually
+          takes a few seconds.
         </p>
       </div>
       <Button

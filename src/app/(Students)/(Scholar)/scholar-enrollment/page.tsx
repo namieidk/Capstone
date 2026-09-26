@@ -178,7 +178,8 @@ export default function ScholarEnrollmentPage() {
                       <div>
                         <h3 className="text-sm font-bold text-navy">Reading Documents & Checking Requirements...</h3>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          We&apos;re reading your uploaded files to gather your enrolled subjects, units, and tuition details automatically.
+                          We&apos;re reading your uploaded files to gather your enrolled subjects, units, and tuition
+                          details automatically.
                         </p>
                       </div>
                     </div>
@@ -195,8 +196,9 @@ export default function ScholarEnrollmentPage() {
                     <div className="space-y-1">
                       <h3 className="text-sm font-bold text-navy">Upload Credentials to Start Audit</h3>
                       <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
-                        Upload your university registration (COR) and tuition statement (SOA) above. Once uploaded, the system will
-                        automatically extract your enrolled courses, compute your tuition ledger, and verify compliance against your academic baseline.
+                        Upload your university registration (COR) and tuition statement (SOA) above. Once uploaded, the
+                        system will automatically extract your enrolled courses, compute your tuition ledger, and verify
+                        compliance against your academic baseline.
                       </p>
                     </div>
                   </div>

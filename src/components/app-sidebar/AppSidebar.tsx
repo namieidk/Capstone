@@ -55,7 +55,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 export function AppSidebar({ role, ...props }: AppSidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const { setOpenMobile } = useSidebar();
+  const { setOpenMobile, isMobile } = useSidebar();
   const config = ROLE_CONFIG[role];
   const isStaffRole = role === "admin" || role === "coordinator" || role === "grantor";
   const badges = useStaffBadges({ includeApplicants: isStaffRole, role });
@@ -231,7 +231,7 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
               </div>
             </Link>
 
-            <Tooltip>
+            <Tooltip open={isMobile ? false : undefined}>
               <TooltipTrigger asChild>
                 <button
                   type="button"
@@ -242,7 +242,9 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
                   <LogOut className="size-4" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="right">Log out</TooltipContent>
+              <TooltipContent side="right" hidden={isMobile}>
+                Log out
+              </TooltipContent>
             </Tooltip>
           </div>
         </SidebarFooter>

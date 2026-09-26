@@ -11,7 +11,6 @@ import {
   PenTool,
   RotateCcw,
   ShieldAlert,
-  UploadCloud,
   XCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -116,9 +115,7 @@ export function CcgNeedsReuploadCard({ doc, discarding, onDiscard }: CcgNeedsReu
           <span className="text-[11px] font-bold uppercase text-muted-foreground flex items-center gap-1.5">
             <PenTool className="size-3.5 text-rose-600" /> Registrar Signature / Seal
           </span>
-          <p className="text-xs font-bold text-navy">
-            {hasSignature === true ? "Detected" : "Not Detected / Missing"}
-          </p>
+          <p className="text-xs font-bold text-navy">{hasSignature === true ? "Detected" : "Not Detected / Missing"}</p>
           <p
             className={`text-[11px] font-semibold flex items-center gap-1 ${
               hasSignature ? "text-emerald-700" : "text-rose-700"
@@ -164,9 +161,10 @@ export function CcgNeedsReuploadCard({ doc, discarding, onDiscard }: CcgNeedsReu
       <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1 text-slate-700">
         <p className="font-bold text-navy">What should I upload?</p>
         <p className="text-[11px] text-muted-foreground leading-relaxed">
-          Please upload your official <strong>Certified Copy of Grades (CCG)</strong>, <strong>Certificate of Grades (COG)</strong>,
-          or <strong>Transcript of Records (TOR)</strong> issued by your university registrar. The document must display your
-          subject codes, course units, numerical grades, and the registrar&apos;s authorized signature or dry seal.
+          Please upload your official <strong>Certified Copy of Grades (CCG)</strong>,{" "}
+          <strong>Certificate of Grades (COG)</strong>, or <strong>Transcript of Records (TOR)</strong> issued by your
+          university registrar. The document must display your subject codes, course units, numerical grades, and the
+          registrar&apos;s authorized signature or dry seal.
         </p>
       </div>
 

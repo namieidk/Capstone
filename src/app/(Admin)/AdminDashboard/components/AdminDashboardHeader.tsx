@@ -10,7 +10,7 @@ interface AdminDashboardHeaderProps {
 export function AdminDashboardHeader({ searchValue, onSearchChange }: AdminDashboardHeaderProps) {
   return (
     <PageHeader
-      title="Admin Dashboard"
+      title="Dashboard"
       subtitle="System administration, employee accounts, security logs, and platform settings."
       searchValue={searchValue}
       onSearchChange={onSearchChange}

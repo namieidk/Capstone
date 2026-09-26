@@ -54,7 +54,13 @@ export function toStudentRow(u: ApiUser): StudentRow {
       profile?.year_level || profile?.current_year_level
         ? `Year ${profile?.year_level ?? profile?.current_year_level}`
         : undefined,
-    gpa: profile?.academic_baseline_status || undefined,
+    gpa: (() => {
+      const rawGpa = profile?.grade_reports?.[0]?.gpa ?? profile?.gpa;
+      if (rawGpa != null && rawGpa !== "" && !Number.isNaN(Number(rawGpa))) {
+        return Number(rawGpa).toFixed(2);
+      }
+      return undefined;
+    })(),
     avatarUrl: u.avatar_url || undefined,
     user: u,
   };

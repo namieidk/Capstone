@@ -138,9 +138,7 @@ export function StatusStep({
                 </span>
                 <div>
                   <CardTitle className="text-lg! text-navy">Scholarship Agreement</CardTitle>
-                  <CardDescription className="text-sm!">
-                    Ready for digital review and signing
-                  </CardDescription>
+                  <CardDescription className="text-sm!">Ready for digital review and signing</CardDescription>
                 </div>
               </div>
               <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs font-semibold h-7 px-3">

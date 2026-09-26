@@ -105,7 +105,7 @@ function SignUpForm() {
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-4">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-3">
         <InputField
           id="firstName"
           label="First name"
@@ -210,6 +210,7 @@ function SignUpForm() {
         }}
         label="I agree to the Terms and Privacy Policy"
         className={cn("mb-1", errors.agree && "text-bad")}
+        labelClassName="text-[0.76rem] min-[360px]:text-[0.8rem] sm:text-[0.88rem] whitespace-normal min-[350px]:whitespace-nowrap"
       />
 
       <Button type="submit" disabled={loading} className="h-11 w-full rounded-full text-[0.96rem] font-semibold">

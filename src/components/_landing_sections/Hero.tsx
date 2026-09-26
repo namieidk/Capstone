@@ -19,14 +19,18 @@ const STATS: StatCardProps[] = [
 
 function StatCard({ Icon, number, label, delay }: StatCardProps & { delay: number }) {
   return (
-    <Reveal delay={delay} y={16}>
-      <div className="rounded-[16px] border border-white/15 bg-white/[0.07] p-5 shadow-va-md backdrop-blur-lg transition-transform duration-300 hover:-translate-y-1">
-        <span className="mb-3 flex size-9 items-center justify-center rounded-[10px] border border-white/15 bg-white/10 text-amber backdrop-blur-sm">
-          <Icon className="size-4.5" />
+    <Reveal delay={delay} y={16} className="h-full">
+      <div className="flex h-full flex-col rounded-[14px] sm:rounded-[16px] border border-white/15 bg-white/[0.07] p-3 sm:p-4.5 md:p-5 shadow-va-md backdrop-blur-lg transition-transform duration-300 hover:-translate-y-1">
+        <span className="mb-2 sm:mb-3 flex size-8 sm:size-9 items-center justify-center rounded-[8px] sm:rounded-[10px] border border-white/15 bg-white/10 text-amber backdrop-blur-sm">
+          <Icon className="size-4 sm:size-4.5" />
         </span>
-        <p className="mb-0.5 text-[1.4rem] font-bold text-white">{number}</p>
-        <p className="text-[0.82rem] text-white/60">{label}</p>
-        <div className="mt-2.5 h-px w-6 bg-amber/70" />
+        <p className="mb-1 text-[1.15rem] sm:text-[1.3rem] md:text-[1.4rem] font-bold text-white tracking-tight leading-none">
+          {number}
+        </p>
+        <p className="text-[0.72rem] sm:text-[0.78rem] md:text-[0.82rem] leading-snug text-white/60">{label}</p>
+        <div className="mt-auto pt-2.5 sm:pt-3">
+          <div className="h-px w-5 sm:w-6 bg-amber/70" />
+        </div>
       </div>
     </Reveal>
   );
@@ -34,7 +38,7 @@ function StatCard({ Icon, number, label, delay }: StatCardProps & { delay: numbe
 
 export function Hero() {
   return (
-    <section id="top" className="relative isolate flex min-h-[640px] items-center overflow-hidden bg-navy">
+    <section id="top" className="relative isolate flex min-h-160 items-center overflow-hidden bg-navy">
       <HeroPhoto />
 
       {/* Bottom transition: a clean solid curve rather than a blur — same
@@ -57,19 +61,19 @@ export function Hero() {
         />
       </svg>
 
-      <Container className="relative w-full pt-28 pb-20 md:pt-32 md:pb-24">
+      <Container className="relative w-full pt-26 pb-20 sm:pt-28 md:pt-32 md:pb-24">
         <div className="max-w-135">
           <Reveal>
-            <div className="mb-5 flex items-center gap-3">
-              <span className="h-px w-8 bg-amber/70" />
-              <span className="text-[0.78rem] font-bold uppercase tracking-[0.12em] text-amber">
+            <div className="mb-4 sm:mb-5 flex items-center gap-2.5 sm:gap-3">
+              <span className="h-px w-6 sm:w-8 bg-amber/70" />
+              <span className="text-[0.72rem] sm:text-[0.78rem] font-bold uppercase tracking-widest sm:tracking-[0.12em] text-amber">
                 CRDC Private Scholarship Program
               </span>
             </div>
           </Reveal>
 
           <Reveal delay={80}>
-            <h1 className="mb-6 font-serif text-[clamp(2.5rem,4.4vw,3.9rem)] font-medium leading-[1.1] text-white">
+            <h1 className="mb-5 sm:mb-6 font-serif text-[clamp(2.1rem,4.6vw,3.9rem)] font-medium leading-[1.12] text-white">
               Funding deserving minds.
               <br />
               <span className="text-amber">Tracked</span> with clarity.
@@ -77,17 +81,17 @@ export function Hero() {
           </Reveal>
 
           <Reveal delay={160}>
-            <p className="mb-7 max-w-115 text-[1.05rem] leading-[1.65] text-white/70">
+            <p className="mb-6 sm:mb-7 max-w-115 text-[0.95rem] sm:text-[1.05rem] leading-[1.65] text-white/70">
               A scholarship should feel like steady ground under a student&apos;s feet. Clear requirements, a fair
               review, and support that arrives exactly when it&apos;s needed — term after term.
             </p>
           </Reveal>
 
           <Reveal delay={240}>
-            <div className="mb-11 flex flex-wrap gap-3.5">
+            <div className="mb-9 sm:mb-11 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
               <Button
                 asChild
-                className="h-11 rounded-full px-7 text-[0.96rem] font-semibold transition-transform duration-300 hover:-translate-y-0.5 hover:shadow-va-md"
+                className="h-11 w-full sm:w-60 justify-center rounded-full px-6 text-[0.96rem] font-semibold transition-transform duration-300 hover:-translate-y-0.5 hover:shadow-va-md"
               >
                 <Link href="/signup">
                   Start your application <ArrowRight className="size-4" />
@@ -96,7 +100,7 @@ export function Hero() {
               <Button
                 asChild
                 variant="outline"
-                className="h-11 rounded-full border-white/40 bg-white/5 px-7 text-[0.96rem] font-semibold text-white backdrop-blur-md transition-transform duration-300 hover:-translate-y-0.5 hover:bg-white/15"
+                className="h-11 w-full sm:w-60 justify-center rounded-full border-white/40 bg-white/5 px-6 text-[0.96rem] font-semibold text-white backdrop-blur-md transition-transform duration-300 hover:-translate-y-0.5 hover:bg-white/15"
               >
                 <a href="#qualifications">
                   See qualifications <ArrowRight className="size-4" />
@@ -105,7 +109,7 @@ export function Hero() {
             </div>
           </Reveal>
 
-          <div className="flex flex-wrap gap-4">
+          <div className="grid grid-cols-3 gap-2.5 sm:gap-4 w-full">
             {STATS.map((st, i) => (
               <StatCard key={st.label} {...st} delay={320 + i * 90} />
             ))}

@@ -27,8 +27,7 @@ export function EnrollmentPendingReviewCard({
     }).format(val || 0);
   };
 
-  const displayAssessment =
-    totalAssessment ?? (enrollment?.total_assessment ? Number(enrollment.total_assessment) : 0);
+  const displayAssessment = totalAssessment ?? (enrollment?.total_assessment ? Number(enrollment.total_assessment) : 0);
   const notes = coordinatorNotes || enrollment?.coordinator_notes;
 
   return (
@@ -41,9 +40,7 @@ export function EnrollmentPendingReviewCard({
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-sm sm:text-base font-bold text-navy">
-                  Enrollment Submitted & Under Review
-                </h3>
+                <h3 className="text-sm sm:text-base font-bold text-navy">Enrollment Submitted & Under Review</h3>
                 <Badge
                   variant="outline"
                   className="bg-amber-100/80 text-amber-900 border-amber-300 text-xs font-bold gap-1 py-0.5"
@@ -53,7 +50,8 @@ export function EnrollmentPendingReviewCard({
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Your Certificate of Registration and Statement of Account have been submitted for review and tuition endorsement.
+                Your Certificate of Registration and Statement of Account have been submitted for review and tuition
+                endorsement.
               </p>
             </div>
           </div>
@@ -70,12 +68,13 @@ export function EnrollmentPendingReviewCard({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-amber-100/80">
           <div className="flex items-center gap-2 text-xs text-amber-900">
             <Info className="size-4 text-amber-700 shrink-0" />
-            <span>
-              Your coordinator is reviewing your courses and fees. You will be notified once endorsed.
-            </span>
+            <span>Your coordinator is reviewing your courses and fees. You will be notified once endorsed.</span>
           </div>
 
-          <Badge variant="outline" className="text-xs text-amber-900 border-amber-300 bg-white font-medium self-start sm:self-auto">
+          <Badge
+            variant="outline"
+            className="text-xs text-amber-900 border-amber-300 bg-white font-medium self-start sm:self-auto"
+          >
             No Action Required
           </Badge>
         </div>

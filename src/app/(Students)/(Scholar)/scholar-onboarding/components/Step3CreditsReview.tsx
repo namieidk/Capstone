@@ -1,15 +1,22 @@
 "use client";
 
-import { CheckCircle2, ChevronDown, ChevronUp, Eye, FileCheck2, FileText, GraduationCap, Loader2, Sparkles } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  FileCheck2,
+  FileText,
+  GraduationCap,
+  Loader2,
+  Sparkles,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ScholarProspectus } from "@/lib/api/baseline";
-import {
-  type ProspectusDocumentData,
-  ProspectusDocumentViewerDialog,
-} from "./ProspectusDocumentViewerDialog";
+import { type ProspectusDocumentData, ProspectusDocumentViewerDialog } from "./ProspectusDocumentViewerDialog";
 
 interface Step3CreditsReviewProps {
   prospectus?: ScholarProspectus | null;
@@ -300,11 +307,7 @@ export function Step3CreditsReview({ prospectus, document, onSuccess, onBack }: 
       </div>
 
       {/* Dedicated Document Viewer Dialog with Zoom Controls */}
-      <ProspectusDocumentViewerDialog
-        document={activeDocument}
-        open={isPreviewOpen}
-        onOpenChange={setIsPreviewOpen}
-      />
+      <ProspectusDocumentViewerDialog document={activeDocument} open={isPreviewOpen} onOpenChange={setIsPreviewOpen} />
     </div>
   );
 }

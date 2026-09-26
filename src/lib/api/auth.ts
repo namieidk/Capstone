@@ -29,6 +29,12 @@ export interface User {
     scholarship_track?: string;
     relative_employee?: string;
     academic_baseline_status?: string;
+    gpa?: number | string;
+    grade_reports?: Array<{
+      report_id: number;
+      gpa: number | string;
+      status: string;
+    }>;
     avatar_url?: string | null;
     banner_url?: string | null;
     bio?: string | null;

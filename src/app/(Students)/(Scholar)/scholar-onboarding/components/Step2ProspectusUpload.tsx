@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  AlertTriangle,
-  CheckCircle2,
-  FileText,
-  Loader2,
-  RefreshCw,
-  Sparkles,
-  UploadCloud,
-  X,
-} from "lucide-react";
+import { AlertTriangle, CheckCircle2, FileText, Loader2, RefreshCw, Sparkles, UploadCloud, X } from "lucide-react";
 import { useCallback, useState } from "react";
 import {
   AlertDialog,
@@ -126,12 +117,8 @@ export function Step2ProspectusUpload({ existingProspectus, onSuccess, onBack }:
                   <CheckCircle2 className="size-6 text-good" />
                 </div>
                 <div>
-                  <span className="text-xs font-bold text-good block">
-                    Curriculum Prospectus Uploaded
-                  </span>
-                  <p className="text-sm font-bold text-navy mt-0.5">
-                    {extractedResult.course_name}
-                  </p>
+                  <span className="text-xs font-bold text-good block">Curriculum Prospectus Uploaded</span>
+                  <p className="text-sm font-bold text-navy mt-0.5">{extractedResult.course_name}</p>
                 </div>
               </div>
 
@@ -170,12 +157,14 @@ export function Step2ProspectusUpload({ existingProspectus, onSuccess, onBack }:
             </div>
 
             <p className="text-[11px] text-muted-foreground pt-1">
-              Your curriculum requirements have been scanned and extracted ({subjects.length} courses). If you need to upload a different syllabus or evaluation sheet, click <strong>Replace Prospectus</strong>.
+              Your curriculum requirements have been scanned and extracted ({subjects.length} courses). If you need to
+              upload a different syllabus or evaluation sheet, click <strong>Replace Prospectus</strong>.
             </p>
           </div>
         </div>
       ) : (
         /* File Upload Dropzone (only displayed when no prospectus is active) */
+        // biome-ignore lint/a11y/noStaticElementInteractions: file dropzone requires onDragOver and onDrop handlers
         <div
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
@@ -296,11 +285,11 @@ export function Step2ProspectusUpload({ existingProspectus, onSuccess, onBack }:
             <div className="size-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mb-1">
               <AlertTriangle className="size-5" />
             </div>
-            <AlertDialogTitle className="text-lg font-bold text-navy">
-              Replace Uploaded Prospectus?
-            </AlertDialogTitle>
+            <AlertDialogTitle className="text-lg font-bold text-navy">Replace Uploaded Prospectus?</AlertDialogTitle>
             <AlertDialogDescription className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              Are you sure you want to replace your currently uploaded curriculum prospectus? This will clear the currently extracted courses, and you will need to upload a new document to re-parse your curriculum requirements.
+              Are you sure you want to replace your currently uploaded curriculum prospectus? This will clear the
+              currently extracted courses, and you will need to upload a new document to re-parse your curriculum
+              requirements.
             </AlertDialogDescription>
           </AlertDialogHeader>
 

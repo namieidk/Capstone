@@ -5,7 +5,7 @@ import type React from "react";
 import { useEffect, useRef, useState } from "react";
 
 export function Container({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("mx-auto w-full max-w-295 px-6 md:px-8", className)} {...props} />;
+  return <div className={cn("mx-auto w-full max-w-295 px-4 sm:px-6 md:px-8", className)} {...props} />;
 }
 
 export function Eyebrow({ children }: { children: React.ReactNode }) {
@@ -19,7 +19,14 @@ export function Eyebrow({ children }: { children: React.ReactNode }) {
 
 export function SectionHeading({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <h2 className={cn("mb-5 font-serif text-[2.5rem] font-medium leading-[1.15] text-navy", className)}>{children}</h2>
+    <h2
+      className={cn(
+        "mb-4 sm:mb-5 font-serif text-[1.85rem] sm:text-[2.2rem] lg:text-[2.5rem] font-medium leading-[1.15] text-navy",
+        className,
+      )}
+    >
+      {children}
+    </h2>
   );
 }
 

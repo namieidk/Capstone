@@ -36,8 +36,7 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
             const contractProfileIds = new Set(contracts.map((c) => c.scholar_profile_id));
             const active = rows.filter((r) => {
               const isAccepted =
-                r.status === "APPROVED" ||
-                (typeof r.stage === "string" && r.stage.trim().toLowerCase() === "accepted");
+                r.status === "APPROVED" || (typeof r.stage === "string" && r.stage.trim().toLowerCase() === "accepted");
               const hasContract =
                 contractProfileIds.has(r.scholar_profile_id) ||
                 Boolean(r.scholar_profile?.contracts && r.scholar_profile.contracts.length > 0) ||

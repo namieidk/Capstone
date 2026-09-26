@@ -113,7 +113,7 @@ export default function AdminDashboardPage() {
       {/* Consistent Page Header */}
       <AdminDashboardHeader searchValue={searchQuery} onSearchChange={setSearchQuery} />
 
-      <div className="px-5 pb-24 md:px-10 space-y-5 mt-5">
+      <div className="px-3.5 sm:px-5 md:px-10 pb-24 space-y-5 mt-5">
         {loadError ? (
           <Card className="rounded-[18px]! shadow-va-sm">
             <CardContent className="flex flex-col items-center gap-4 px-6 py-14 text-center">

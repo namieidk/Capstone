@@ -100,19 +100,13 @@ function SignInForm() {
 
       {error && <div className="rounded-lg bg-bad-bg px-3 py-2 text-sm font-medium text-bad">{error}</div>}
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center">
         <CheckboxField
           id="remember"
           checked={remember}
           onCheckedChange={(v) => setRemember(v === true)}
           label="Keep me signed in"
         />
-        <Link
-          href="/forgot-password"
-          className="text-[0.88rem] font-medium text-muted-foreground underline underline-offset-2 hover:text-navy"
-        >
-          Forgot password?
-        </Link>
       </div>
 
       <Button type="submit" disabled={loading} className="mt-1 h-11 w-full rounded-full text-[0.96rem] font-semibold">
@@ -126,6 +120,15 @@ function SignInForm() {
           </>
         )}
       </Button>
+
+      <div className="text-center">
+        <Link
+          href="/forgot-password"
+          className="text-[0.88rem] font-medium text-muted-foreground underline underline-offset-2 hover:text-navy transition-colors"
+        >
+          Forgot password?
+        </Link>
+      </div>
     </form>
   );
 }
@@ -190,12 +193,15 @@ export default function LoginPage() {
           <ModeTabs active="signin" />
           <SignInForm />
           <SocialBlock />
-          <p className="text-center text-[0.92rem] text-muted-foreground">
-            New to ViaScholar?{" "}
-            <Link href="/signup" className="font-semibold text-navy underline underline-offset-2 hover:text-amber">
+          <div className="text-center text-[0.92rem]">
+            <p className="text-muted-foreground">New to ViaScholar?</p>
+            <Link
+              href="/signup"
+              className="mt-1 inline-block font-semibold text-navy underline underline-offset-2 hover:text-amber transition-colors"
+            >
               Create an account
             </Link>
-          </p>
+          </div>
         </div>
       ) : (
         <SignedInPanel />

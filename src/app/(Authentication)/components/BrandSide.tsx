@@ -26,16 +26,10 @@ export function BrandSide({ mode }: BrandSideProps) {
   return (
     <aside className="auth-brand-bg relative hidden overflow-hidden lg:block">
       {/* Amber blob, bottom right (sits behind the image card) */}
-      <div
-        aria-hidden="true"
-        className="absolute -right-20 -bottom-24 size-80 rounded-full bg-amber"
-      />
+      <div aria-hidden="true" className="absolute -right-20 -bottom-24 size-80 rounded-full bg-amber" />
 
       <div className="relative z-10 flex h-full flex-col px-10 pt-8 pb-8 xl:px-14">
-        <Link
-          href="/"
-          className="flex w-fit items-center gap-3 text-lg font-semibold text-white"
-        >
+        <Link href="/" className="flex w-fit items-center gap-3 text-lg font-semibold text-white">
           <Image
             src="/logo_cropped.png"
             alt="ViaScholar logo"

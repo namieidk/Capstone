@@ -451,13 +451,7 @@ export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUplo
           }
 
           if (doc.status === "NEEDS_REUPLOAD") {
-            return (
-              <CcgNeedsReuploadCard
-                doc={doc}
-                discarding={discarding}
-                onDiscard={handleDiscardDraft}
-              />
-            );
+            return <CcgNeedsReuploadCard doc={doc} discarding={discarding} onDiscard={handleDiscardDraft} />;
           }
 
           if (doc.status === "STUDENT_CONFIRMED") {

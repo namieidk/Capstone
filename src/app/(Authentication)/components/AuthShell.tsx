@@ -22,24 +22,19 @@ export function AuthShell({ mode, title, subtitle, children }: AuthShellProps) {
           {/* my-auto centers when there's room and keeps the top padding when the form is tall */}
           <div className="my-auto flex w-full flex-col items-center gap-6 px-4 py-8 md:px-8">
             {/* Logo only on mobile, since the brand panel is hidden there */}
-            <Link
-              href="/"
-              className="flex items-center gap-2.5 text-base font-semibold text-navy lg:hidden"
-            >
-              <span className="flex size-9 items-center justify-center rounded-full bg-amber">
-                <Image
-                  src="/logo_cropped.png"
-                  alt="ViaScholar logo"
-                  width={32}
-                  height={32}
-                  unoptimized
-                  className="size-5 object-contain"
-                />
-              </span>
+            <Link href="/" className="flex items-center gap-2.5 text-base font-semibold text-navy lg:hidden">
+              <Image
+                src="/logo_cropped.png"
+                alt="ViaScholar logo"
+                width={36}
+                height={36}
+                unoptimized
+                className="size-8 object-contain"
+              />
               ViaScholar
             </Link>
 
-            <div className="w-full max-w-md rounded-[2rem] bg-white px-8 py-9 shadow-va-md ring-1 ring-line/60 md:px-10">
+            <div className="w-full max-w-md rounded-[2rem] bg-white px-6 py-8 sm:px-8 sm:py-9 shadow-va-md ring-1 ring-line/60 md:px-10">
               <div className="text-center">
                 <h1 className="font-serif text-[1.85rem] leading-tight font-semibold tracking-tight text-navy md:text-[2rem]">
                   {title}

@@ -30,19 +30,19 @@ export function AdminRecentAuditFeed({ logs }: AdminRecentAuditFeedProps) {
   return (
     <Card className="rounded-[16px]! border-line bg-white shadow-va-sm">
       <CardContent className="p-4 sm:p-5">
-        <div className="flex items-center justify-between pb-3 border-b border-line">
-          <div className="flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-[#ddeee3] text-[#0a4f42]">
+        <div className="flex items-center justify-between pb-3 border-b border-line gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="hidden sm:flex size-7 items-center justify-center rounded-lg bg-[#ddeee3] text-[#0a4f42] shrink-0">
               <Activity className="size-4 animate-pulse" />
             </div>
-            <div>
-              <h3 className="text-sm sm:text-[15px] font-bold text-foreground">Live System Activity Stream</h3>
-              <p className="text-xs text-muted-foreground">
+            <div className="min-w-0">
+              <h3 className="text-sm sm:text-[15px] font-bold text-foreground truncate">Live System Activity Stream</h3>
+              <p className="text-xs text-muted-foreground truncate sm:whitespace-normal">
                 Real-time security and operational events logged across the organization.
               </p>
             </div>
           </div>
-          <Link href="/AuditLogs">
+          <Link href="/AuditLogs" className="shrink-0">
             <Button
               variant="ghost"
               size="sm"
@@ -54,53 +54,55 @@ export function AdminRecentAuditFeed({ logs }: AdminRecentAuditFeedProps) {
           </Link>
         </div>
 
-        <div className="mt-2 divide-y divide-line">
-          {logs.length === 0 ? (
-            <div className="py-6 text-center text-xs text-muted-foreground">
-              <ScrollText className="size-7 mx-auto mb-1.5 text-muted-foreground/50" />
-              No recent audit activity recorded.
-            </div>
-          ) : (
-            logs.map((log) => {
-              const { background, color } = getActionColors(log.action);
-              const displayName = getDisplayName(log);
-              const timeString = formatRelativeTime(log.created_at);
-              return (
-                <div
-                  key={log.log_id}
-                  className="py-2.5 flex items-center justify-between gap-3 -mx-2 px-2 rounded-lg hover:bg-slate-50/60 transition-colors"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    {/* Equal Size Action Badge */}
-                    <span
-                      className="w-32 sm:w-36 text-center justify-center rounded-md px-2 py-0.5 text-[10px] font-bold tracking-tight shrink-0 truncate"
-                      style={{ background, color }}
-                      title={formatActionLabel(log.action)}
-                    >
-                      {formatActionLabel(log.action)}
-                    </span>
+        <div className="mt-2 overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="min-w-115 sm:min-w-0 divide-y divide-line">
+            {logs.length === 0 ? (
+              <div className="py-6 text-center text-xs text-muted-foreground">
+                <ScrollText className="size-7 mx-auto mb-1.5 text-muted-foreground/50" />
+                No recent audit activity recorded.
+              </div>
+            ) : (
+              logs.map((log) => {
+                const { background, color } = getActionColors(log.action);
+                const displayName = getDisplayName(log);
+                const timeString = formatRelativeTime(log.created_at);
+                return (
+                  <div
+                    key={log.log_id}
+                    className="py-2.5 flex items-center justify-between gap-3 -mx-2 px-2 rounded-lg hover:bg-slate-50/60 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      {/* Equal Size Action Badge */}
+                      <span
+                        className="w-32 sm:w-36 text-center justify-center rounded-md px-2 py-0.5 text-[10px] font-bold tracking-tight shrink-0 truncate"
+                        style={{ background, color }}
+                        title={formatActionLabel(log.action)}
+                      >
+                        {formatActionLabel(log.action)}
+                      </span>
 
-                    <div className="min-w-0">
-                      <p className="text-xs text-foreground font-medium truncate">{log.details}</p>
-                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground truncate">
-                        <span className="font-semibold text-slate-700 truncate">{displayName}</span>
-                        <span>•</span>
-                        <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
-                          {log.user?.role || "SYSTEM"}
-                        </span>
+                      <div className="min-w-0">
+                        <p className="text-xs text-foreground font-medium truncate">{log.details}</p>
+                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground truncate">
+                          <span className="font-semibold text-slate-700 truncate">{displayName}</span>
+                          <span>•</span>
+                          <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
+                            {log.user?.role || "SYSTEM"}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="shrink-0 text-right pl-2">
-                    <span className="text-[11px] text-muted-foreground font-medium block tabular-nums">
-                      {timeString}
-                    </span>
+                    <div className="shrink-0 text-right pl-2">
+                      <span className="text-[11px] text-muted-foreground font-medium block tabular-nums">
+                        {timeString}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              );
-            })
-          )}
+                );
+              })
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>

@@ -196,9 +196,7 @@ export default function ScholarOnboardingPage() {
                 <Step3CreditsReview
                   prospectus={data?.prospectus}
                   document={
-                    data?.prospectus?.document ||
-                    data?.documents?.find((d) => d.document_type === "PROSPECTUS") ||
-                    null
+                    data?.prospectus?.document || data?.documents?.find((d) => d.document_type === "PROSPECTUS") || null
                   }
                   currentYearLevel={data?.current_year_level}
                   onSuccess={handleStep3Success}

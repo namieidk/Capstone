@@ -252,7 +252,8 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
                 className="h-9 font-mono font-bold text-navy bg-white border-slate-300 focus:border-[#0a4f42] focus:ring-1 focus:ring-[#0a4f42]/30 text-xs tracking-wide"
               />
               <p className="text-[11px] text-muted-foreground">
-                Verify this against your official receipt or university portal. You can edit this code to match your student portal record (e.g. 46127-004084B).
+                Verify this against your official receipt or university portal. You can edit this code to match your
+                student portal record (e.g. 46127-004084B).
               </p>
             </div>
           )}

@@ -3,13 +3,7 @@
 import { Pencil, SlidersHorizontal, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -39,11 +33,7 @@ function formatDateTime(iso: string): string {
   });
 }
 
-export function ThresholdCard({
-  settings,
-  canEdit,
-  onSave,
-}: ThresholdCardProps) {
+export function ThresholdCard({ settings, canEdit, onSave }: ThresholdCardProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
@@ -73,9 +63,7 @@ export function ThresholdCard({
       await onSave(parsed.data);
       setEditing(false);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to update threshold.",
-      );
+      setError(err instanceof Error ? err.message : "Failed to update threshold.");
     } finally {
       setSaving(false);
     }
@@ -91,9 +79,7 @@ export function ThresholdCard({
                 <SlidersHorizontal className="size-5" />
               </span>
               <div>
-                <CardTitle className="text-lg!">
-                  Grade retention threshold
-                </CardTitle>
+                <CardTitle className="text-lg!">Grade retention threshold</CardTitle>
                 <CardDescription className="text-sm!">
                   Minimum GWA a scholar must keep to stay eligible.
                 </CardDescription>
@@ -116,15 +102,12 @@ export function ThresholdCard({
             {formatThreshold(settings.grade_threshold)}
           </p>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            Scholars below this GWA lose retention eligibility. Applies to
-            evaluations after saving.
+            Scholars below this GWA lose retention eligibility. Applies to evaluations after saving.
           </p>
           <Separator className="my-4" />
           <p className="text-xs text-muted-foreground">
             Last updated {formatDateTime(settings.updated_at)}
-            {settings.updated_by_user_id
-              ? ` · by user ID ${settings.updated_by_user_id}`
-              : ""}
+            {settings.updated_by_user_id ? ` · by user ID ${settings.updated_by_user_id}` : ""}
           </p>
           {!canEdit && (
             <p className="mt-2 text-xs font-medium text-muted-foreground">
@@ -136,11 +119,7 @@ export function ThresholdCard({
 
       {/* Edit Drawer */}
       <Sheet open={editing} onOpenChange={(open) => !open && closeDrawer()}>
-        <SheetContent
-          side="right"
-          className="w-full max-w-md! bg-slate-50 p-0 gap-0"
-          showCloseButton={false}
-        >
+        <SheetContent side="right" className="w-full max-w-md! bg-slate-50 p-0 gap-0" showCloseButton={false}>
           {/* Drawer Header */}
           <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
@@ -148,12 +127,8 @@ export function ThresholdCard({
                 <SlidersHorizontal className="size-4.5" />
               </span>
               <div>
-                <h2 className="text-base font-bold text-slate-900">
-                  Edit grade threshold
-                </h2>
-                <p className="text-xs text-slate-500">
-                  Minimum GWA required to stay eligible
-                </p>
+                <h2 className="text-base font-bold text-slate-900">Edit grade threshold</h2>
+                <p className="text-xs text-slate-500">Minimum GWA required to stay eligible</p>
               </div>
             </div>
 
@@ -170,10 +145,7 @@ export function ThresholdCard({
 
           {/* Drawer Body */}
           <div className="flex-1 overflow-y-auto p-6">
-            <Label
-              htmlFor="grade-threshold"
-              className="text-sm! font-semibold text-navy"
-            >
+            <Label htmlFor="grade-threshold" className="text-sm! font-semibold text-navy">
               Threshold (%)
             </Label>
             <Input
@@ -187,9 +159,7 @@ export function ThresholdCard({
               autoFocus
               className="mt-2 h-11! border-line bg-[#f7f9fb]! text-sm! md:text-sm!"
             />
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              Enter a value between 0 and 100.
-            </p>
+            <p className="mt-1.5 text-xs text-muted-foreground">Enter a value between 0 and 100.</p>
 
             {error && (
               <div className="mt-3 rounded-[10px] border border-[#f5c2c0] bg-[#fdebec] px-3.5 py-3 text-sm leading-relaxed text-[#b3261e]">
@@ -200,16 +170,11 @@ export function ThresholdCard({
             <Separator className="my-5" />
 
             <p className="text-xs text-muted-foreground">
-              Current value:{" "}
-              <strong className="text-navy">
-                {formatThreshold(settings.grade_threshold)}
-              </strong>
+              Current value: <strong className="text-navy">{formatThreshold(settings.grade_threshold)}</strong>
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
               Last updated {formatDateTime(settings.updated_at)}
-              {settings.updated_by_user_id
-                ? ` · by user ID ${settings.updated_by_user_id}`
-                : ""}
+              {settings.updated_by_user_id ? ` · by user ID ${settings.updated_by_user_id}` : ""}
             </p>
           </div>
 
@@ -224,12 +189,7 @@ export function ThresholdCard({
             >
               Cancel
             </Button>
-            <Button
-              type="button"
-              className="h-10 px-6 text-sm!"
-              onClick={handleSave}
-              disabled={saving}
-            >
+            <Button type="button" className="h-10 px-6 text-sm!" onClick={handleSave} disabled={saving}>
               {saving ? "Saving..." : "Save threshold"}
             </Button>
           </div>

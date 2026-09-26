@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  ArrowRight,
-  CheckCircle2,
-  CreditCard,
-  FileCheck2,
-  Info,
-} from "lucide-react";
+import { ArrowRight, CheckCircle2, CreditCard, FileCheck2, Info } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,10 +14,7 @@ interface EndorsementFinishedCardProps {
   totalUnits?: number;
 }
 
-export function EndorsementFinishedCard({
-  enrollmentState,
-  totalAssessment,
-}: EndorsementFinishedCardProps) {
+export function EndorsementFinishedCard({ enrollmentState, totalAssessment }: EndorsementFinishedCardProps) {
   const enrollment = enrollmentState.enrollment;
   const disbursement = enrollment?.disbursement;
 
@@ -34,9 +25,7 @@ export function EndorsementFinishedCard({
     }).format(val || 0);
   };
 
-  const endorsedAmount =
-    totalAssessment ||
-    (enrollment?.disbursement ? Number(enrollment.disbursement.amount) : 0);
+  const endorsedAmount = totalAssessment || (enrollment?.disbursement ? Number(enrollment.disbursement.amount) : 0);
 
   const disbursementStatusLabel = disbursement
     ? disbursement.status === "SETTLED"
@@ -58,9 +47,7 @@ export function EndorsementFinishedCard({
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-sm sm:text-base font-bold text-navy">
-                  Tuition Endorsement Approved
-                </h3>
+                <h3 className="text-sm sm:text-base font-bold text-navy">Tuition Endorsement Approved</h3>
                 <Badge
                   variant="outline"
                   className="bg-emerald-100/80 text-emerald-900 border-emerald-300 text-xs font-bold gap-1 py-0.5"
@@ -70,16 +57,13 @@ export function EndorsementFinishedCard({
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Your enrolled courses and tuition assessment have been verified
-                and endorsed to the Grantor for payment.
+                Your enrolled courses and tuition assessment have been verified and endorsed to the Grantor for payment.
               </p>
             </div>
           </div>
 
           <div className="flex items-center sm:flex-col sm:items-end justify-between gap-1 shrink-0 bg-white sm:bg-transparent p-3 sm:p-0 rounded-xl border border-emerald-100 sm:border-0">
-            <span className="text-[11px] font-semibold text-muted-foreground">
-              Endorsed Amount
-            </span>
+            <span className="text-[11px] font-semibold text-muted-foreground">Endorsed Amount</span>
             <span className="text-base sm:text-lg font-bold text-emerald-800 font-mono">
               {formatCurrency(endorsedAmount)}
             </span>
@@ -115,9 +99,7 @@ export function EndorsementFinishedCard({
             <span className="font-bold text-emerald-950 flex items-center gap-1.5">
               <Info className="size-3.5 text-emerald-700" /> Coordinator Note:
             </span>
-            <p className="text-emerald-900 leading-relaxed">
-              {enrollment.coordinator_notes}
-            </p>
+            <p className="text-emerald-900 leading-relaxed">{enrollment.coordinator_notes}</p>
           </div>
         )}
       </CardContent>

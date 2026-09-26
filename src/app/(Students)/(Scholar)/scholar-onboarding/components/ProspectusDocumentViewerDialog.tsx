@@ -17,13 +17,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { generatePreviewPageUrls } from "@/app/(Students)/(Applicants)/ApplicantsApplication/components/DocumentReviewDialog/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export interface ProspectusDocumentData {
   file_url: string;
@@ -153,6 +147,7 @@ export function ProspectusDocumentViewerDialog({
   };
 
   // Keyboard shortcut navigation
+  // biome-ignore lint/correctness/useExhaustiveDependencies: event listener binds on open and tracks current page navigation
   useEffect(() => {
     if (!open) return;
 
@@ -247,9 +242,7 @@ export function ProspectusDocumentViewerDialog({
         <DialogHeader className="px-5 sm:px-6 py-3.5 border-b border-line flex flex-row items-center justify-between gap-4 shrink-0 bg-white">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2.5">
-              <DialogTitle className="text-base sm:text-lg font-bold text-navy truncate">
-                {displayTitle}
-              </DialogTitle>
+              <DialogTitle className="text-base sm:text-lg font-bold text-navy truncate">{displayTitle}</DialogTitle>
               <Badge
                 variant="outline"
                 className="bg-emerald-50 text-emerald-800 border-emerald-300 text-xs font-semibold shrink-0"
