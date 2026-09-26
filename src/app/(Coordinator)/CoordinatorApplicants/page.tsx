@@ -6,6 +6,7 @@ import { MeetingSafeguardDialog } from "@/components/MeetingSafeguardDialog";
 import { useSocketEvent } from "@/contexts/SocketContext";
 import { ApiError } from "@/lib/api";
 import { listApplications, updateStage } from "@/lib/api/applications";
+import { listContracts } from "@/lib/api/contracts";
 import { ApplicantDialog } from "./components/ApplicantDialog";
 import { ApplicantsHeader } from "./components/ApplicantsHeader";
 import { ApplicantsTable } from "./components/ApplicantsTable";
@@ -45,11 +46,20 @@ export default function ApplicantsPage() {
     setLoading(true);
     setLoadError("");
     try {
-      const rows = await listApplications();
-      const activeRows = rows.filter((r) => r.status !== "APPROVED");
+      const [rows, contracts] = await Promise.all([listApplications(), listContracts().catch(() => [])]);
+      const contractProfileIds = new Set(contracts.map((c) => c.scholar_profile_id));
+      // Hide the applicant if they are ACCEPTED and a contract was issued to them
+      const activeRows = rows.filter((r) => {
+        const isAccepted = r.status === "APPROVED" || r.stage.trim().toLowerCase() === "accepted";
+        const hasContract =
+          contractProfileIds.has(r.scholar_profile_id) ||
+          Boolean(r.scholar_profile?.contracts && r.scholar_profile.contracts.length > 0) ||
+          (r.scholar_profile?._count?.contracts ?? 0) > 0;
+        return !(isAccepted && hasContract);
+      });
       const mapped = activeRows.map(mapApplicationToApplicant);
       setApplicants(mapped);
-      setSelected((prev) => (prev ? (mapped.find((a) => a.id === prev.id) ?? prev) : null));
+      setSelected((prev) => (prev ? (mapped.find((a) => a.id === prev.id) ?? null) : null));
     } catch (err) {
       console.error("Failed to load applicants:", err);
       setLoadError(err instanceof ApiError ? err.message : "Failed to load applicants.");
@@ -66,6 +76,8 @@ export default function ApplicantsPage() {
   useSocketEvent("application:submitted", () => fetchApplicants());
   useSocketEvent("document:confirmed_by_applicant", () => fetchApplicants());
   useSocketEvent("application:stage_updated", () => fetchApplicants());
+  useSocketEvent("contract:created", () => fetchApplicants());
+  useSocketEvent("contract:signed", () => fetchApplicants());
 
   const filtered = useMemo(() => {
     return applicants.filter((a) => {

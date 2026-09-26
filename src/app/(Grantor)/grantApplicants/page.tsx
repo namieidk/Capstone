@@ -6,6 +6,7 @@ import {
   mapApplicationToApplicant,
   matchesQuery,
   resolveDisplayStage,
+  STAGE_FILTERS,
   type StageFilter,
   stageToUpdatePayload,
 } from "@/app/(Coordinator)/CoordinatorApplicants/components/applicant-helpers";
@@ -14,6 +15,7 @@ import { MeetingSafeguardDialog } from "@/components/MeetingSafeguardDialog";
 import { useSocketEvent } from "@/contexts/SocketContext";
 import { ApiError } from "@/lib/api";
 import { listApplications, updateStage } from "@/lib/api/applications";
+import { listContracts } from "@/lib/api/contracts";
 import { GrantApplicantDialog } from "./components/GrantApplicantDialog";
 import { GrantApplicantsHeader } from "./components/GrantApplicantsHeader";
 
@@ -44,11 +46,20 @@ export default function GrantApplicantsPage() {
     setLoading(true);
     setLoadError("");
     try {
-      const rows = await listApplications();
-      const activeRows = rows.filter((r) => r.status !== "APPROVED");
+      const [rows, contracts] = await Promise.all([listApplications(), listContracts().catch(() => [])]);
+      const contractProfileIds = new Set(contracts.map((c) => c.scholar_profile_id));
+      // Hide the applicant if they are ACCEPTED and a contract was issued to them
+      const activeRows = rows.filter((r) => {
+        const isAccepted = r.status === "APPROVED" || r.stage.trim().toLowerCase() === "accepted";
+        const hasContract =
+          contractProfileIds.has(r.scholar_profile_id) ||
+          Boolean(r.scholar_profile?.contracts && r.scholar_profile.contracts.length > 0) ||
+          (r.scholar_profile?._count?.contracts ?? 0) > 0;
+        return !(isAccepted && hasContract);
+      });
       const mapped = activeRows.map(mapApplicationToApplicant);
       setApplicants(mapped);
-      setSelected((prev) => (prev ? (mapped.find((a) => a.id === prev.id) ?? prev) : null));
+      setSelected((prev) => (prev ? (mapped.find((a) => a.id === prev.id) ?? null) : null));
     } catch (err) {
       console.error("Failed to load applicants:", err);
       setLoadError(err instanceof ApiError ? err.message : "Failed to load applicants.");
@@ -63,6 +74,7 @@ export default function GrantApplicantsPage() {
 
   // Real-time lifecycle listener
   useSocketEvent("application:stage_updated", () => fetchApplicants());
+  useSocketEvent("contract:created", () => fetchApplicants());
   useSocketEvent("contract:signed", () => fetchApplicants());
 
   const filtered = useMemo(() => {
@@ -131,6 +143,20 @@ export default function GrantApplicantsPage() {
           setQuery(v);
           setPage(1);
         }}
+        filter={{
+          value: stageFilter,
+          onChange: (v) => {
+            setStageFilter(v as StageFilter);
+            setPage(1);
+          },
+          options: STAGE_FILTERS,
+          label: "Filter by stage",
+          hasActive: stageFilter !== "all",
+          onClear: () => {
+            setStageFilter("all");
+            setPage(1);
+          },
+        }}
       />
       <div className="px-5 pb-24 md:px-10">
         <div className="mt-4 flex h-10 items-center gap-2 rounded-full border border-line bg-tint px-3.5 md:hidden">
@@ -174,6 +200,10 @@ export default function GrantApplicantsPage() {
         onMoveStage={moveStage}
         onStagesChanged={updateApplicantStage}
         onMeetingScheduled={fetchApplicants}
+        onContractCreated={() => {
+          fetchApplicants();
+          setSelected(null);
+        }}
       />
       <MeetingSafeguardDialog
         open={safeguardState.open}

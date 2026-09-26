@@ -170,7 +170,7 @@ export function DocumentListItem({
             onClick={() => onReview(doc)}
           >
             <Eye className="size-3.5" />
-            View Data
+            View Document
           </Button>
         )}
 

@@ -38,7 +38,13 @@ export interface ScholarProfileSummary {
   current_year_level?: number | null;
   _count?: {
     documents: number;
+    contracts?: number;
   };
+  contracts?: {
+    contract_id: number;
+    contract_number: string;
+    status: string;
+  }[];
 }
 
 // GET /applications returns each Application with its scholar_profile

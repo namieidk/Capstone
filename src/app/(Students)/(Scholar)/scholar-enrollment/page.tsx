@@ -40,13 +40,9 @@ export default function ScholarEnrollmentPage() {
     setCorDocId,
     setSoaDocId,
     enrolledSubjects,
-    setEnrolledSubjects,
     totalAssessment,
-    setTotalAssessment,
     assessmentDate,
-    setAssessmentDate,
     billingBreakdown,
-    setBillingBreakdown,
     auditResult,
     handleCorUpload,
     handleSoaUpload,
@@ -158,22 +154,15 @@ export default function ScholarEnrollmentPage() {
                   }}
                 />
 
-                {/* Enrolled Subjects Review */}
-                <EnrolledSubjectsReview
-                  subjects={enrolledSubjects}
-                  onChangeSubjects={setEnrolledSubjects}
-                  isReadOnly={isReadOnly}
-                />
+                {/* Enrolled Subjects Review - Read-Only for Scholars */}
+                <EnrolledSubjectsReview subjects={enrolledSubjects} isReadOnly={true} />
 
-                {/* Billing Assessment Summary */}
+                {/* Billing Assessment Summary - Read-Only for Scholars */}
                 <BillingAssessmentSummary
                   totalAssessment={totalAssessment}
                   assessmentDate={assessmentDate}
                   billingBreakdown={billingBreakdown}
-                  onChangeTotalAssessment={setTotalAssessment}
-                  onChangeAssessmentDate={setAssessmentDate}
-                  onChangeBreakdown={setBillingBreakdown}
-                  isReadOnly={isReadOnly}
+                  isReadOnly={true}
                 />
 
                 {/* Automated Baseline Audit Pre-Check Card & Actions (Hidden if scholar has already submitted) */}
@@ -182,13 +171,22 @@ export default function ScholarEnrollmentPage() {
                     auditResult={auditResult}
                     isSubmitting={isSubmitting}
                     isSavingDraft={isSavingDraft}
-                    canSubmit={enrolledSubjects.length > 0 && totalAssessment > 0}
+                    canSubmit={
+                      (isConsolidated ? !!consolidatedFile : !!corFile || !!soaFile) || enrolledSubjects.length > 0
+                    }
                     status={status}
                     coordinatorNotes={enrollmentState.enrollment?.coordinator_notes}
                     onSubmit={handleSubmit}
                     onSaveDraft={handleSaveDraft}
                     onDiscardDraft={handleDiscardDraft}
-                    hasDraft={isDraft || enrolledSubjects.length > 0 || totalAssessment > 0}
+                    hasDraft={
+                      isDraft ||
+                      enrolledSubjects.length > 0 ||
+                      totalAssessment > 0 ||
+                      !!corFile ||
+                      !!soaFile ||
+                      !!consolidatedFile
+                    }
                   />
                 )}
               </>

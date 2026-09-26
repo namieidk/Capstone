@@ -17,7 +17,7 @@ interface OnboardingStepperProps {
 const WIZARD_STEPS: StepItem[] = [
   { step: 1, label: "School Scale", sub: "Grading system" },
   { step: 2, label: "Prospectus", sub: "Curriculum upload" },
-  { step: 3, label: "Past Credits", sub: "Completed courses" },
+  { step: 3, label: "Confirmation", sub: "Document check" },
   { step: 4, label: "Final Review", sub: "Submit baseline" },
 ];
 

@@ -1,13 +1,14 @@
 "use client";
 
-import { PageHeader } from "@/components/PageHeader";
+import { type HeaderFilterProps, PageHeader } from "@/components/PageHeader";
 
 interface GrantApplicantsHeaderProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
+  filter?: HeaderFilterProps;
 }
 
-export function GrantApplicantsHeader({ searchQuery, onSearchChange }: GrantApplicantsHeaderProps) {
+export function GrantApplicantsHeader({ searchQuery, onSearchChange, filter }: GrantApplicantsHeaderProps) {
   return (
     <PageHeader
       title="Applicants"
@@ -15,6 +16,7 @@ export function GrantApplicantsHeader({ searchQuery, onSearchChange }: GrantAppl
       searchValue={searchQuery}
       onSearchChange={onSearchChange}
       searchPlaceholder="Search name, track, stage..."
+      filter={filter}
     />
   );
 }

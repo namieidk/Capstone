@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSocketEvent } from "@/contexts/SocketContext";
 import { listApplications } from "@/lib/api/applications";
 import { getCoordinatorPendingBaselines } from "@/lib/api/baseline";
+import { listContracts } from "@/lib/api/contracts";
 import { getDisbursementsQueue, getMyScholarDisbursements } from "@/lib/api/disbursements";
 import { getPendingAcademicAppeals, getPendingDocuments } from "@/lib/api/documents";
 import { getCoordinatorPendingEnrollments } from "@/lib/api/enrollment";
@@ -29,10 +30,18 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
   const refreshBadges = useCallback(() => {
     let alive = true;
     if (opts.includeApplicants) {
-      listApplications()
-        .then((rows) => {
+      Promise.all([listApplications(), listContracts().catch(() => [])])
+        .then(([rows, contracts]) => {
           if (alive) {
-            const active = rows.filter((r) => r.status !== "APPROVED");
+            const contractProfileIds = new Set(contracts.map((c) => c.scholar_profile_id));
+            const active = rows.filter((r) => {
+              const isAccepted = r.status === "APPROVED" || r.stage.trim().toLowerCase() === "accepted";
+              const hasContract =
+                contractProfileIds.has(r.scholar_profile_id) ||
+                Boolean(r.scholar_profile?.contracts && r.scholar_profile.contracts.length > 0) ||
+                (r.scholar_profile?._count?.contracts ?? 0) > 0;
+              return !(isAccepted && hasContract) && r.status !== "REJECTED";
+            });
             setApplicants(active.length);
           }
         })
@@ -158,6 +167,8 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
   useSocketEvent("document:changes_requested", refreshBadges);
   useSocketEvent("academic_appeal:submitted", refreshBadges);
   useSocketEvent("academic_appeal:reviewed", refreshBadges);
+  useSocketEvent("contract:created", refreshBadges);
+  useSocketEvent("contract:signed", refreshBadges);
 
   return {
     applicants: applicants != null && applicants > 0 ? applicants : undefined,

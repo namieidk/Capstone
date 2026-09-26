@@ -273,17 +273,13 @@ export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUplo
 
   const handleConfirmAndSubmit = async () => {
     if (!doc) return;
-    if (gradeItems.length === 0) {
-      toast.error("Please ensure at least one subject grade is present before submitting.");
-      return;
-    }
     try {
       setConfirming(true);
       const updated = await confirmDocument(doc.document_id, {
         academic_year: academicYear,
         semester: semester,
         general_average: generalAvg,
-        grade_items: gradeItems,
+        grade_items: gradeItems.length > 0 ? gradeItems : undefined,
       });
       toast.success("Certified Copy of Grades submitted for coordinator audit!");
       setDoc(updated);

@@ -323,12 +323,15 @@ export function useScholarEnrollmentState() {
   };
 
   const handleSubmit = async () => {
-    if (enrolledSubjects.length === 0) {
-      toast.error("Please upload or add your enrolled subjects before submitting.");
+    const hasDocuments = isConsolidated
+      ? !!consolidatedFile || !!corDocId
+      : (!!corFile || !!corDocId) && (!!soaFile || !!soaDocId);
+    if (!hasDocuments && enrolledSubjects.length === 0) {
+      toast.error("Please upload your Certificate of Registration and Statement of Account before submitting.");
       return;
     }
-    if (totalAssessment <= 0) {
-      toast.error("Please provide your total tuition assessment balance.");
+    if (totalAssessment < 0) {
+      toast.error("Tuition assessment balance cannot be negative.");
       return;
     }
 

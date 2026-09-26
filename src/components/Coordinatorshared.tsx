@@ -630,6 +630,8 @@ export interface Applicant {
   schoolAddress?: string | null;
   relativeEmployee?: string | null;
   documentsCount?: number;
+  hasContract?: boolean;
+  contractStatus?: string | null;
 }
 
 export interface ScheduledInterview {

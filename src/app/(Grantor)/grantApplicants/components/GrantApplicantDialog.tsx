@@ -51,6 +51,7 @@ interface GrantApplicantDialogProps {
   onMoveStage: (id: number, stage: Stage, rejectionReason?: string, confirmWithoutMeeting?: boolean) => void;
   onStagesChanged: (id: number, stage: Stage) => void;
   onMeetingScheduled: () => void;
+  onContractCreated?: (contract: Contract) => void;
 }
 
 export function GrantApplicantDialog({
@@ -61,6 +62,7 @@ export function GrantApplicantDialog({
   onMoveStage,
   onStagesChanged,
   onMeetingScheduled,
+  onContractCreated,
 }: GrantApplicantDialogProps) {
   const [confirmingReject, setConfirmingReject] = useState(false);
   const [confirmingReopen, setConfirmingReopen] = useState(false);
@@ -681,6 +683,7 @@ export function GrantApplicantDialog({
         onOpenChange={setCreatingContract}
         onContractCreated={(contract) => {
           setExistingContract(contract);
+          onContractCreated?.(contract);
         }}
       />
     </>

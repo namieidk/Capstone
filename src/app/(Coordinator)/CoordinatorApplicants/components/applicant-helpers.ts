@@ -6,11 +6,12 @@ export type StageFilter = Stage | "all";
 export type BadgeVariant = "default" | "secondary" | "outline" | "destructive";
 
 export const STAGE_FILTERS: { value: StageFilter; label: string }[] = [
-  { value: "all", label: "All active" },
+  { value: "all", label: "All" },
   { value: "Submitted", label: "Submitted" },
   { value: "Under review", label: "Under review" },
   { value: "Interview", label: "Interview" },
   { value: "Endorsed", label: "Endorsed" },
+  { value: "Accepted", label: "Accepted" },
   { value: "Rejected", label: "Rejected" },
 ];
 
@@ -162,6 +163,9 @@ export function mapApplicationToApplicant(row: ApplicationWithProfile): Applican
     schoolAddress: p?.school_address ?? null,
     relativeEmployee: p?.relative_employee ?? null,
     documentsCount: p?._count?.documents ?? 0,
+    hasContract:
+      Boolean(p?.contracts && p.contracts.length > 0) || Boolean(p?._count?.contracts && p._count.contracts > 0),
+    contractStatus: p?.contracts?.[0]?.status ?? null,
   };
 }
 

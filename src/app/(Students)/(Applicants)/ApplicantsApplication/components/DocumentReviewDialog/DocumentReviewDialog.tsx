@@ -11,9 +11,7 @@ import { isInvalidOrMismatchedDoc } from "../wizard-helpers";
 import { DialogFooterBar } from "./DialogFooterBar";
 import { DialogHeaderBar } from "./DialogHeaderBar";
 import { DocumentPreviewCarousel } from "./DocumentPreviewCarousel";
-import { DocumentSummaryForm } from "./DocumentSummaryForm";
 import { ExtractedMetadataView } from "./ExtractedMetadataView";
-import { GradeItemsTable } from "./GradeItemsTable";
 import {
   type ConfirmedDataShape,
   type DocumentReviewDialogProps,
@@ -168,51 +166,6 @@ export function DocumentReviewDialog({
 
   if (!doc) return null;
 
-  function handleAddSubject() {
-    setGradeItems((prev) => [
-      ...prev,
-      {
-        id: `custom-${Date.now()}-${prev.length}`,
-        subject_code: "",
-        subject_name: "",
-        units: 1,
-        grade: "",
-      },
-    ]);
-  }
-
-  function handleRemoveSubject(id: string) {
-    setGradeItems((prev) => prev.filter((item) => item.id !== id));
-  }
-
-  function handleItemChange(id: string, field: keyof EditableGradeItem, val: string | number) {
-    setGradeItems((prev) =>
-      prev.map((item) => {
-        if (item.id !== id) return item;
-        return { ...item, [field]: val };
-      }),
-    );
-  }
-
-  function handleComputeAverage() {
-    const valid = gradeItems.filter((i) => i.grade !== "" && !Number.isNaN(Number(i.grade)) && Number(i.grade) > 0);
-    if (valid.length === 0) return;
-
-    // Weight by units for credit subjects (units > 0), or compute simple average if all units are 0
-    const totalCreditUnits = valid.reduce((sum, i) => sum + (Number(i.units) > 0 ? Number(i.units) : 0), 0);
-    let avg = "0";
-    if (totalCreditUnits > 0) {
-      const totalWeighted = valid
-        .filter((i) => Number(i.units) > 0)
-        .reduce((sum, i) => sum + Number(i.grade) * Number(i.units), 0);
-      avg = (totalWeighted / totalCreditUnits).toFixed(2);
-    } else {
-      const sumGrades = valid.reduce((sum, i) => sum + Number(i.grade), 0);
-      avg = (sumGrades / valid.length).toFixed(2);
-    }
-    setGeneralAverage(avg);
-  }
-
   function handlePageFailed(index: number) {
     setFailedPages((prev) => ({
       ...prev,
@@ -229,39 +182,25 @@ export function DocumentReviewDialog({
       return;
     }
 
-    // Filter to only subjects with a valid completed grade (> 0)
-    const validGradedItems = gradeItems.filter(
-      (i) => i.grade !== "" && !Number.isNaN(Number(i.grade)) && Number(i.grade) > 0 && Number(i.grade) <= 100,
-    );
-
-    // If there are entered items that have negative or >100 grades
-    const invalidItem = gradeItems.find(
-      (i) => i.grade !== "" && (Number.isNaN(Number(i.grade)) || Number(i.grade) < 0 || Number(i.grade) > 100),
-    );
-    if (invalidItem) {
-      setFormError(
-        `Grade for "${invalidItem.subject_name || "subject"}" must be a valid positive number (e.g., 1.00–5.00 or 75–100).`,
-      );
-      return;
-    }
-
-    if (validGradedItems.length === 0 && parsedGa === undefined) {
-      setFormError("Please enter at least one completed subject grade or provide your General Average.");
-      return;
-    }
-
     setSubmitting(true);
     try {
-      const payloadGradeItems: GradeItem[] = validGradedItems.map((i) => ({
-        subject_code: i.subject_code.trim() || i.subject_name.trim() || "N/A",
-        subject_name: i.subject_name.trim() || i.subject_code.trim() || "N/A",
-        units: Number(i.units) >= 0 ? Number(i.units) : 1,
-        grade: Number(i.grade),
-      }));
+      const validGradedItems = gradeItems.filter(
+        (i) => i.grade !== "" && !Number.isNaN(Number(i.grade)) && Number(i.grade) > 0 && Number(i.grade) <= 100,
+      );
+
+      const payloadGradeItems: GradeItem[] | undefined =
+        validGradedItems.length > 0
+          ? validGradedItems.map((i) => ({
+              subject_code: i.subject_code.trim() || i.subject_name.trim() || "N/A",
+              subject_name: i.subject_name.trim() || i.subject_code.trim() || "N/A",
+              units: Number(i.units) >= 0 ? Number(i.units) : 1,
+              grade: Number(i.grade),
+            }))
+          : undefined;
 
       await onConfirm(doc.document_id, {
-        academic_year: academicYear.trim() || undefined,
-        general_average: parsedGa,
+        academic_year: academicYear.trim() || rawExtracted?.academic_year || undefined,
+        general_average: parsedGa ?? (rawExtracted?.general_average ? Number(rawExtracted.general_average) : undefined),
         grade_items: payloadGradeItems,
       });
 
@@ -446,31 +385,56 @@ export function DocumentReviewDialog({
                       </div>
                     ) : null}
 
-                    {/* Metadata and advisories */}
+                    {/* Read-Only Metadata overview if extracted */}
                     <ExtractedMetadataView
                       extractedData={rawExtracted}
-                      isReadOnly={isReadOnly}
+                      isReadOnly={true}
                       showConfirmedNotice={isReadOnly && !isMismatch}
                     />
 
-                    {/* Editable Document Summary */}
-                    <DocumentSummaryForm
-                      academicYear={academicYear}
-                      generalAverage={generalAverage}
-                      isReadOnly={isReadOnly}
-                      onAcademicYearChange={setAcademicYear}
-                      onGeneralAverageChange={setGeneralAverage}
-                      onComputeAverage={handleComputeAverage}
-                    />
+                    {/* Document Verification & Legibility Confirmation Card */}
+                    <div className="rounded-xl border border-line bg-white p-4 space-y-3.5 shadow-2xs">
+                      <div className="flex items-center gap-2">
+                        <div className="flex size-7 items-center justify-center rounded-lg bg-teal-50 text-[#0a4f42]">
+                          <FileText className="size-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-navy">Document Submission Confirmation</h4>
+                          <p className="text-[11px] text-muted-foreground">
+                            Verify your document preview before final submission to the coordinator.
+                          </p>
+                        </div>
+                      </div>
 
-                    {/* Editable Subjects & Grades Table */}
-                    <GradeItemsTable
-                      gradeItems={gradeItems}
-                      isReadOnly={isReadOnly}
-                      onAddSubject={handleAddSubject}
-                      onRemoveSubject={handleRemoveSubject}
-                      onItemChange={handleItemChange}
-                    />
+                      <div className="space-y-2 rounded-lg bg-slate-50/70 border border-slate-200/80 p-3 text-xs text-slate-700">
+                        <p className="font-semibold text-navy text-[11px] uppercase tracking-wider">
+                          Legibility Checklist:
+                        </p>
+                        <div className="space-y-1.5 text-[11px]">
+                          <div className="flex items-center gap-2">
+                            <span className="size-1.5 rounded-full bg-[#0a4f42]" />
+                            <span>Document is clear, sharp, upright, and free of glare or blur.</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="size-1.5 rounded-full bg-[#0a4f42]" />
+                            <span>Official school name, registrar stamp, and signature are visible.</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="size-1.5 rounded-full bg-[#0a4f42]" />
+                            <span>All required pages (front and back if applicable) are included.</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="rounded-lg bg-teal-500/10 border border-teal-500/20 p-3 text-[11px] text-teal-950 flex items-start gap-2">
+                        <Sparkles className="size-4 text-[#0a4f42] shrink-0 mt-0.5" />
+                        <p className="leading-relaxed">
+                          <strong>Automated Extraction:</strong> The system will scan your academic grades and credit
+                          units. The Scholarship Coordinator and Grantor will review the extracted data alongside your
+                          document during evaluation.
+                        </p>
+                      </div>
+                    </div>
                   </>
                 )}
 
@@ -489,7 +453,7 @@ export function DocumentReviewDialog({
           isReadOnly={isReadOnly}
           isMismatch={isMismatch}
           submitting={submitting}
-          disabled={isOcrPending || isMismatch}
+          disabled={isMismatch}
           onClose={() => onOpenChange(false)}
           onSubmit={handleSubmit}
         />
