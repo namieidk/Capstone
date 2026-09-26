@@ -131,18 +131,18 @@ export function CreateContractDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg rounded-2xl p-0 gap-0 overflow-hidden">
+      <DialogContent className="sm:max-w-2xl rounded-2xl p-0 gap-0 overflow-hidden">
         {/* Header */}
-        <DialogHeader className="border-b border-border bg-white px-5 py-4 sm:px-6">
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-navy/10 text-navy dark:bg-navy/30 dark:text-navy-foreground">
-              <FileSignature className="size-5" />
+        <DialogHeader className="border-b border-border bg-white px-6 py-5 sm:px-8 sm:py-6">
+          <div className="flex items-center gap-3.5">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-navy/10 text-navy dark:bg-navy/30 dark:text-navy-foreground">
+              <FileSignature className="size-5.5" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold text-navy">
+              <DialogTitle className="text-xl font-bold text-navy">
                 {existingContract ? "Re-issue Scholarship Contract" : "Issue Scholarship Contract"}
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+              <DialogDescription className="text-xs text-muted-foreground mt-1">
                 {existingContract
                   ? "Generate a new agreement version for digital signature."
                   : "Generate and dispatch an official scholarship agreement for digital signature."}
@@ -152,7 +152,7 @@ export function CreateContractDialog({
         </DialogHeader>
 
         {/* Content Body */}
-        <div className="p-5 sm:p-6 flex flex-col gap-4">
+        <div className="p-6 sm:p-8 flex flex-col gap-5">
           {createdContract ? (
             <div className="flex flex-col items-center justify-center text-center p-6 bg-good-bg/40 border border-good/20 rounded-xl">
               <div className="flex size-12 items-center justify-center rounded-full bg-good/10 text-good mb-3">
@@ -284,9 +284,9 @@ export function CreateContractDialog({
         </div>
 
         {/* Footer */}
-        <DialogFooter className="border-t border-border bg-white px-5 py-3.5 sm:px-6 flex flex-row justify-end gap-2">
+        <DialogFooter className="border-t border-border bg-white px-6 py-4.5 sm:px-8 flex flex-row justify-end gap-3">
           {createdContract ? (
-            <Button type="button" className="h-10 px-5 text-xs font-semibold" onClick={handleClose}>
+            <Button type="button" className="h-10.5 px-6 text-xs font-semibold" onClick={handleClose}>
               Done
             </Button>
           ) : (
@@ -294,7 +294,7 @@ export function CreateContractDialog({
               <Button
                 type="button"
                 variant="outline"
-                className="h-10 text-xs font-semibold"
+                className="h-10.5 px-5 text-xs font-semibold"
                 disabled={submitting}
                 onClick={handleClose}
               >
@@ -302,7 +302,7 @@ export function CreateContractDialog({
               </Button>
               <Button
                 type="button"
-                className="h-10 px-5 text-xs font-semibold gap-1.5"
+                className="h-10.5 px-6 text-xs font-semibold gap-1.5"
                 disabled={submitting || contractNumber.trim() === ""}
                 onClick={handleCreate}
               >

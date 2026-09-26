@@ -20,6 +20,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   type DisbursementItem,
@@ -38,11 +39,20 @@ interface SubmitORDialogProps {
 export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: SubmitORDialogProps) {
   const [fileUrl, setFileUrl] = useState("");
   const [fileName, setFileName] = useState("");
+  const [orNumber, setOrNumber] = useState("");
   const [extractedData, setExtractedData] = useState<ExtractedOfficialReceiptData | null>(null);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   if (!open || !disbursement) return null;
+
+  const handleClose = () => {
+    setFileUrl("");
+    setFileName("");
+    setOrNumber("");
+    setExtractedData(null);
+    onClose();
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -57,6 +67,9 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
 
       if (res.extracted_data) {
         setExtractedData(res.extracted_data);
+        if (res.extracted_data.or_number) {
+          setOrNumber(res.extracted_data.or_number);
+        }
         toast.success("Receipt scanned successfully!");
       } else {
         toast.success("Official Receipt uploaded.");
@@ -75,9 +88,14 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
       return;
     }
 
+    const orNum = orNumber.trim();
+    if (!orNum) {
+      toast.error("Please enter or verify the Official Receipt (OR) Number.");
+      return;
+    }
+
     try {
       setSubmitting(true);
-      const orNum = extractedData?.or_number?.trim() || "PENDING_VERIFICATION";
       const payDate = extractedData?.payment_date || new Date().toISOString().split("T")[0];
 
       const res = await submitScholarOfficialReceipt(disbursement.disbursement_id, {
@@ -85,11 +103,11 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
         or_payment_date: payDate,
         file_url: fileUrl,
         file_name: fileName || undefined,
-        extracted_data: extractedData || undefined,
+        extracted_data: extractedData ? { ...extractedData, or_number: orNum } : undefined,
       });
       toast.success(res.message || "Official Receipt submitted successfully for coordinator audit.");
+      handleClose();
       onSuccess();
-      onClose();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to submit receipt.");
     } finally {
@@ -110,7 +128,7 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
             type="button"
             variant="ghost"
             size="icon"
-            onClick={onClose}
+            onClick={handleClose}
             className="size-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60"
           >
             <X className="size-4" />
@@ -171,6 +189,8 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
                       size="sm"
                       onClick={() => {
                         setFileUrl("");
+                        setFileName("");
+                        setOrNumber("");
                         setExtractedData(null);
                       }}
                       className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
@@ -194,7 +214,7 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
                   <>
                     <Loader2 className="size-6 animate-spin text-[#0a4f42]" />
                     <p className="text-xs font-semibold text-slate-700">Scanning Receipt...</p>
-                    <p className="text-[11px] text-muted-foreground">Reading cashier numbers and payment seal</p>
+                    <p className="text-[11px] text-muted-foreground">Reading cashier numbers and payment details</p>
                   </>
                 ) : (
                   <>
@@ -209,7 +229,35 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
             )}
           </div>
 
-          {/* Extracted Receipt Summary Card (Read-Only) */}
+          {/* Official Receipt Number (The ONLY editable field) */}
+          {fileUrl && (
+            <div className="space-y-1.5 p-3.5 bg-slate-50/80 border border-line rounded-xl">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="or_number" className="text-xs font-bold text-navy flex items-center gap-1.5">
+                  <Hash className="size-3.5 text-[#0a4f42]" />
+                  <span>Official Receipt (OR) Number</span>
+                  <span className="text-rose-500 font-bold">*</span>
+                </Label>
+                <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100/70 border border-emerald-300 px-2 py-0.5 rounded-md">
+                  Editable Field
+                </span>
+              </div>
+              <Input
+                id="or_number"
+                type="text"
+                value={orNumber}
+                onChange={(e) => setOrNumber(e.target.value)}
+                placeholder="e.g. 46127-004084B"
+                required
+                className="h-9 font-mono font-bold text-navy bg-white border-slate-300 focus:border-[#0a4f42] focus:ring-1 focus:ring-[#0a4f42]/30 text-xs tracking-wide"
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Verify this against your official receipt or university portal. You can edit this code to match your student portal record (e.g. 46127-004084B).
+              </p>
+            </div>
+          )}
+
+          {/* Extracted Receipt Summary Card (Strictly Read-Only Details) */}
           {extractedData && (
             <div className="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-2">
               <div className="flex items-center justify-between text-xs font-bold text-emerald-900">
@@ -218,18 +266,10 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
                   <span>Detected Receipt Metadata</span>
                 </span>
                 <Badge variant="outline" className="bg-white text-emerald-800 border-emerald-300 text-[10px]">
-                  Read-Only Preview
+                  Read-Only Details
                 </Badge>
               </div>
               <div className="grid grid-cols-2 gap-2 text-[11px]">
-                {extractedData.or_number && (
-                  <div className="flex items-center gap-1.5 text-slate-700 font-mono">
-                    <Hash className="size-3 text-slate-400" />
-                    <span>
-                      OR #: <strong className="text-slate-900">{extractedData.or_number}</strong>
-                    </span>
-                  </div>
-                )}
                 {extractedData.payment_date && (
                   <div className="flex items-center gap-1.5 text-slate-700">
                     <Calendar className="size-3 text-slate-400" />
@@ -279,14 +319,14 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
             <Button
               type="button"
               variant="outline"
-              onClick={onClose}
+              onClick={handleClose}
               className="h-9 rounded-xl border-line text-xs font-semibold"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={submitting || !fileUrl}
+              disabled={submitting || !fileUrl || !orNumber.trim()}
               className="h-9 rounded-xl bg-[#0a4f42] hover:bg-[#083c32] text-white text-xs font-bold px-5 gap-1.5"
             >
               {submitting ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}

@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, AlertTriangle, BookOpen } from "lucide-react";
+import { AlertCircle, AlertTriangle, BookOpen, FileText, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -58,6 +58,14 @@ export default function ScholarEnrollmentPage() {
   const isApproved = status === "APPROVED";
   const isPending = status === "PENDING_REVIEW";
   const hasAlreadySubmitted = isApproved || isPending;
+  const isUploading = isUploadingCor || isUploadingSoa || isUploadingConsolidated;
+  const hasUploadedCredentials =
+    enrolledSubjects.length > 0 ||
+    totalAssessment > 0 ||
+    !!corFile ||
+    !!soaFile ||
+    !!consolidatedFile ||
+    hasAlreadySubmitted;
   const totalUnits = enrolledSubjects.reduce((sum, s) => sum + (Number(s.units) || 0), 0);
 
   return (
@@ -123,7 +131,13 @@ export default function ScholarEnrollmentPage() {
 
                 {/* If pending coordinator review, show dedicated pending card */}
                 {isPending && (
-                  <EnrollmentPendingReviewCard coordinatorNotes={enrollmentState.enrollment?.coordinator_notes} />
+                  <EnrollmentPendingReviewCard
+                    enrollmentState={enrollmentState}
+                    totalAssessment={totalAssessment}
+                    subjectsCount={enrolledSubjects.length}
+                    totalUnits={totalUnits}
+                    coordinatorNotes={enrollmentState.enrollment?.coordinator_notes}
+                  />
                 )}
 
                 {/* Upload Dropzones & Mode Toggle */}
@@ -154,40 +168,76 @@ export default function ScholarEnrollmentPage() {
                   }}
                 />
 
-                {/* Enrolled Subjects Review - Read-Only for Scholars */}
-                <EnrolledSubjectsReview subjects={enrolledSubjects} isReadOnly={true} />
+                {/* Progressive Disclosure: OCR Loading Skeleton -> Empty State Guide -> Smooth Animated Review Cards */}
+                {isUploading ? (
+                  <div className="rounded-2xl border border-emerald-200/80 bg-emerald-50/20 p-6 sm:p-7 space-y-4 animate-in fade-in duration-300 shadow-2xs">
+                    <div className="flex items-center gap-3">
+                      <div className="size-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                        <Loader2 className="size-5 animate-spin text-emerald-700" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-navy">Reading Documents & Checking Requirements...</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          We&apos;re reading your uploaded files to gather your enrolled subjects, units, and tuition details automatically.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="space-y-3 pt-2">
+                      <Skeleton className="h-32 w-full rounded-xl" />
+                      <Skeleton className="h-28 w-full rounded-xl" />
+                    </div>
+                  </div>
+                ) : !hasUploadedCredentials ? (
+                  <div className="rounded-2xl border border-dashed border-border bg-white/70 p-8 sm:p-10 text-center space-y-3 shadow-2xs animate-in fade-in duration-200">
+                    <div className="size-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto shadow-2xs">
+                      <FileText className="size-6 text-emerald-700" />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-bold text-navy">Upload Credentials to Start Audit</h3>
+                      <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
+                        Upload your university registration (COR) and tuition statement (SOA) above. Once uploaded, the system will
+                        automatically extract your enrolled courses, compute your tuition ledger, and verify compliance against your academic baseline.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
+                    {/* Enrolled Subjects Review - Read-Only for Scholars */}
+                    <EnrolledSubjectsReview subjects={enrolledSubjects} isReadOnly={true} />
 
-                {/* Billing Assessment Summary - Read-Only for Scholars */}
-                <BillingAssessmentSummary
-                  totalAssessment={totalAssessment}
-                  assessmentDate={assessmentDate}
-                  billingBreakdown={billingBreakdown}
-                  isReadOnly={true}
-                />
+                    {/* Billing Assessment Summary - Read-Only for Scholars */}
+                    <BillingAssessmentSummary
+                      totalAssessment={totalAssessment}
+                      assessmentDate={assessmentDate}
+                      billingBreakdown={billingBreakdown}
+                      isReadOnly={true}
+                    />
 
-                {/* Automated Baseline Audit Pre-Check Card & Actions (Hidden if scholar has already submitted) */}
-                {!hasAlreadySubmitted && (
-                  <EnrollmentAuditSummaryCard
-                    auditResult={auditResult}
-                    isSubmitting={isSubmitting}
-                    isSavingDraft={isSavingDraft}
-                    canSubmit={
-                      (isConsolidated ? !!consolidatedFile : !!corFile || !!soaFile) || enrolledSubjects.length > 0
-                    }
-                    status={status}
-                    coordinatorNotes={enrollmentState.enrollment?.coordinator_notes}
-                    onSubmit={handleSubmit}
-                    onSaveDraft={handleSaveDraft}
-                    onDiscardDraft={handleDiscardDraft}
-                    hasDraft={
-                      isDraft ||
-                      enrolledSubjects.length > 0 ||
-                      totalAssessment > 0 ||
-                      !!corFile ||
-                      !!soaFile ||
-                      !!consolidatedFile
-                    }
-                  />
+                    {/* Automated Baseline Audit Pre-Check Card & Actions (Hidden if scholar has already submitted) */}
+                    {!hasAlreadySubmitted && (
+                      <EnrollmentAuditSummaryCard
+                        auditResult={auditResult}
+                        isSubmitting={isSubmitting}
+                        isSavingDraft={isSavingDraft}
+                        canSubmit={
+                          (isConsolidated ? !!consolidatedFile : !!corFile || !!soaFile) || enrolledSubjects.length > 0
+                        }
+                        status={status}
+                        coordinatorNotes={enrollmentState.enrollment?.coordinator_notes}
+                        onSubmit={handleSubmit}
+                        onSaveDraft={handleSaveDraft}
+                        onDiscardDraft={handleDiscardDraft}
+                        hasDraft={
+                          isDraft ||
+                          enrolledSubjects.length > 0 ||
+                          totalAssessment > 0 ||
+                          !!corFile ||
+                          !!soaFile ||
+                          !!consolidatedFile
+                        }
+                      />
+                    )}
+                  </div>
                 )}
               </>
             )}

@@ -155,8 +155,8 @@ export function EnrollmentDropzone({
             {isUploading ? (
               <div className="flex flex-col items-center gap-2">
                 <Loader2 className="size-7 text-emerald-700 animate-spin" />
-                <p className="text-xs font-semibold text-foreground">Ingesting and running OCR extraction...</p>
-                <p className="text-[11px] text-muted-foreground">Extracting courses, units, schedule & fee balances</p>
+                <p className="text-xs font-semibold text-foreground">Reading your document...</p>
+                <p className="text-[11px] text-muted-foreground">Gathering your courses, units, and fee details</p>
               </div>
             ) : (
               <>

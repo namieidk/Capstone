@@ -18,25 +18,22 @@ export function EnrollmentModeToggle({ isConsolidated, onChange, disabled }: Enr
         onValueChange={(val) => onChange(val === "consolidated")}
         className="w-full sm:w-auto"
       >
-        <TabsList
-          className="grid! h-auto! w-full! grid-cols-1! gap-1.5! border border-border/80 bg-muted/60 p-1.5
-            sm:h-10! sm:w-auto! sm:grid-cols-2! sm:gap-0! sm:p-1"
-        >
+        <TabsList className="inline-flex h-auto w-full sm:w-auto flex-col sm:flex-row items-center gap-1 rounded-2xl border border-line bg-slate-100/90 p-1 shadow-2xs">
           <TabsTrigger
             value="dual"
             disabled={disabled}
-            className="h-auto! min-h-9 w-full! gap-2 whitespace-normal! px-3 py-2 text-center text-xs leading-snug font-semibold data-[state=active]:bg-white data-[state=active]:text-emerald-800 data-[state=active]:shadow-xs"
+            className="h-9 w-full sm:w-auto gap-2 px-4 text-xs font-semibold rounded-xl transition-all text-muted-foreground data-[state=active]:bg-white data-[state=active]:text-navy data-[state=active]:shadow-xs cursor-pointer"
           >
-            <Layers className="size-3.5 shrink-0" />
+            <Layers className="size-3.5 shrink-0 text-emerald-700" />
             <span>Dual Documents (COR + SOA)</span>
           </TabsTrigger>
 
           <TabsTrigger
             value="consolidated"
             disabled={disabled}
-            className="h-auto! min-h-9 w-full! gap-2 whitespace-normal! px-3 py-2 text-center text-xs leading-snug font-semibold data-[state=active]:bg-white data-[state=active]:text-emerald-800 data-[state=active]:shadow-xs"
+            className="h-9 w-full sm:w-auto gap-2 px-4 text-xs font-semibold rounded-xl transition-all text-muted-foreground data-[state=active]:bg-white data-[state=active]:text-navy data-[state=active]:shadow-xs cursor-pointer"
           >
-            <FileSpreadsheet className="size-3.5 shrink-0" />
+            <FileSpreadsheet className="size-3.5 shrink-0 text-emerald-700" />
             <span>Single Consolidated Form</span>
           </TabsTrigger>
         </TabsList>

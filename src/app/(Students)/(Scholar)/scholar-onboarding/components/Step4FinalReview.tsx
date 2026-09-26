@@ -8,7 +8,7 @@ import { type ScholarBaselineState, submitBaselineForReview } from "@/lib/api/ba
 
 interface Step4FinalReviewProps {
   data: ScholarBaselineState;
-  onSuccess: () => void;
+  onSuccess: () => void | Promise<void>;
   onBack: () => void;
 }
 
@@ -22,16 +22,16 @@ export function Step4FinalReview({ data, onSuccess, onBack }: Step4FinalReviewPr
   const school = data.school_grading_system;
 
   const handleSubmit = async () => {
+    if (submitting) return;
     try {
       setSubmitting(true);
       setError(null);
       await submitBaselineForReview();
-      onSuccess();
+      await onSuccess();
     } catch (err) {
       console.error("Failed to submit baseline for review:", err);
       const msg = err instanceof Error ? err.message : "Failed to submit for review.";
       setError(msg);
-    } finally {
       setSubmitting(false);
     }
   };
@@ -157,6 +157,7 @@ export function Step4FinalReview({ data, onSuccess, onBack }: Step4FinalReviewPr
           type="button"
           variant="outline"
           onClick={onBack}
+          disabled={submitting}
           className="text-xs sm:text-sm font-semibold rounded-xl h-11 px-5 border-border hover:bg-muted"
         >
           ← Back to Credits

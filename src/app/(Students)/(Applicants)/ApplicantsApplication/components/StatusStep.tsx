@@ -12,7 +12,6 @@ import {
   FileText,
   Mail,
   ShieldCheck,
-  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -128,55 +127,50 @@ export function StatusStep({
         </div>
       )}
 
-      {/* 2. HERO CELEBRATORY CONTRACT SIGNING BANNER (High-prominence when APPROVED) */}
+      {/* 2. CONTRACT SIGNING NOTICE (Consistent Card style when APPROVED) */}
       {isApproved && (
-        <div className="relative overflow-hidden rounded-2xl border-2 border-emerald-500/40 bg-linear-to-br from-emerald-50 via-white to-emerald-50/40 p-6 shadow-md dark:from-emerald-950/30 dark:via-background dark:to-emerald-950/10">
-          <div className="absolute right-0 top-0 -mt-4 -mr-4 size-32 rounded-full bg-emerald-400/10 blur-2xl pointer-events-none" />
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-10">
-            <div className="flex items-start gap-4">
-              <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-md ring-4 ring-emerald-100 dark:ring-emerald-950">
-                <FileSignature className="size-7" />
-              </div>
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full">
-                    <Sparkles className="size-3" />
-                    Action Required
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className="border-emerald-300 bg-emerald-50 text-emerald-800 text-xs font-semibold"
-                  >
-                    Approved
-                  </Badge>
+        <Card className="rounded-[18px]! border-border bg-white shadow-xs">
+          <CardHeader className="pb-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-xs">
+                  <FileSignature className="size-5" />
+                </span>
+                <div>
+                  <CardTitle className="text-lg! text-navy">Scholarship Agreement</CardTitle>
+                  <CardDescription className="text-sm!">
+                    Ready for digital review and signing
+                  </CardDescription>
                 </div>
-                <h3 className="text-xl font-bold text-navy dark:text-foreground">
-                  Your Scholarship Agreement is Ready to Sign!
-                </h3>
-                <p className="text-sm text-muted-foreground max-w-xl">
+              </div>
+              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs font-semibold h-7 px-3">
+                Action Required
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-emerald-500/20 bg-emerald-50/50 p-4 dark:bg-emerald-950/20">
+              <div className="flex-1">
+                <p className="font-semibold text-emerald-900 dark:text-emerald-300 text-sm">
+                  Next Step: Review Terms & Sign Agreement
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
                   Congratulations! Your application has been officially accepted. Review your scholarship terms and
                   submit your digital signature to finalize your agreement and activate your scholar status.
                 </p>
               </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-center md:items-end gap-2 shrink-0">
-              <Link href="/ApplicantsContract" className="w-full sm:w-auto">
+              <Link href="/ApplicantsContract" className="shrink-0">
                 <Button
                   type="button"
-                  size="lg"
-                  className="w-full sm:w-auto h-12 px-7 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-sm gap-2 rounded-xl transition-all hover:scale-[1.02]"
+                  className="h-10 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-xs gap-2 rounded-xl transition-colors"
                 >
                   <span>Review & Sign Agreement</span>
                   <ArrowRight className="size-4" />
                 </Button>
               </Link>
-              <span className="text-[0.7rem] text-muted-foreground text-center md:text-right">
-                ⚡ Takes ~2 minutes · Official digital sign-off
-              </span>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* 3. APPLICATION OVERVIEW & STATUS CARD */}

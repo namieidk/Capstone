@@ -1,6 +1,6 @@
 "use client";
 
-import { Award, ChevronRight, Eye, FileQuestion } from "lucide-react";
+import { Award, FileQuestion } from "lucide-react";
 import { useMemo } from "react";
 import type { ExtractedDataShape } from "@/app/(Students)/(Applicants)/ApplicantsApplication/components/DocumentReviewDialog/types";
 import type { Applicant } from "@/components/Coordinatorshared";
@@ -83,8 +83,6 @@ export function ApplicantEligibilityBanner({
   }, [rawAverage, scaleType]);
 
   const meetsThreshold = normalizedPercent != null && normalizedPercent >= globalThreshold;
-  const isVerified = primaryDoc?.status === "VERIFIED";
-  const isConfirmed = primaryDoc?.status === "STUDENT_CONFIRMED";
 
   const scaleLabel = useMemo(() => {
     if (scaleType === "PERCENTAGE_100") return "100% Scale";
@@ -170,17 +168,6 @@ export function ApplicantEligibilityBanner({
               Evaluation Pending
             </Badge>
           )}
-
-          {isVerified && (
-            <Badge variant="default" className="bg-navy text-white text-[0.7rem] px-2 py-0.5">
-              Verified
-            </Badge>
-          )}
-          {isConfirmed && (
-            <Badge variant="secondary" className="text-[0.7rem] px-2 py-0.5">
-              Awaiting Verification
-            </Badge>
-          )}
         </div>
       </div>
 
@@ -204,12 +191,6 @@ export function ApplicantEligibilityBanner({
             <span className="text-muted-foreground">Retention Threshold: </span>
             <span className="font-semibold text-foreground">≥ {globalThreshold}.00%</span>
           </div>
-        </div>
-
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-navy group-hover:text-navy-light">
-          <Eye className="size-3.5 transition-transform group-hover:scale-110" />
-          <span>Inspect Document & Verify</span>
-          <ChevronRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
         </div>
       </div>
     </button>

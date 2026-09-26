@@ -73,6 +73,14 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
   const mainItems = config.items.filter((item) => !item.hidden && !isFooterItem(item.key));
   const footerNavItems = config.items.filter((item) => !item.hidden && isFooterItem(item.key));
 
+  const getItemBadge = (item: { key: string; badge?: string | number }) => {
+    if (item.key === "applicants") return badges.applicants;
+    if (item.key === "meeting") return badges.meetings;
+    if (item.key === "scholars" || item.key === "monitor") return badges.scholars;
+    if (item.key === "disbursements" || item.key === "payments" || item.key === "payment") return badges.disbursements;
+    return item.badge;
+  };
+
   return (
     <Sidebar
       collapsible="icon"
@@ -118,6 +126,7 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
                   const Icon = item.icon;
                   const isActive =
                     pathname === item.href || (item.href !== config.homeHref && pathname.startsWith(item.href));
+                  const itemBadge = getItemBadge(item);
 
                   return (
                     <SidebarMenuItem key={item.key}>
@@ -138,13 +147,17 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
                           <span className="truncate group-data-[collapsible=icon]:hidden">{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
-                      {item.badge !== undefined && (
+                      {itemBadge !== undefined && (
                         <SidebarMenuBadge
                           className={`top-1/2! right-2! -translate-y-1/2 font-bold text-[0.7rem] px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden transition-colors ${
-                            isActive ? "bg-navy! text-white/80!" : "bg-amber text-navy"
+                            itemBadge === "!"
+                              ? "bg-amber-400! text-navy! font-black! animate-pulse shadow-xs"
+                              : isActive
+                                ? "bg-navy! text-white/80!"
+                                : "bg-amber text-navy"
                           }`}
                         >
-                          {item.badge}
+                          {itemBadge}
                         </SidebarMenuBadge>
                       )}
                     </SidebarMenuItem>
@@ -163,16 +176,7 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
                 const Icon = item.icon;
                 const isActive =
                   pathname === item.href || (item.href !== config.homeHref && pathname.startsWith(item.href));
-                const itemBadge =
-                  item.key === "applicants"
-                    ? badges.applicants
-                    : item.key === "meeting"
-                      ? badges.meetings
-                      : item.key === "scholars" || item.key === "monitor"
-                        ? badges.scholars
-                        : item.key === "disbursements" || item.key === "payments" || item.key === "payment"
-                          ? badges.disbursements
-                          : item.badge;
+                const itemBadge = getItemBadge(item);
 
                 return (
                   <SidebarMenuItem key={item.key}>

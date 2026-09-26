@@ -1,24 +1,67 @@
 "use client";
 
-import { CheckCircle2, ChevronDown, ChevronUp, FileCheck2, FileText, GraduationCap, Sparkles } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronUp, Eye, FileCheck2, FileText, GraduationCap, Loader2, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ScholarProspectus } from "@/lib/api/baseline";
+import {
+  type ProspectusDocumentData,
+  ProspectusDocumentViewerDialog,
+} from "./ProspectusDocumentViewerDialog";
 
 interface Step3CreditsReviewProps {
   prospectus?: ScholarProspectus | null;
+  document?: ProspectusDocumentData | null;
   currentYearLevel?: number | null;
-  onSuccess: () => void;
+  onSuccess: () => void | Promise<void>;
   onBack: () => void;
 }
 
-export function Step3CreditsReview({ prospectus, onSuccess, onBack }: Step3CreditsReviewProps) {
+export function Step3CreditsReview({ prospectus, document, onSuccess, onBack }: Step3CreditsReviewProps) {
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [proceeding, setProceeding] = useState(false);
+
+  const handleConfirm = async () => {
+    if (proceeding) return;
+    try {
+      setProceeding(true);
+      await onSuccess();
+    } catch (err) {
+      console.error("Step 3 confirmation error:", err);
+    } finally {
+      setProceeding(false);
+    }
+  };
 
   const subjects = prospectus?.subjects || [];
   const totalUnits = subjects.reduce((acc, s) => acc + (Number(s.units) || 0), 0);
+
+  const activeDocument: ProspectusDocumentData | null = useMemo(() => {
+    if (prospectus?.document?.file_url) {
+      return {
+        file_url: prospectus.document.file_url,
+        file_name: prospectus.document.file_name || "Curriculum_Prospectus.pdf",
+        file_type: prospectus.document.file_type || "pdf",
+        uploaded_at: prospectus.document.uploaded_at,
+        title: prospectus.course_name || "Official Program Prospectus",
+        status: "Uploaded Prospectus",
+      };
+    }
+    if (document?.file_url) {
+      return {
+        file_url: document.file_url,
+        file_name: document.file_name || "Curriculum_Prospectus.pdf",
+        file_type: document.file_type || "pdf",
+        uploaded_at: document.uploaded_at,
+        title: prospectus?.course_name || document.title || "Official Program Prospectus",
+        status: document.status || "Uploaded Prospectus",
+      };
+    }
+    return null;
+  }, [prospectus, document]);
 
   // Group summary by Year Level
   const yearSummaries = useMemo(() => {
@@ -155,6 +198,22 @@ export function Step3CreditsReview({ prospectus, onSuccess, onBack }: Step3Credi
                 <span>School institution and degree program align with your scholarship grant details.</span>
               </div>
             </div>
+
+            {activeDocument && (
+              <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-slate-200/80 mt-2">
+                <span className="text-[11px] text-muted-foreground">
+                  Want to visually verify course titles, prerequisites, or scan clarity?
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsPreviewOpen(true)}
+                  className="text-xs font-bold text-[#0a4f42] hover:text-[#0a4f42]/80 hover:underline flex items-center gap-1.5 cursor-pointer w-fit"
+                >
+                  <Eye className="size-3.5" />
+                  <span>Preview Document</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Notice to Scholar */}
@@ -214,6 +273,7 @@ export function Step3CreditsReview({ prospectus, onSuccess, onBack }: Step3Credi
           type="button"
           variant="outline"
           onClick={onBack}
+          disabled={proceeding}
           className="text-xs sm:text-sm font-semibold rounded-xl h-11 px-5 border-border hover:bg-muted"
         >
           ← Re-upload / Back to Prospectus File
@@ -221,13 +281,30 @@ export function Step3CreditsReview({ prospectus, onSuccess, onBack }: Step3Credi
 
         <Button
           type="button"
-          onClick={onSuccess}
+          disabled={proceeding}
+          onClick={handleConfirm}
           className="h-11 px-6 rounded-xl bg-navy hover:bg-navy/90 text-white font-semibold text-xs sm:text-sm shadow-xs gap-1.5"
         >
-          <CheckCircle2 className="size-4" />
-          <span>Confirm Document & Continue to Final Review →</span>
+          {proceeding ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              <span>Loading Final Review...</span>
+            </>
+          ) : (
+            <>
+              <CheckCircle2 className="size-4" />
+              <span>Confirm Document & Continue to Final Review →</span>
+            </>
+          )}
         </Button>
       </div>
+
+      {/* Dedicated Document Viewer Dialog with Zoom Controls */}
+      <ProspectusDocumentViewerDialog
+        document={activeDocument}
+        open={isPreviewOpen}
+        onOpenChange={setIsPreviewOpen}
+      />
     </div>
   );
 }

@@ -22,6 +22,7 @@ import { getCurrentEnrollment } from "@/lib/api/enrollment";
 import { CcgCardSkeleton } from "./CcgCardSkeleton";
 import { CcgFileDropzone } from "./CcgFileDropzone";
 import { CcgGradeReviewTable } from "./CcgGradeReviewTable";
+import { CcgNeedsReuploadCard } from "./CcgNeedsReuploadCard";
 import { CcgOcrScanning } from "./CcgOcrScanning";
 import { CcgSubmittedStatusCard } from "./CcgSubmittedStatusCard";
 
@@ -171,8 +172,15 @@ export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUplo
           if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
           setDoc((prev) => (prev ? { ...prev, ...fresh } : null));
           setAnalyzingOcr(false);
-          parseExtractedPayload((fresh.confirmed_data || fresh.extracted_data) as Record<string, unknown>);
-          toast.success("AI extraction completed! Review your extracted grades below.");
+          if (fresh.status === "NEEDS_REUPLOAD") {
+            toast.error(
+              fresh.rejection_reason ||
+                "Document validation failed: The uploaded file is not an official Certified Copy of Grades.",
+            );
+          } else {
+            parseExtractedPayload((fresh.confirmed_data || fresh.extracted_data) as Record<string, unknown>);
+            toast.success("AI extraction completed! Review your extracted grades below.");
+          }
         }
       } catch {
         // Silently retry
@@ -197,8 +205,15 @@ export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUplo
           .then((fresh) => {
             setDoc((prev) => (prev ? { ...prev, ...fresh } : null));
             setAnalyzingOcr(false);
-            parseExtractedPayload((fresh.confirmed_data || fresh.extracted_data) as Record<string, unknown>);
-            toast.success("AI OCR extracted your grade records successfully.");
+            if (fresh.status === "NEEDS_REUPLOAD") {
+              toast.error(
+                fresh.rejection_reason ||
+                  "Document validation failed: The uploaded file is not an official Certified Copy of Grades.",
+              );
+            } else {
+              parseExtractedPayload((fresh.confirmed_data || fresh.extracted_data) as Record<string, unknown>);
+              toast.success("Your grades and academic records were read successfully.");
+            }
           })
           .catch(() => undefined);
       }
@@ -433,6 +448,16 @@ export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUplo
 
           if (analyzingOcr) {
             return <CcgOcrScanning fileName={doc.file_name} discarding={discarding} onDiscard={handleDiscardDraft} />;
+          }
+
+          if (doc.status === "NEEDS_REUPLOAD") {
+            return (
+              <CcgNeedsReuploadCard
+                doc={doc}
+                discarding={discarding}
+                onDiscard={handleDiscardDraft}
+              />
+            );
           }
 
           if (doc.status === "STUDENT_CONFIRMED") {

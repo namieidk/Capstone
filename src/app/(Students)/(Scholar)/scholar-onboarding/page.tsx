@@ -195,6 +195,11 @@ export default function ScholarOnboardingPage() {
               {currentStep === 3 && (
                 <Step3CreditsReview
                   prospectus={data?.prospectus}
+                  document={
+                    data?.prospectus?.document ||
+                    data?.documents?.find((d) => d.document_type === "PROSPECTUS") ||
+                    null
+                  }
                   currentYearLevel={data?.current_year_level}
                   onSuccess={handleStep3Success}
                   onBack={() => setCurrentStep(2)}

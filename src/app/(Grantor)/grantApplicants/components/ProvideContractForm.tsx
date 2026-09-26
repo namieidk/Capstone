@@ -59,7 +59,7 @@ export function ProvideContractForm({ profileId }: ProvideContractFormProps) {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4 p-5 sm:p-6">
       <div>
         <Label htmlFor="contract-number" className="text-xs! font-semibold text-navy">
           Contract number <span className="text-amber">*</span>
@@ -72,7 +72,7 @@ export function ProvideContractForm({ profileId }: ProvideContractFormProps) {
           className="mt-1.5 h-10! bg-white! text-xs! sm:text-xs!"
         />
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3.5">
         <div>
           <Label htmlFor="contract-effective" className="text-xs! font-semibold text-navy">
             Effective date
@@ -99,7 +99,7 @@ export function ProvideContractForm({ profileId }: ProvideContractFormProps) {
         </div>
       </div>
       {error && <p className="rounded-md bg-destructive/10 px-3 py-2.5 text-sm text-destructive">{error}</p>}
-      <Button type="button" className="h-11 text-sm!" disabled={submitting} onClick={handleCreate}>
+      <Button type="button" className="h-11 text-sm! font-semibold" disabled={submitting} onClick={handleCreate}>
         {submitting ? "Providing..." : "Provide contract"}
       </Button>
     </div>

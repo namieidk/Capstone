@@ -180,7 +180,7 @@ export function CcgGradeReviewTable({
 
         <Button
           type="button"
-          disabled={confirming}
+          disabled={confirming || doc.status === "NEEDS_REUPLOAD" || gradeItems.length === 0}
           onClick={onConfirm}
           className="h-9 rounded-xl bg-[#0a4f42] hover:bg-[#083c32] text-white text-xs font-bold px-5 gap-1.5 shadow-xs"
         >
