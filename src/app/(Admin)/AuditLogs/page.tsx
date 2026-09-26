@@ -5,7 +5,7 @@ import { useSocketEvent } from "@/contexts/SocketContext";
 import { ApiError } from "@/lib/api";
 import { type AuditLogEntry as AuditLog, getAuditLogs } from "@/lib/api/users";
 import { AuditLogsHeader } from "./components/AuditLogsHeader";
-import { getDisplayName } from "./components/audit-helpers";
+import { formatActionLabel, getDisplayName } from "./components/audit-helpers";
 import { DetailDialog } from "./components/DetailDialog";
 import { LogsTable } from "./components/LogsTable";
 
@@ -23,7 +23,7 @@ export default function AuditLogsPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [knownActions, setKnownActions] = useState<string[]>([]);
-  const [knownRoles, setKnownRoles] = useState<string[]>([]);
+  const [_knownRoles, setKnownRoles] = useState<string[]>([]);
 
   const fetchLogs = useCallback(async (p: number) => {
     setLoading(true);
@@ -109,6 +109,15 @@ export default function AuditLogsPage() {
           setQuery(v);
           setPage(1);
         }}
+        filter={{
+          value: actionFilter,
+          onChange: handleFilterChange(setActionFilter),
+          options: [
+            { value: "all", label: "All" },
+            ...knownActions.map((action) => ({ value: action, label: formatActionLabel(action) })),
+          ],
+          hasActive: actionFilter !== "all",
+        }}
       />
 
       <div className="px-5 pb-24 md:px-10">
@@ -119,12 +128,6 @@ export default function AuditLogsPage() {
           loading={loading}
           loadError={loadError}
           onRetry={() => fetchLogs(page)}
-          actions={knownActions}
-          roles={knownRoles}
-          actionFilter={actionFilter}
-          roleFilter={roleFilter}
-          onActionChange={handleFilterChange(setActionFilter)}
-          onRoleChange={handleFilterChange(setRoleFilter)}
           onClearFilters={resetFilters}
           currentPage={page}
           totalPages={totalPages}

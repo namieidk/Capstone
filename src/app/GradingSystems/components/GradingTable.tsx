@@ -1,6 +1,7 @@
 "use client";
 
-import { Eye } from "lucide-react";
+import { Eye, GraduationCap, RotateCcw } from "lucide-react";
+import { TINT } from "@/components/Adminshared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -19,16 +20,29 @@ interface GradingTableProps {
 
 const SKELETON_ROWS = ["row-1", "row-2", "row-3", "row-4", "row-5", "row-6"];
 
+const HEAD = "text-center! text-xs font-bold! uppercase tracking-wider text-[#8a8a84]!";
+
+const SCALE_LABELS: Record<string, string> = {
+  NUMERIC_4_POINT: "4.0 Scale (UM)",
+  NUMERIC_5_POINT: "5.0 Scale (USEP/UP)",
+  PERCENTAGE_100: "100% (SHS/DepEd)",
+};
+
+function ScaleBadge({ scale }: { scale: string }) {
+  const label = SCALE_LABELS[scale] ?? scale;
+  return (
+    <Badge className="h-6 px-2.5 text-xs!" style={{ background: TINT, color: "#55554f" }} title={scale}>
+      {label}
+    </Badge>
+  );
+}
+
 export function GradingTable({ schools, totalCount, loading, loadError, onRetry, onSelect }: GradingTableProps) {
   return (
     <Card className="mt-5 rounded-[18px]! shadow-va-sm">
       <CardHeader>
         <p className="text-sm text-muted-foreground">
-          {!loading && !loadError && (
-            <>
-              {totalCount} {totalCount === 1 ? "grading system" : "grading systems"}
-            </>
-          )}
+          {!loading && !loadError && `${totalCount} ${totalCount === 1 ? "grading system" : "grading systems"}`}
         </p>
       </CardHeader>
 
@@ -50,9 +64,14 @@ export function GradingTable({ schools, totalCount, loading, loadError, onRetry,
             ))}
           </div>
         ) : loadError ? (
-          <div className="flex flex-col items-center gap-4 px-6 py-10 text-center">
-            <p className="text-sm font-medium text-[#8a3a2e]">{loadError}</p>
-            <Button type="button" className="h-10 px-5 text-sm!" onClick={onRetry}>
+          <div className="flex flex-col items-center gap-4 px-6 py-14 text-center">
+            <GraduationCap className="size-10 text-muted-foreground" />
+            <div>
+              <p className="text-base font-semibold">Could not load grading systems</p>
+              <p className="mt-1 text-sm text-muted-foreground">{loadError}</p>
+            </div>
+            <Button type="button" className="h-11 px-5 text-sm!" onClick={onRetry}>
+              <RotateCcw className="size-4" />
               Try again
             </Button>
           </div>
@@ -61,84 +80,69 @@ export function GradingTable({ schools, totalCount, loading, loadError, onRetry,
             <Table className="text-sm!">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="pl-6 text-center! text-xs font-bold! uppercase tracking-wider text-[#8a8a84]!">
-                    School
-                  </TableHead>
-                  <TableHead className="text-center! text-xs font-bold! uppercase tracking-wider text-[#8a8a84]!">
-                    Scale
-                  </TableHead>
-                  <TableHead className="text-center! text-xs font-bold! uppercase tracking-wider text-[#8a8a84]!">
-                    Passing
-                  </TableHead>
-                  <TableHead className="text-center! text-xs font-bold! uppercase tracking-wider text-[#8a8a84]!">
-                    Highest
-                  </TableHead>
-                  <TableHead className="text-center! text-xs font-bold! uppercase tracking-wider text-[#8a8a84]!">
-                    Failing
-                  </TableHead>
-                  <TableHead className="pr-6 text-center! text-xs font-bold! uppercase tracking-wider text-[#8a8a84]!">
-                    View
-                  </TableHead>
+                  <TableHead className={`${HEAD} pl-6`}>School</TableHead>
+                  <TableHead className={HEAD}>Scale</TableHead>
+                  <TableHead className={HEAD}>Passing</TableHead>
+                  <TableHead className={HEAD}>Highest</TableHead>
+                  <TableHead className={HEAD}>Failing</TableHead>
+                  <TableHead className={`${HEAD} pr-6`}>View</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {schools.map((school) => (
-                  <TableRow key={school.school_id} className="cursor-pointer" onClick={() => onSelect(school)}>
-                    <TableCell className="whitespace-normal! py-4 pl-6 text-center!">
-                      <p className="text-[0.92rem] font-bold text-navy">{school.school_name}</p>
-                      <p className="mt-0.5 text-xs text-[#9a9a94]">
-                        {Object.keys(school.special_codes ?? {}).length} special{" "}
-                        {Object.keys(school.special_codes ?? {}).length === 1 ? "code" : "codes"}
-                      </p>
-                    </TableCell>
-                    <TableCell className="py-4 text-center!">
-                      <Badge
-                        variant="outline"
-                        className="h-6 px-2.5 text-xs font-semibold text-navy border-line bg-white"
-                        title={school.grading_scale}
-                      >
-                        {school.grading_scale === "NUMERIC_4_POINT"
-                          ? "4.0 Scale (UM)"
-                          : school.grading_scale === "NUMERIC_5_POINT"
-                            ? "5.0 Scale (USEP/UP)"
-                            : school.grading_scale === "PERCENTAGE_100"
-                              ? "100% (SHS/DepEd)"
-                              : school.grading_scale}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="whitespace-normal! py-4 text-center! text-sm tabular-nums">
-                      {school.passing_grade.toFixed(2)}
-                    </TableCell>
-                    <TableCell className="whitespace-normal! py-4 text-center! text-sm tabular-nums">
-                      {school.highest_grade.toFixed(2)}
-                    </TableCell>
-                    <TableCell className="whitespace-normal! py-4 text-center! text-sm tabular-nums">
-                      {school.failing_grade.toFixed(2)}
-                    </TableCell>
-                    <TableCell className="py-4 pr-6 text-center!">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="size-9 rounded-full"
-                        aria-label={`View ${school.school_name}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelect(school);
-                        }}
-                      >
-                        <Eye className="size-4 text-[#7a7a74]" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {schools.map((school) => {
+                  const codeCount = Object.keys(school.special_codes ?? {}).length;
+                  return (
+                    <TableRow key={school.school_id} className="cursor-pointer" onClick={() => onSelect(school)}>
+                      <TableCell className="whitespace-normal! py-3 pl-6 text-center!">
+                        <p className="text-sm font-semibold">{school.school_name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {codeCount} special {codeCount === 1 ? "code" : "codes"}
+                        </p>
+                      </TableCell>
+                      <TableCell className="py-3 text-center!">
+                        <ScaleBadge scale={school.grading_scale} />
+                      </TableCell>
+                      <TableCell className="py-3 text-center! text-sm tabular-nums">
+                        {school.passing_grade.toFixed(2)}
+                      </TableCell>
+                      <TableCell className="py-3 text-center! text-sm tabular-nums">
+                        {school.highest_grade.toFixed(2)}
+                      </TableCell>
+                      <TableCell className="py-3 text-center! text-sm tabular-nums">
+                        {school.failing_grade.toFixed(2)}
+                      </TableCell>
+                      <TableCell className="py-3 pr-6 text-center!">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          aria-label={`View ${school.school_name}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelect(school);
+                          }}
+                        >
+                          <Eye className="size-4.5" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
 
             {schools.length === 0 && (
-              <p className="px-6 py-10 text-center text-sm text-muted-foreground">
-                {totalCount === 0 ? "No grading systems configured yet." : "No grading systems match your search."}
-              </p>
+              <div className="flex flex-col items-center gap-3 px-6 py-14 text-center">
+                <GraduationCap className="size-10 text-muted-foreground" />
+                <div>
+                  <p className="text-base font-semibold">No grading systems found</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {totalCount === 0
+                      ? "Grading systems will show up here once they are set up."
+                      : "Try a different search term."}
+                  </p>
+                </div>
+              </div>
             )}
           </>
         )}

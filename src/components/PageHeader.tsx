@@ -23,8 +23,15 @@ import { useState } from "react";
 import { useSidebar } from "@/components/SidebarContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { type NotificationCategory, useNotifications } from "@/contexts/NotificationContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  type NotificationCategory,
+  useNotifications,
+} from "@/contexts/NotificationContext";
 
 export interface HeaderFilterOption {
   value: string;
@@ -87,7 +94,14 @@ function getCategoryIcon(cat: NotificationCategory) {
   }
 }
 
-function HeaderFilterButton({ value, onChange, options, label = "Filter", hasActive, onClear }: HeaderFilterProps) {
+function HeaderFilterButton({
+  value,
+  onChange,
+  options,
+  label = "Filter",
+  hasActive,
+  onClear,
+}: HeaderFilterProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -145,7 +159,9 @@ function HeaderFilterButton({ value, onChange, options, label = "Filter", hasAct
                 }`}
               >
                 {opt.label}
-                {isSelected && <Check className="size-3.5 shrink-0 text-amber" />}
+                {isSelected && (
+                  <Check className="size-3.5 shrink-0 text-amber" />
+                )}
               </button>
             );
           })}
@@ -167,7 +183,8 @@ export function PageHeader({
   className = "",
 }: PageHeaderProps) {
   const { toggleMobile } = useSidebar();
-  const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } =
+    useNotifications();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
@@ -190,7 +207,11 @@ export function PageHeader({
           <h1 className="wrap-break-word text-lg font-bold leading-tight tracking-tight text-navy sm:text-xl">
             {title}
           </h1>
-          {subtitle && <p className="mt-0.5 hidden text-xs text-muted-foreground sm:block">{subtitle}</p>}
+          {subtitle && (
+            <p className="mt-0.5 hidden text-xs text-muted-foreground sm:block">
+              {subtitle}
+            </p>
+          )}
         </div>
       </div>
 
@@ -249,7 +270,9 @@ export function PageHeader({
           >
             <div className="flex items-center justify-between border-b border-line/60 px-4 py-3 bg-[#FAF9F7]/60">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-navy">Notifications</span>
+                <span className="text-xs font-bold text-navy">
+                  Notifications
+                </span>
                 {unreadCount > 0 && (
                   <Badge className="h-5 rounded-full bg-amber-100 text-amber-900 border-amber-300 px-2 text-[0.62rem] font-bold">
                     {unreadCount} new
@@ -286,7 +309,9 @@ export function PageHeader({
                   <div className="mb-2.5 flex size-10 items-center justify-center rounded-full bg-tint">
                     <Bell className="size-4.5 opacity-40 text-navy" />
                   </div>
-                  <p className="text-xs font-semibold text-navy">No notifications yet</p>
+                  <p className="text-xs font-semibold text-navy">
+                    No notifications yet
+                  </p>
                   <p className="text-[0.7rem] text-muted-foreground mt-0.5">
                     You're all caught up on applications and real-time updates!
                   </p>
@@ -309,9 +334,13 @@ export function PageHeader({
                             {formatRelativeTime(n.timestamp)}
                           </span>
                         </div>
-                        <p className="text-[0.72rem] text-muted-foreground leading-relaxed line-clamp-2">{n.message}</p>
+                        <p className="text-[0.72rem] text-muted-foreground leading-relaxed line-clamp-2">
+                          {n.message}
+                        </p>
                       </div>
-                      {!n.read && <span className="size-2 rounded-full bg-amber shrink-0 mt-1.5 ring-2 ring-white" />}
+                      {!n.read && (
+                        <span className="size-2 rounded-full bg-amber shrink-0 mt-1.5 ring-2 ring-white" />
+                      )}
                     </>
                   );
 
@@ -332,7 +361,12 @@ export function PageHeader({
                       {inner}
                     </Link>
                   ) : (
-                    <button key={n.id} type="button" onClick={() => markAsRead(n.id)} className={itemClass}>
+                    <button
+                      key={n.id}
+                      type="button"
+                      onClick={() => markAsRead(n.id)}
+                      className={itemClass}
+                    >
                       {inner}
                     </button>
                   );

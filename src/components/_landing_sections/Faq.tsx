@@ -1,6 +1,6 @@
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { ChevronDown } from "lucide-react";
-import { Container, Reveal, SectionHeading } from "./shared";
+import { Container, Eyebrow, Reveal, SectionHeading } from "./shared";
 
 interface FaqItem {
   q: string;
@@ -40,56 +40,50 @@ const FAQS: FaqItem[] = [
 
 export function Faq() {
   return (
-    <section id="faq" className="relative overflow-hidden bg-background py-19">
+    <section id="faq" className="relative overflow-hidden bg-background py-19 lg:py-24">
       <Container>
-        <Reveal>
-          <div className="mx-auto mb-12 max-w-160 text-center">
-            <SectionHeading className="text-center">Frequently Asked Questions</SectionHeading>
-            <p className="mx-auto max-w-120 text-[1.05rem] text-muted-foreground">
-              Eligibility, deadlines, and documents — quick answers to what students ask most before applying.
-            </p>
-          </div>
-        </Reveal>
+        <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+          {/* Left: heading stays in view while the list scrolls */}
+          <Reveal>
+            <div className="lg:sticky lg:top-28">
+              <Eyebrow>FAQ</Eyebrow>
+              <SectionHeading className="text-left">Frequently Asked Questions</SectionHeading>
+              <p className="mt-4 max-w-sm text-[1rem] leading-relaxed text-muted-foreground">
+                Eligibility, deadlines, and documents — quick answers to what students ask most before applying.
+              </p>
+            </div>
+          </Reveal>
 
-        <Reveal>
-          {/*
-            Built directly on AccordionPrimitive rather than the shadcn
-            wrapper, which bakes in its own chevron and open-state styling.
-            Writing every element ourselves means nothing hidden can
-            resurface, and the glass treatment (translucent navy fill +
-            backdrop blur + soft border) covers the whole shell as one
-            consistent surface, not just the icon chip.
-          */}
-          <div className="mx-auto max-w-180 overflow-hidden rounded-3xl border border-white/10 bg-navy/90 shadow-va-md backdrop-blur-xl">
-            <AccordionPrimitive.Root type="single" collapsible defaultValue="0">
-              {FAQS.map((item, i) => {
-                const isLastRow = i === FAQS.length - 1;
-                return (
-                  <AccordionPrimitive.Item
-                    key={item.q}
-                    value={String(i)}
-                    className={isLastRow ? "" : "border-b border-white/10"}
-                  >
-                    <AccordionPrimitive.Header>
-                      <AccordionPrimitive.Trigger className="group flex w-full items-center justify-between gap-5 px-7 py-5 text-left text-[0.98rem] font-semibold text-white transition-colors duration-300 data-[state=open]:bg-white/[0.06]">
-                        <span>{item.q}</span>
-                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-amber/30 bg-amber/10 text-amber backdrop-blur-md transition-all duration-300 group-data-[state=open]:scale-110 group-data-[state=open]:border-amber/60 group-data-[state=open]:bg-amber/25">
-                          <ChevronDown
-                            className="size-4 transition-transform duration-300 group-data-[state=open]:rotate-180"
-                            strokeWidth={2.5}
-                          />
-                        </span>
-                      </AccordionPrimitive.Trigger>
-                    </AccordionPrimitive.Header>
-                    <AccordionPrimitive.Content className="overflow-hidden px-7 text-[0.92rem] leading-[1.65] text-white/60 data-[state=closed]:animate-[accordion-up_0.25s_ease-out] data-[state=open]:animate-[accordion-down_0.25s_ease-out]">
-                      <div className="max-w-150 pb-6">{item.a}</div>
-                    </AccordionPrimitive.Content>
-                  </AccordionPrimitive.Item>
-                );
-              })}
+          {/* Right: clean divider list */}
+          <Reveal>
+            <AccordionPrimitive.Root type="single" collapsible defaultValue="0" className="border-t border-navy/15">
+              {FAQS.map((item, i) => (
+                <AccordionPrimitive.Item key={item.q} value={String(i)} className="group/item border-b border-navy/15">
+                  <AccordionPrimitive.Header>
+                    <AccordionPrimitive.Trigger className="group flex w-full items-center gap-4 py-6 text-left outline-none focus-visible:ring-2 focus-visible:ring-amber/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+                      <span className="w-7 shrink-0 text-[0.78rem] font-semibold tracking-widest text-muted-foreground/70 transition-colors duration-300 group-data-[state=open]:text-amber">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className="flex-1 text-[1.02rem] font-semibold leading-snug text-navy md:text-[1.08rem]">
+                        {item.q}
+                      </span>
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-navy/15 text-navy transition-all duration-300 group-hover:border-navy/40 group-data-[state=open]:border-navy group-data-[state=open]:bg-navy group-data-[state=open]:text-white">
+                        <ChevronDown
+                          className="size-4 transition-transform duration-300 group-data-[state=open]:rotate-180"
+                          strokeWidth={2.25}
+                        />
+                      </span>
+                    </AccordionPrimitive.Trigger>
+                  </AccordionPrimitive.Header>
+
+                  <AccordionPrimitive.Content className="overflow-hidden data-[state=closed]:animate-[accordion-up_0.25s_ease-out] data-[state=open]:animate-[accordion-down_0.25s_ease-out]">
+                    <p className="max-w-xl pb-7 pl-11 text-[0.95rem] leading-[1.75] text-muted-foreground">{item.a}</p>
+                  </AccordionPrimitive.Content>
+                </AccordionPrimitive.Item>
+              ))}
             </AccordionPrimitive.Root>
-          </div>
-        </Reveal>
+          </Reveal>
+        </div>
       </Container>
     </section>
   );

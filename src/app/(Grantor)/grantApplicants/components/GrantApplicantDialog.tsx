@@ -36,8 +36,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetClose, SheetContent } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { type Contract, listContracts } from "@/lib/api/contracts";
 import type { ScholarDocument } from "@/lib/api/documents";
@@ -48,7 +55,12 @@ interface GrantApplicantDialogProps {
   acting: boolean;
   actionError: string | null;
   onClose: () => void;
-  onMoveStage: (id: number, stage: Stage, rejectionReason?: string, confirmWithoutMeeting?: boolean) => void;
+  onMoveStage: (
+    id: number,
+    stage: Stage,
+    rejectionReason?: string,
+    confirmWithoutMeeting?: boolean,
+  ) => void;
   onStagesChanged: (id: number, stage: Stage) => void;
   onMeetingScheduled: () => void;
   onContractCreated?: (contract: Contract) => void;
@@ -67,13 +79,19 @@ export function GrantApplicantDialog({
   const [confirmingReject, setConfirmingReject] = useState(false);
   const [confirmingReopen, setConfirmingReopen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
-  const [acceptWarningText, setAcceptWarningText] = useState<string | null>(null);
+  const [acceptWarningText, setAcceptWarningText] = useState<string | null>(
+    null,
+  );
   const [docsToken, setDocsToken] = useState(0);
-  const [verifyingDoc, setVerifyingDoc] = useState<ScholarDocument | null>(null);
+  const [verifyingDoc, setVerifyingDoc] = useState<ScholarDocument | null>(
+    null,
+  );
   const [loadedDocs, setLoadedDocs] = useState<ScholarDocument[] | null>(null);
   const [scheduling, setScheduling] = useState(false);
   const [creatingContract, setCreatingContract] = useState(false);
-  const [existingContract, setExistingContract] = useState<Contract | null>(null);
+  const [existingContract, setExistingContract] = useState<Contract | null>(
+    null,
+  );
   const [loadingContract, setLoadingContract] = useState(false);
 
   // Fetch existing contracts whenever the applicant's profile changes
@@ -88,7 +106,9 @@ export function GrantApplicantDialog({
     listContracts()
       .then((contracts) => {
         if (isMounted) {
-          const found = contracts.find((c) => c.scholar_profile_id === applicant.profileId);
+          const found = contracts.find(
+            (c) => c.scholar_profile_id === applicant.profileId,
+          );
           setExistingContract(found ?? null);
         }
       })
@@ -139,423 +159,538 @@ export function GrantApplicantDialog({
     onMeetingScheduled();
   }
 
-  if (!applicant) return null;
-
   const isDocsLoading = loadedDocs === null;
-  const hasNoDocs = loadedDocs !== null ? loadedDocs.length === 0 : (applicant?.documentsCount ?? 0) === 0;
+  const hasNoDocs =
+    loadedDocs !== null
+      ? loadedDocs.length === 0
+      : (applicant?.documentsCount ?? 0) === 0;
   const hasConfirmedDocs = Boolean(
-    loadedDocs?.some((d) => d.status === "STUDENT_CONFIRMED" || d.status === "VERIFIED"),
+    loadedDocs?.some(
+      (d) => d.status === "STUDENT_CONFIRMED" || d.status === "VERIFIED",
+    ),
   );
-  const canSchedule = Boolean(applicant) && (applicant?.stage === "Endorsed" || applicant?.stage === "Interview");
+  const canSchedule =
+    Boolean(applicant) &&
+    (applicant?.stage === "Endorsed" || applicant?.stage === "Interview");
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true">
-        <button
-          type="button"
-          aria-label="Close applicant details"
-          className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity w-full h-full cursor-default"
-          onClick={handleClose}
-        />
-        <div className="relative z-10 w-full max-w-6xl bg-slate-50 h-full flex flex-col shadow-2xl overflow-hidden border-l border-slate-200">
-          {/* Drawer Header */}
-          <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
-            <div>
-              <div className="flex flex-wrap items-center gap-2.5">
-                <FileText className="size-5 text-[#0a4f42]" />
-                <h2 className="text-lg font-bold text-slate-900">{applicant.name}</h2>
-                <Badge variant={getStageVariant(applicant.stage)} className="h-6 px-2.5 text-xs!">
-                  {applicant.stage}
-                </Badge>
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                {applicant.course} · {applicant.year} · Applied on {applicant.applied}
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleClose}
-              className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
-            >
-              <X className="size-5" />
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0">
-            {/* Left: Documents Panel */}
-            <div className="lg:col-span-5 bg-white border-r border-slate-200 flex flex-col h-full overflow-hidden">
-              <div className="bg-slate-100 px-4 py-2 flex items-center justify-between border-b border-slate-200 shrink-0">
-                <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
-                  <FileText className="size-3.5" />
-                  Documents uploaded by student
-                </span>
-                <span className="text-xs text-slate-500">
-                  {loadedDocs?.length ?? applicant?.documentsCount ?? 0}{" "}
-                  {(loadedDocs?.length ?? applicant?.documentsCount ?? 0) === 1 ? "document" : "documents"}
-                </span>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                <ApplicantEligibilityBanner
-                  applicant={applicant}
-                  documents={loadedDocs}
-                  onInspectDocument={setVerifyingDoc}
-                />
-
-                <ApplicantDocumentsList
-                  applicationId={applicant.id}
-                  refreshToken={docsToken}
-                  onVerify={setVerifyingDoc}
-                  onDocumentsLoaded={setLoadedDocs}
-                />
-              </div>
-            </div>
-
-            {/* Right: Applicant Details & Actions */}
-            <div className="lg:col-span-7 flex flex-col h-full overflow-hidden bg-white">
-              <div className="flex-1 overflow-y-auto p-5 space-y-4">
-                {/* Academic & Institution Information */}
-                <div className="rounded-lg border border-border/70 bg-muted/30 p-4">
-                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Academic & Institution Details
-                  </h3>
-                  <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 md:grid-cols-3 text-sm">
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Scholarship Track</dt>
-                      <dd className="font-medium text-foreground">{applicant.track || "—"}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Course of Study</dt>
-                      <dd className="font-medium text-foreground">{applicant.course || "—"}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Current Year Level</dt>
-                      <dd className="font-medium text-foreground">{applicant.year || "—"}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted-foreground">General Weighted Average (GWA)</dt>
-                      <dd
-                        className="font-medium tabular-nums text-foreground"
-                        title={gwaSourceTitle(applicant.gwaSource)}
-                      >
-                        {applicant.gwa !== null ? formatGwa(applicant.gwa) : "—"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted-foreground">School Name</dt>
-                      <dd className="font-medium text-foreground">{applicant.schoolName || "—"}</dd>
-                    </div>
-                    <div className="sm:col-span-2 md:col-span-1">
-                      <dt className="text-xs text-muted-foreground">School Address</dt>
-                      <dd className="font-medium text-foreground">{applicant.schoolAddress || "—"}</dd>
-                    </div>
-                  </dl>
+      <Sheet open={!!applicant} onOpenChange={(open) => !open && handleClose()}>
+        <SheetContent
+          side="right"
+          className="w-full max-w-6xl! bg-slate-50 p-0 gap-0"
+          showCloseButton={false}
+        >
+          {applicant && (
+            <>
+              {/* Drawer Header */}
+              <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <FileText className="size-5 text-[#0a4f42]" />
+                    <h2 className="text-lg font-bold text-slate-900">
+                      {applicant.name}
+                    </h2>
+                    <Badge
+                      variant={getStageVariant(applicant.stage)}
+                      className="h-6 px-2.5 text-xs!"
+                    >
+                      {applicant.stage}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {applicant.course} · {applicant.year} · Applied on{" "}
+                    {applicant.applied}
+                  </p>
                 </div>
 
-                {/* Personal, Contact & Affiliation Details */}
-                <div className="rounded-lg border border-border/70 bg-muted/30 p-4">
-                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Personal, Contact & Affiliation Details
-                  </h3>
-                  <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 text-sm">
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Student Number</dt>
-                      <dd className="font-medium text-foreground">{applicant.studentNumber || "—"}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Phone Number</dt>
-                      <dd className="font-medium text-foreground">{applicant.phoneNumber || "—"}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Home Address</dt>
-                      <dd className="font-medium text-foreground">{applicant.studentAddress || "—"}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Relative Employed By Partner</dt>
-                      <dd className="font-medium text-foreground">{applicant.relativeEmployee || "None / N/A"}</dd>
-                    </div>
-                  </dl>
+                <SheetClose asChild>
+                  <button
+                    type="button"
+                    className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                  >
+                    <X className="size-5" />
+                  </button>
+                </SheetClose>
+              </div>
+
+              <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0">
+                {/* Left: Documents Panel */}
+                <div className="lg:col-span-5 bg-white border-r border-slate-200 flex flex-col h-full overflow-hidden">
+                  <div className="bg-slate-100 px-4 py-2 flex items-center justify-between border-b border-slate-200 shrink-0">
+                    <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
+                      <FileText className="size-3.5" />
+                      Documents uploaded by student
+                    </span>
+                    <span className="text-xs text-slate-500">
+                      {loadedDocs?.length ?? applicant?.documentsCount ?? 0}{" "}
+                      {(loadedDocs?.length ??
+                        applicant?.documentsCount ??
+                        0) === 1
+                        ? "document"
+                        : "documents"}
+                    </span>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    <ApplicantEligibilityBanner
+                      applicant={applicant}
+                      documents={loadedDocs}
+                      onInspectDocument={setVerifyingDoc}
+                    />
+
+                    <ApplicantDocumentsList
+                      applicationId={applicant.id}
+                      refreshToken={docsToken}
+                      onVerify={setVerifyingDoc}
+                      onDocumentsLoaded={setLoadedDocs}
+                    />
+                  </div>
                 </div>
 
-                {/* Scholarship Agreement / Contract */}
-                {applicant.stage === "Accepted" && (
-                  <div className="rounded-xl border border-navy/20 bg-navy/5 p-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-start sm:items-center gap-3">
-                        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-navy/10 text-navy">
-                          {loadingContract ? (
-                            <Loader2 className="size-5 animate-spin" />
-                          ) : (
-                            <FileSignature className="size-5" />
-                          )}
+                {/* Right: Applicant Details & Actions */}
+                <div className="lg:col-span-7 flex flex-col h-full overflow-hidden bg-white">
+                  <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                    {/* Academic & Institution Information */}
+                    <div className="rounded-lg border border-border/70 bg-muted/30 p-4">
+                      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Academic & Institution Details
+                      </h3>
+                      <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 md:grid-cols-3 text-sm">
+                        <div>
+                          <dt className="text-xs text-muted-foreground">
+                            Scholarship Track
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {applicant.track || "—"}
+                          </dd>
                         </div>
                         <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-bold text-navy">Scholarship Agreement</h4>
-                            {existingContract && (
-                              <Badge
-                                variant="outline"
-                                className={
-                                  existingContract.status === "SIGNED"
-                                    ? "border-good/30 bg-good-bg text-good text-[0.65rem]! font-semibold"
-                                    : "border-amber-300 bg-amber-50 text-amber-800 text-[0.65rem]! font-semibold"
-                                }
-                              >
-                                {existingContract.status === "SIGNED" ? "Signed & Active" : `Awaiting Signature`}
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {existingContract
-                              ? `Contract #${existingContract.contract_number} has been generated (${existingContract.status === "SIGNED" ? "Signed by student" : "Awaiting student signature"}).`
-                              : "Application is approved. You can now issue the digital scholarship contract."}
-                          </p>
-                          {existingContract?.effective_date && (
-                            <p className="text-[0.7rem] text-muted-foreground mt-1">
-                              Effective: {existingContract.effective_date}
-                              {existingContract.expiry_date ? ` · Expiry: ${existingContract.expiry_date}` : ""}
-                            </p>
-                          )}
+                          <dt className="text-xs text-muted-foreground">
+                            Course of Study
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {applicant.course || "—"}
+                          </dd>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        {existingContract ? (
-                          <>
-                            {(existingContract.signed_document_url || existingContract.document_url) && (
+                        <div>
+                          <dt className="text-xs text-muted-foreground">
+                            Current Year Level
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {applicant.year || "—"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs text-muted-foreground">
+                            General Weighted Average (GWA)
+                          </dt>
+                          <dd
+                            className="font-medium tabular-nums text-foreground"
+                            title={gwaSourceTitle(applicant.gwaSource)}
+                          >
+                            {applicant.gwa !== null
+                              ? formatGwa(applicant.gwa)
+                              : "—"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs text-muted-foreground">
+                            School Name
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {applicant.schoolName || "—"}
+                          </dd>
+                        </div>
+                        <div className="sm:col-span-2 md:col-span-1">
+                          <dt className="text-xs text-muted-foreground">
+                            School Address
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {applicant.schoolAddress || "—"}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+
+                    {/* Personal, Contact & Affiliation Details */}
+                    <div className="rounded-lg border border-border/70 bg-muted/30 p-4">
+                      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Personal, Contact & Affiliation Details
+                      </h3>
+                      <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 text-sm">
+                        <div>
+                          <dt className="text-xs text-muted-foreground">
+                            Student Number
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {applicant.studentNumber || "—"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs text-muted-foreground">
+                            Phone Number
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {applicant.phoneNumber || "—"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs text-muted-foreground">
+                            Home Address
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {applicant.studentAddress || "—"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs text-muted-foreground">
+                            Relative Employed By Partner
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {applicant.relativeEmployee || "None / N/A"}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+
+                    {/* Scholarship Agreement / Contract */}
+                    {applicant.stage === "Accepted" && (
+                      <div className="rounded-xl border border-navy/20 bg-navy/5 p-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="flex items-start sm:items-center gap-3">
+                            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-navy/10 text-navy">
+                              {loadingContract ? (
+                                <Loader2 className="size-5 animate-spin" />
+                              ) : (
+                                <FileSignature className="size-5" />
+                              )}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-sm font-bold text-navy">
+                                  Scholarship Agreement
+                                </h4>
+                                {existingContract && (
+                                  <Badge
+                                    variant="outline"
+                                    className={
+                                      existingContract.status === "SIGNED"
+                                        ? "border-good/30 bg-good-bg text-good text-[0.65rem]! font-semibold"
+                                        : "border-amber-300 bg-amber-50 text-amber-800 text-[0.65rem]! font-semibold"
+                                    }
+                                  >
+                                    {existingContract.status === "SIGNED"
+                                      ? "Signed & Active"
+                                      : `Awaiting Signature`}
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {existingContract
+                                  ? `Contract #${existingContract.contract_number} has been generated (${existingContract.status === "SIGNED" ? "Signed by student" : "Awaiting student signature"}).`
+                                  : "Application is approved. You can now issue the digital scholarship contract."}
+                              </p>
+                              {existingContract?.effective_date && (
+                                <p className="text-[0.7rem] text-muted-foreground mt-1">
+                                  Effective: {existingContract.effective_date}
+                                  {existingContract.expiry_date
+                                    ? ` · Expiry: ${existingContract.expiry_date}`
+                                    : ""}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {existingContract ? (
+                              <>
+                                {(existingContract.signed_document_url ||
+                                  existingContract.document_url) && (
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 gap-1 text-xs! font-medium"
+                                    onClick={() =>
+                                      window.open(
+                                        existingContract.signed_document_url ||
+                                          existingContract.document_url ||
+                                          "",
+                                        "_blank",
+                                      )
+                                    }
+                                  >
+                                    <Eye className="size-3.5" />
+                                    <span>View PDF</span>
+                                  </Button>
+                                )}
+                                <Button
+                                  type="button"
+                                  variant="secondary"
+                                  size="sm"
+                                  className="h-8 gap-1 text-xs! font-medium"
+                                  onClick={() => setCreatingContract(true)}
+                                >
+                                  <FileSignature className="size-3.5" />
+                                  <span>Re-issue</span>
+                                </Button>
+                              </>
+                            ) : (
                               <Button
                                 type="button"
-                                variant="outline"
                                 size="sm"
-                                className="h-8 gap-1 text-xs! font-medium"
-                                onClick={() =>
-                                  window.open(
-                                    existingContract.signed_document_url || existingContract.document_url || "",
-                                    "_blank",
-                                  )
-                                }
+                                className="h-9 gap-1.5 text-xs! font-semibold shadow-xs"
+                                onClick={() => setCreatingContract(true)}
                               >
-                                <Eye className="size-3.5" />
-                                <span>View PDF</span>
+                                <FileSignature className="size-3.5" />
+                                <span>Issue Contract</span>
                               </Button>
                             )}
-                            <Button
-                              type="button"
-                              variant="secondary"
-                              size="sm"
-                              className="h-8 gap-1 text-xs! font-medium"
-                              onClick={() => setCreatingContract(true)}
-                            >
-                              <FileSignature className="size-3.5" />
-                              <span>Re-issue</span>
-                            </Button>
-                          </>
-                        ) : (
-                          <Button
-                            type="button"
-                            size="sm"
-                            className="h-9 gap-1.5 text-xs! font-semibold shadow-xs"
-                            onClick={() => setCreatingContract(true)}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <Separator />
+
+                    {/* Endorsed / Interview Stage Status Info */}
+                    {(applicant.stage === "Interview" ||
+                      applicant.stage === "Endorsed") && (
+                      <div className="flex items-center justify-between rounded-lg border border-navy/20 bg-navy/5 px-3.5 py-2 text-xs text-navy">
+                        <div className="flex items-center gap-2">
+                          <CalendarClock className="size-4 shrink-0 text-navy" />
+                          <span>
+                            {applicant.hasInterview && applicant.interviewAt ? (
+                              <>
+                                Interview scheduled on{" "}
+                                <strong>
+                                  {new Date(
+                                    applicant.interviewAt,
+                                  ).toLocaleString(undefined, {
+                                    dateStyle: "medium",
+                                    timeStyle: "short",
+                                  })}
+                                </strong>
+                              </>
+                            ) : applicant.stage === "Endorsed" ? (
+                              <>
+                                Applicant is{" "}
+                                <strong>Endorsed by Coordinator</strong> (ready
+                                for Grantor interview & review)
+                              </>
+                            ) : (
+                              <>
+                                Applicant is in <strong>Interview Stage</strong>{" "}
+                                (no meeting scheduled yet)
+                              </>
+                            )}
+                          </span>
+                        </div>
+                        {applicant.hasInterview && (
+                          <Badge
+                            variant="outline"
+                            className="border-navy/30 bg-white text-navy text-[0.65rem]!"
                           >
-                            <FileSignature className="size-3.5" />
-                            <span>Issue Contract</span>
-                          </Button>
+                            Scheduled
+                          </Badge>
                         )}
                       </div>
-                    </div>
-                  </div>
-                )}
-
-                <Separator />
-
-                {/* Endorsed / Interview Stage Status Info */}
-                {(applicant.stage === "Interview" || applicant.stage === "Endorsed") && (
-                  <div className="flex items-center justify-between rounded-lg border border-navy/20 bg-navy/5 px-3.5 py-2 text-xs text-navy">
-                    <div className="flex items-center gap-2">
-                      <CalendarClock className="size-4 shrink-0 text-navy" />
-                      <span>
-                        {applicant.hasInterview && applicant.interviewAt ? (
-                          <>
-                            Interview scheduled on{" "}
-                            <strong>
-                              {new Date(applicant.interviewAt).toLocaleString(undefined, {
-                                dateStyle: "medium",
-                                timeStyle: "short",
-                              })}
-                            </strong>
-                          </>
-                        ) : applicant.stage === "Endorsed" ? (
-                          <>
-                            Applicant is <strong>Endorsed by Coordinator</strong> (ready for Grantor interview & review)
-                          </>
-                        ) : (
-                          <>
-                            Applicant is in <strong>Interview Stage</strong> (no meeting scheduled yet)
-                          </>
-                        )}
-                      </span>
-                    </div>
-                    {applicant.hasInterview && (
-                      <Badge variant="outline" className="border-navy/30 bg-white text-navy text-[0.65rem]!">
-                        Scheduled
-                      </Badge>
                     )}
                   </div>
-                )}
-              </div>
 
-              {/* Action Buttons Footer */}
-              <div className="shrink-0 border-t border-slate-200 bg-white px-5 py-3.5 flex flex-col gap-2">
-                {actionError && (
-                  <p className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{actionError}</p>
-                )}
-
-                {canSchedule && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="h-10 text-sm!"
-                    disabled={acting}
-                    onClick={() => setScheduling(true)}
-                  >
-                    <CalendarClock className="size-4" />
-                    {applicant.hasInterview ? "Reschedule meeting" : "Schedule meeting"}
-                  </Button>
-                )}
-
-                {/* Only pre-endorsement stages can Pass to Interview */}
-                {(applicant.stage === "Submitted" || applicant.stage === "Under review") && (
-                  <div className="flex flex-col gap-2">
-                    {hasNoDocs && !isDocsLoading && (
-                      <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
-                        <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                        <span>Cannot pass applicant to interview: No documents have been submitted yet.</span>
-                      </div>
-                    )}
-                    {!hasNoDocs && !hasConfirmedDocs && !isDocsLoading && (
-                      <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
-                        <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                        <span>
-                          Cannot pass applicant to interview: Submitted document(s) have not been confirmed by the
-                          applicant yet (awaiting student review).
-                        </span>
-                      </div>
-                    )}
-                    <Button
-                      type="button"
-                      className="h-10 text-sm!"
-                      disabled={acting || isDocsLoading || hasNoDocs || !hasConfirmedDocs}
-                      title={
-                        hasNoDocs
-                          ? "Applicant has not submitted any documents yet"
-                          : !hasConfirmedDocs
-                            ? "Applicant must review and confirm their document first"
-                            : undefined
-                      }
-                      onClick={async () => {
-                        try {
-                          await onMoveStage(applicant.id, "Interview");
-                          setScheduling(true);
-                        } catch {
-                          // Handled by actionError in parent
-                        }
-                      }}
-                    >
-                      Pass to Interview
-                      <ArrowRight className="size-4" />
-                    </Button>
-                  </div>
-                )}
-
-                {(applicant.stage === "Interview" || applicant.stage === "Endorsed") && (
-                  <Button
-                    type="button"
-                    className="h-10 text-sm!"
-                    disabled={acting}
-                    onClick={() => {
-                      const warning = acceptWarning(applicant.hasInterview, applicant.interviewAt);
-                      if (warning) {
-                        setAcceptWarningText(warning);
-                      } else {
-                        onMoveStage(applicant.id, "Accepted");
-                      }
-                    }}
-                  >
-                    Accept applicant
-                    <ArrowRight className="size-4" />
-                  </Button>
-                )}
-
-                {applicant.stage !== "Rejected" && applicant.stage !== "Accepted" && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    className="h-10 text-sm!"
-                    disabled={acting}
-                    onClick={() => setConfirmingReject(true)}
-                  >
-                    Reject application
-                  </Button>
-                )}
-
-                {/* Reopen Application (e.g. after successful inquiry) */}
-                {applicant.stage === "Rejected" && (
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 rounded-xl border border-border/80 bg-muted/20 p-3">
-                    <div className="text-xs text-muted-foreground">
-                      <p className="font-semibold text-navy">Application is currently marked as Rejected</p>
-                      <p>
-                        If an applicant inquiry or clarification was accepted, you can reopen this application for
-                        evaluation.
+                  {/* Action Buttons Footer */}
+                  <div className="shrink-0 border-t border-slate-200 bg-white px-5 py-3.5 flex flex-col gap-2">
+                    {actionError && (
+                      <p className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                        {actionError}
                       </p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-9 px-4 text-xs! font-semibold border-navy/30 text-navy hover:bg-navy/5 shrink-0 gap-1.5"
-                      disabled={acting}
-                      onClick={() => setConfirmingReopen(true)}
-                    >
-                      <RotateCcw className="size-3.5" />
-                      <span>Reopen Application</span>
-                    </Button>
-                  </div>
-                )}
+                    )}
 
-                {applicant.stage === "Accepted" && (
-                  <div className="flex items-center justify-end gap-2">
-                    <Button type="button" variant="outline" className="h-10 text-sm!" onClick={() => handleClose()}>
-                      Close
-                    </Button>
-                    <Button
-                      type="button"
-                      className="h-10 text-sm! font-semibold gap-1.5"
-                      onClick={() => setCreatingContract(true)}
-                    >
-                      <FileSignature className="size-4" />
-                      <span>{existingContract ? "Re-issue Contract" : "Issue Scholarship Contract"}</span>
-                    </Button>
+                    {canSchedule && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-10 text-sm!"
+                        disabled={acting}
+                        onClick={() => setScheduling(true)}
+                      >
+                        <CalendarClock className="size-4" />
+                        {applicant.hasInterview
+                          ? "Reschedule meeting"
+                          : "Schedule meeting"}
+                      </Button>
+                    )}
+
+                    {/* Only pre-endorsement stages can Pass to Interview */}
+                    {(applicant.stage === "Submitted" ||
+                      applicant.stage === "Under review") && (
+                      <div className="flex flex-col gap-2">
+                        {hasNoDocs && !isDocsLoading && (
+                          <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+                            <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                            <span>
+                              Cannot pass applicant to interview: No documents
+                              have been submitted yet.
+                            </span>
+                          </div>
+                        )}
+                        {!hasNoDocs && !hasConfirmedDocs && !isDocsLoading && (
+                          <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+                            <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                            <span>
+                              Cannot pass applicant to interview: Submitted
+                              document(s) have not been confirmed by the
+                              applicant yet (awaiting student review).
+                            </span>
+                          </div>
+                        )}
+                        <Button
+                          type="button"
+                          className="h-10 text-sm!"
+                          disabled={
+                            acting ||
+                            isDocsLoading ||
+                            hasNoDocs ||
+                            !hasConfirmedDocs
+                          }
+                          title={
+                            hasNoDocs
+                              ? "Applicant has not submitted any documents yet"
+                              : !hasConfirmedDocs
+                                ? "Applicant must review and confirm their document first"
+                                : undefined
+                          }
+                          onClick={async () => {
+                            try {
+                              await onMoveStage(applicant.id, "Interview");
+                              setScheduling(true);
+                            } catch {
+                              // Handled by actionError in parent
+                            }
+                          }}
+                        >
+                          Pass to Interview
+                          <ArrowRight className="size-4" />
+                        </Button>
+                      </div>
+                    )}
+
+                    {(applicant.stage === "Interview" ||
+                      applicant.stage === "Endorsed") && (
+                      <Button
+                        type="button"
+                        className="h-10 text-sm!"
+                        disabled={acting}
+                        onClick={() => {
+                          const warning = acceptWarning(
+                            applicant.hasInterview,
+                            applicant.interviewAt,
+                          );
+                          if (warning) {
+                            setAcceptWarningText(warning);
+                          } else {
+                            onMoveStage(applicant.id, "Accepted");
+                          }
+                        }}
+                      >
+                        Accept applicant
+                        <ArrowRight className="size-4" />
+                      </Button>
+                    )}
+
+                    {applicant.stage !== "Rejected" &&
+                      applicant.stage !== "Accepted" && (
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          className="h-10 text-sm!"
+                          disabled={acting}
+                          onClick={() => setConfirmingReject(true)}
+                        >
+                          Reject application
+                        </Button>
+                      )}
+
+                    {/* Reopen Application (e.g. after successful inquiry) */}
+                    {applicant.stage === "Rejected" && (
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 rounded-xl border border-border/80 bg-muted/20 p-3">
+                        <div className="text-xs text-muted-foreground">
+                          <p className="font-semibold text-navy">
+                            Application is currently marked as Rejected
+                          </p>
+                          <p>
+                            If an applicant inquiry or clarification was
+                            accepted, you can reopen this application for
+                            evaluation.
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="h-9 px-4 text-xs! font-semibold border-navy/30 text-navy hover:bg-navy/5 shrink-0 gap-1.5"
+                          disabled={acting}
+                          onClick={() => setConfirmingReopen(true)}
+                        >
+                          <RotateCcw className="size-3.5" />
+                          <span>Reopen Application</span>
+                        </Button>
+                      </div>
+                    )}
+
+                    {applicant.stage === "Accepted" && (
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="h-10 text-sm!"
+                          onClick={() => handleClose()}
+                        >
+                          Close
+                        </Button>
+                        <Button
+                          type="button"
+                          className="h-10 text-sm! font-semibold gap-1.5"
+                          onClick={() => setCreatingContract(true)}
+                        >
+                          <FileSignature className="size-4" />
+                          <span>
+                            {existingContract
+                              ? "Re-issue Contract"
+                              : "Issue Scholarship Contract"}
+                          </span>
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
 
       {/* Accept Safeguard Alert Dialog */}
-      <AlertDialog open={acceptWarningText !== null} onOpenChange={(open) => !open && setAcceptWarningText(null)}>
+      <AlertDialog
+        open={acceptWarningText !== null}
+        onOpenChange={(open) => !open && setAcceptWarningText(null)}
+      >
         <AlertDialogContent className="max-w-md rounded-2xl p-6">
           <AlertDialogHeader className="flex flex-col items-center text-center">
             <div className="mb-2 flex size-12 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400">
               <AlertTriangle className="size-6" />
             </div>
-            <AlertDialogTitle className="text-lg font-bold text-navy">Proceed with Approval?</AlertDialogTitle>
+            <AlertDialogTitle className="text-lg font-bold text-navy">
+              Proceed with Approval?
+            </AlertDialogTitle>
             <AlertDialogDescription className="mt-1 text-sm text-muted-foreground">
-              {acceptWarningText} Are you sure you want to approve this applicant without a scheduled interview?
+              {acceptWarningText} Are you sure you want to approve this
+              applicant without a scheduled interview?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-4 flex flex-row justify-end gap-2">
-            <AlertDialogCancel className="h-10 rounded-lg text-sm!">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="h-10 rounded-lg text-sm!">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               className="h-10 rounded-lg bg-navy px-4 text-sm! font-medium text-white hover:bg-navy/90"
               onClick={async () => {
@@ -572,23 +707,33 @@ export function GrantApplicantDialog({
       </AlertDialog>
 
       {/* Reject Reason Modal Dialog */}
-      <Dialog open={confirmingReject} onOpenChange={(open) => !open && setConfirmingReject(false)}>
+      <Dialog
+        open={confirmingReject}
+        onOpenChange={(open) => !open && setConfirmingReject(false)}
+      >
         <DialogContent className="max-w-md rounded-2xl p-6">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-navy">Reject Application</DialogTitle>
+            <DialogTitle className="text-lg font-bold text-navy">
+              Reject Application
+            </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
-              You can optionally provide remarks or feedback explaining this evaluation decision.
+              You can optionally provide remarks or feedback explaining this
+              evaluation decision.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3 py-2">
             <div className="rounded-xl border border-border/80 bg-muted/30 p-3 text-xs text-muted-foreground">
-              <p className="font-semibold text-navy mb-1">Standard notification message to applicant:</p>
+              <p className="font-semibold text-navy mb-1">
+                Standard notification message to applicant:
+              </p>
               <p className="italic leading-relaxed">
-                &ldquo;Thank you for applying for our scholarship program. After careful evaluation of all submissions,
-                your application was not selected for this cycle.&rdquo;
+                &ldquo;Thank you for applying for our scholarship program. After
+                careful evaluation of all submissions, your application was not
+                selected for this cycle.&rdquo;
               </p>
               <p className="mt-1.5 text-[11px] text-muted-foreground">
-                If custom remarks are entered below, they will be attached to the applicant&apos;s decision notice.
+                If custom remarks are entered below, they will be attached to
+                the applicant&apos;s decision notice.
               </p>
             </div>
 
@@ -620,7 +765,11 @@ export function GrantApplicantDialog({
               disabled={acting}
               onClick={() => {
                 if (applicant) {
-                  onMoveStage(applicant.id, "Rejected", rejectReason.trim() || undefined);
+                  onMoveStage(
+                    applicant.id,
+                    "Rejected",
+                    rejectReason.trim() || undefined,
+                  );
                   setConfirmingReject(false);
                 }
               }}
@@ -638,14 +787,20 @@ export function GrantApplicantDialog({
             <div className="mb-2 flex size-12 items-center justify-center rounded-full bg-navy/10 text-navy">
               <RotateCcw className="size-6" />
             </div>
-            <AlertDialogTitle className="text-lg font-bold text-navy">Reopen Application?</AlertDialogTitle>
+            <AlertDialogTitle className="text-lg font-bold text-navy">
+              Reopen Application?
+            </AlertDialogTitle>
             <AlertDialogDescription className="mt-1 text-sm text-muted-foreground">
-              Are you sure you want to reopen the application for <strong>{applicant?.name}</strong>? This will return
-              their application to active review (&ldquo;Under review&rdquo;) and clear the previous rejection record.
+              Are you sure you want to reopen the application for{" "}
+              <strong>{applicant?.name}</strong>? This will return their
+              application to active review (&ldquo;Under review&rdquo;) and
+              clear the previous rejection record.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-4 flex flex-row justify-end gap-2">
-            <AlertDialogCancel className="h-10 rounded-lg text-sm!">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="h-10 rounded-lg text-sm!">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               className="h-10 rounded-lg bg-navy px-4 text-sm! font-medium text-white hover:bg-navy/90"
               onClick={async () => {

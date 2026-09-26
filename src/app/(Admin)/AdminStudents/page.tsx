@@ -10,7 +10,7 @@ import { StudentDrawer } from "./components/StudentDrawer";
 import { StudentHeader } from "./components/StudentHeader";
 import { StudentResetPasswordDialog } from "./components/StudentResetPasswordDialog";
 import { StudentTable } from "./components/StudentTable";
-import { type StudentFilter, type StudentRow, toStudentRow } from "./components/student-helpers";
+import { STUDENT_FILTERS, type StudentFilter, type StudentRow, toStudentRow } from "./components/student-helpers";
 
 export default function AdminStudentsPage() {
   const { showToast } = useToast();
@@ -80,6 +80,8 @@ export default function AdminStudentsPage() {
     Applicants: students.filter((s) => s.type === "Applicant").length,
   };
 
+  const hasActiveFilters = filter !== "All" || searchQuery.trim() !== "";
+
   const handleDirectResetPassword = async (studentId: number, newPass: string) => {
     setActing(true);
     setActionError("");
@@ -139,6 +141,23 @@ export default function AdminStudentsPage() {
           setSearchQuery(v);
           setPage(1);
         }}
+        filter={{
+          value: filter,
+          onChange: (value) => {
+            setFilter(value as StudentFilter);
+            setPage(1);
+          },
+          options: STUDENT_FILTERS.map((value) => ({
+            value,
+            label: `${value} (${counts[value]})`,
+          })),
+          hasActive: hasActiveFilters,
+          onClear: () => {
+            setFilter("All");
+            setSearchQuery("");
+            setPage(1);
+          },
+        }}
       />
 
       <div className="px-5 pb-24 md:px-10">
@@ -148,10 +167,10 @@ export default function AdminStudentsPage() {
           loading={loading}
           loadError={loadError}
           onRetry={fetchStudents}
-          filter={filter}
-          counts={counts}
-          onFilterChange={(f) => {
-            setFilter(f);
+          hasActiveFilters={hasActiveFilters}
+          onClearFilters={() => {
+            setFilter("All");
+            setSearchQuery("");
             setPage(1);
           }}
           onSelect={setSelected}
