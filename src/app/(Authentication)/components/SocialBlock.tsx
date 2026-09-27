@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
+import { DASHBOARD_MAP } from "./data";
 
 export function GoogleIcon() {
   return (
@@ -107,13 +108,7 @@ export function SocialBlock() {
         setError("");
         try {
           const user = await loginWithGoogle(response.credential);
-          if (user.role === "SCHOLAR") {
-            router.push("/scholardashboard");
-          } else if (user.role === "APPLICANT") {
-            router.push("/application-form");
-          } else {
-            router.push("/AdminDashboard");
-          }
+          router.push(DASHBOARD_MAP[user.role] ?? "/ApplicantsApplication");
         } catch (err) {
           setError(err instanceof Error ? err.message : "Google Sign-In failed.");
           setLoading(false);
@@ -206,9 +201,7 @@ export function SocialBlock() {
             setLoadingMessage("Signing you in to ViaScholar…");
             loginWithGoogle(simulatedEmail)
               .then((user) => {
-                if (user.role === "SCHOLAR") router.push("/scholardashboard");
-                else if (user.role === "APPLICANT") router.push("/application-form");
-                else router.push("/AdminDashboard");
+                router.push(DASHBOARD_MAP[user.role] ?? "/ApplicantsApplication");
               })
               .catch((err) => {
                 setError(err.message);
@@ -230,13 +223,7 @@ export function SocialBlock() {
       setLoadingMessage("Signing you in to ViaScholar…");
       try {
         const user = await loginWithGoogle(simulatedEmail);
-        if (user.role === "SCHOLAR") {
-          router.push("/scholardashboard");
-        } else if (user.role === "APPLICANT") {
-          router.push("/application-form");
-        } else {
-          router.push("/AdminDashboard");
-        }
+        router.push(DASHBOARD_MAP[user.role] ?? "/ApplicantsApplication");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Google login failed.");
         setLoading(false);
