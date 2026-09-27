@@ -7,7 +7,7 @@ const LINKS = ["About", "Qualifications", "Requirements", "Reviews", "FAQ", "Con
 export function Nav() {
   return (
     <header className="fixed inset-x-0 top-4 z-50 px-4 md:px-6">
-      <div className="mx-auto flex w-full max-w-295 items-center justify-between gap-6 rounded-full bg-gradient-to-r from-[#FBF9F3] to-[#F3EFE4] py-3 pr-3 pl-5 shadow-va-md">
+      <div className="mx-auto flex w-full max-w-295 items-center justify-between gap-6 rounded-2xl bg-[#FBF9F3]/95 py-3 pr-3 pl-5 shadow-va-md backdrop-blur-sm">
         <Link href="#top" className="flex shrink-0 items-center gap-3">
           <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F8F4EA]">
             <Image
@@ -29,14 +29,17 @@ export function Nav() {
             <a
               key={l}
               href={`#${l.toLowerCase()}`}
-              className="text-[0.95rem] font-medium text-foreground/70 hover:text-navy"
+              className="text-[0.95rem] font-medium text-foreground/70 transition-colors hover:text-navy"
             >
               {l}
             </a>
           ))}
         </nav>
 
-        <Button asChild className="h-11 shrink-0 rounded-full px-6 text-[0.92rem] font-semibold">
+        <Button
+          asChild
+          className="h-11 shrink-0 rounded-xl bg-amber px-6 text-[0.92rem] font-semibold text-navy shadow-none hover:bg-amber/90"
+        >
           <Link href="/signup">Apply now</Link>
         </Button>
       </div>
