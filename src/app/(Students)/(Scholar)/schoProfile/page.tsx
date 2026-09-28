@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { useCallback, useEffect, useState } from "react";
+import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/components/ToastContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSocketEvent } from "@/contexts/SocketContext";
@@ -113,8 +114,11 @@ export default function SchoProfilePage() {
 
   if (!user || loadingData) {
     return (
-      <div className="min-h-full bg-[#FAF9F7] px-4 py-6 sm:px-8 sm:py-8">
-        <ScholarProfileSkeleton />
+      <div className="min-h-full bg-[#FAF9F7]">
+        <PageHeader title="Profile" subtitle="View and manage your scholar profile and documents." className="md:hidden" />
+        <div className="px-3.5 py-4 sm:px-8 sm:py-8">
+          <ScholarProfileSkeleton />
+        </div>
       </div>
     );
   }
@@ -122,10 +126,12 @@ export default function SchoProfilePage() {
   const scholar = user.scholar_profile;
 
   return (
-    <div className="min-h-full bg-[#FAF9F7] px-4 py-6 sm:px-8 sm:py-8 pb-24">
-      <div className="mx-auto w-full max-w-4xl space-y-6">
-        {/* Banner */}
-        <ScholarBanner
+    <div className="min-h-full bg-[#FAF9F7] pb-24">
+      <PageHeader title="Profile" subtitle="View and manage your scholar profile and documents." className="md:hidden" />
+      <div className="px-3.5 py-4 sm:px-8 sm:py-8">
+        <div className="mx-auto w-full max-w-4xl space-y-4 sm:space-y-6">
+          {/* Banner */}
+          <ScholarBanner
           bannerUrl={scholar?.banner_url || user.banner_url}
           uploading={uploadingBanner}
           onUpload={handleBannerUpload}
@@ -166,6 +172,7 @@ export default function SchoProfilePage() {
           error={saveError}
           onSave={handleSaveProfile}
         />
+        </div>
       </div>
     </div>
   );

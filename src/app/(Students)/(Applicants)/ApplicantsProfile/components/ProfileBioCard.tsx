@@ -9,9 +9,9 @@ interface ProfileBioCardProps {
 export function ProfileBioCard({ bio }: ProfileBioCardProps) {
   return (
     <Card className="rounded-xl border border-line bg-white shadow-xs">
-      <CardContent className="p-5 space-y-2">
+      <CardContent className="p-4 sm:p-5 space-y-1.5 sm:space-y-2">
         <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Bio</p>
-        <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">
+        <p className="text-xs sm:text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">
           {bio || "No bio added yet. Click 'Edit profile' to share a brief background."}
         </p>
       </CardContent>

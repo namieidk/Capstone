@@ -3,6 +3,7 @@
 import type React from "react";
 import { useCallback, useState } from "react";
 import EditProfileDrawer from "@/components/EditProfileDrawer";
+import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/components/ToastContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { ApiError } from "@/lib/api";
@@ -93,10 +94,18 @@ export default function CoordinatorProfilePage() {
     setDrawerOpen(true);
   };
 
-  if (!user) return <CoordinatorProfileSkeleton />;
+  if (!user) {
+    return (
+      <div className="flex min-h-dvh w-full flex-col bg-white">
+        <PageHeader title="Profile" subtitle="Manage your staff profile and credentials." className="md:hidden" />
+        <CoordinatorProfileSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-dvh w-full flex-col bg-white">
+      <PageHeader title="Profile" subtitle="Manage your staff profile and credentials." className="md:hidden" />
       <CoordinatorBanner bannerUrl={user.banner_url} uploading={uploadingBanner} onUpload={handleBannerUpload} />
 
       <CoordinatorHeader

@@ -28,7 +28,7 @@ export function ProfileHeader({
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-14 sm:-mt-16 px-2 sm:px-4">
+    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 -mt-10 sm:-mt-16 px-1 sm:px-4">
       <input
         ref={avatarInputRef}
         type="file"
@@ -37,7 +37,7 @@ export function ProfileHeader({
         onChange={onAvatarUpload}
       />
 
-      <div className="flex items-end gap-3.5 sm:gap-4">
+      <div className="flex items-end gap-3 sm:gap-4 min-w-0">
         <div className="relative shrink-0">
           {avatarUrl ? (
             <Image
@@ -46,10 +46,10 @@ export function ProfileHeader({
               width={112}
               height={112}
               unoptimized
-              className="size-24 sm:size-28 rounded-full border-4 border-white object-cover shadow-md bg-white"
+              className="size-20 sm:size-28 rounded-full border-4 border-white object-cover shadow-md bg-white"
             />
           ) : (
-            <div className="flex size-24 sm:size-28 items-center justify-center rounded-full border-4 border-white bg-[#F3E6C8] text-[#7A5C0A] text-2xl sm:text-3xl font-bold shadow-md">
+            <div className="flex size-20 sm:size-28 items-center justify-center rounded-full border-4 border-white bg-[#F3E6C8] text-[#7A5C0A] text-xl sm:text-3xl font-bold shadow-md">
               {displayInitials}
             </div>
           )}
@@ -62,24 +62,24 @@ export function ProfileHeader({
               border: "2px solid #ffffff",
               boxShadow: "0 2px 8px rgba(0, 0, 0, 0.22)",
             }}
-            className="absolute bottom-0 right-0 z-10 flex size-8 sm:size-9 items-center justify-center rounded-full bg-white text-navy cursor-pointer"
+            className="absolute bottom-0 right-0 z-10 flex size-7 sm:size-9 items-center justify-center rounded-full bg-white text-navy cursor-pointer"
             aria-label="Change profile photo"
             title="Change profile picture"
           >
-            <Camera className="size-4 text-navy stroke-[2.2]" />
+            <Camera className="size-3.5 sm:size-4 text-navy stroke-[2.2]" />
           </button>
         </div>
 
-        <div className="min-w-0 pb-1">
-          <h1 className="truncate text-xl sm:text-2xl font-bold text-navy">{displayName}</h1>
-          <p className="truncate text-xs sm:text-sm text-muted-foreground">{courseAndYear}</p>
+        <div className="min-w-0 pb-1 flex-1">
+          <h1 className="truncate text-lg sm:text-2xl font-bold text-navy leading-tight">{displayName}</h1>
+          <p className="truncate text-xs sm:text-sm text-muted-foreground mt-0.5">{courseAndYear}</p>
         </div>
       </div>
 
       <Button
         type="button"
         onClick={onEditProfile}
-        className="self-start sm:self-end bg-navy hover:bg-navy/90 text-white font-medium px-5 h-10 shadow-xs"
+        className="w-full sm:w-auto self-stretch sm:self-end bg-navy hover:bg-navy/90 text-white font-medium px-5 h-9 sm:h-10 text-xs sm:text-sm shadow-xs"
       >
         Edit profile
       </Button>

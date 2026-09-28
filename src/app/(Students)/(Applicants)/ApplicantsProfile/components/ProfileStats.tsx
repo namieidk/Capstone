@@ -20,34 +20,34 @@ export function ProfileStats({ application, documents }: ProfileStatsProps) {
     : "Not submitted";
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3.5">
       <Card className="rounded-xl border border-line bg-white shadow-xs">
-        <CardContent className="p-4 space-y-1">
-          <p className="text-xs text-muted-foreground font-medium">Application Stage</p>
-          <p className="text-lg font-bold text-navy truncate">
+        <CardContent className="p-3.5 sm:p-4 space-y-0.5 sm:space-y-1">
+          <p className="text-[11px] sm:text-xs text-muted-foreground font-medium">Application Stage</p>
+          <p className="text-base sm:text-lg font-bold text-navy truncate">
             {application?.stage ? application.stage.replace(/_/g, " ") : "Drafting"}
           </p>
-          <p className="text-[11px] text-muted-foreground">
-            Status: <span className="font-medium text-navy">{application?.status || "In Progress"}</span>
+          <p className="text-[10px] sm:text-[11px] text-muted-foreground">
+            Status: <span className="font-semibold text-navy">{application?.status || "In Progress"}</span>
           </p>
         </CardContent>
       </Card>
 
       <Card className="rounded-xl border border-line bg-white shadow-xs">
-        <CardContent className="p-4 space-y-1">
-          <p className="text-xs text-muted-foreground font-medium">Documents Verified</p>
-          <p className="text-lg font-bold text-navy">
+        <CardContent className="p-3.5 sm:p-4 space-y-0.5 sm:space-y-1">
+          <p className="text-[11px] sm:text-xs text-muted-foreground font-medium">Documents Verified</p>
+          <p className="text-base sm:text-lg font-bold text-navy">
             {verifiedDocsCount}/{documents.length}
           </p>
-          <p className="text-[11px] text-muted-foreground">Uploaded requirements</p>
+          <p className="text-[10px] sm:text-[11px] text-muted-foreground">Uploaded requirements</p>
         </CardContent>
       </Card>
 
       <Card className="rounded-xl border border-line bg-white shadow-xs">
-        <CardContent className="p-4 space-y-1">
-          <p className="text-xs text-muted-foreground font-medium">Application Submitted</p>
-          <p className="text-lg font-bold text-navy">{submittedDate}</p>
-          <p className="text-[11px] text-muted-foreground">Scholarship cycle</p>
+        <CardContent className="p-3.5 sm:p-4 space-y-0.5 sm:space-y-1">
+          <p className="text-[11px] sm:text-xs text-muted-foreground font-medium">Application Submitted</p>
+          <p className="text-base sm:text-lg font-bold text-navy truncate">{submittedDate}</p>
+          <p className="text-[10px] sm:text-[11px] text-muted-foreground">Scholarship cycle</p>
         </CardContent>
       </Card>
     </div>

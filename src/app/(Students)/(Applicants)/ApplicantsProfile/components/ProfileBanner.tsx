@@ -20,7 +20,7 @@ export function ProfileBanner({ bannerUrl, uploading, onUpload }: ProfileBannerP
 
   return (
     <div
-      className="relative h-44 sm:h-52 w-full rounded-2xl shadow-xs border border-line flex items-end justify-end p-3.5 overflow-hidden"
+      className="relative h-36 sm:h-52 w-full rounded-2xl shadow-xs border border-line flex items-end justify-end p-2.5 sm:p-3.5 overflow-hidden"
       style={bannerStyle}
     >
       <input
@@ -36,10 +36,10 @@ export function ProfileBanner({ bannerUrl, uploading, onUpload }: ProfileBannerP
         variant="secondary"
         onClick={() => bannerInputRef.current?.click()}
         disabled={uploading}
-        className="bg-white/95 hover:bg-white text-navy font-semibold shadow-md backdrop-blur-xs gap-1.5"
+        className="bg-white/95 hover:bg-white text-navy font-semibold text-xs h-8 sm:h-9 px-2.5 sm:px-3 shadow-md backdrop-blur-xs gap-1.5"
       >
-        <Camera className="size-4 text-navy" />
-        {uploading ? "Uploading..." : "Change banner"}
+        <Camera className="size-3.5 sm:size-4 text-navy" />
+        <span>{uploading ? "Uploading..." : "Change banner"}</span>
       </Button>
     </div>
   );

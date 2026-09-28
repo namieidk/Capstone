@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { useCallback, useEffect, useState } from "react";
+import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/components/ToastContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
@@ -122,21 +123,28 @@ export default function ApplicantsProfilePage() {
 
   if (!user || loadingData) {
     return (
-      <div className="mx-auto w-full max-w-4xl px-4 py-6 md:px-8 space-y-6">
-        <Skeleton className="h-44 sm:h-52 w-full rounded-2xl" />
-        <div className="flex items-end gap-4 -mt-12 px-4">
-          <Skeleton className="size-24 sm:size-28 rounded-full border-4 border-white" />
-          <div className="space-y-2 flex-1 pb-2">
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-32" />
+      <div className="w-full">
+        <PageHeader
+          title="Profile"
+          subtitle="View and manage your academic profile, details, and documents."
+          className="md:hidden"
+        />
+        <div className="mx-auto w-full max-w-4xl px-3.5 py-4 sm:px-6 sm:py-6 md:px-8 space-y-4 sm:space-y-6">
+          <Skeleton className="h-36 sm:h-52 w-full rounded-2xl" />
+          <div className="flex items-end gap-3.5 -mt-10 sm:-mt-12 px-2 sm:px-4">
+            <Skeleton className="size-20 sm:size-28 rounded-full border-4 border-white" />
+            <div className="space-y-2 flex-1 pb-2">
+              <Skeleton className="h-5 sm:h-6 w-36 sm:w-48" />
+              <Skeleton className="h-3.5 sm:h-4 w-24 sm:w-32" />
+            </div>
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4">
+            <Skeleton className="h-24 sm:h-28 rounded-xl" />
+            <Skeleton className="h-24 sm:h-28 rounded-xl" />
+            <Skeleton className="h-24 sm:h-28 rounded-xl" />
+          </div>
+          <Skeleton className="h-40 sm:h-48 rounded-xl" />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Skeleton className="h-28 rounded-xl" />
-          <Skeleton className="h-28 rounded-xl" />
-          <Skeleton className="h-28 rounded-xl" />
-        </div>
-        <Skeleton className="h-48 rounded-xl" />
       </div>
     );
   }
@@ -149,7 +157,13 @@ export default function ApplicantsProfilePage() {
     : "Applicant";
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-6 md:px-8 space-y-6">
+    <div className="w-full">
+      <PageHeader
+        title="Profile"
+        subtitle="View and manage your academic profile, details, and documents."
+        className="md:hidden"
+      />
+      <div className="mx-auto w-full max-w-4xl px-3.5 py-4 sm:px-6 sm:py-6 md:px-8 space-y-4 sm:space-y-6">
       {/* Banner */}
       <ProfileBanner bannerUrl={user.banner_url} uploading={uploadingBanner} onUpload={handleBannerUpload} />
 
@@ -194,6 +208,7 @@ export default function ApplicantsProfilePage() {
         error={saveError}
         onSave={handleSaveProfile}
       />
+      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import type React from "react";
 import { useCallback, useState } from "react";
 import EditProfileDrawer from "@/components/EditProfileDrawer";
+import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/components/ToastContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { ApiError } from "@/lib/api";
@@ -93,10 +94,18 @@ export default function GrantorProfilePage() {
     setDrawerOpen(true);
   };
 
-  if (!user) return <GrantorProfileSkeleton />;
+  if (!user) {
+    return (
+      <div className="flex min-h-dvh w-full flex-col bg-white">
+        <PageHeader title="Profile" subtitle="Manage your organization and contact details." className="md:hidden" />
+        <GrantorProfileSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-dvh w-full flex-col bg-white">
+      <PageHeader title="Profile" subtitle="Manage your organization and contact details." className="md:hidden" />
       <GrantorBanner bannerUrl={user.banner_url} uploading={uploadingBanner} onUpload={handleBannerUpload} />
 
       <GrantorHeader

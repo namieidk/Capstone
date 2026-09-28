@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight, FileText, ZoomIn, ZoomOut } from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { Carousel, type CarouselApi, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import type { ScholarDocument } from "@/lib/api/documents";
@@ -17,6 +18,7 @@ interface DocumentPreviewCarouselProps {
   setCarouselApi: (api: CarouselApi) => void;
   onPageFailed: (pageIndex: number) => void;
   onSwitchToData?: () => void;
+  className?: string;
 }
 
 export function DocumentPreviewCarousel({
@@ -27,7 +29,7 @@ export function DocumentPreviewCarousel({
   carouselApi,
   setCarouselApi,
   onPageFailed,
-  onSwitchToData,
+  className,
 }: DocumentPreviewCarouselProps) {
   const [zoom, setZoom] = useState(1);
 
@@ -60,7 +62,12 @@ export function DocumentPreviewCarousel({
   const handleZoomReset = () => setZoom(1);
 
   return (
-    <div className="flex flex-col border-b border-border bg-neutral-900/5 p-3 sm:p-4 lg:col-span-5 lg:border-r lg:border-b-0">
+    <div
+      className={cn(
+        "flex flex-col border-b border-border bg-neutral-900/5 p-3 sm:p-4 lg:col-span-5 lg:border-r lg:border-b-0",
+        className,
+      )}
+    >
       <div className="mb-2.5 flex items-center justify-between gap-2">
         <span className="text-xs font-semibold text-navy truncate">
           Document Preview {hasMultiplePages && `(Page ${currentPage} of ${validCandidates.length})`}
@@ -207,20 +214,6 @@ export function DocumentPreviewCarousel({
         </div>
       )}
 
-      {/* Mobile-only CTA to quickly jump to data form */}
-      {onSwitchToData && (
-        <div className="mt-3 lg:hidden">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onSwitchToData}
-            className="h-9 w-full justify-between text-xs! font-semibold text-navy shadow-xs"
-          >
-            <span>Review Extracted Grades</span>
-            <span>→</span>
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
