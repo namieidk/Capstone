@@ -66,6 +66,21 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
             let pendingGradeAudits = 0;
             let pendingAppeals = 0;
 
+            const isScholarGradeDoc = (g: (typeof gradeDocs)[number]) => {
+              const role = g.scholar_profile?.user?.role;
+              if (role && role !== "SCHOLAR") return false;
+              const type = (g.document_type || "").trim();
+              const label = (g.label || "").trim();
+              return (
+                !/^(tor|transcript|form\s*138|form\s*137|form\s*9|sf9|report\s*card|soa|cor|statement_of_account|certificate_of_registration|prospectus|curriculum|receipt)/i.test(
+                  type,
+                ) &&
+                !/^(tor|transcript|form\s*138|form\s*137|form\s*9|sf9|report\s*card|soa|cor|statement_of_account|certificate_of_registration|prospectus|curriculum|receipt)/i.test(
+                  label,
+                )
+              );
+            };
+
             if (opts.role === "grantor") {
               // For Grantor: count Coordinator-endorsed enrollments awaiting authorization
               pendingEnrollments = enrollments.filter(
@@ -84,7 +99,9 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
               ).length;
               // For Coordinator: count CCG/grade docs awaiting review
               pendingGradeAudits = gradeDocs.filter(
-                (g) => g.status === "PENDING" || g.status === "STUDENT_CONFIRMED" || g.status === "PASSED_PRECHECK",
+                (g) =>
+                  isScholarGradeDoc(g) &&
+                  (g.status === "PENDING" || g.status === "STUDENT_CONFIRMED" || g.status === "PASSED_PRECHECK"),
               ).length;
             } else {
               // For Admin
@@ -97,7 +114,9 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
                 (d) => d.status === "PENDING" || d.status === "AUTHORIZED" || d.status === "OR_SUBMITTED",
               ).length;
               pendingGradeAudits = gradeDocs.filter(
-                (g) => g.status === "PENDING" || g.status === "STUDENT_CONFIRMED",
+                (g) =>
+                  isScholarGradeDoc(g) &&
+                  (g.status === "PENDING" || g.status === "STUDENT_CONFIRMED"),
               ).length;
               pendingAppeals = appeals.filter((a) => a.appeal_status === "PENDING_GRANTOR").length;
             }

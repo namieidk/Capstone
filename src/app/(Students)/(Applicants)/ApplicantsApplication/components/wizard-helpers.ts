@@ -64,14 +64,38 @@ export function formatDateTime(iso: string): string {
   });
 }
 
-// Document types recognized by the backend verification engine.
-export const DOCUMENT_TYPE_OPTIONS = [
-  { value: "Form 138", label: "Form 138 / Report Card (Senior High)" },
-  { value: "Form 9", label: "Form 9 / SF9 (Senior High School)" },
-  { value: "TOR", label: "Transcript of Records / TOR (College)" },
-  { value: "Certificate of Grades", label: "Certificate of Grades / COG" },
-] as const;
-export const DEFAULT_DOCUMENT_TYPE = DOCUMENT_TYPE_OPTIONS[0].value;
+export function getRequiredDocumentInfo(yearLevel: number = 1) {
+  if (yearLevel >= 2) {
+    return {
+      type: "TOR",
+      shortLabel: "Transcript of Records (TOR)",
+      badge: "College Transcript of Records (TOR)",
+      title: "Official College Transcript of Records (TOR)",
+      requirementTitle: `Year ${yearLevel} Requirement: Transcript of Records (TOR)`,
+      description:
+        "Students in Year 2 to 4+ are required to submit an official College Transcript of Records (TOR). High school report cards (Form 138 / Form 9) are not accepted.",
+      uploadPrompt:
+        "Upload your official College Transcript of Records (TOR). Single or multi-page PDFs and images are supported.",
+      uploadButtonLabel: "Upload Transcript of Records (TOR)",
+      mismatchMessage: `Students in Year ${yearLevel} (2nd to 4th year) are required to submit an official College Transcript of Records (TOR). High School Form 138 / Form 9 cannot be accepted. Please remove this document and upload your official TOR.`,
+    };
+  }
+
+  return {
+    type: "Form 138",
+    shortLabel: "Form 138 / Form 9",
+    badge: "Senior High School Form 138 / Form 9",
+    title: "Senior High School Report Card (Form 138 or Form 9 / SF9)",
+    requirementTitle: "1st-Year Requirement: Form 138 or Form 9",
+    description:
+      "1st-year applicants are only allowed to submit their Senior High School Form 138 or Form 9 (SF9) report card. College transcripts (TOR) cannot be accepted.",
+    uploadPrompt:
+      "Upload your Grade 12 Senior High School Form 138 or Form 9 (SF9). If your report card has multiple pages (e.g., front & back), select both files.",
+    uploadButtonLabel: "Upload Form 138 / Form 9",
+    mismatchMessage:
+      "1st-year applicants are only allowed to submit Senior High School Form 138 or Form 9 (SF9). College transcripts (TOR) cannot be accepted. Please remove this document and upload your high school report card.",
+  };
+}
 
 export function isHighSchoolDoc(docType: string): boolean {
   return /138|137|form\s*9|sf9|report card|high school|shs|senior high/i.test(docType || "");
@@ -102,7 +126,11 @@ export function isInvalidOrMismatchedDoc(doc: ScholarDocument | null | undefined
     }
   }
 
-  if (detectedType === "STATEMENT_OF_ACCOUNT" || detectedType === "OTHER") {
+  if (
+    detectedType === "STATEMENT_OF_ACCOUNT" ||
+    detectedType === "CERTIFICATE_OF_REGISTRATION" ||
+    detectedType === "OTHER"
+  ) {
     return true;
   }
 
@@ -125,21 +153,6 @@ export function isInvalidOrMismatchedDoc(doc: ScholarDocument | null | undefined
   return false;
 }
 
-export function getFilteredDocumentTypeOptions(yearLevel: number = 1) {
-  if (yearLevel >= 2) {
-    // 2nd to 4th year college: TOR or Certificate of Grades
-    return [
-      { value: "TOR", label: "Transcript of Records / TOR (College)" },
-      { value: "Certificate of Grades", label: "Certificate of Grades / COG" },
-    ];
-  }
-  // 1st year applicant: Form 138 or Form 9 from Senior High School
-  return [
-    { value: "Form 138", label: "Form 138 / Report Card (Senior High)" },
-    { value: "Form 9", label: "Form 9 / SF9 (Senior High School)" },
-  ];
-}
-
 export function getDefaultDocumentType(yearLevel: number = 1): string {
   return yearLevel >= 2 ? "TOR" : "Form 138";
 }
@@ -147,7 +160,7 @@ export function getDefaultDocumentType(yearLevel: number = 1): string {
 export function getWizardSteps(yearLevel: number = 1): Array<{ step: WizardStep; label: string; sub: string }> {
   return [
     { step: 1, label: "Application", sub: "Your details" },
-    { step: 2, label: "Documents", sub: yearLevel >= 2 ? "TOR / Grades" : "Form 138 / Form 9" },
+    { step: 2, label: "Documents", sub: yearLevel >= 2 ? "Transcript (TOR)" : "Form 138 / Form 9" },
     { step: 3, label: "Status", sub: "Track progress" },
   ];
 }

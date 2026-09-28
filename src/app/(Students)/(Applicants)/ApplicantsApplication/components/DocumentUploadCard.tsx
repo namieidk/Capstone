@@ -1,11 +1,10 @@
 "use client";
 
-import { UploadCloud, X } from "lucide-react";
+import { FileText, GraduationCap, Loader2, UploadCloud, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getRequiredDocumentInfo } from "./wizard-helpers";
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -15,9 +14,6 @@ function formatBytes(bytes: number): string {
 
 interface DocumentUploadCardProps {
   currentYearLevel: number;
-  docType: string;
-  onDocTypeChange: (value: string) => void;
-  documentOptions: Array<{ value: string; label: string }>;
   picked: File[];
   onPickFiles: (files: FileList | null) => void;
   onRemovePicked: (file: File) => void;
@@ -31,9 +27,6 @@ interface DocumentUploadCardProps {
 
 export function DocumentUploadCard({
   currentYearLevel,
-  docType,
-  onDocTypeChange,
-  documentOptions,
   picked,
   onPickFiles,
   onRemovePicked,
@@ -44,38 +37,41 @@ export function DocumentUploadCard({
   hasConfirmed,
   hasDocuments,
 }: DocumentUploadCardProps) {
+  const reqInfo = getRequiredDocumentInfo(currentYearLevel);
+
   return (
     <Card className="rounded-[18px]! border-border bg-white shadow-xs">
       <CardHeader>
         <CardTitle className="text-lg! text-navy">Upload your grades</CardTitle>
         <CardDescription className="text-sm!">
-          {currentYearLevel >= 2
-            ? "Upload your Transcript of Records (TOR) or Certificate of Grades. Select multiple images or PDFs — the system will automatically parse and merge all pages."
-            : "Upload your Senior High School Form 138 or Form 9. Select multiple images or PDFs (e.g. front and back pages) — the system will automatically parse and merge all pages."}
+          {reqInfo.uploadPrompt}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <div className="max-w-sm">
-          <Label htmlFor="doc-type" className="text-sm! font-semibold text-navy">
-            Document type <span className="text-amber">*</span>
-          </Label>
-          <Select value={docType} onValueChange={onDocTypeChange}>
-            <SelectTrigger
-              id="doc-type"
-              size="lg"
-              className="mt-2 h-11! w-full bg-white! text-sm! md:text-sm!"
-              aria-label="Document type"
-            >
-              <SelectValue placeholder="Select document type" />
-            </SelectTrigger>
-            <SelectContent>
-              {documentOptions.map((o) => (
-                <SelectItem key={o.value} value={o.value} className="text-sm!">
-                  {o.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* Requirement & Auto-Detection Specification Banner (Replaces redundant dropdown) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 rounded-xl border border-sky-100 bg-sky-50/50 p-3.5 sm:p-4 dark:border-sky-900/40 dark:bg-sky-950/20">
+          <div className="flex items-start gap-3">
+            <div className="hidden sm:flex size-10 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-300">
+              {currentYearLevel >= 2 ? (
+                <GraduationCap className="size-5" />
+              ) : (
+                <FileText className="size-5" />
+              )}
+            </div>
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-sky-900 dark:text-sky-200">
+                {currentYearLevel >= 2 ? `Year ${currentYearLevel} Requirement` : "1st-Year Requirement"}
+              </span>
+              <p className="mt-1 text-sm font-semibold text-navy">
+                {reqInfo.title}
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
+                {currentYearLevel >= 2
+                  ? "Only College Transcript of Records (TOR) is accepted. High school report cards cannot be accepted."
+                  : "Only Senior High School Form 138 or Form 9 (SF9) is accepted. College transcripts cannot be accepted."}
+              </p>
+            </div>
+          </div>
         </div>
 
         <div>
@@ -122,17 +118,26 @@ export function DocumentUploadCard({
           </div>
         )}
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <Button
             type="button"
-            className="h-11 px-5 text-sm! shadow-xs"
+            className="h-11 px-5 text-sm! shadow-xs w-full sm:w-auto shrink-0"
             onClick={onUpload}
             disabled={uploading || picked.length === 0}
           >
-            <UploadCloud className="size-4" />
-            {uploading ? (phase ?? "Uploading...") : `Upload ${docType}`}
+            {uploading ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <UploadCloud className="size-4" />
+            )}
+            {uploading ? "Uploading..." : reqInfo.uploadButtonLabel}
           </Button>
-          {!hasConfirmed && hasDocuments && (
+          {uploading && phase && (
+            <p className="text-xs text-sky-700 dark:text-sky-400 font-medium animate-pulse">
+              {phase}
+            </p>
+          )}
+          {!uploading && !hasConfirmed && hasDocuments && (
             <p className="text-xs text-muted-foreground">Confirm a document below to unlock status tracking.</p>
           )}
         </div>

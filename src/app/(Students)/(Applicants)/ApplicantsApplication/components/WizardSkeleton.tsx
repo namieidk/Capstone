@@ -8,15 +8,13 @@ export function WizardSkeleton() {
         <Skeleton className="h-6 w-40" />
         <Skeleton className="mt-2 h-4 w-56" />
       </div>
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-5 py-6">
-        <div className="flex items-start rounded-[18px]! border border-border bg-white p-4 shadow-xs">
+      <div className="flex w-full flex-col gap-5 px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
+        <div className="relative grid grid-cols-3 rounded-[18px]! border border-border bg-white p-3.5 sm:p-4 shadow-xs">
           {[0, 1, 2].map((i) => (
-            <div key={`wizard-step-${i}`} className="flex flex-1 items-start last:flex-none">
-              <div className="flex flex-col items-center gap-1.5">
-                <Skeleton className="size-9 rounded-full" />
-                <Skeleton className="h-3 w-16" />
-              </div>
-              {i < 2 && <Skeleton className="mx-1 mt-4 h-0.5 flex-1 rounded-full" />}
+            <div key={`wizard-step-${i}`} className="flex w-full flex-col items-center gap-1.5">
+              <Skeleton className="size-9 rounded-full" />
+              <Skeleton className="h-3.5 w-20" />
+              <Skeleton className="hidden h-3 w-28 sm:block" />
             </div>
           ))}
         </div>

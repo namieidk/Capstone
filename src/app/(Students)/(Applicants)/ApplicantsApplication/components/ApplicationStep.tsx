@@ -28,7 +28,7 @@ const EMPTY_VALUES: Record<string, string> = {
   relative_employee: "",
 };
 
-const FIELD_INPUT = "mt-2 h-11! bg-white! text-sm! md:text-sm!";
+const FIELD_INPUT = "h-11! bg-white! text-sm! md:text-sm!";
 
 function Field({
   id,
@@ -44,8 +44,8 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div>
-      <Label htmlFor={id} className="text-sm! font-semibold text-navy">
+    <div className="flex flex-col">
+      <Label htmlFor={id} className="mb-2 block text-sm! font-semibold text-navy">
         {label} {required && <span className="text-amber">*</span>}
       </Label>
       {children}
@@ -95,14 +95,14 @@ export function ApplicationStep({ prefill, hasApplication, onSubmit }: Applicati
 
   return (
     <Card className="rounded-[18px]! border-border bg-white shadow-xs">
-      <CardHeader>
-        <CardTitle className="text-lg! text-navy">Scholarship application</CardTitle>
+      <CardHeader className="px-5 pt-5 pb-3 sm:px-8 sm:pt-7 sm:pb-4">
+        <CardTitle className="text-lg! font-bold text-navy">Scholarship application</CardTitle>
         <CardDescription className="text-sm!">
           Tell us about yourself and where you study. You can update this later.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <CardContent className="px-5 pb-5 sm:px-8 sm:pb-8">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5 sm:gap-6">
           <Field id="app-track" label="Scholarship track" required error={fieldErrors.scholarship_track}>
             <Select value={values.scholarship_track} onValueChange={(v) => set("scholarship_track", v)}>
               <SelectTrigger
@@ -122,7 +122,7 @@ export function ApplicationStep({ prefill, hasApplication, onSubmit }: Applicati
               </SelectContent>
             </Select>
           </Field>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
             <Field id="app-student-number" label="Student number" required error={fieldErrors.student_number}>
               <Input
                 id="app-student-number"
@@ -144,7 +144,7 @@ export function ApplicationStep({ prefill, hasApplication, onSubmit }: Applicati
               />
             </Field>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
             <Field id="app-course" label="Course of study" required error={fieldErrors.course_of_study}>
               <Input
                 id="app-course"
@@ -217,7 +217,7 @@ export function ApplicationStep({ prefill, hasApplication, onSubmit }: Applicati
             </div>
           )}
 
-          <div className="flex justify-end pt-1">
+          <div className="flex justify-end pt-4 sm:pt-5 border-t border-border/60 mt-1">
             <Button type="submit" className="h-11 px-6 text-sm! shadow-xs" disabled={submitting}>
               {submitting ? "Submitting..." : hasApplication ? "Save changes" : "Submit application"}
             </Button>

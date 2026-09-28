@@ -34,12 +34,28 @@ export function CoordinatorGradeAuditsTab({
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
       const scholar = item.scholar_profile;
+      const role = scholar?.user?.role;
+      if (role && role !== "SCHOLAR") return false;
+
+      const docType = (item.document_type || "").toLowerCase();
+      const label = (item.label || "").toLowerCase();
+
+      // Form 138 / TOR / admission / financial docs are strictly prohibited from Grade Audits tab
+      if (
+        /^(tor|transcript|form\s*138|form\s*137|form\s*9|sf9|report\s*card|soa|cor|statement_of_account|certificate_of_registration|prospectus|curriculum|receipt|official_receipt)/i.test(
+          docType,
+        ) ||
+        /^(tor|transcript|form\s*138|form\s*137|form\s*9|sf9|report\s*card|soa|cor|statement_of_account|certificate_of_registration|prospectus|curriculum|receipt|official_receipt)/i.test(
+          label,
+        )
+      ) {
+        return false;
+      }
+
       const studentName = `${scholar?.first_name || ""} ${scholar?.last_name || ""}`.toLowerCase();
       const studentNumber = String(scholar?.student_number || "").toLowerCase();
       const course = String(scholar?.course_of_study || "").toLowerCase();
       const school = String(scholar?.school_name || "").toLowerCase();
-      const docType = (item.document_type || "").toLowerCase();
-      const label = (item.label || "").toLowerCase();
       const confirmed = (item.confirmed_data || item.extracted_data || {}) as Record<string, unknown>;
       const ay = String(confirmed.academic_year || "").toLowerCase();
       const sem = String(confirmed.semester || "").toLowerCase();

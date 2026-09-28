@@ -43,6 +43,7 @@ export interface ExtractedGradingLegend {
 }
 
 export interface ExtractedDataShape {
+  detected_document_type?: string | null;
   academic_year?: string | null;
   general_average?: number | string | null;
   grades?: ExtractedGradeRaw[] | null;

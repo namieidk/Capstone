@@ -11,19 +11,8 @@ import {
 import { getPendingDocuments, type ScholarDocument } from "@/lib/api/documents";
 import { getCoordinatorPendingEnrollments, type TermEnrollment } from "@/lib/api/enrollment";
 
-const NON_GRADE_DOC_TYPES = new Set([
-  "PROSPECTUS",
-  "CURRICULUM",
-  "HISTORICAL_CCG",
-  "SOA",
-  "COR",
-  "STATEMENT_OF_ACCOUNT",
-  "CERTIFICATE_OF_REGISTRATION",
-  "OFFICIAL_RECEIPT",
-  "RECEIPT",
-  "CONSOLIDATED_ASSESSMENT",
-  "CONSOLIDATED_MATRICULATION",
-]);
+const PROHIBITED_GRADE_DOC_REGEX =
+  /^(TOR|TRANSCRIPT|FORM\s*138|FORM\s*137|FORM\s*9|SF9|REPORT\s*CARD|SOA|COR|STATEMENT_OF_ACCOUNT|CERTIFICATE_OF_REGISTRATION|OFFICIAL_RECEIPT|RECEIPT|CONSOLIDATED|PROSPECTUS|CURRICULUM|HISTORICAL)/i;
 
 export function useCoordinatorMonitorData() {
   const { socket } = useContext(SocketContext);
@@ -83,7 +72,18 @@ export function useCoordinatorMonitorData() {
     try {
       setLoadingGradeDocs(true);
       const data = await getPendingDocuments();
-      const filtered = (data || []).filter((doc) => !NON_GRADE_DOC_TYPES.has((doc.document_type || "").toUpperCase()));
+      const filtered = (data || []).filter((doc) => {
+        // Only scholar documents should appear in this tab
+        const role = doc.scholar_profile?.user?.role;
+        if (role && role !== "SCHOLAR") return false;
+
+        const docType = (doc.document_type || "").trim();
+        const label = (doc.label || "").trim();
+        if (PROHIBITED_GRADE_DOC_REGEX.test(docType) || PROHIBITED_GRADE_DOC_REGEX.test(label)) {
+          return false;
+        }
+        return true;
+      });
       setGradeDocs(filtered);
     } catch (err) {
       console.error("Failed to load pending grade documents:", err);

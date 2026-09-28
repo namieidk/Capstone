@@ -32,23 +32,27 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md!">
-        <DialogHeader>
-          <div className="flex items-start gap-3.5">
+      <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-md! p-5 sm:p-6 rounded-2xl overflow-hidden">
+        <DialogHeader className="pr-8 sm:pr-0 text-left">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-3.5">
             <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-              <TriangleAlert className="size-5" />
+              <TriangleAlert className="size-5.5" />
             </span>
-            <div>
-              <DialogTitle className="text-lg!">{title}</DialogTitle>
-              <DialogDescription className="mt-1 text-sm!">{description}</DialogDescription>
+            <div className="w-full min-w-0 flex-1">
+              <DialogTitle className="text-base sm:text-lg font-bold text-navy leading-snug wrap-break-word">
+                {title}
+              </DialogTitle>
+              <DialogDescription className="mt-1.5 text-xs sm:text-sm leading-relaxed text-muted-foreground wrap-anywhere">
+                {description}
+              </DialogDescription>
             </div>
           </div>
         </DialogHeader>
-        <DialogFooter className="gap-3">
+        <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 sm:gap-3 mt-4 sm:mt-2">
           <Button
             type="button"
             variant="outline"
-            className="h-11 text-sm! text-navy"
+            className="w-full sm:w-auto h-11 text-sm! text-navy font-medium"
             onClick={() => onOpenChange(false)}
             disabled={acting}
           >
@@ -57,7 +61,7 @@ export function ConfirmDialog({
           <Button
             type="button"
             variant="destructive"
-            className="h-11 px-5 text-sm!"
+            className="w-full sm:w-auto h-11 px-5 text-sm! font-medium"
             onClick={onConfirm}
             disabled={acting}
           >

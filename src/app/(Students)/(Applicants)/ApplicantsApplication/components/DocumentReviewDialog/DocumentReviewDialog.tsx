@@ -354,9 +354,10 @@ export function DocumentReviewDialog({
                           <span>Document Requirement Mismatch</span>
                         </div>
                         <p className="mt-1.5 text-xs leading-relaxed text-destructive/90">
-                          {currentYearLevel && currentYearLevel >= 2
-                            ? `Students in Year ${currentYearLevel} (2nd to 4th year) are required to submit an official College Transcript of Records (TOR) or Certificate of Grades. High School Form 138 / Form 9 cannot be confirmed for your application. Please close this dialog, remove this document, and upload your TOR.`
-                            : "1st-year applicants are required to submit Senior High School Form 138 or Form 9. College transcripts cannot be confirmed for 1st-year applications. Please close this dialog, remove this document, and upload your high school report card."}
+                          {doc.rejection_reason ||
+                            (currentYearLevel && currentYearLevel >= 2
+                              ? `Students in Year ${currentYearLevel} (2nd to 4th year) are required to submit an official College Transcript of Records (TOR). High School Form 138 / Form 9 cannot be confirmed for your application. Please close this dialog, remove this document, and upload your official TOR.`
+                              : "1st-year applicants are only allowed to submit Senior High School Form 138 or Form 9 (SF9). College transcripts (TOR) cannot be confirmed for 1st-year applications. Please close this dialog, remove this document, and upload your high school report card.")}
                         </p>
                       </div>
                     ) : doc.status === "NEEDS_REUPLOAD" ? (

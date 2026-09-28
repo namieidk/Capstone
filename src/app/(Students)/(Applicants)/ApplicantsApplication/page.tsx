@@ -7,7 +7,11 @@ import { useToast } from "@/components/ToastContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSocketEvent } from "@/contexts/SocketContext";
 import { ApiError } from "@/lib/api";
-import { type Application, createApplication, getMyApplication } from "@/lib/api/applications";
+import {
+  type Application,
+  createApplication,
+  getMyApplication,
+} from "@/lib/api/applications";
 import {
   confirmDocument,
   deleteDocument,
@@ -22,7 +26,11 @@ import { ApplicationStep } from "./components/ApplicationStep";
 import { DocumentsStep } from "./components/DocumentsStep";
 import { StatusStep } from "./components/StatusStep";
 import { WizardSkeleton } from "./components/WizardSkeleton";
-import { getWizardSteps, resolveStep, type WizardStep } from "./components/wizard-helpers";
+import {
+  getWizardSteps,
+  resolveStep,
+  type WizardStep,
+} from "./components/wizard-helpers";
 
 export default function ApplicantsApplicationPage() {
   const { user, refreshUser } = useAuth();
@@ -76,7 +84,11 @@ export default function ApplicantsApplicationPage() {
       }
     } catch (err) {
       console.error("Failed to load application:", err);
-      setLoadError(err instanceof ApiError ? err.message : "Failed to load your application.");
+      setLoadError(
+        err instanceof ApiError
+          ? err.message
+          : "Failed to load your application.",
+      );
     } finally {
       setLoading(false);
     }
@@ -126,7 +138,10 @@ export default function ApplicantsApplicationPage() {
     return 1;
   }, [user]);
 
-  const wizardSteps = useMemo(() => getWizardSteps(currentYearLevel), [currentYearLevel]);
+  const wizardSteps = useMemo(
+    () => getWizardSteps(currentYearLevel),
+    [currentYearLevel],
+  );
 
   const prefill = useMemo(() => {
     const p = user?.scholar_profile;
@@ -135,7 +150,9 @@ export default function ApplicantsApplicationPage() {
       student_number: p?.student_number ?? "",
       student_address: p?.student_address ?? "",
       course_of_study: p?.course_of_study ?? "",
-      current_year_level: p?.current_year_level ? String(p.current_year_level) : "",
+      current_year_level: p?.current_year_level
+        ? String(p.current_year_level)
+        : "",
       school_name: p?.school_name ?? "",
       school_address: p?.school_address ?? "",
       phone_number: p?.phone_number ?? "",
@@ -143,28 +160,41 @@ export default function ApplicantsApplicationPage() {
     };
   }, [user]);
 
-  async function wrapAction(fn: () => Promise<void>, success: string): Promise<void> {
+  async function wrapAction(
+    fn: () => Promise<void>,
+    success: string,
+  ): Promise<void> {
     try {
       await fn();
       showToast(success);
     } catch (err) {
       console.error(success, err);
-      throw new Error(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
+      throw new Error(
+        err instanceof ApiError
+          ? err.message
+          : "Something went wrong. Please try again.",
+      );
     }
   }
 
-  async function handleSubmitApplication(values: ApplicationFormValues): Promise<void> {
+  async function handleSubmitApplication(
+    values: ApplicationFormValues,
+  ): Promise<void> {
     await wrapAction(async () => {
       await createApplication({
         scholarship_track: values.scholarship_track,
         student_number: values.student_number,
         student_address: values.student_address,
         course_of_study: values.course_of_study,
-        current_year_level: values.current_year_level ? Number(values.current_year_level) : undefined,
+        current_year_level: values.current_year_level
+          ? Number(values.current_year_level)
+          : undefined,
         school_name: values.school_name,
         school_address: values.school_address,
         ...(values.phone_number ? { phone_number: values.phone_number } : {}),
-        ...(values.relative_employee ? { relative_employee: values.relative_employee } : {}),
+        ...(values.relative_employee
+          ? { relative_employee: values.relative_employee }
+          : {}),
       });
       // The backend upserts the scholar profile on submit — pull the fresh
       // profile so step 1 repopulates when the applicant comes back.
@@ -224,45 +254,76 @@ export default function ApplicantsApplicationPage() {
     <div>
       <PageHeader
         title="Application"
-        subtitle={isRejected ? "Your application review has concluded." : "Apply in 3 quick steps."}
+        subtitle={
+          isRejected
+            ? "Your application review has concluded."
+            : "Apply in 3 quick steps."
+        }
       />
 
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-5 py-6">
+      <div className="flex w-full flex-col gap-5 px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
         {loadError ? (
           <div className="flex flex-col items-center gap-4 rounded-[18px]! border border-border bg-white px-6 py-14 text-center shadow-xs">
-            <p className="text-base font-semibold text-navy">Could not load your application</p>
+            <p className="text-base font-semibold text-navy">
+              Could not load your application
+            </p>
             <p className="text-sm text-muted-foreground">{loadError}</p>
-            <button type="button" onClick={fetchAll} className="h-11 rounded-lg px-5 text-sm! font-medium shadow-xs">
+            <button
+              type="button"
+              onClick={fetchAll}
+              className="h-11 rounded-lg px-5 text-sm! font-medium shadow-xs"
+            >
               Try again
             </button>
           </div>
         ) : (
           <>
-            <ol className="flex items-start rounded-[18px]! border border-border bg-white p-4 shadow-xs">
-              {wizardSteps.map((s, i) => {
+            <ol className="relative grid grid-cols-3 rounded-[18px]! border border-border bg-white p-3.5 sm:p-4 shadow-xs">
+              {/* Connecting progress track running between center of Step 1 (16.67%) and Step 3 (83.33%) */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute top-8 sm:top-8.5 left-[16.67%] right-[16.67%] -translate-y-1/2 h-1 overflow-hidden rounded-full bg-border/70"
+              >
+                <div
+                  className="h-full bg-navy transition-all duration-500 ease-out"
+                  style={{
+                    width:
+                      isRejected || step >= 3
+                        ? "100%"
+                        : step === 2
+                          ? "50%"
+                          : "0%",
+                  }}
+                />
+              </div>
+
+              {wizardSteps.map((s) => {
                 const done = isRejected ? s.step < 3 : s.step < step;
                 const active = isRejected ? s.step === 3 : s.step === step;
-                const unlocked = !isRejected && (s.step === 1 || application !== null);
+                const unlocked =
+                  !isRejected && (s.step === 1 || application !== null);
                 return (
-                  <li key={s.step} className="flex flex-1 items-start last:flex-none">
+                  <li key={s.step} className="flex w-full justify-center">
                     <button
                       type="button"
                       onClick={() => goTo(s.step)}
                       disabled={!unlocked || isRejected}
                       aria-current={active ? "step" : undefined}
-                      className={`flex flex-col items-center gap-1.5 rounded-lg px-1 ${
-                        unlocked && !isRejected ? "cursor-pointer" : "cursor-default opacity-60"
+                      className={`flex w-full flex-col items-center gap-1.5 rounded-lg px-0.5 sm:px-1 text-center transition-all ${
+                        unlocked && !isRejected
+                          ? "cursor-pointer"
+                          : "cursor-default opacity-60"
                       }`}
                     >
                       <span
-                        className={`flex size-9 items-center justify-center rounded-full text-sm font-bold transition-all duration-300 transform ${
+                        className={`relative z-10 flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-all duration-300 ring-[5px] ring-white shadow-xs ${
                           isRejected && s.step === 3
-                            ? "bg-destructive text-white ring-4 ring-destructive/20 scale-105 shadow-xs"
+                            ? "bg-destructive text-white"
                             : done
-                              ? "bg-navy text-white shadow-xs"
+                              ? "bg-navy text-white"
                               : active
-                                ? "bg-amber! text-navy! ring-4 ring-amber/25 scale-105 shadow-xs"
-                                : "bg-muted text-muted-foreground scale-95"
+                                ? "bg-amber! text-navy!"
+                                : "bg-slate-100 text-muted-foreground border border-border/80"
                         }`}
                       >
                         {done ? (
@@ -271,9 +332,9 @@ export default function ApplicantsApplicationPage() {
                           <span className="tabular-nums">{s.step}</span>
                         )}
                       </span>
-                      <span className="flex flex-col items-center">
+                      <span className="flex w-full flex-col items-center">
                         <span
-                          className={`text-xs transition-colors duration-200 ${
+                          className={`w-full truncate text-xs transition-colors duration-200 ${
                             isRejected && s.step === 3
                               ? "font-semibold text-destructive"
                               : active || done
@@ -283,19 +344,13 @@ export default function ApplicantsApplicationPage() {
                         >
                           {isRejected && s.step === 3 ? "Decision" : s.label}
                         </span>
-                        <span className="hidden text-[0.7rem] text-muted-foreground sm:block">
-                          {isRejected && s.step === 3 ? "Review concluded" : s.sub}
+                        <span className="hidden w-full truncate text-[0.7rem] text-muted-foreground sm:block">
+                          {isRejected && s.step === 3
+                            ? "Review concluded"
+                            : s.sub}
                         </span>
                       </span>
                     </button>
-                    {i < wizardSteps.length - 1 && (
-                      <div className="mx-1 mt-4 h-1 flex-1 overflow-hidden rounded-full bg-border/70">
-                        <div
-                          className="h-full bg-navy transition-all duration-500 ease-out"
-                          style={{ width: (isRejected ? 3 : step) > s.step ? "100%" : "0%" }}
-                        />
-                      </div>
-                    )}
                   </li>
                 );
               })}
@@ -321,14 +376,20 @@ export default function ApplicantsApplicationPage() {
                   onDelete={handleDelete}
                   onConfirm={handleConfirm}
                   onContinue={() => changeStep(3)}
-                  hasConfirmed={documents.some((d) => d.status === "STUDENT_CONFIRMED" || d.status === "VERIFIED")}
+                  hasConfirmed={documents.some(
+                    (d) =>
+                      d.status === "STUDENT_CONFIRMED" ||
+                      d.status === "VERIFIED",
+                  )}
                 />
               )}
               {step === 3 && (
                 <StatusStep
                   application={application}
                   documents={documents}
-                  scholarshipTrack={user?.scholar_profile?.scholarship_track ?? undefined}
+                  scholarshipTrack={
+                    user?.scholar_profile?.scholarship_track ?? undefined
+                  }
                   currentYearLevel={currentYearLevel}
                   onBackToDocuments={() => changeStep(2)}
                 />

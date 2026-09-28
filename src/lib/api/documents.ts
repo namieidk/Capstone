@@ -29,6 +29,12 @@ export interface ScholarDocument {
   verified_at?: string | null;
   scholar_profile?: {
     profile_id?: number;
+    user_id?: number;
+    user?: {
+      user_id?: number;
+      email?: string;
+      role?: string;
+    } | null;
     first_name?: string;
     last_name?: string;
     student_number?: string;

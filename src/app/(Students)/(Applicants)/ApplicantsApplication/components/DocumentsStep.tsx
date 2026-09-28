@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,8 +12,6 @@ import { DocumentStatusBanner } from "./DocumentStatusBanner";
 import { DocumentUploadCard } from "./DocumentUploadCard";
 import {
   getDefaultDocumentType,
-  getFilteredDocumentTypeOptions,
-  isHighSchoolDoc,
   isInvalidOrMismatchedDoc,
   validateChosenFiles,
 } from "./wizard-helpers";
@@ -46,7 +44,6 @@ export function DocumentsStep({
   onContinue,
   hasConfirmed,
 }: DocumentsStepProps) {
-  const [docType, setDocType] = useState<string>(() => getDefaultDocumentType(currentYearLevel));
   const [picked, setPicked] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [phase, setPhase] = useState<string | null>(null);
@@ -60,20 +57,12 @@ export function DocumentsStep({
   const [confirmReplaceTarget, setConfirmReplaceTarget] = useState<ScholarDocument | null>(null);
   const [retryingId, setRetryingId] = useState<number | null>(null);
 
-  const documentOptions = getFilteredDocumentTypeOptions(currentYearLevel);
+  const targetDocType = getDefaultDocumentType(currentYearLevel);
   const mismatchedDoc = documents.find((d) => isInvalidOrMismatchedDoc(d, currentYearLevel));
   const hasConfirmedDoc =
     hasConfirmed || documents.some((d) => d.status === "STUDENT_CONFIRMED" || d.status === "VERIFIED");
   const hasNeedsReupload = documents.some((d) => d.status === "NEEDS_REUPLOAD");
   const shouldShowUploadCard = !hasConfirmedDoc || hasNeedsReupload;
-
-  useEffect(() => {
-    if (currentYearLevel >= 2 && isHighSchoolDoc(docType)) {
-      setDocType(getDefaultDocumentType(currentYearLevel));
-    } else if (currentYearLevel === 1 && !isHighSchoolDoc(docType)) {
-      setDocType(getDefaultDocumentType(currentYearLevel));
-    }
-  }, [currentYearLevel, docType]);
 
   async function handleRetryOcr(docId: number) {
     try {
@@ -106,23 +95,11 @@ export function DocumentsStep({
       return;
     }
 
-    if (currentYearLevel >= 2 && isHighSchoolDoc(docType)) {
-      setError(
-        `Students in Year ${currentYearLevel} (2nd to 4th year) are required to upload a Transcript of Records (TOR) or Certified Copy of Grades instead of Senior High School Form 138 / Form 9.`,
-      );
-      return;
-    }
-
-    if (currentYearLevel === 1 && !isHighSchoolDoc(docType)) {
-      setError("1st-year applicants are required to upload their Senior High School Form 138 or Form 9 report card.");
-      return;
-    }
-
     setUploading(true);
     setError("");
     try {
-      setPhase(picked.length > 1 ? "Uploading files (merging all pages into 1 PDF)..." : "Uploading...");
-      await onUpload(picked, docType);
+      setPhase(picked.length > 1 ? "Uploading files (merging all pages into 1 PDF)..." : "Uploading & analyzing...");
+      await onUpload(picked, targetDocType);
       setPicked([]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to upload documents.");
@@ -141,25 +118,6 @@ export function DocumentsStep({
       return;
     }
 
-    const targetDoc = documents.find((d) => d.document_id === replaceTarget);
-    if (currentYearLevel >= 2 && targetDoc && isHighSchoolDoc(targetDoc.document_type)) {
-      setError(
-        `Students in Year ${currentYearLevel} (2nd to 4th year) cannot upload or replace Senior High School Form 138 / Form 9 documents. Please upload a Transcript of Records (TOR) instead.`,
-      );
-      setReplaceTarget(null);
-      if (replaceInputRef.current) replaceInputRef.current.value = "";
-      return;
-    }
-
-    if (currentYearLevel === 1 && targetDoc && !isHighSchoolDoc(targetDoc.document_type)) {
-      setError(
-        "1st-year applicants cannot upload college transcripts. Please upload your Senior High School Form 138 or Form 9 instead.",
-      );
-      setReplaceTarget(null);
-      if (replaceInputRef.current) replaceInputRef.current.value = "";
-      return;
-    }
-
     setActingId(replaceTarget);
     setError("");
     try {
@@ -174,12 +132,6 @@ export function DocumentsStep({
   }
 
   function handleRequestReplace(doc: ScholarDocument) {
-    if (currentYearLevel >= 2 && isHighSchoolDoc(doc.document_type)) {
-      setError(
-        `Students in Year ${currentYearLevel} (2nd to 4th year) cannot upload or replace Senior High School Form 138 / Form 9 documents. Please upload a Transcript of Records (TOR) instead.`,
-      );
-      return;
-    }
     setConfirmReplaceTarget(doc);
   }
 
@@ -208,9 +160,6 @@ export function DocumentsStep({
       {shouldShowUploadCard && (
         <DocumentUploadCard
           currentYearLevel={currentYearLevel}
-          docType={docType}
-          onDocTypeChange={setDocType}
-          documentOptions={documentOptions}
           picked={picked}
           onPickFiles={pickFiles}
           onRemovePicked={(f) => setPicked((p) => p.filter((x) => x !== f))}
