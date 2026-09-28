@@ -114,9 +114,7 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
                 (d) => d.status === "PENDING" || d.status === "AUTHORIZED" || d.status === "OR_SUBMITTED",
               ).length;
               pendingGradeAudits = gradeDocs.filter(
-                (g) =>
-                  isScholarGradeDoc(g) &&
-                  (g.status === "PENDING" || g.status === "STUDENT_CONFIRMED"),
+                (g) => isScholarGradeDoc(g) && (g.status === "PENDING" || g.status === "STUDENT_CONFIRMED"),
               ).length;
               pendingAppeals = appeals.filter((a) => a.appeal_status === "PENDING_GRANTOR").length;
             }

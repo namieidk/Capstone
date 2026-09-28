@@ -1,9 +1,38 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
+import type { LucideIcon } from "lucide-react";
+import { Headset, LayoutDashboard, ShieldCheck } from "lucide-react";
 import { Fireflies } from "./Fireflies";
 import { Container, Eyebrow, SectionHeading } from "./shared";
+import Image from "next/image";
+
+interface ReasonProps {
+  Icon: LucideIcon;
+  title: string;
+  description: string;
+}
+
+const REASONS: ReasonProps[] = [
+  {
+    Icon: Headset,
+    title: "24/7 support",
+    description:
+      "A dedicated advisor is always reachable, so a question about a deadline never sits unanswered overnight.",
+  },
+  {
+    Icon: ShieldCheck,
+    title: "Clear requirements",
+    description:
+      "Every renewal condition is spelled out up front — no surprise paperwork once a term is already underway.",
+  },
+  {
+    Icon: LayoutDashboard,
+    title: "Real-time tracking",
+    description:
+      "Grades, disbursements, and renewal status live in one dashboard, updated the moment anything changes.",
+  },
+];
 
 export function About() {
   return (
@@ -17,7 +46,7 @@ export function About() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: false, amount: 0.4 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="flex h-full flex-col justify-center text-center"
+          className="mx-auto max-w-2xl text-center"
         >
           <div className="translate-y-0 lg:-translate-y-8">
             <div className="flex justify-center">

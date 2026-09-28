@@ -1,24 +1,12 @@
 "use client";
 
-import {
-  AlertCircle,
-  Check,
-  ExternalLink,
-  Eye,
-  FileText,
-} from "lucide-react";
+import { AlertCircle, Check, ExternalLink, Eye, FileText } from "lucide-react";
 import { useEffect, useState } from "react";
 import type React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { CarouselApi } from "@/components/ui/carousel";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import type { ScholarDocument } from "@/lib/api/documents";
 import { docStatusMeta, formatDateTime } from "../wizard-helpers";
 import { DocumentPreviewCarousel } from "./DocumentPreviewCarousel";
@@ -74,9 +62,7 @@ export function DocumentReviewDrawer({
         {/* Accessible hidden header for screen-readers & Vaul */}
         <DrawerHeader className="sr-only">
           <DrawerTitle>{doc.document_type || "Document Review"}</DrawerTitle>
-          <DrawerDescription>
-            Review document preview and confirmed academic details
-          </DrawerDescription>
+          <DrawerDescription>Review document preview and confirmed academic details</DrawerDescription>
         </DrawerHeader>
 
         {/* Mobile Visual Header Bar */}
@@ -87,19 +73,13 @@ export function DocumentReviewDrawer({
             </span>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="truncate text-xs font-bold text-navy">
-                  {doc.document_type}
-                </span>
-                <Badge
-                  variant={meta.variant}
-                  className="h-4.5 shrink-0 px-1.5 text-[0.62rem] font-semibold"
-                >
+                <span className="truncate text-xs font-bold text-navy">{doc.document_type}</span>
+                <Badge variant={meta.variant} className="h-4.5 shrink-0 px-1.5 text-[0.62rem] font-semibold">
                   {meta.label}
                 </Badge>
               </div>
               <p className="truncate text-[0.68rem] text-muted-foreground">
-                {doc.file_name ?? "Document"} ·{" "}
-                {formatDateTime(doc.uploaded_at)}
+                {doc.file_name ?? "Document"} · {formatDateTime(doc.uploaded_at)}
               </p>
             </div>
           </div>
@@ -110,9 +90,7 @@ export function DocumentReviewDrawer({
               variant="outline"
               size="icon-sm"
               className="size-8 rounded-lg border-border text-navy hover:bg-slate-100"
-              onClick={() =>
-                window.open(doc.file_url, "_blank", "noopener,noreferrer")
-              }
+              onClick={() => window.open(doc.file_url, "_blank", "noopener,noreferrer")}
               title="Open original file in new tab"
               aria-label="Open original file in new tab"
             >
@@ -128,9 +106,7 @@ export function DocumentReviewDrawer({
               type="button"
               onClick={() => setMobileTab("preview")}
               className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-all ${
-                mobileTab === "preview"
-                  ? "bg-white text-navy shadow-xs"
-                  : "text-muted-foreground hover:text-navy"
+                mobileTab === "preview" ? "bg-white text-navy shadow-xs" : "text-muted-foreground hover:text-navy"
               }`}
             >
               <Eye className="size-3.5" />
@@ -145,16 +121,12 @@ export function DocumentReviewDrawer({
               type="button"
               onClick={() => setMobileTab("data")}
               className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-all ${
-                mobileTab === "data"
-                  ? "bg-white text-navy shadow-xs"
-                  : "text-muted-foreground hover:text-navy"
+                mobileTab === "data" ? "bg-white text-navy shadow-xs" : "text-muted-foreground hover:text-navy"
               }`}
             >
               <FileText className="size-3.5" />
               <span>Information</span>
-              {isReadOnly && !isMismatch && (
-                <Check className="size-3 text-good stroke-3" />
-              )}
+              {isReadOnly && !isMismatch && <Check className="size-3 text-good stroke-3" />}
             </button>
           </div>
         </div>
@@ -198,9 +170,7 @@ export function DocumentReviewDrawer({
             </p>
           )}
 
-          <div
-            className={`grid gap-2 ${isReadOnly ? "grid-cols-1" : "grid-cols-2"}`}
-          >
+          <div className={`grid gap-2 ${isReadOnly ? "grid-cols-1" : "grid-cols-2"}`}>
             <Button
               type="button"
               variant="outline"
@@ -218,9 +188,7 @@ export function DocumentReviewDrawer({
                 disabled={submitting || isMismatch}
               >
                 <Check className="size-4 shrink-0" />
-                <span className="truncate">
-                  {submitting ? "Saving..." : "Confirm & Submit"}
-                </span>
+                <span className="truncate">{submitting ? "Saving..." : "Confirm & Submit"}</span>
               </Button>
             )}
           </div>

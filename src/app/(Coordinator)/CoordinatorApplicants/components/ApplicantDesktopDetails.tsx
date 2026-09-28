@@ -32,10 +32,7 @@ export function ApplicantDesktopDetails({ applicant }: ApplicantDesktopDetailsPr
           </div>
           <div>
             <dt className="text-xs text-muted-foreground">General Weighted Average (GWA)</dt>
-            <dd
-              className="font-medium tabular-nums text-foreground"
-              title={gwaSourceTitle(applicant.gwaSource)}
-            >
+            <dd className="font-medium tabular-nums text-foreground" title={gwaSourceTitle(applicant.gwaSource)}>
               {applicant.gwa !== null ? formatGwa(applicant.gwa) : "—"}
             </dd>
           </div>
@@ -92,7 +89,9 @@ export function ApplicantDesktopDetails({ applicant }: ApplicantDesktopDetailsPr
                   </strong>
                 </>
               ) : (
-                <>Applicant is in <strong>Interview Stage</strong> (no meeting scheduled yet)</>
+                <>
+                  Applicant is in <strong>Interview Stage</strong> (no meeting scheduled yet)
+                </>
               )}
             </span>
           </div>

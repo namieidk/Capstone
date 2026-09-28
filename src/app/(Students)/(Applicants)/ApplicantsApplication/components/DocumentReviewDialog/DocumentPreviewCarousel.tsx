@@ -213,7 +213,6 @@ export function DocumentPreviewCarousel({
           })}
         </div>
       )}
-
     </div>
   );
 }

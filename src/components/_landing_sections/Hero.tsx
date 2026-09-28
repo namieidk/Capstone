@@ -5,19 +5,19 @@ import { Button } from "@/components/ui/button";
 import { HeroPhoto } from "./HeroPhoto";
 import { Container, Reveal } from "./shared";
 
-interface StatCardProps {
+interface StatProps {
   Icon: LucideIcon;
   number: string;
   label: string;
 }
 
-const STATS: StatCardProps[] = [
+const STATS: StatProps[] = [
   { Icon: GraduationCap, number: "4 yrs", label: "Full tenure support" },
   { Icon: Percent, number: "90%", label: "Retention threshold" },
   { Icon: Activity, number: "Real-time", label: "Analytics dashboards" },
 ];
 
-function StatCard({ Icon, number, label, delay }: StatCardProps & { delay: number }) {
+function StatCard({ Icon, number, label, delay }: StatProps & { delay: number }) {
   return (
     <Reveal delay={delay} y={16} className="h-full">
       <div className="flex h-full flex-col rounded-[14px] sm:rounded-[16px] border border-white/15 bg-white/[0.07] p-3 sm:p-4.5 md:p-5 shadow-va-md backdrop-blur-lg transition-transform duration-300 hover:-translate-y-1">
@@ -76,7 +76,7 @@ export function Hero() {
             <h1 className="mb-5 sm:mb-6 font-serif text-[clamp(2.1rem,4.6vw,3.9rem)] font-medium leading-[1.12] text-white">
               Funding deserving minds.
               <br />
-              <span className="text-amber">Tracked</span> with clarity.
+              deserves a <span className="text-amber">pathway.</span>
             </h1>
           </Reveal>
 
@@ -116,6 +116,18 @@ export function Hero() {
           </div>
         </div>
       </Container>
+
+      {/* Wavy divider into the section below */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 translate-y-px">
+        <svg
+          className="h-15 w-full sm:h-22.5 lg:h-27.5"
+          viewBox="0 0 1440 120"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M0,64 C240,110 480,10 720,48 C960,86 1200,20 1440,56 L1440,120 L0,120 Z" className="fill-white" />
+        </svg>
+      </div>
     </section>
   );
 }

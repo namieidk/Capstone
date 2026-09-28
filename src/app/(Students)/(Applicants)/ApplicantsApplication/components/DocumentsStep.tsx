@@ -10,11 +10,7 @@ import { DocumentListItem } from "./DocumentListItem";
 import { DocumentReviewDialog } from "./DocumentReviewDialog";
 import { DocumentStatusBanner } from "./DocumentStatusBanner";
 import { DocumentUploadCard } from "./DocumentUploadCard";
-import {
-  getDefaultDocumentType,
-  isInvalidOrMismatchedDoc,
-  validateChosenFiles,
-} from "./wizard-helpers";
+import { getDefaultDocumentType, isInvalidOrMismatchedDoc, validateChosenFiles } from "./wizard-helpers";
 
 interface DocumentsStepProps {
   documents: ScholarDocument[];

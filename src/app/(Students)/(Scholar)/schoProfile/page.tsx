@@ -115,7 +115,11 @@ export default function SchoProfilePage() {
   if (!user || loadingData) {
     return (
       <div className="min-h-full bg-[#FAF9F7]">
-        <PageHeader title="Profile" subtitle="View and manage your scholar profile and documents." className="md:hidden" />
+        <PageHeader
+          title="Profile"
+          subtitle="View and manage your scholar profile and documents."
+          className="md:hidden"
+        />
         <div className="px-3.5 py-4 sm:px-8 sm:py-8">
           <ScholarProfileSkeleton />
         </div>
@@ -127,51 +131,55 @@ export default function SchoProfilePage() {
 
   return (
     <div className="min-h-full bg-[#FAF9F7] pb-24">
-      <PageHeader title="Profile" subtitle="View and manage your scholar profile and documents." className="md:hidden" />
+      <PageHeader
+        title="Profile"
+        subtitle="View and manage your scholar profile and documents."
+        className="md:hidden"
+      />
       <div className="px-3.5 py-4 sm:px-8 sm:py-8">
         <div className="mx-auto w-full max-w-4xl space-y-4 sm:space-y-6">
           {/* Banner */}
           <ScholarBanner
-          bannerUrl={scholar?.banner_url || user.banner_url}
-          uploading={uploadingBanner}
-          onUpload={handleBannerUpload}
-        />
+            bannerUrl={scholar?.banner_url || user.banner_url}
+            uploading={uploadingBanner}
+            onUpload={handleBannerUpload}
+          />
 
-        {/* Profile Header (Avatar, Name, Actions) */}
-        <ScholarHeader
-          user={user}
-          uploadingAvatar={uploadingAvatar}
-          onAvatarUpload={handleAvatarUpload}
-          onEditClick={() => {
-            setSaveError("");
-            setDrawerOpen(true);
-          }}
-        />
+          {/* Profile Header (Avatar, Name, Actions) */}
+          <ScholarHeader
+            user={user}
+            uploadingAvatar={uploadingAvatar}
+            onAvatarUpload={handleAvatarUpload}
+            onEditClick={() => {
+              setSaveError("");
+              setDrawerOpen(true);
+            }}
+          />
 
-        {/* Bio Card */}
-        <ScholarBioCard bio={scholar?.bio ?? user.bio} />
+          {/* Bio Card */}
+          <ScholarBioCard bio={scholar?.bio ?? user.bio} />
 
-        {/* Academic and Contact Detail Cards */}
-        <ScholarDetailsCards user={user} />
+          {/* Academic and Contact Detail Cards */}
+          <ScholarDetailsCards user={user} />
 
-        {/* Uploaded Documents List */}
-        <ScholarDocumentsList documents={documents} />
+          {/* Uploaded Documents List */}
+          <ScholarDocumentsList documents={documents} />
 
-        {/* Edit Profile Drawer */}
-        <EditScholarProfileDrawer
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          initialValues={{
-            first_name: user.first_name,
-            last_name: user.last_name,
-            phone_number: scholar?.phone_number || "",
-            student_address: scholar?.student_address || scholar?.home_address || "",
-            bio: scholar?.bio || user.bio || "",
-          }}
-          saving={savingProfile}
-          error={saveError}
-          onSave={handleSaveProfile}
-        />
+          {/* Edit Profile Drawer */}
+          <EditScholarProfileDrawer
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            initialValues={{
+              first_name: user.first_name,
+              last_name: user.last_name,
+              phone_number: scholar?.phone_number || "",
+              student_address: scholar?.student_address || scholar?.home_address || "",
+              bio: scholar?.bio || user.bio || "",
+            }}
+            saving={savingProfile}
+            error={saveError}
+            onSave={handleSaveProfile}
+          />
         </div>
       </div>
     </div>

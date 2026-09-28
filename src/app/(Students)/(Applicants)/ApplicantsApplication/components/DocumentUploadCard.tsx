@@ -43,28 +43,20 @@ export function DocumentUploadCard({
     <Card className="rounded-[18px]! border-border bg-white shadow-xs">
       <CardHeader>
         <CardTitle className="text-lg! text-navy">Upload your grades</CardTitle>
-        <CardDescription className="text-sm!">
-          {reqInfo.uploadPrompt}
-        </CardDescription>
+        <CardDescription className="text-sm!">{reqInfo.uploadPrompt}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {/* Requirement & Auto-Detection Specification Banner (Replaces redundant dropdown) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 rounded-xl border border-sky-100 bg-sky-50/50 p-3.5 sm:p-4 dark:border-sky-900/40 dark:bg-sky-950/20">
           <div className="flex items-start gap-3">
             <div className="hidden sm:flex size-10 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-300">
-              {currentYearLevel >= 2 ? (
-                <GraduationCap className="size-5" />
-              ) : (
-                <FileText className="size-5" />
-              )}
+              {currentYearLevel >= 2 ? <GraduationCap className="size-5" /> : <FileText className="size-5" />}
             </div>
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-sky-900 dark:text-sky-200">
                 {currentYearLevel >= 2 ? `Year ${currentYearLevel} Requirement` : "1st-Year Requirement"}
               </span>
-              <p className="mt-1 text-sm font-semibold text-navy">
-                {reqInfo.title}
-              </p>
+              <p className="mt-1 text-sm font-semibold text-navy">{reqInfo.title}</p>
               <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
                 {currentYearLevel >= 2
                   ? "Only College Transcript of Records (TOR) is accepted. High school report cards cannot be accepted."
@@ -125,17 +117,11 @@ export function DocumentUploadCard({
             onClick={onUpload}
             disabled={uploading || picked.length === 0}
           >
-            {uploading ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <UploadCloud className="size-4" />
-            )}
+            {uploading ? <Loader2 className="size-4 animate-spin" /> : <UploadCloud className="size-4" />}
             {uploading ? "Uploading..." : reqInfo.uploadButtonLabel}
           </Button>
           {uploading && phase && (
-            <p className="text-xs text-sky-700 dark:text-sky-400 font-medium animate-pulse">
-              {phase}
-            </p>
+            <p className="text-xs text-sky-700 dark:text-sky-400 font-medium animate-pulse">{phase}</p>
           )}
           {!uploading && !hasConfirmed && hasDocuments && (
             <p className="text-xs text-muted-foreground">Confirm a document below to unlock status tracking.</p>

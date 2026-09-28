@@ -21,11 +21,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { ADMIN_SIDEBAR_CONFIG } from "./nav-admin";
 import { APPLICANT_SIDEBAR_CONFIG } from "./nav-applicant";
@@ -61,8 +57,7 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
   const { user, logout } = useAuth();
   const { setOpenMobile, isMobile } = useSidebar();
   const config = ROLE_CONFIG[role];
-  const isStaffRole =
-    role === "admin" || role === "coordinator" || role === "grantor";
+  const isStaffRole = role === "admin" || role === "coordinator" || role === "grantor";
   const badges = useStaffBadges({ includeApplicants: isStaffRole, role });
 
   // On phones the sidebar opens as a sheet; close it after navigating.
@@ -72,29 +67,17 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
   }, [pathname, setOpenMobile]);
 
   const displayName = user ? `${user.first_name} ${user.last_name}` : "Guest";
-  const displayInitials = user
-    ? getInitials(user.first_name, user.last_name)
-    : "G";
+  const displayInitials = user ? getInitials(user.first_name, user.last_name) : "G";
 
   const isFooterItem = (key: string) => key === "settings" || key === "profile";
-  const mainItems = config.items.filter(
-    (item) => !item.hidden && !isFooterItem(item.key),
-  );
-  const footerNavItems = config.items.filter(
-    (item) => !item.hidden && isFooterItem(item.key),
-  );
+  const mainItems = config.items.filter((item) => !item.hidden && !isFooterItem(item.key));
+  const footerNavItems = config.items.filter((item) => !item.hidden && isFooterItem(item.key));
 
   const getItemBadge = (item: { key: string; badge?: string | number }) => {
     if (item.key === "applicants") return badges.applicants;
     if (item.key === "meeting") return badges.meetings;
-    if (item.key === "scholars" || item.key === "monitor")
-      return badges.scholars;
-    if (
-      item.key === "disbursements" ||
-      item.key === "payments" ||
-      item.key === "payment"
-    )
-      return badges.disbursements;
+    if (item.key === "scholars" || item.key === "monitor") return badges.scholars;
+    if (item.key === "disbursements" || item.key === "payments" || item.key === "payment") return badges.disbursements;
     return item.badge;
   };
 
@@ -129,9 +112,7 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
               />
             </span>
             <div className="flex flex-col overflow-hidden text-left group-data-[collapsible=icon]:hidden">
-              <span className="text-[1.05rem] font-bold tracking-tight text-white leading-tight">
-                ViaScholar
-              </span>
+              <span className="text-[1.05rem] font-bold tracking-tight text-white leading-tight">ViaScholar</span>
             </div>
           </Link>
         </SidebarHeader>
@@ -144,9 +125,7 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
                 {mainItems.map((item) => {
                   const Icon = item.icon;
                   const isActive =
-                    pathname === item.href ||
-                    (item.href !== config.homeHref &&
-                      pathname.startsWith(item.href));
+                    pathname === item.href || (item.href !== config.homeHref && pathname.startsWith(item.href));
                   const itemBadge = getItemBadge(item);
 
                   return (
@@ -171,9 +150,7 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
                           <Icon
                             className={`size-4.5 shrink-0 transition-colors my-auto ${isActive ? "text-white!" : "text-white/80"}`}
                           />
-                          <span className="truncate group-data-[collapsible=icon]:hidden">
-                            {item.label}
-                          </span>
+                          <span className="truncate group-data-[collapsible=icon]:hidden">{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
                       {itemBadge !== undefined && (
@@ -204,9 +181,7 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
               {footerNavItems.map((item) => {
                 const Icon = item.icon;
                 const isActive =
-                  pathname === item.href ||
-                  (item.href !== config.homeHref &&
-                    pathname.startsWith(item.href));
+                  pathname === item.href || (item.href !== config.homeHref && pathname.startsWith(item.href));
                 const itemBadge = getItemBadge(item);
 
                 return (
@@ -231,9 +206,7 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
                         <Icon
                           className={`size-4.5 shrink-0 transition-colors my-auto ${isActive ? "text-white!" : "text-white/80"}`}
                         />
-                        <span className="truncate group-data-[collapsible=icon]:hidden">
-                          {item.label}
-                        </span>
+                        <span className="truncate group-data-[collapsible=icon]:hidden">{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
                     {itemBadge !== undefined && (
@@ -265,12 +238,8 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
                 {displayInitials}
               </span>
               <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
-                <span className="truncate text-[0.84rem] font-semibold text-white leading-snug">
-                  {displayName}
-                </span>
-                <span className="truncate text-[0.72rem] text-white/60 leading-tight">
-                  {config.roleLabel}
-                </span>
+                <span className="truncate text-[0.84rem] font-semibold text-white leading-snug">{displayName}</span>
+                <span className="truncate text-[0.72rem] text-white/60 leading-tight">{config.roleLabel}</span>
               </div>
             </Link>
 

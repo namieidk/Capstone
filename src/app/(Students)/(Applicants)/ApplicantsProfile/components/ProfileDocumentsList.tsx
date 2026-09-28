@@ -11,18 +11,40 @@ import { DocumentViewerDialog } from "./DocumentViewerDialog";
 function getDocumentStatusBadge(status: string) {
   switch (status) {
     case "VERIFIED":
-      return <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-0 text-[0.68rem] px-2 py-0.5">Verified</Badge>;
+      return (
+        <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-0 text-[0.68rem] px-2 py-0.5">
+          Verified
+        </Badge>
+      );
     case "STUDENT_CONFIRMED":
-      return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100 border-0 text-[0.68rem] px-2 py-0.5">Confirmed</Badge>;
+      return (
+        <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100 border-0 text-[0.68rem] px-2 py-0.5">
+          Confirmed
+        </Badge>
+      );
     case "PASSED_PRECHECK":
     case "PENDING":
-      return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 border-0 text-[0.68rem] px-2 py-0.5">In Review</Badge>;
+      return (
+        <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 border-0 text-[0.68rem] px-2 py-0.5">
+          In Review
+        </Badge>
+      );
     case "NEEDS_REUPLOAD":
-      return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100 border-0 text-[0.68rem] px-2 py-0.5">Needs Re-upload</Badge>;
+      return (
+        <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100 border-0 text-[0.68rem] px-2 py-0.5">
+          Needs Re-upload
+        </Badge>
+      );
     case "REJECTED":
-      return <Badge className="bg-red-100 text-red-800 hover:bg-red-100 border-0 text-[0.68rem] px-2 py-0.5">Rejected</Badge>;
+      return (
+        <Badge className="bg-red-100 text-red-800 hover:bg-red-100 border-0 text-[0.68rem] px-2 py-0.5">Rejected</Badge>
+      );
     default:
-      return <Badge variant="outline" className="text-[0.68rem] px-2 py-0.5">{status}</Badge>;
+      return (
+        <Badge variant="outline" className="text-[0.68rem] px-2 py-0.5">
+          {status}
+        </Badge>
+      );
   }
 }
 

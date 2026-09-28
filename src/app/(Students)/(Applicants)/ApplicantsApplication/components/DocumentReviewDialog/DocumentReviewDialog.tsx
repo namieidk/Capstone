@@ -225,9 +225,7 @@ export function DocumentReviewDialog({
           <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-muted-foreground">
             Our Vision AI is extracting your academic year, general average, and subject grades (10–25s). Hang tight!
           </p>
-          {syncMessage && (
-            <p className="mt-2 text-xs font-medium text-sky-800 dark:text-sky-300">{syncMessage}</p>
-          )}
+          {syncMessage && <p className="mt-2 text-xs font-medium text-sky-800 dark:text-sky-300">{syncMessage}</p>}
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
             <Button
               type="button"
@@ -251,9 +249,7 @@ export function DocumentReviewDialog({
             </Button>
           </div>
           <div className="mt-6 w-full space-y-2 border-t border-sky-200/60 pt-4 text-left dark:border-sky-900/30">
-            <p className="text-[0.7rem] font-medium text-sky-800 dark:text-sky-300">
-              Awaiting extracted information:
-            </p>
+            <p className="text-[0.7rem] font-medium text-sky-800 dark:text-sky-300">Awaiting extracted information:</p>
             <div className="grid grid-cols-2 gap-2">
               <div className="h-9 animate-pulse rounded-md bg-sky-100/70 dark:bg-sky-900/30" />
               <div className="h-9 animate-pulse rounded-md bg-sky-100/70 dark:bg-sky-900/30" />
@@ -324,9 +320,7 @@ export function DocumentReviewDialog({
             </div>
 
             <div className="space-y-2 rounded-lg bg-slate-50/70 border border-slate-200/80 p-3 text-xs text-slate-700">
-              <p className="font-semibold text-navy text-[11px] uppercase tracking-wider">
-                Legibility Checklist:
-              </p>
+              <p className="font-semibold text-navy text-[11px] uppercase tracking-wider">Legibility Checklist:</p>
               <div className="space-y-1.5 text-[11px]">
                 <div className="flex items-center gap-2">
                   <span className="size-1.5 rounded-full bg-[#0a4f42]" />
@@ -346,9 +340,8 @@ export function DocumentReviewDialog({
             <div className="rounded-lg bg-teal-500/10 border border-teal-500/20 p-3 text-[11px] text-teal-950 flex items-start gap-2">
               <Info className="size-4 text-[#0a4f42] shrink-0 mt-0.5" />
               <p className="leading-relaxed">
-                <strong>Advisory:</strong> The system will scan your academic grades and credit
-                units. The Scholarship Coordinator and Grantor will review the information alongside your
-                document during evaluation.
+                <strong>Advisory:</strong> The system will scan your academic grades and credit units. The Scholarship
+                Coordinator and Grantor will review the information alongside your document during evaluation.
               </p>
             </div>
           </div>
@@ -419,9 +412,7 @@ export function DocumentReviewDialog({
           {/* Right Column: Information Review & Confirmation */}
           <div className="flex flex-col min-h-0 flex-1 col-span-7">
             <ScrollArea className="flex-1 min-h-0 h-full">
-              <div className="flex flex-col gap-4 p-5">
-                {renderDataReviewContent()}
-              </div>
+              <div className="flex flex-col gap-4 p-5">{renderDataReviewContent()}</div>
             </ScrollArea>
           </div>
         </div>

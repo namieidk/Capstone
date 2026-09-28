@@ -25,7 +25,6 @@ import { ScheduleMeetingDialog } from "@/app/(Grantor)/grantMeeting/components/S
 import type { Applicant, Stage } from "@/components/Coordinatorshared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetClose, SheetContent } from "@/components/ui/sheet";
 import { type Contract, listContracts } from "@/lib/api/contracts";
 import type { ScholarDocument } from "@/lib/api/documents";
@@ -43,6 +42,19 @@ interface GrantApplicantDialogProps {
   onStagesChanged: (id: number, stage: Stage) => void;
   onMeetingScheduled: () => void;
   onContractCreated?: (contract: Contract) => void;
+}
+
+const SECTION_LABEL = "text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/80";
+
+function DetailItem({ label, value, title }: { label: string; value: string; title?: string }) {
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="mt-0.5 text-sm font-medium text-foreground" title={title}>
+        {value}
+      </p>
+    </div>
+  );
 }
 
 export function GrantApplicantDialog({
@@ -137,20 +149,25 @@ export function GrantApplicantDialog({
   return (
     <>
       <Sheet open={!!applicant} onOpenChange={(open) => !open && handleClose()}>
-        <SheetContent side="right" className="w-full max-w-6xl! bg-slate-50 p-0 gap-0" showCloseButton={false}>
+        <SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-6xl!" showCloseButton={false}>
           {applicant && (
             <>
               {/* Drawer Header */}
-              <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
-                <div>
+              <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border/70 px-6 py-5">
+                <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <FileText className="size-5 text-[#0a4f42]" />
-                    <h2 className="text-lg font-bold text-slate-900">{applicant.name}</h2>
-                    <Badge variant={getStageVariant(applicant.stage)} className="h-6 px-2.5 text-xs!">
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <FileText className="size-4.5" />
+                    </span>
+                    <h2 className="text-base font-semibold text-foreground">{applicant.name}</h2>
+                    <Badge
+                      variant={getStageVariant(applicant.stage)}
+                      className="h-6 rounded-full px-2.5 text-xs! font-medium"
+                    >
                       {applicant.stage}
                     </Badge>
                   </div>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {applicant.course} · {applicant.year} · Applied on {applicant.applied}
                   </p>
                 </div>
@@ -158,28 +175,28 @@ export function GrantApplicantDialog({
                 <SheetClose asChild>
                   <button
                     type="button"
-                    className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                    className="shrink-0 rounded-xl p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   >
-                    <X className="size-5" />
+                    <X className="size-4.5" />
                   </button>
                 </SheetClose>
               </div>
 
-              <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0">
+              <div className="grid flex-1 grid-cols-1 gap-0 overflow-hidden lg:grid-cols-12">
                 {/* Left: Documents Panel */}
-                <div className="lg:col-span-5 bg-white border-r border-slate-200 flex flex-col h-full overflow-hidden">
-                  <div className="bg-slate-100 px-4 py-2 flex items-center justify-between border-b border-slate-200 shrink-0">
-                    <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
-                      <FileText className="size-3.5" />
+                <div className="flex h-full flex-col overflow-hidden border-b border-border/70 lg:col-span-5 lg:border-b-0 lg:border-r">
+                  <div className="flex shrink-0 items-center justify-between border-b border-border/70 bg-card px-5 py-3">
+                    <span className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                      <FileText className="size-3.5 text-muted-foreground" />
                       Documents uploaded by student
                     </span>
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-muted-foreground">
                       {loadedDocs?.length ?? applicant?.documentsCount ?? 0}{" "}
                       {(loadedDocs?.length ?? applicant?.documentsCount ?? 0) === 1 ? "document" : "documents"}
                     </span>
                   </div>
 
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  <div className="flex-1 space-y-4 overflow-y-auto p-5">
                     <ApplicantEligibilityBanner
                       applicant={applicant}
                       documents={loadedDocs}
@@ -196,307 +213,294 @@ export function GrantApplicantDialog({
                 </div>
 
                 {/* Right: Applicant Details & Actions */}
-                <div className="lg:col-span-7 flex flex-col h-full overflow-hidden bg-white">
-                  <div className="flex-1 overflow-y-auto p-5 space-y-4">
-                    {/* Academic & Institution Information */}
-                    <div className="rounded-lg border border-border/70 bg-muted/30 p-4">
-                      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Academic & Institution Details
-                      </h3>
-                      <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 md:grid-cols-3 text-sm">
-                        <div>
-                          <dt className="text-xs text-muted-foreground">Scholarship Track</dt>
-                          <dd className="font-medium text-foreground">{applicant.track || "—"}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs text-muted-foreground">Course of Study</dt>
-                          <dd className="font-medium text-foreground">{applicant.course || "—"}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs text-muted-foreground">Current Year Level</dt>
-                          <dd className="font-medium text-foreground">{applicant.year || "—"}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs text-muted-foreground">General Weighted Average (GWA)</dt>
-                          <dd
-                            className="font-medium tabular-nums text-foreground"
-                            title={gwaSourceTitle(applicant.gwaSource)}
-                          >
-                            {applicant.gwa !== null ? formatGwa(applicant.gwa) : "—"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs text-muted-foreground">School Name</dt>
-                          <dd className="font-medium text-foreground">{applicant.schoolName || "—"}</dd>
-                        </div>
-                        <div className="sm:col-span-2 md:col-span-1">
-                          <dt className="text-xs text-muted-foreground">School Address</dt>
-                          <dd className="font-medium text-foreground">{applicant.schoolAddress || "—"}</dd>
-                        </div>
-                      </dl>
-                    </div>
-
-                    {/* Personal, Contact & Affiliation Details */}
-                    <div className="rounded-lg border border-border/70 bg-muted/30 p-4">
-                      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Personal, Contact & Affiliation Details
-                      </h3>
-                      <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 text-sm">
-                        <div>
-                          <dt className="text-xs text-muted-foreground">Student Number</dt>
-                          <dd className="font-medium text-foreground">{applicant.studentNumber || "—"}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs text-muted-foreground">Phone Number</dt>
-                          <dd className="font-medium text-foreground">{applicant.phoneNumber || "—"}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs text-muted-foreground">Home Address</dt>
-                          <dd className="font-medium text-foreground">{applicant.studentAddress || "—"}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs text-muted-foreground">Relative Employed By Partner</dt>
-                          <dd className="font-medium text-foreground">{applicant.relativeEmployee || "None / N/A"}</dd>
-                        </div>
-                      </dl>
-                    </div>
-
-                    {/* Scholarship Agreement / Contract */}
-                    {applicant.stage === "Accepted" && (
-                      <div className="rounded-xl border border-navy/20 bg-navy/5 p-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                          <div className="flex items-start sm:items-center gap-3">
-                            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-navy/10 text-navy">
-                              {loadingContract ? (
-                                <Loader2 className="size-5 animate-spin" />
-                              ) : (
-                                <FileSignature className="size-5" />
-                              )}
+                <div className="flex h-full flex-col overflow-hidden lg:col-span-7">
+                  <div className="flex-1 overflow-y-auto">
+                    <div className="space-y-5 p-6">
+                      {(applicant.stage === "Submitted" || applicant.stage === "Under review") && (
+                        <>
+                          {hasNoDocs && !isDocsLoading && (
+                            <div className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3.5 py-2.5 text-xs text-amber-800 dark:text-amber-300">
+                              <AlertCircle className="size-4 shrink-0" />
+                              <span>Cannot pass applicant to interview: No documents have been submitted yet.</span>
                             </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <h4 className="text-sm font-bold text-navy">Scholarship Agreement</h4>
-                                {existingContract && (
-                                  <Badge
-                                    variant="outline"
-                                    className={
-                                      existingContract.status === "SIGNED"
-                                        ? "border-good/30 bg-good-bg text-good text-[0.65rem]! font-semibold"
-                                        : "border-amber-300 bg-amber-50 text-amber-800 text-[0.65rem]! font-semibold"
-                                    }
-                                  >
-                                    {existingContract.status === "SIGNED" ? "Signed & Active" : `Awaiting Signature`}
-                                  </Badge>
+                          )}
+                          {!hasNoDocs && !hasConfirmedDocs && !isDocsLoading && (
+                            <div className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3.5 py-2.5 text-xs text-amber-800 dark:text-amber-300">
+                              <AlertCircle className="size-4 shrink-0" />
+                              <span>
+                                Cannot pass applicant to interview: Submitted document(s) have not been confirmed by the
+                                applicant yet (awaiting student review).
+                              </span>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {/* Academic & Institution Information */}
+                      <div className="space-y-4 rounded-xl border border-border/70 bg-card p-5">
+                        <p className={SECTION_LABEL}>Academic & Institution Details</p>
+                        <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 md:grid-cols-3">
+                          <DetailItem label="Scholarship Track" value={applicant.track || "—"} />
+                          <DetailItem label="Course of Study" value={applicant.course || "—"} />
+                          <DetailItem label="Current Year Level" value={applicant.year || "—"} />
+                          <DetailItem
+                            label="General Weighted Average (GWA)"
+                            value={applicant.gwa !== null ? formatGwa(applicant.gwa) : "—"}
+                            title={gwaSourceTitle(applicant.gwaSource)}
+                          />
+                          <DetailItem label="School Name" value={applicant.schoolName || "—"} />
+                          <div className="sm:col-span-2 md:col-span-1">
+                            <DetailItem label="School Address" value={applicant.schoolAddress || "—"} />
+                          </div>
+                        </dl>
+                      </div>
+
+                      {/* Personal, Contact & Affiliation Details */}
+                      <div className="space-y-4 rounded-xl border border-border/70 bg-card p-5">
+                        <p className={SECTION_LABEL}>Personal, Contact & Affiliation Details</p>
+                        <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                          <DetailItem label="Student Number" value={applicant.studentNumber || "—"} />
+                          <DetailItem label="Phone Number" value={applicant.phoneNumber || "—"} />
+                          <DetailItem label="Home Address" value={applicant.studentAddress || "—"} />
+                          <DetailItem
+                            label="Relative Employed By Partner"
+                            value={applicant.relativeEmployee || "None / N/A"}
+                          />
+                        </dl>
+                      </div>
+
+                      {/* Scholarship Agreement / Contract */}
+                      {applicant.stage === "Accepted" && (
+                        <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
+                          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                            <div className="flex items-start gap-3.5 sm:items-center">
+                              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                {loadingContract ? (
+                                  <Loader2 className="size-5 animate-spin" />
+                                ) : (
+                                  <FileSignature className="size-5" />
                                 )}
                               </div>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {existingContract
-                                  ? `Contract #${existingContract.contract_number} has been generated (${existingContract.status === "SIGNED" ? "Signed by student" : "Awaiting student signature"}).`
-                                  : "Application is approved. You can now issue the digital scholarship contract."}
-                              </p>
-                              {existingContract?.effective_date && (
-                                <p className="text-[0.7rem] text-muted-foreground mt-1">
-                                  Effective: {existingContract.effective_date}
-                                  {existingContract.expiry_date ? ` · Expiry: ${existingContract.expiry_date}` : ""}
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h4 className="text-sm font-semibold text-foreground">Scholarship Agreement</h4>
+                                  {existingContract && (
+                                    <Badge
+                                      variant="outline"
+                                      className={`rounded-full text-[0.65rem]! font-semibold ${
+                                        existingContract.status === "SIGNED"
+                                          ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                                          : "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                                      }`}
+                                    >
+                                      {existingContract.status === "SIGNED" ? "Signed & Active" : "Awaiting Signature"}
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="mt-0.5 text-xs text-muted-foreground">
+                                  {existingContract
+                                    ? `Contract #${existingContract.contract_number} has been generated (${existingContract.status === "SIGNED" ? "Signed by student" : "Awaiting student signature"}).`
+                                    : "Application is approved. You can now issue the digital scholarship contract."}
                                 </p>
-                              )}
-                            </div>
-                          </div>
-                          {existingContract &&
-                            (existingContract.signed_document_url || existingContract.document_url) && (
-                              <div className="flex items-center gap-2 shrink-0">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-8 gap-1 text-xs! font-medium"
-                                  onClick={() =>
-                                    window.open(
-                                      existingContract.signed_document_url || existingContract.document_url || "",
-                                      "_blank",
-                                    )
-                                  }
-                                >
-                                  <Eye className="size-3.5" />
-                                  <span>View PDF</span>
-                                </Button>
+                                {existingContract?.effective_date && (
+                                  <p className="mt-1 text-[0.7rem] text-muted-foreground">
+                                    Effective: {existingContract.effective_date}
+                                    {existingContract.expiry_date ? ` · Expiry: ${existingContract.expiry_date}` : ""}
+                                  </p>
+                                )}
                               </div>
-                            )}
-                        </div>
-                      </div>
-                    )}
-
-                    <Separator />
-
-                    {/* Endorsed / Interview Stage Status Info */}
-                    {(applicant.stage === "Interview" || applicant.stage === "Endorsed") && (
-                      <div className="flex items-center justify-between rounded-lg border border-navy/20 bg-navy/5 px-3.5 py-2 text-xs text-navy">
-                        <div className="flex items-center gap-2">
-                          <CalendarClock className="size-4 shrink-0 text-navy" />
-                          <span>
-                            {applicant.hasInterview && applicant.interviewAt ? (
-                              <>
-                                Interview scheduled on{" "}
-                                <strong>
-                                  {new Date(applicant.interviewAt).toLocaleString(undefined, {
-                                    dateStyle: "medium",
-                                    timeStyle: "short",
-                                  })}
-                                </strong>
-                              </>
-                            ) : applicant.stage === "Endorsed" ? (
-                              <>
-                                Applicant is <strong>Endorsed by Coordinator</strong> (ready for Grantor interview &
-                                review)
-                              </>
-                            ) : (
-                              <>
-                                Applicant is in <strong>Interview Stage</strong> (no meeting scheduled yet)
-                              </>
-                            )}
-                          </span>
-                        </div>
-                        {applicant.hasInterview && (
-                          <Badge variant="outline" className="border-navy/30 bg-white text-navy text-[0.65rem]!">
-                            Scheduled
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Action Buttons Footer */}
-                  <div className="shrink-0 border-t border-slate-200 bg-white px-5 py-3.5 flex flex-col gap-2">
-                    {actionError && (
-                      <p className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{actionError}</p>
-                    )}
-
-                    {canSchedule && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="h-10 text-sm!"
-                        disabled={acting}
-                        onClick={() => setScheduling(true)}
-                      >
-                        <CalendarClock className="size-4" />
-                        {applicant.hasInterview ? "Reschedule meeting" : "Schedule meeting"}
-                      </Button>
-                    )}
-
-                    {/* Only pre-endorsement stages can Pass to Interview */}
-                    {(applicant.stage === "Submitted" || applicant.stage === "Under review") && (
-                      <div className="flex flex-col gap-2">
-                        {hasNoDocs && !isDocsLoading && (
-                          <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
-                            <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                            <span>Cannot pass applicant to interview: No documents have been submitted yet.</span>
+                            </div>
+                            {existingContract &&
+                              (existingContract.signed_document_url || existingContract.document_url) && (
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 gap-1 text-xs! font-medium"
+                                    onClick={() =>
+                                      window.open(
+                                        existingContract.signed_document_url || existingContract.document_url || "",
+                                        "_blank",
+                                      )
+                                    }
+                                  >
+                                    <Eye className="size-3.5" />
+                                    <span>View PDF</span>
+                                  </Button>
+                                </div>
+                              )}
                           </div>
-                        )}
-                        {!hasNoDocs && !hasConfirmedDocs && !isDocsLoading && (
-                          <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
-                            <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                        </div>
+                      )}
+
+                      {/* Endorsed / Interview Stage Status Info */}
+                      {(applicant.stage === "Interview" || applicant.stage === "Endorsed") && (
+                        <div className="flex items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-xs text-foreground">
+                          <div className="flex items-center gap-2.5">
+                            <CalendarClock className="size-4 shrink-0 text-primary" />
                             <span>
-                              Cannot pass applicant to interview: Submitted document(s) have not been confirmed by the
-                              applicant yet (awaiting student review).
+                              {applicant.hasInterview && applicant.interviewAt ? (
+                                <>
+                                  Interview scheduled on{" "}
+                                  <strong>
+                                    {new Date(applicant.interviewAt).toLocaleString(undefined, {
+                                      dateStyle: "medium",
+                                      timeStyle: "short",
+                                    })}
+                                  </strong>
+                                </>
+                              ) : applicant.stage === "Endorsed" ? (
+                                <>
+                                  Applicant is <strong>Endorsed by Coordinator</strong> (ready for Grantor interview &
+                                  review)
+                                </>
+                              ) : (
+                                <>
+                                  Applicant is in <strong>Interview Stage</strong> (no meeting scheduled yet)
+                                </>
+                              )}
                             </span>
                           </div>
-                        )}
-                        <Button
-                          type="button"
-                          className="h-10 text-sm!"
-                          disabled={acting || isDocsLoading || hasNoDocs || !hasConfirmedDocs}
-                          title={
-                            hasNoDocs
-                              ? "Applicant has not submitted any documents yet"
-                              : !hasConfirmedDocs
-                                ? "Applicant must review and confirm their document first"
-                                : undefined
-                          }
-                          onClick={async () => {
-                            try {
-                              await onMoveStage(applicant.id, "Interview");
-                              setScheduling(true);
-                            } catch {
-                              // Handled by actionError in parent
-                            }
-                          }}
-                        >
-                          Pass to Interview
-                          <ArrowRight className="size-4" />
-                        </Button>
-                      </div>
-                    )}
-
-                    {(applicant.stage === "Interview" || applicant.stage === "Endorsed") && (
-                      <Button
-                        type="button"
-                        className="h-10 text-sm!"
-                        disabled={acting}
-                        onClick={() => {
-                          const warning = acceptWarning(applicant.hasInterview, applicant.interviewAt);
-                          if (warning) {
-                            setAcceptWarningText(warning);
-                          } else {
-                            onMoveStage(applicant.id, "Accepted");
-                          }
-                        }}
-                      >
-                        Accept applicant
-                        <ArrowRight className="size-4" />
-                      </Button>
-                    )}
-
-                    {applicant.stage !== "Rejected" && applicant.stage !== "Accepted" && (
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        className="h-10 text-sm!"
-                        disabled={acting}
-                        onClick={() => setConfirmingReject(true)}
-                      >
-                        Reject application
-                      </Button>
-                    )}
-
-                    {/* Reopen Application (e.g. after successful inquiry) */}
-                    {applicant.stage === "Rejected" && (
-                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 rounded-xl border border-border/80 bg-muted/20 p-3">
-                        <div className="text-xs text-muted-foreground">
-                          <p className="font-semibold text-navy">Application is currently marked as Rejected</p>
-                          <p>
-                            If an applicant inquiry or clarification was accepted, you can reopen this application for
-                            evaluation.
-                          </p>
+                          {applicant.hasInterview && (
+                            <Badge
+                              variant="outline"
+                              className="rounded-full border-primary/30 bg-card text-[0.65rem]! text-primary"
+                            >
+                              Scheduled
+                            </Badge>
+                          )}
                         </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="h-9 px-4 text-xs! font-semibold border-navy/30 text-navy hover:bg-navy/5 shrink-0 gap-1.5"
-                          disabled={acting}
-                          onClick={() => setConfirmingReopen(true)}
-                        >
-                          <RotateCcw className="size-3.5" />
-                          <span>Reopen Application</span>
-                        </Button>
-                      </div>
-                    )}
+                      )}
+                    </div>
 
-                    {applicant.stage === "Accepted" && (
-                      <div className="flex items-center justify-end gap-2">
-                        <Button type="button" variant="outline" className="h-10 text-sm!" onClick={() => handleClose()}>
-                          Close
-                        </Button>
-                        <Button
-                          type="button"
-                          className="h-10 text-sm! font-semibold gap-1.5"
-                          onClick={() => setCreatingContract(true)}
-                        >
-                          <FileSignature className="size-4" />
-                          <span>{existingContract ? "Re-issue Contract" : "Issue Scholarship Contract"}</span>
-                        </Button>
+                    {/* Action Buttons Footer */}
+                    <div className="sticky bottom-0 flex justify-end bg-background px-6 py-4">
+                      <div className="flex w-full flex-col items-end gap-2">
+                        {actionError && (
+                          <p className="rounded-xl bg-destructive/10 px-3.5 py-2.5 text-xs font-medium text-destructive">
+                            {actionError}
+                          </p>
+                        )}
+
+                        {canSchedule && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-9 min-w-45 rounded-xl text-xs! font-medium"
+                            disabled={acting}
+                            onClick={() => setScheduling(true)}
+                          >
+                            <CalendarClock className="size-3.5" />
+                            {applicant.hasInterview ? "Reschedule meeting" : "Schedule meeting"}
+                          </Button>
+                        )}
+
+                        {/* Only pre-endorsement stages can Pass to Interview */}
+                        {(applicant.stage === "Submitted" || applicant.stage === "Under review") && (
+                          <Button
+                            type="button"
+                            className="h-9 min-w-45 rounded-xl text-xs! font-medium"
+                            disabled={acting || isDocsLoading || hasNoDocs || !hasConfirmedDocs}
+                            title={
+                              hasNoDocs
+                                ? "Applicant has not submitted any documents yet"
+                                : !hasConfirmedDocs
+                                  ? "Applicant must review and confirm their document first"
+                                  : undefined
+                            }
+                            onClick={async () => {
+                              try {
+                                await onMoveStage(applicant.id, "Interview");
+                                setScheduling(true);
+                              } catch {
+                                // Handled by actionError in parent
+                              }
+                            }}
+                          >
+                            Pass to Interview
+                            <ArrowRight className="size-3.5" />
+                          </Button>
+                        )}
+
+                        {(applicant.stage === "Interview" || applicant.stage === "Endorsed") && (
+                          <Button
+                            type="button"
+                            className="h-9 min-w-45 rounded-xl text-xs! font-medium"
+                            disabled={acting}
+                            onClick={() => {
+                              const warning = acceptWarning(applicant.hasInterview, applicant.interviewAt);
+                              if (warning) {
+                                setAcceptWarningText(warning);
+                              } else {
+                                onMoveStage(applicant.id, "Accepted");
+                              }
+                            }}
+                          >
+                            Accept applicant
+                            <ArrowRight className="size-3.5" />
+                          </Button>
+                        )}
+
+                        {applicant.stage !== "Rejected" && applicant.stage !== "Accepted" && (
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            className="h-9 min-w-45 rounded-xl text-xs! font-medium"
+                            disabled={acting}
+                            onClick={() => setConfirmingReject(true)}
+                          >
+                            Reject application
+                          </Button>
+                        )}
+
+                        {/* Reopen Application (e.g. after successful inquiry) */}
+                        {applicant.stage === "Rejected" && (
+                          <div className="flex w-full flex-col items-stretch justify-between gap-3 rounded-xl border border-border/70 bg-card p-3.5 sm:flex-row sm:items-center">
+                            <div className="text-xs text-muted-foreground">
+                              <p className="font-semibold text-foreground">
+                                Application is currently marked as Rejected
+                              </p>
+                              <p className="mt-0.5">
+                                If an applicant inquiry or clarification was accepted, you can reopen this application
+                                for evaluation.
+                              </p>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="h-8 shrink-0 gap-1.5 rounded-xl border-primary/30 px-3.5 text-xs! font-semibold text-primary hover:bg-primary/5"
+                              disabled={acting}
+                              onClick={() => setConfirmingReopen(true)}
+                            >
+                              <RotateCcw className="size-3.5" />
+                              <span>Reopen Application</span>
+                            </Button>
+                          </div>
+                        )}
+
+                        {applicant.stage === "Accepted" && (
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="h-9 rounded-xl text-xs! font-medium"
+                              onClick={() => handleClose()}
+                            >
+                              Close
+                            </Button>
+                            <Button
+                              type="button"
+                              className="h-9 gap-1.5 rounded-xl text-xs! font-semibold"
+                              onClick={() => setCreatingContract(true)}
+                            >
+                              <FileSignature className="size-3.5" />
+                              <span>{existingContract ? "Re-issue Contract" : "Issue Scholarship Contract"}</span>
+                            </Button>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
               </div>

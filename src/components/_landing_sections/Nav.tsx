@@ -31,7 +31,7 @@ export function Nav() {
             <a
               key={l}
               href={`#${l.toLowerCase()}`}
-              className="text-[0.95rem] font-medium text-foreground/70 hover:text-navy"
+              className="text-[0.95rem] font-medium text-foreground/70 transition-colors hover:text-navy"
             >
               {l}
             </a>

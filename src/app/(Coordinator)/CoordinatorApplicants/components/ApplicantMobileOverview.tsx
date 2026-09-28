@@ -8,9 +8,7 @@ interface ApplicantMobileOverviewProps {
   applicant: Applicant;
 }
 
-export function ApplicantMobileOverview({
-  applicant,
-}: ApplicantMobileOverviewProps) {
+export function ApplicantMobileOverview({ applicant }: ApplicantMobileOverviewProps) {
   return (
     <div className="p-3.5 space-y-3.5">
       {/* Academic & Institution Information */}
@@ -20,53 +18,30 @@ export function ApplicantMobileOverview({
         </h3>
         <dl className="grid grid-cols-1 gap-2.5 text-xs">
           <div className="flex flex-col gap-0.5 border-b border-slate-100 pb-2">
-            <dt className="text-[11px] text-muted-foreground">
-              Scholarship Track
-            </dt>
-            <dd className="font-semibold text-foreground">
-              {applicant.track || "—"}
-            </dd>
+            <dt className="text-[11px] text-muted-foreground">Scholarship Track</dt>
+            <dd className="font-semibold text-foreground">{applicant.track || "—"}</dd>
           </div>
           <div className="flex flex-col gap-0.5 border-b border-slate-100 pb-2">
-            <dt className="text-[11px] text-muted-foreground">
-              Course of Study
-            </dt>
-            <dd className="font-semibold text-foreground">
-              {applicant.course || "—"}
-            </dd>
+            <dt className="text-[11px] text-muted-foreground">Course of Study</dt>
+            <dd className="font-semibold text-foreground">{applicant.course || "—"}</dd>
           </div>
           <div className="flex flex-col gap-0.5 border-b border-slate-100 pb-2">
-            <dt className="text-[11px] text-muted-foreground">
-              Current Year Level
-            </dt>
-            <dd className="font-semibold text-foreground">
-              {applicant.year || "—"}
-            </dd>
+            <dt className="text-[11px] text-muted-foreground">Current Year Level</dt>
+            <dd className="font-semibold text-foreground">{applicant.year || "—"}</dd>
           </div>
           <div className="flex flex-col gap-0.5 border-b border-slate-100 pb-2">
-            <dt className="text-[11px] text-muted-foreground">
-              General Weighted Average (GWA)
-            </dt>
-            <dd
-              className="font-semibold tabular-nums text-foreground"
-              title={gwaSourceTitle(applicant.gwaSource)}
-            >
+            <dt className="text-[11px] text-muted-foreground">General Weighted Average (GWA)</dt>
+            <dd className="font-semibold tabular-nums text-foreground" title={gwaSourceTitle(applicant.gwaSource)}>
               {applicant.gwa !== null ? formatGwa(applicant.gwa) : "—"}
             </dd>
           </div>
           <div className="flex flex-col gap-0.5 border-b border-slate-100 pb-2">
             <dt className="text-[11px] text-muted-foreground">School Name</dt>
-            <dd className="font-semibold text-foreground">
-              {applicant.schoolName || "—"}
-            </dd>
+            <dd className="font-semibold text-foreground">{applicant.schoolName || "—"}</dd>
           </div>
           <div className="flex flex-col gap-0.5">
-            <dt className="text-[11px] text-muted-foreground">
-              School Address
-            </dt>
-            <dd className="font-semibold text-foreground wrap-break-word">
-              {applicant.schoolAddress || "—"}
-            </dd>
+            <dt className="text-[11px] text-muted-foreground">School Address</dt>
+            <dd className="font-semibold text-foreground wrap-break-word">{applicant.schoolAddress || "—"}</dd>
           </div>
         </dl>
       </div>
@@ -78,32 +53,20 @@ export function ApplicantMobileOverview({
         </h3>
         <dl className="grid grid-cols-1 gap-2.5 text-xs">
           <div className="flex flex-col gap-0.5 border-b border-slate-100 pb-2">
-            <dt className="text-[11px] text-muted-foreground">
-              Student Number
-            </dt>
-            <dd className="font-semibold text-foreground">
-              {applicant.studentNumber || "—"}
-            </dd>
+            <dt className="text-[11px] text-muted-foreground">Student Number</dt>
+            <dd className="font-semibold text-foreground">{applicant.studentNumber || "—"}</dd>
           </div>
           <div className="flex flex-col gap-0.5 border-b border-slate-100 pb-2">
             <dt className="text-[11px] text-muted-foreground">Phone Number</dt>
-            <dd className="font-semibold text-foreground">
-              {applicant.phoneNumber || "—"}
-            </dd>
+            <dd className="font-semibold text-foreground">{applicant.phoneNumber || "—"}</dd>
           </div>
           <div className="flex flex-col gap-0.5 border-b border-slate-100 pb-2">
             <dt className="text-[11px] text-muted-foreground">Home Address</dt>
-            <dd className="font-semibold text-foreground wrap-break-word">
-              {applicant.studentAddress || "—"}
-            </dd>
+            <dd className="font-semibold text-foreground wrap-break-word">{applicant.studentAddress || "—"}</dd>
           </div>
           <div className="flex flex-col gap-0.5">
-            <dt className="text-[11px] text-muted-foreground">
-              Relative Employed By Partner
-            </dt>
-            <dd className="font-semibold text-foreground">
-              {applicant.relativeEmployee || "None / N/A"}
-            </dd>
+            <dt className="text-[11px] text-muted-foreground">Relative Employed By Partner</dt>
+            <dd className="font-semibold text-foreground">{applicant.relativeEmployee || "None / N/A"}</dd>
           </div>
         </dl>
       </div>
@@ -126,8 +89,7 @@ export function ApplicantMobileOverview({
                 </>
               ) : (
                 <>
-                  Applicant is in <strong>Interview Stage</strong> (no meeting
-                  scheduled yet)
+                  Applicant is in <strong>Interview Stage</strong> (no meeting scheduled yet)
                 </>
               )}
             </span>

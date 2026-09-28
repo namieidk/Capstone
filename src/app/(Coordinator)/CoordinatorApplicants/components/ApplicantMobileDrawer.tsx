@@ -1,26 +1,12 @@
 "use client";
 
-import {
-  AlertCircle,
-  ArrowRight,
-  CalendarClock,
-  FileText,
-  RotateCcw,
-  User,
-  X,
-} from "lucide-react";
+import { AlertCircle, ArrowRight, CalendarClock, FileText, RotateCcw, User, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "cn";
 import type { Applicant, Stage } from "@/components/Coordinatorshared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
 import type { ScholarDocument } from "@/lib/api/documents";
 import { ApplicantDocumentsList } from "./ApplicantDocumentsList";
@@ -110,7 +96,10 @@ export function ApplicantMobileDrawer({
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     <h2 className="truncate text-sm font-bold text-slate-900">{applicant.name}</h2>
-                    <Badge variant={getStageVariant(applicant.stage)} className="h-5 px-1.5 text-[0.65rem] font-semibold">
+                    <Badge
+                      variant={getStageVariant(applicant.stage)}
+                      className="h-5 px-1.5 text-[0.65rem] font-semibold"
+                    >
                       {applicant.stage}
                     </Badge>
                   </div>
@@ -261,19 +250,17 @@ export function ApplicantMobileDrawer({
               )}
 
               {/* Reject Application */}
-              {applicant.stage !== "Rejected" &&
-                applicant.stage !== "Accepted" &&
-                applicant.stage !== "Endorsed" && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    className="h-10 text-xs font-semibold"
-                    disabled={acting}
-                    onClick={() => setConfirmingReject(true)}
-                  >
-                    Reject application
-                  </Button>
-                )}
+              {applicant.stage !== "Rejected" && applicant.stage !== "Accepted" && applicant.stage !== "Endorsed" && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="h-10 text-xs font-semibold"
+                  disabled={acting}
+                  onClick={() => setConfirmingReject(true)}
+                >
+                  Reject application
+                </Button>
+              )}
 
               {/* Reopen Application */}
               {applicant.stage === "Rejected" && (

@@ -92,7 +92,10 @@ export function DocumentVerifyContent({
               <div className="min-w-0">
                 <DialogTitle className="flex flex-wrap items-center gap-1.5 text-base! text-navy sm:gap-2 sm:text-lg!">
                   <span className="truncate">{doc.document_type}</span>
-                  <Badge variant={meta.variant} className="h-5 px-1.5 text-[0.65rem]! sm:h-5.5 sm:px-2 sm:text-[0.7rem]!">
+                  <Badge
+                    variant={meta.variant}
+                    className="h-5 px-1.5 text-[0.65rem]! sm:h-5.5 sm:px-2 sm:text-[0.7rem]!"
+                  >
                     {meta.label}
                   </Badge>
                 </DialogTitle>
@@ -177,8 +180,8 @@ export function DocumentVerifyContent({
                   <AlertCircle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
                   <div className="flex-1 leading-relaxed">
                     <span className="font-semibold">Awaiting Student Confirmation:</span> This document is currently in{" "}
-                    <strong>{meta.label}</strong> status. The applicant has not reviewed and confirmed their grades
-                    yet. You can preview the document, but you cannot verify it until the applicant confirms.
+                    <strong>{meta.label}</strong> status. The applicant has not reviewed and confirmed their grades yet.
+                    You can preview the document, but you cannot verify it until the applicant confirms.
                   </div>
                 </div>
               )}

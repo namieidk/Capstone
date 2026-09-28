@@ -42,9 +42,7 @@ export function DocumentListItem({
       {/* Top Header: Document Title, Status Badge, and File Details */}
       <div className="flex flex-col gap-1.5">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h4 className="text-sm sm:text-base font-bold text-navy leading-snug">
-            {doc.document_type}
-          </h4>
+          <h4 className="text-sm sm:text-base font-bold text-navy leading-snug">{doc.document_type}</h4>
           {doc.status !== "PENDING" && (
             <Badge
               variant={isMismatch ? "destructive" : meta.variant}

@@ -164,50 +164,50 @@ export default function ApplicantsProfilePage() {
         className="md:hidden"
       />
       <div className="mx-auto w-full max-w-4xl px-3.5 py-4 sm:px-6 sm:py-6 md:px-8 space-y-4 sm:space-y-6">
-      {/* Banner */}
-      <ProfileBanner bannerUrl={user.banner_url} uploading={uploadingBanner} onUpload={handleBannerUpload} />
+        {/* Banner */}
+        <ProfileBanner bannerUrl={user.banner_url} uploading={uploadingBanner} onUpload={handleBannerUpload} />
 
-      {/* Avatar & Header */}
-      <ProfileHeader
-        displayName={displayName}
-        displayInitials={displayInitials}
-        courseAndYear={courseAndYear}
-        avatarUrl={user.avatar_url}
-        uploadingAvatar={uploadingAvatar}
-        onAvatarUpload={handleAvatarUpload}
-        onEditProfile={() => {
-          setSaveError("");
-          setDrawerOpen(true);
-        }}
-      />
+        {/* Avatar & Header */}
+        <ProfileHeader
+          displayName={displayName}
+          displayInitials={displayInitials}
+          courseAndYear={courseAndYear}
+          avatarUrl={user.avatar_url}
+          uploadingAvatar={uploadingAvatar}
+          onAvatarUpload={handleAvatarUpload}
+          onEditProfile={() => {
+            setSaveError("");
+            setDrawerOpen(true);
+          }}
+        />
 
-      {/* Application & Document Stats */}
-      <ProfileStats application={application} documents={documents} />
+        {/* Application & Document Stats */}
+        <ProfileStats application={application} documents={documents} />
 
-      {/* Bio */}
-      <ProfileBioCard bio={user.bio} />
+        {/* Bio */}
+        <ProfileBioCard bio={user.bio} />
 
-      {/* Academic & Contact Information */}
-      <ProfileDetailsCards user={user} />
+        {/* Academic & Contact Information */}
+        <ProfileDetailsCards user={user} />
 
-      {/* Uploaded Documents List with Preview Dialog */}
-      <ProfileDocumentsList documents={documents} />
+        {/* Uploaded Documents List with Preview Dialog */}
+        <ProfileDocumentsList documents={documents} />
 
-      {/* Edit Profile Drawer */}
-      <EditApplicantProfileDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        initialValues={{
-          first_name: user.first_name,
-          last_name: user.last_name,
-          phone_number: scholarProfile?.phone_number ?? "",
-          student_address: scholarProfile?.student_address ?? "",
-          bio: user.bio ?? "",
-        }}
-        saving={savingProfile}
-        error={saveError}
-        onSave={handleSaveProfile}
-      />
+        {/* Edit Profile Drawer */}
+        <EditApplicantProfileDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          initialValues={{
+            first_name: user.first_name,
+            last_name: user.last_name,
+            phone_number: scholarProfile?.phone_number ?? "",
+            student_address: scholarProfile?.student_address ?? "",
+            bio: user.bio ?? "",
+          }}
+          saving={savingProfile}
+          error={saveError}
+          onSave={handleSaveProfile}
+        />
       </div>
     </div>
   );

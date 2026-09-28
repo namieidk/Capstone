@@ -7,11 +7,7 @@ import { useToast } from "@/components/ToastContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSocketEvent } from "@/contexts/SocketContext";
 import { ApiError } from "@/lib/api";
-import {
-  type Application,
-  createApplication,
-  getMyApplication,
-} from "@/lib/api/applications";
+import { type Application, createApplication, getMyApplication } from "@/lib/api/applications";
 import {
   confirmDocument,
   deleteDocument,
@@ -26,11 +22,7 @@ import { ApplicationStep } from "./components/ApplicationStep";
 import { DocumentsStep } from "./components/DocumentsStep";
 import { StatusStep } from "./components/StatusStep";
 import { WizardSkeleton } from "./components/WizardSkeleton";
-import {
-  getWizardSteps,
-  resolveStep,
-  type WizardStep,
-} from "./components/wizard-helpers";
+import { getWizardSteps, resolveStep, type WizardStep } from "./components/wizard-helpers";
 
 export default function ApplicantsApplicationPage() {
   const { user, refreshUser } = useAuth();
@@ -84,11 +76,7 @@ export default function ApplicantsApplicationPage() {
       }
     } catch (err) {
       console.error("Failed to load application:", err);
-      setLoadError(
-        err instanceof ApiError
-          ? err.message
-          : "Failed to load your application.",
-      );
+      setLoadError(err instanceof ApiError ? err.message : "Failed to load your application.");
     } finally {
       setLoading(false);
     }
@@ -138,10 +126,7 @@ export default function ApplicantsApplicationPage() {
     return 1;
   }, [user]);
 
-  const wizardSteps = useMemo(
-    () => getWizardSteps(currentYearLevel),
-    [currentYearLevel],
-  );
+  const wizardSteps = useMemo(() => getWizardSteps(currentYearLevel), [currentYearLevel]);
 
   const prefill = useMemo(() => {
     const p = user?.scholar_profile;
@@ -150,9 +135,7 @@ export default function ApplicantsApplicationPage() {
       student_number: p?.student_number ?? "",
       student_address: p?.student_address ?? "",
       course_of_study: p?.course_of_study ?? "",
-      current_year_level: p?.current_year_level
-        ? String(p.current_year_level)
-        : "",
+      current_year_level: p?.current_year_level ? String(p.current_year_level) : "",
       school_name: p?.school_name ?? "",
       school_address: p?.school_address ?? "",
       phone_number: p?.phone_number ?? "",
@@ -160,41 +143,28 @@ export default function ApplicantsApplicationPage() {
     };
   }, [user]);
 
-  async function wrapAction(
-    fn: () => Promise<void>,
-    success: string,
-  ): Promise<void> {
+  async function wrapAction(fn: () => Promise<void>, success: string): Promise<void> {
     try {
       await fn();
       showToast(success);
     } catch (err) {
       console.error(success, err);
-      throw new Error(
-        err instanceof ApiError
-          ? err.message
-          : "Something went wrong. Please try again.",
-      );
+      throw new Error(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
     }
   }
 
-  async function handleSubmitApplication(
-    values: ApplicationFormValues,
-  ): Promise<void> {
+  async function handleSubmitApplication(values: ApplicationFormValues): Promise<void> {
     await wrapAction(async () => {
       await createApplication({
         scholarship_track: values.scholarship_track,
         student_number: values.student_number,
         student_address: values.student_address,
         course_of_study: values.course_of_study,
-        current_year_level: values.current_year_level
-          ? Number(values.current_year_level)
-          : undefined,
+        current_year_level: values.current_year_level ? Number(values.current_year_level) : undefined,
         school_name: values.school_name,
         school_address: values.school_address,
         ...(values.phone_number ? { phone_number: values.phone_number } : {}),
-        ...(values.relative_employee
-          ? { relative_employee: values.relative_employee }
-          : {}),
+        ...(values.relative_employee ? { relative_employee: values.relative_employee } : {}),
       });
       // The backend upserts the scholar profile on submit — pull the fresh
       // profile so step 1 repopulates when the applicant comes back.
@@ -254,25 +224,15 @@ export default function ApplicantsApplicationPage() {
     <div>
       <PageHeader
         title="Application"
-        subtitle={
-          isRejected
-            ? "Your application review has concluded."
-            : "Apply in 3 quick steps."
-        }
+        subtitle={isRejected ? "Your application review has concluded." : "Apply in 3 quick steps."}
       />
 
       <div className="flex w-full flex-col gap-5 px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
         {loadError ? (
           <div className="flex flex-col items-center gap-4 rounded-[18px]! border border-border bg-white px-6 py-14 text-center shadow-xs">
-            <p className="text-base font-semibold text-navy">
-              Could not load your application
-            </p>
+            <p className="text-base font-semibold text-navy">Could not load your application</p>
             <p className="text-sm text-muted-foreground">{loadError}</p>
-            <button
-              type="button"
-              onClick={fetchAll}
-              className="h-11 rounded-lg px-5 text-sm! font-medium shadow-xs"
-            >
+            <button type="button" onClick={fetchAll} className="h-11 rounded-lg px-5 text-sm! font-medium shadow-xs">
               Try again
             </button>
           </div>
@@ -287,12 +247,7 @@ export default function ApplicantsApplicationPage() {
                 <div
                   className="h-full bg-navy transition-all duration-500 ease-out"
                   style={{
-                    width:
-                      isRejected || step >= 3
-                        ? "100%"
-                        : step === 2
-                          ? "50%"
-                          : "0%",
+                    width: isRejected || step >= 3 ? "100%" : step === 2 ? "50%" : "0%",
                   }}
                 />
               </div>
@@ -300,8 +255,7 @@ export default function ApplicantsApplicationPage() {
               {wizardSteps.map((s) => {
                 const done = isRejected ? s.step < 3 : s.step < step;
                 const active = isRejected ? s.step === 3 : s.step === step;
-                const unlocked =
-                  !isRejected && (s.step === 1 || application !== null);
+                const unlocked = !isRejected && (s.step === 1 || application !== null);
                 return (
                   <li key={s.step} className="flex w-full justify-center">
                     <button
@@ -310,9 +264,7 @@ export default function ApplicantsApplicationPage() {
                       disabled={!unlocked || isRejected}
                       aria-current={active ? "step" : undefined}
                       className={`flex w-full flex-col items-center gap-1.5 rounded-lg px-0.5 sm:px-1 text-center transition-all ${
-                        unlocked && !isRejected
-                          ? "cursor-pointer"
-                          : "cursor-default opacity-60"
+                        unlocked && !isRejected ? "cursor-pointer" : "cursor-default opacity-60"
                       }`}
                     >
                       <span
@@ -345,9 +297,7 @@ export default function ApplicantsApplicationPage() {
                           {isRejected && s.step === 3 ? "Decision" : s.label}
                         </span>
                         <span className="hidden w-full truncate text-[0.7rem] text-muted-foreground sm:block">
-                          {isRejected && s.step === 3
-                            ? "Review concluded"
-                            : s.sub}
+                          {isRejected && s.step === 3 ? "Review concluded" : s.sub}
                         </span>
                       </span>
                     </button>
@@ -376,20 +326,14 @@ export default function ApplicantsApplicationPage() {
                   onDelete={handleDelete}
                   onConfirm={handleConfirm}
                   onContinue={() => changeStep(3)}
-                  hasConfirmed={documents.some(
-                    (d) =>
-                      d.status === "STUDENT_CONFIRMED" ||
-                      d.status === "VERIFIED",
-                  )}
+                  hasConfirmed={documents.some((d) => d.status === "STUDENT_CONFIRMED" || d.status === "VERIFIED")}
                 />
               )}
               {step === 3 && (
                 <StatusStep
                   application={application}
                   documents={documents}
-                  scholarshipTrack={
-                    user?.scholar_profile?.scholarship_track ?? undefined
-                  }
+                  scholarshipTrack={user?.scholar_profile?.scholarship_track ?? undefined}
                   currentYearLevel={currentYearLevel}
                   onBackToDocuments={() => changeStep(2)}
                 />
