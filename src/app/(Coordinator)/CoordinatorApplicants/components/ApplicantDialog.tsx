@@ -1,30 +1,20 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { AlertCircle, AlertTriangle, ArrowRight, CalendarClock, FileText, RotateCcw, X } from "lucide-react";
+import { AlertCircle, ArrowRight, CalendarClock, FileText, RotateCcw, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { ScheduleMeetingDialog } from "@/app/(Grantor)/grantMeeting/components/ScheduleMeetingDialog";
 import type { Applicant, Stage } from "@/components/Coordinatorshared";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetClose, SheetContent } from "@/components/ui/sheet";
-import { Textarea } from "@/components/ui/textarea";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { ScholarDocument } from "@/lib/api/documents";
+import { ApplicantActionDialogs } from "./ApplicantActionDialogs";
+import { ApplicantDesktopDetails } from "./ApplicantDesktopDetails";
 import { ApplicantDocumentsList } from "./ApplicantDocumentsList";
 import { ApplicantEligibilityBanner } from "./ApplicantEligibilityBanner";
-import { acceptWarning, formatGwa, getStageVariant, gwaSourceTitle } from "./applicant-helpers";
+import { acceptWarning, getStageVariant } from "./applicant-helpers";
+import { ApplicantMobileDrawer } from "./ApplicantMobileDrawer";
 import { DocumentVerifyDialog } from "./DocumentVerifyDialog";
 
 interface ApplicantDialogProps {
@@ -108,10 +98,38 @@ export function ApplicantDialog({
     (applicant?.stage as string) === "Scholar" ||
     (applicant?.stage as string) === "Rejected";
   const canSchedule = Boolean(applicant) && !isPastInterview && applicant?.stage === "Interview";
+  const isMobile = useIsMobile();
 
   return (
     <>
-      <Sheet open={!!applicant} onOpenChange={(open) => !open && handleClose()}>
+      {isMobile ? (
+        applicant && (
+          <ApplicantMobileDrawer
+            applicant={applicant}
+            open={!!applicant}
+            onClose={handleClose}
+            loadedDocs={loadedDocs}
+            docsToken={docsToken}
+            setLoadedDocs={setLoadedDocs}
+            verifyingDoc={verifyingDoc}
+            setVerifyingDoc={setVerifyingDoc}
+            handleVerifyDone={handleVerifyDone}
+            canSchedule={canSchedule}
+            canPassToInterview={canPassToInterview}
+            hasNoDocs={hasNoDocs}
+            hasConfirmedDocs={hasConfirmedDocs}
+            isDocsLoading={isDocsLoading}
+            acting={acting}
+            actionError={actionError}
+            onMoveStage={onMoveStage}
+            setScheduling={setScheduling}
+            setConfirmingReject={setConfirmingReject}
+            setConfirmingReopen={setConfirmingReopen}
+            setAcceptWarningText={setAcceptWarningText}
+          />
+        )
+      ) : (
+        <Sheet open={!!applicant} onOpenChange={(open) => !open && handleClose()}>
         <SheetContent side="right" className="w-full max-w-6xl! bg-slate-50 p-0 gap-0" showCloseButton={false}>
           {applicant && (
             <>
@@ -172,102 +190,8 @@ export function ApplicantDialog({
 
                 {/* Right: Applicant Details & Actions */}
                 <div className="lg:col-span-7 flex flex-col h-full overflow-hidden bg-white">
-                  <div className="flex-1 overflow-y-auto p-5 space-y-4">
-                    {/* Academic & Institution Information */}
-                    <div className="rounded-lg border border-border/70 bg-muted/30 p-4">
-                      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Academic & Institution Details
-                      </h3>
-                      <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 md:grid-cols-3 text-sm">
-                        <div>
-                          <dt className="text-xs text-muted-foreground">Scholarship Track</dt>
-                          <dd className="font-medium text-foreground">{applicant.track || "—"}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs text-muted-foreground">Course of Study</dt>
-                          <dd className="font-medium text-foreground">{applicant.course || "—"}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs text-muted-foreground">Current Year Level</dt>
-                          <dd className="font-medium text-foreground">{applicant.year || "—"}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs text-muted-foreground">General Weighted Average (GWA)</dt>
-                          <dd
-                            className="font-medium tabular-nums text-foreground"
-                            title={gwaSourceTitle(applicant.gwaSource)}
-                          >
-                            {applicant.gwa !== null ? formatGwa(applicant.gwa) : "—"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs text-muted-foreground">School Name</dt>
-                          <dd className="font-medium text-foreground">{applicant.schoolName || "—"}</dd>
-                        </div>
-                        <div className="sm:col-span-2 md:col-span-1">
-                          <dt className="text-xs text-muted-foreground">School Address</dt>
-                          <dd className="font-medium text-foreground">{applicant.schoolAddress || "—"}</dd>
-                        </div>
-                      </dl>
-                    </div>
-
-                    {/* Personal, Contact & Affiliation Details */}
-                    <div className="rounded-lg border border-border/70 bg-muted/30 p-4">
-                      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Personal, Contact & Affiliation Details
-                      </h3>
-                      <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 text-sm">
-                        <div>
-                          <dt className="text-xs text-muted-foreground">Student Number</dt>
-                          <dd className="font-medium text-foreground">{applicant.studentNumber || "—"}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs text-muted-foreground">Phone Number</dt>
-                          <dd className="font-medium text-foreground">{applicant.phoneNumber || "—"}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs text-muted-foreground">Home Address</dt>
-                          <dd className="font-medium text-foreground">{applicant.studentAddress || "—"}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs text-muted-foreground">Relative Employed By Partner</dt>
-                          <dd className="font-medium text-foreground">{applicant.relativeEmployee || "None / N/A"}</dd>
-                        </div>
-                      </dl>
-                    </div>
-
-                    <Separator />
-
-                    {/* Interview Stage Status Info */}
-                    {applicant.stage === "Interview" && (
-                      <div className="flex items-center justify-between rounded-lg border border-navy/20 bg-navy/5 px-3.5 py-2 text-xs text-navy">
-                        <div className="flex items-center gap-2">
-                          <CalendarClock className="size-4 shrink-0 text-navy" />
-                          <span>
-                            {applicant.hasInterview && applicant.interviewAt ? (
-                              <>
-                                Interview scheduled on{" "}
-                                <strong>
-                                  {new Date(applicant.interviewAt).toLocaleString(undefined, {
-                                    dateStyle: "medium",
-                                    timeStyle: "short",
-                                  })}
-                                </strong>
-                              </>
-                            ) : (
-                              <>
-                                Applicant is in <strong>Interview Stage</strong> (no meeting scheduled yet)
-                              </>
-                            )}
-                          </span>
-                        </div>
-                        {applicant.hasInterview && (
-                          <Badge variant="outline" className="border-navy/30 bg-white text-navy text-[0.65rem]!">
-                            Scheduled
-                          </Badge>
-                        )}
-                      </div>
-                    )}
+                  <div className="flex-1 overflow-y-auto p-5">
+                    <ApplicantDesktopDetails applicant={applicant} />
                   </div>
 
                   {/* Action Buttons Footer */}
@@ -398,126 +322,9 @@ export function ApplicantDialog({
           )}
         </SheetContent>
       </Sheet>
+    )}
 
-      {/* Accept Safeguard Alert Dialog */}
-      <AlertDialog open={acceptWarningText !== null} onOpenChange={(open) => !open && setAcceptWarningText(null)}>
-        <AlertDialogContent className="max-w-md rounded-2xl p-6">
-          <AlertDialogHeader className="flex flex-col items-center text-center">
-            <div className="mb-2 flex size-12 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400">
-              <AlertTriangle className="size-6" />
-            </div>
-            <AlertDialogTitle className="text-lg font-bold text-navy">Proceed with Endorsement?</AlertDialogTitle>
-            <AlertDialogDescription className="mt-1 text-sm text-muted-foreground">
-              {acceptWarningText} Are you sure you want to advance this applicant without a completed interview?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="mt-4 flex flex-row justify-end gap-2">
-            <AlertDialogCancel className="h-10 rounded-lg text-sm!">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="h-10 rounded-lg bg-navy px-4 text-sm! font-medium text-white hover:bg-navy/90"
-              onClick={async () => {
-                if (applicant) {
-                  setAcceptWarningText(null);
-                  await onMoveStage(applicant.id, "Endorsed", undefined, true);
-                }
-              }}
-            >
-              Proceed anyway
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Reject Reason Modal Dialog */}
-      <Dialog open={confirmingReject} onOpenChange={(open) => !open && setConfirmingReject(false)}>
-        <DialogContent className="max-w-md rounded-2xl p-6">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-navy">Reject Application</DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground">
-              You can optionally provide remarks or feedback explaining this evaluation decision.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-3 py-2">
-            <div className="rounded-xl border border-border/80 bg-muted/30 p-3 text-xs text-muted-foreground">
-              <p className="font-semibold text-navy mb-1">Standard notification message to applicant:</p>
-              <p className="italic leading-relaxed">
-                &ldquo;Thank you for applying for our scholarship program. After careful evaluation of all submissions,
-                your application was not selected for this cycle.&rdquo;
-              </p>
-              <p className="mt-1.5 text-[11px] text-muted-foreground">
-                If custom remarks are entered below, they will be attached to the applicant&apos;s decision notice.
-              </p>
-            </div>
-
-            <Textarea
-              placeholder="Optional remarks or feedback (e.g. GWA threshold, missing prerequisite)..."
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              className="min-h-24 text-sm!"
-              aria-label="Optional rejection reason"
-            />
-          </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="h-10 text-sm!"
-              disabled={acting}
-              onClick={() => {
-                setConfirmingReject(false);
-                setRejectReason("");
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              className="h-10 text-sm!"
-              disabled={acting}
-              onClick={() => {
-                if (applicant) {
-                  onMoveStage(applicant.id, "Rejected", rejectReason.trim() || undefined);
-                  setConfirmingReject(false);
-                }
-              }}
-            >
-              Confirm rejection
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Reopen Confirmation Alert Dialog */}
-      <AlertDialog open={confirmingReopen} onOpenChange={setConfirmingReopen}>
-        <AlertDialogContent className="max-w-md rounded-2xl p-6">
-          <AlertDialogHeader className="flex flex-col items-center text-center">
-            <div className="mb-2 flex size-12 items-center justify-center rounded-full bg-navy/10 text-navy">
-              <RotateCcw className="size-6" />
-            </div>
-            <AlertDialogTitle className="text-lg font-bold text-navy">Reopen Application?</AlertDialogTitle>
-            <AlertDialogDescription className="mt-1 text-sm text-muted-foreground">
-              Are you sure you want to reopen the application for <strong>{applicant?.name}</strong>? This will return
-              their application to active review (&ldquo;Under review&rdquo;) and clear the previous rejection record.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="mt-4 flex flex-row justify-end gap-2">
-            <AlertDialogCancel className="h-10 rounded-lg text-sm!">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="h-10 rounded-lg bg-navy px-4 text-sm! font-medium text-white hover:bg-navy/90"
-              onClick={async () => {
-                if (applicant) {
-                  setConfirmingReopen(false);
-                  await onMoveStage(applicant.id, "Under review");
-                }
-              }}
-            >
-              Confirm Reopen
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
+    {!isMobile && (
       <DocumentVerifyDialog
         document={verifyingDoc}
         applicantName={applicant?.name ?? ""}
@@ -525,14 +332,24 @@ export function ApplicantDialog({
         onOpenChange={(open) => !open && setVerifyingDoc(null)}
         onDone={handleVerifyDone}
       />
-      <ScheduleMeetingDialog
-        applicationId={applicant?.id ?? null}
-        applicantName={applicant?.name}
-        open={scheduling}
-        onOpenChange={setScheduling}
-        mode={applicant?.hasInterview ? "reschedule" : "schedule"}
-        onSuccess={handleScheduleSuccess}
-      />
-    </>
-  );
+    )}
+
+    <ApplicantActionDialogs
+      applicant={applicant}
+      acting={acting}
+      confirmingReject={confirmingReject}
+      setConfirmingReject={setConfirmingReject}
+      rejectReason={rejectReason}
+      setRejectReason={setRejectReason}
+      confirmingReopen={confirmingReopen}
+      setConfirmingReopen={setConfirmingReopen}
+      acceptWarningText={acceptWarningText}
+      setAcceptWarningText={setAcceptWarningText}
+      scheduling={scheduling}
+      setScheduling={setScheduling}
+      onMoveStage={onMoveStage}
+      handleScheduleSuccess={handleScheduleSuccess}
+    />
+  </>
+);
 }
