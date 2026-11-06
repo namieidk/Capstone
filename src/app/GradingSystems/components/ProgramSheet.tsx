@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, Trash2, X } from "lucide-react";
+import { AlertCircle, BookOpen, Check, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   AlertDialog,
@@ -48,6 +48,8 @@ export function ProgramSheet({
   const [error, setError] = useState("");
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
+  const isPending = Boolean(program && !program.is_active);
+
   useEffect(() => {
     if (program) {
       setCode(program.program_code);
@@ -68,7 +70,7 @@ export function ProgramSheet({
       program_name: name,
       category,
       description,
-      is_active: isActive,
+      is_active: isPending ? true : isActive,
     });
 
     if (!result.success) {
@@ -144,6 +146,18 @@ export function ProgramSheet({
 
           <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-4">
             {error && <div className="rounded-lg bg-bad-bg p-3 text-xs font-semibold text-bad">{error}</div>}
+
+            {isPending && (
+              <div className="rounded-xl border border-amber-300 bg-amber-50/90 p-4 text-xs text-amber-950">
+                <div className="flex items-center gap-2 font-semibold text-amber-900">
+                  <AlertCircle className="size-4 text-amber-600 shrink-0" />
+                  <span>Pending Program Verification</span>
+                </div>
+                <p className="mt-1 text-[11px] text-amber-800/90 leading-relaxed">
+                  This academic program was proposed by an applicant during application. Please verify its official course title, assign an appropriate program code (e.g. BSIT, BSED), and click <strong>Verify Program</strong> to activate it for all scholars.
+                </p>
+              </div>
+            )}
 
             <div className="space-y-1.5">
               <Label htmlFor="edit_program_code" className="text-xs font-bold text-navy uppercase">

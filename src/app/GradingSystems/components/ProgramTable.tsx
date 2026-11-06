@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, ChevronLeft, ChevronRight, Eye, RotateCcw } from "lucide-react";
+import { BookOpen, Check, ChevronLeft, ChevronRight, Eye, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { TINT } from "@/components/Adminshared";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,7 @@ interface ProgramTableProps {
   loadError: string;
   onRetry: () => void;
   onSelect: (program: AcademicProgram) => void;
+  onVerify?: (program: AcademicProgram) => Promise<void> | void;
   pageSize?: number;
   searchQuery?: string;
   currentPage?: number;
@@ -49,6 +50,7 @@ export function ProgramTable({
   loadError,
   onRetry,
   onSelect,
+  onVerify,
   pageSize = DEFAULT_PAGE_SIZE,
   searchQuery,
   currentPage: currentPageProp,
@@ -180,23 +182,38 @@ export function ProgramTable({
                         className={`h-6 px-2 text-xs! font-medium ${
                           prog.is_active
                             ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"
-                            : "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400"
+                            : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300"
                         }`}
                       >
-                        {prog.is_active ? "Active" : "Inactive"}
+                        {prog.is_active ? "Active" : "Pending Review"}
                       </Badge>
                     </TableCell>
                     <TableCell className="pr-6! text-center" onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 rounded-full text-muted-foreground hover:bg-tint hover:text-navy"
-                        aria-label={`View details for ${prog.program_name}`}
-                        onClick={() => onSelect(prog)}
-                      >
-                        <Eye className="size-4" />
-                      </Button>
+                      <div className="flex items-center justify-center">
+                        {!prog.is_active ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-2.5 text-xs font-semibold text-emerald-700 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-800"
+                            onClick={() => (onVerify ? onVerify(prog) : onSelect(prog))}
+                          >
+                            <Check className="size-3 mr-1" />
+                            Verify
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-8 rounded-full text-muted-foreground hover:bg-tint hover:text-navy"
+                            aria-label={`View details for ${prog.program_name}`}
+                            onClick={() => onSelect(prog)}
+                          >
+                            <Eye className="size-4" />
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

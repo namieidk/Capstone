@@ -33,7 +33,7 @@ export default function AcademicProgramsPage() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const canManage = user?.role === "ADMIN" || user?.role === "GRANTOR";
+  const canManage = user?.role === "ADMIN" || user?.role === "GRANTOR" || user?.role === "COORDINATOR";
 
   const fetchPrograms = useCallback(async () => {
     setLoading(true);
@@ -69,6 +69,10 @@ export default function AcademicProgramsPage() {
     );
   }, [programs, searchQuery]);
 
+  function handleVerify(program: AcademicProgram): void {
+    setSelectedProgram(program);
+  }
+
   async function handleCreate(input: AcademicProgramInput): Promise<void> {
     try {
       await createAcademicProgram(input);
@@ -84,7 +88,11 @@ export default function AcademicProgramsPage() {
   async function handleUpdate(id: number, input: Partial<AcademicProgramInput>): Promise<void> {
     try {
       await updateAcademicProgram(id, input);
-      showToast("Academic program updated successfully.");
+      if (input.is_active) {
+        showToast("Academic program verified and updated successfully.");
+      } else {
+        showToast("Academic program updated successfully.");
+      }
       await fetchPrograms();
     } catch (err) {
       console.error("Failed to update program:", err);
@@ -141,6 +149,7 @@ export default function AcademicProgramsPage() {
           onRetry={fetchPrograms}
           onSelect={setSelectedProgram}
           searchQuery={searchQuery}
+          onVerify={canManage ? handleVerify : undefined}
         />
       </div>
 

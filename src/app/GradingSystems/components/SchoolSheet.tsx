@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, Plus, Trash2, X } from "lucide-react";
+import { AlertCircle, Building2, Check, Plus, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   AlertDialog,
@@ -90,6 +90,8 @@ export function SchoolSheet({ school, open, onOpenChange, onUpdate, onDelete }: 
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState("");
 
+  const isPending = Boolean(school && !school.is_active);
+
   useEffect(() => {
     if (school && open) {
       setName(school.school_name);
@@ -167,7 +169,7 @@ export function SchoolSheet({ school, open, onOpenChange, onUpdate, onDelete }: 
       contact_number: phone || undefined,
       grading_scale: gradingScale,
       special_codes: Object.keys(specialCodesRecord).length > 0 ? specialCodesRecord : undefined,
-      is_active: isActive,
+      is_active: isPending ? true : isActive,
     });
 
     if (!result.success) {
@@ -248,6 +250,18 @@ export function SchoolSheet({ school, open, onOpenChange, onUpdate, onDelete }: 
             <div className="space-y-5">
               {error && <div className="rounded-xl border border-bad/30 bg-bad-bg p-3.5 text-xs text-bad">{error}</div>}
 
+              {isPending && (
+                <div className="rounded-xl border border-amber-300 bg-amber-50/90 p-4 text-xs text-amber-950">
+                  <div className="flex items-center gap-2 font-semibold text-amber-900">
+                    <AlertCircle className="size-4 text-amber-600 shrink-0" />
+                    <span>Pending Institution Verification</span>
+                  </div>
+                  <p className="mt-1 text-[11px] text-amber-800/90 leading-relaxed">
+                    This school was proposed by an applicant during their scholarship application. Please review or complete the details below, assign an appropriate grading scale, and click <strong>Verify Institution</strong> to activate it for all scholars.
+                  </p>
+                </div>
+              )}
+
               <div>
                 <Label htmlFor="edit-school-name" className="text-xs font-semibold text-navy">
                   School Name <span className="text-amber">*</span>
@@ -288,7 +302,7 @@ export function SchoolSheet({ school, open, onOpenChange, onUpdate, onDelete }: 
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="active">Active (Selectable)</SelectItem>
-                      <SelectItem value="inactive">Inactive (Hidden)</SelectItem>
+                      <SelectItem value="inactive">{isPending ? "Pending Review" : "Inactive (Hidden)"}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -443,7 +457,16 @@ export function SchoolSheet({ school, open, onOpenChange, onUpdate, onDelete }: 
                   disabled={saving || deleting}
                   className="h-10.5 px-6 rounded-xl text-sm font-semibold shadow-xs bg-[#0a4f42] hover:bg-[#083c32] text-white"
                 >
-                  {saving ? "Saving..." : "Save Changes"}
+                  {saving ? (
+                    "Saving..."
+                  ) : isPending ? (
+                    <>
+                      <Check className="size-4 mr-1.5" />
+                      Verify Institution
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
                 </Button>
               </div>
             </div>

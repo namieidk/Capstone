@@ -79,6 +79,8 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
     if (item.key === "meeting") return badges.meetings;
     if (item.key === "scholars" || item.key === "monitor") return badges.scholars;
     if (item.key === "disbursements" || item.key === "payments" || item.key === "payment") return badges.disbursements;
+    if (item.key === "schools") return badges.schools;
+    if (item.key === "programs") return badges.programs;
     return item.badge;
   };
 

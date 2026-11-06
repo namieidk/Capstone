@@ -333,6 +333,20 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           showToastRef.current("Academic baseline unlocked for curriculum modifications.", "warning");
         });
 
+        socketInstance.on("school:created", (data?: { school_name?: string }) => {
+          const staffRoles = ["ADMIN", "COORDINATOR", "GRANTOR"];
+          if (staffRoles.includes(userRef.current?.role || "")) {
+            showToastRef.current(`New institution proposed: ${data?.school_name || "School"}`, "info");
+          }
+        });
+
+        socketInstance.on("program:created", (data?: { program_name?: string }) => {
+          const staffRoles = ["ADMIN", "COORDINATOR", "GRANTOR"];
+          if (staffRoles.includes(userRef.current?.role || "")) {
+            showToastRef.current(`New academic program proposed: ${data?.program_name || "Program"}`, "info");
+          }
+        });
+
         socketInstance.on("school_grading:created", (data?: { school_name?: string }) => {
           const staffRoles = ["ADMIN", "COORDINATOR", "GRANTOR"];
           if (staffRoles.includes(userRef.current?.role || "")) {

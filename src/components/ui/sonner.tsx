@@ -8,6 +8,7 @@ import {
   Loader2Icon,
 } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import { Toaster as Sonner, type ToasterProps, toast } from "sonner";
 
 const Toaster = ({
@@ -17,12 +18,47 @@ const Toaster = ({
   ...props
 }: ToasterProps) => {
   const { theme = "system" } = useTheme();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    const checkDrawer = () => {
+      // Look for any active drawer/sheet (excluding the mobile navigation sidebar)
+      const drawer = document.querySelector(
+        '[data-slot="sheet-content"]:not([data-sidebar="sidebar"])'
+      );
+      setIsDrawerOpen(Boolean(drawer));
+    };
+
+    checkDrawer();
+
+    const observer = new MutationObserver(() => {
+      checkDrawer();
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["data-state"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const activePosition = isDrawerOpen ? "bottom-left" : position;
+  const activeOffset = isDrawerOpen
+    ? {
+        bottom: "24px",
+        left: "calc(var(--sidebar-width, 0px) + 24px)",
+      }
+    : props.offset;
 
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
-      position={position}
+      position={activePosition}
+      offset={activeOffset}
       richColors={richColors}
       closeButton={closeButton}
       icons={{
@@ -60,4 +96,3 @@ const Toaster = ({
 };
 
 export { Toaster, toast };
-

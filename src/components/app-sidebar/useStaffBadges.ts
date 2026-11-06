@@ -9,6 +9,7 @@ import { getDisbursementsQueue, getMyScholarDisbursements } from "@/lib/api/disb
 import { getPendingAcademicAppeals, getPendingDocuments } from "@/lib/api/documents";
 import { getCoordinatorPendingEnrollments } from "@/lib/api/enrollment";
 import { listMeetings } from "@/lib/api/meetings";
+import { listAcademicPrograms, listSchools } from "@/lib/api/settings";
 
 import type { SidebarRole } from "./types";
 
@@ -17,6 +18,8 @@ export interface StaffBadges {
   meetings?: number;
   scholars?: number;
   disbursements?: number | string;
+  schools?: number;
+  programs?: number;
 }
 
 // Live sidebar counts. Badges stay hidden while loading (or on error) so
@@ -26,10 +29,26 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
   const [meetings, setMeetings] = useState<number | null>(null);
   const [scholars, setScholars] = useState<number | null>(null);
   const [disbursements, setDisbursements] = useState<number | string | null>(null);
+  const [schools, setSchools] = useState<number | null>(null);
+  const [programs, setPrograms] = useState<number | null>(null);
 
   const refreshBadges = useCallback(() => {
     let alive = true;
     if (opts.includeApplicants) {
+      Promise.all([
+        listSchools(false).catch(() => []),
+        listAcademicPrograms(false).catch(() => []),
+      ])
+        .then(([schoolList, programList]) => {
+          if (alive) {
+            const pendingSchoolsCount = schoolList.filter((s) => !s.is_active).length;
+            const pendingProgramsCount = programList.filter((p) => !p.is_active).length;
+            setSchools(pendingSchoolsCount);
+            setPrograms(pendingProgramsCount);
+          }
+        })
+        .catch(() => undefined);
+
       Promise.all([listApplications(), listContracts().catch(() => [])])
         .then(([rows, contracts]) => {
           if (alive) {
@@ -187,6 +206,13 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
   useSocketEvent("academic_appeal:reviewed", refreshBadges);
   useSocketEvent("contract:created", refreshBadges);
   useSocketEvent("contract:signed", refreshBadges);
+  useSocketEvent("school:created", refreshBadges);
+  useSocketEvent("school:updated", refreshBadges);
+  useSocketEvent("school:deleted", refreshBadges);
+  useSocketEvent("program:created", refreshBadges);
+  useSocketEvent("program:updated", refreshBadges);
+  useSocketEvent("program:deleted", refreshBadges);
+
 
   return {
     applicants: applicants != null && applicants > 0 ? applicants : undefined,
@@ -194,5 +220,7 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
     scholars: scholars != null && scholars > 0 ? scholars : undefined,
     disbursements:
       disbursements != null && (typeof disbursements === "string" || disbursements > 0) ? disbursements : undefined,
+    schools: schools != null && schools > 0 ? schools : undefined,
+    programs: programs != null && programs > 0 ? programs : undefined,
   };
 }

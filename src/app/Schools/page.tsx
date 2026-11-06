@@ -32,7 +32,7 @@ export default function SchoolsPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const canManage = user?.role === "ADMIN" || user?.role === "GRANTOR";
+  const canManage = user?.role === "ADMIN" || user?.role === "GRANTOR" || user?.role === "COORDINATOR";
 
   const fetchSchools = useCallback(async () => {
     setLoading(true);
@@ -68,6 +68,10 @@ export default function SchoolsPage() {
     );
   }, [schools, searchQuery]);
 
+  function handleVerify(school: School): void {
+    setSelectedSchool(school);
+  }
+
   async function handleCreate(input: SchoolInput): Promise<void> {
     try {
       await createSchool(input);
@@ -83,7 +87,11 @@ export default function SchoolsPage() {
   async function handleUpdate(id: number, input: Partial<SchoolInput>): Promise<void> {
     try {
       await updateSchool(id, input);
-      showToast("Academic institution updated successfully.");
+      if (input.is_active) {
+        showToast("Academic institution verified and updated successfully.");
+      } else {
+        showToast("Academic institution updated successfully.");
+      }
       await fetchSchools();
     } catch (err) {
       console.error("Failed to update school:", err);
@@ -140,6 +148,7 @@ export default function SchoolsPage() {
           onRetry={fetchSchools}
           onSelect={setSelectedSchool}
           searchQuery={searchQuery}
+          onVerify={canManage ? handleVerify : undefined}
         />
       </div>
 

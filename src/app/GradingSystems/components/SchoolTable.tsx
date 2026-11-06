@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, ChevronLeft, ChevronRight, Eye, RotateCcw } from "lucide-react";
+import { Building2, Check, ChevronLeft, ChevronRight, Eye, RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ interface SchoolTableProps {
   loadError: string;
   onRetry: () => void;
   onSelect: (school: School) => void;
+  onVerify?: (school: School) => Promise<void> | void;
   pageSize?: number;
   searchQuery?: string;
   currentPage?: number;
@@ -48,6 +49,7 @@ export function SchoolTable({
   loadError,
   onRetry,
   onSelect,
+  onVerify,
   pageSize = DEFAULT_PAGE_SIZE,
   searchQuery,
   currentPage: controlledPage,
@@ -191,26 +193,38 @@ export function SchoolTable({
                         className={
                           s.is_active
                             ? "border-good/30 bg-good-bg text-good text-xs font-semibold"
-                            : "border-muted-foreground/30 bg-muted/20 text-muted-foreground text-xs"
+                            : "border-amber-500/40 bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 text-xs font-semibold"
                         }
                       >
-                        {s.is_active ? "Active" : "Inactive"}
+                        {s.is_active ? "Active" : "Pending Review"}
                       </Badge>
                     </TableCell>
                     <TableCell className="pr-6! text-center!">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 rounded-full text-muted-foreground hover:text-navy hover:bg-white"
-                        aria-label={`View ${s.school_name}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelect(s);
-                        }}
-                      >
-                        <Eye className="size-4" />
-                      </Button>
+                      <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                        {!s.is_active ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-2.5 text-xs font-semibold text-emerald-700 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-800"
+                            onClick={() => (onVerify ? onVerify(s) : onSelect(s))}
+                          >
+                            <Check className="size-3 mr-1" />
+                            Verify
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-8 rounded-full text-muted-foreground hover:text-navy hover:bg-white"
+                            aria-label={`View ${s.school_name}`}
+                            onClick={() => onSelect(s)}
+                          >
+                            <Eye className="size-4" />
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
