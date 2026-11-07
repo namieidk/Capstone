@@ -30,9 +30,9 @@ interface CreateContractDialogProps {
 function getDefaultDates() {
   const now = new Date();
   const effective = now.toISOString().slice(0, 10);
-  const oneYearLater = new Date();
-  oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
-  const expiry = oneYearLater.toISOString().slice(0, 10);
+  const fourYearsLater = new Date();
+  fourYearsLater.setFullYear(fourYearsLater.getFullYear() + 4);
+  const expiry = fourYearsLater.toISOString().slice(0, 10);
   return { effective, expiry };
 }
 

@@ -13,7 +13,7 @@ interface GrantorMeetingsAndCommsCardProps {
 
 export function GrantorMeetingsAndCommsCard({ meetings, conversations }: GrantorMeetingsAndCommsCardProps) {
   return (
-    <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* Executive Consultations & Meetings */}
       <Card className="flex flex-col justify-start rounded-2xl border-line/80 bg-white shadow-2xs hover:shadow-xs transition-all">
         <CardHeader className="flex flex-row items-center justify-between pb-3 p-5">

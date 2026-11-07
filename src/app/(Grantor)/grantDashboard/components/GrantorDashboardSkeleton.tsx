@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function GrantorDashboardSkeleton() {
   return (
-    <div className="space-y-5 animate-pulse">
+    <div className="flex-1 space-y-6 p-4 sm:p-6 max-w-7xl w-full mx-auto animate-pulse">
       {/* Header Skeleton */}
       <div className="rounded-2xl border border-line/80 bg-white p-5 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -51,7 +51,7 @@ export function GrantorDashboardSkeleton() {
       </div>
 
       {/* Primary Grid Skeleton */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-2xl border border-line/80 bg-white p-5 space-y-4">
           <div className="flex items-center justify-between">
             <Skeleton className="h-5 w-48" />
@@ -78,7 +78,7 @@ export function GrantorDashboardSkeleton() {
       </div>
 
       {/* Secondary Grid Skeleton */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-2xl border border-line/80 bg-white p-5 space-y-4">
           <Skeleton className="h-5 w-48" />
           <div className="space-y-3">

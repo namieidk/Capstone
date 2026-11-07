@@ -2,6 +2,7 @@
 
 import { AlertCircle } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { GrantorAppealsReviewCard } from "./components/GrantorAppealsReviewCard";
 import { GrantorDashboardHeader } from "./components/GrantorDashboardHeader";
@@ -20,7 +21,7 @@ export default function GrantorDashboardPage() {
 
   if (loading && !data) {
     return (
-      <div className="space-y-6">
+      <div className="flex flex-col min-h-screen bg-[#FAF8F5]">
         <PageHeader
           title="Grantor Executive Dashboard"
           subtitle="Scholarship program oversight, candidate verdicts & fund releases"
@@ -32,23 +33,37 @@ export default function GrantorDashboardPage() {
 
   if (loadError && !data) {
     return (
-      <div className="space-y-6">
+      <div className="flex flex-col min-h-screen bg-[#FAF8F5]">
         <PageHeader
           title="Grantor Executive Dashboard"
           subtitle="Scholarship program oversight, candidate verdicts & fund releases"
         />
-        <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6 text-center text-sm text-destructive">
-          <AlertCircle className="mx-auto mb-2 size-6" />
-          <p className="font-semibold">Failed to load Grantor Dashboard data</p>
-          <p className="text-xs text-muted-foreground mt-1">{loadError}</p>
-          <button
-            type="button"
-            onClick={() => refetch()}
-            className="mt-4 inline-flex items-center justify-center rounded-full bg-[#0a4f42] px-4 py-1.5 text-xs font-semibold text-white! shadow-xs hover:bg-[#083c32]"
-          >
-            Retry
-          </button>
+        <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
+          <div className="max-w-md space-y-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-6 text-destructive">
+            <AlertCircle className="mx-auto size-6 text-destructive" />
+            <h2 className="text-base font-bold">Failed to load Grantor Dashboard data</h2>
+            <p className="text-xs text-muted-foreground leading-relaxed">{loadError}</p>
+            <Button
+              type="button"
+              onClick={() => refetch()}
+              className="mt-2 rounded-full bg-[#0a4f42] px-5 text-xs font-semibold text-white! hover:bg-[#083c32]"
+            >
+              Try Again
+            </Button>
+          </div>
         </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAF8F5]">
+        <PageHeader
+          title="Grantor Executive Dashboard"
+          subtitle="Scholarship program oversight, candidate verdicts & fund releases"
+        />
+        <GrantorDashboardSkeleton />
       </div>
     );
   }
@@ -58,58 +73,51 @@ export default function GrantorDashboardPage() {
       ? `${user.employee.first_name} ${user.employee.last_name}`
       : user?.email?.split("@")[0] || "Executive Sponsor";
 
-  const grantorTitle = user?.employee?.title || "Scholarship Grantor & Sponsor";
-  const grantorOrg = user?.employee?.department || "Executive Board";
+  const grantorTitle = user?.employee?.title || "Scholarship Grantor & Executive Sponsor";
+  const grantorOrg = user?.employee?.department || "Scholarship Foundation";
 
-  const kpis = data?.kpis || {
-    endorsedApplicantsCount: 0,
-    totalApplicants: 0,
-    pendingAppealsCount: 0,
-    pendingDisbursementsCount: 0,
-    pendingDisbursementsSum: 0,
-    totalScholars: 0,
-    goodStandingCount: 0,
-    probationCount: 0,
-    actionRequiredCount: 0,
-    totalDisbursedSum: 0,
-    pendingOrCount: 0,
-  };
+  const kpis = data.kpis;
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col min-h-screen bg-[#FAF8F5]">
+      {/* Top Header */}
       <PageHeader
         title="Grantor Executive Dashboard"
         subtitle="Scholarship program oversight, candidate verdicts & fund releases"
       />
 
-      {/* 1. Header Banner */}
-      <GrantorDashboardHeader
-        grantorName={grantorName}
-        grantorTitle={grantorTitle}
-        grantorOrg={grantorOrg}
-        onRefresh={() => refetch(true)}
-      />
+      {/* Main Content Body */}
+      <div className="flex-1 space-y-6 p-4 sm:p-6 max-w-7xl w-full mx-auto">
+        {/* 1. Header Banner */}
+        <GrantorDashboardHeader
+          grantorName={grantorName}
+          grantorTitle={grantorTitle}
+          grantorOrg={grantorOrg}
+          onRefresh={() => refetch(true)}
+          isRefreshing={loading}
+        />
 
-      {/* 2. Operational Verdict Banner */}
-      <GrantorUrgentActionsBanner kpis={kpis} />
+        {/* 2. Operational Verdict Banner */}
+        <GrantorUrgentActionsBanner kpis={kpis} />
 
-      {/* 3. Top Row KPI Meters */}
-      <GrantorKpiCards kpis={kpis} />
+        {/* 3. Top Row KPI Meters */}
+        <GrantorKpiCards kpis={kpis} />
 
-      {/* 4. Primary Decision Queues (Endorsed Candidates + Academic Appeals) */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <GrantorEndorsedApplicantsCard applicants={data?.endorsedApplicants || []} />
-        <GrantorAppealsReviewCard appeals={data?.pendingAppeals || []} />
+        {/* 4. Primary Decision Queues (Endorsed Candidates + Academic Appeals) */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <GrantorEndorsedApplicantsCard applicants={data.endorsedApplicants} />
+          <GrantorAppealsReviewCard appeals={data.pendingAppeals} />
+        </div>
+
+        {/* 5. Financial Authorizations & Scholar Program Retention */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <GrantorDisbursementQueueCard disbursements={data.pendingDisbursements} />
+          <GrantorScholarHealthCard scholars={data.scholars} />
+        </div>
+
+        {/* 6. Executive Meetings & Comms */}
+        <GrantorMeetingsAndCommsCard meetings={data.meetings} conversations={data.recentConversations} />
       </div>
-
-      {/* 5. Financial Authorizations & Scholar Program Retention */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <GrantorDisbursementQueueCard disbursements={data?.pendingDisbursements || []} />
-        <GrantorScholarHealthCard scholars={data?.scholars || []} />
-      </div>
-
-      {/* 6. Executive Meetings & Comms */}
-      <GrantorMeetingsAndCommsCard meetings={data?.meetings || []} conversations={data?.recentConversations || []} />
     </div>
   );
 }

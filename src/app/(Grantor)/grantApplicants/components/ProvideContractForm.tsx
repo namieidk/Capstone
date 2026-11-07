@@ -11,10 +11,19 @@ interface ProvideContractFormProps {
   profileId: number | null;
 }
 
+function getDefaultDates() {
+  const now = new Date();
+  const effective = now.toISOString().slice(0, 10);
+  const fourYearsLater = new Date();
+  fourYearsLater.setFullYear(fourYearsLater.getFullYear() + 4);
+  const expiry = fourYearsLater.toISOString().slice(0, 10);
+  return { effective, expiry };
+}
+
 export function ProvideContractForm({ profileId }: ProvideContractFormProps) {
   const [contractNumber, setContractNumber] = useState("");
-  const [effectiveDate, setEffectiveDate] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
+  const [effectiveDate, setEffectiveDate] = useState(() => getDefaultDates().effective);
+  const [expiryDate, setExpiryDate] = useState(() => getDefaultDates().expiry);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdNumber, setCreatedNumber] = useState<string | null>(null);

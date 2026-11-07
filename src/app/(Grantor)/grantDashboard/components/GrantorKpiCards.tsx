@@ -25,7 +25,7 @@ export function GrantorKpiCards({ kpis }: GrantorKpiCardsProps) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {/* 1. Endorsed Candidates Awaiting Verdict */}
-      <Card className="rounded-2xl border-line/80 bg-white p-4.5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+      <Card className="rounded-2xl border-line/80 bg-white p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
         <CardContent className="p-0 space-y-2">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-muted-foreground">Candidate Verdicts</p>
@@ -51,7 +51,7 @@ export function GrantorKpiCards({ kpis }: GrantorKpiCardsProps) {
       </Card>
 
       {/* 2. Academic Appeals Awaiting Grantor Ruling */}
-      <Card className="rounded-2xl border-line/80 bg-white p-4.5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+      <Card className="rounded-2xl border-line/80 bg-white p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
         <CardContent className="p-0 space-y-2">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-muted-foreground">Academic Appeals</p>
@@ -77,7 +77,7 @@ export function GrantorKpiCards({ kpis }: GrantorKpiCardsProps) {
       </Card>
 
       {/* 3. Disbursement Authorization */}
-      <Card className="rounded-2xl border-line/80 bg-white p-4.5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+      <Card className="rounded-2xl border-line/80 bg-white p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
         <CardContent className="p-0 space-y-2">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-muted-foreground">Fund Approvals</p>
@@ -105,7 +105,7 @@ export function GrantorKpiCards({ kpis }: GrantorKpiCardsProps) {
       </Card>
 
       {/* 4. Active Scholars & Retention */}
-      <Card className="rounded-2xl border-line/80 bg-white p-4.5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+      <Card className="rounded-2xl border-line/80 bg-white p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
         <CardContent className="p-0 space-y-2">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-muted-foreground">Scholar Retention</p>
