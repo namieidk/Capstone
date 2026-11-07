@@ -25,9 +25,8 @@ import { compareEnrolledAndSubmittedSubjects } from "../utils/subjectComparison"
 interface CcgGradeReviewTableProps {
   doc: ScholarDocument;
   academicYear: string;
-  setAcademicYear: (ay: string) => void;
   semester: string;
-  setSemester: (sem: string) => void;
+  termMismatch?: string[] | null;
   gradeItems: GradeItem[];
   enrolledSubjects?: EnrolledSubjectItem[];
   setGradeItems?: React.Dispatch<React.SetStateAction<GradeItem[]>>;
@@ -43,6 +42,7 @@ export function CcgGradeReviewTable({
   doc,
   academicYear,
   semester,
+  termMismatch,
   gradeItems,
   enrolledSubjects = [],
   previewGwa,
@@ -57,6 +57,8 @@ export function CcgGradeReviewTable({
   );
 
   const hasMismatch = !comparison.isMatch;
+  const hasTermMismatch = Boolean(termMismatch?.length);
+  const submissionBlocked = hasMismatch || hasTermMismatch;
 
   return (
     <div className="space-y-4">
@@ -66,6 +68,51 @@ export function CcgGradeReviewTable({
           <div>
             <span className="font-bold">Correction Notice: </span>
             <span>{doc.rejection_reason || "Please check your document legibility or re-upload a clearer copy."}</span>
+          </div>
+        </div>
+      )}
+
+      {hasTermMismatch && (
+        <div className="rounded-2xl border border-rose-300 bg-linear-to-br from-rose-50/80 via-white to-rose-50/40 p-4 md:p-5 space-y-3 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="size-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0 mt-0.5">
+                <Calendar className="size-5.5" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h4 className="text-sm font-bold text-rose-950">
+                    School Year / Semester Mismatch Detected
+                  </h4>
+                  <Badge variant="outline" className="bg-rose-100 text-rose-800 border-rose-300 text-[10px] font-bold">
+                    Submission Blocked
+                  </Badge>
+                </div>
+                <p className="text-xs text-rose-900/90 leading-relaxed">
+                  This CCG does not match the school year and semester of your approved enrollment. Grade
+                  submission is blocked until you upload the CCG for your enrolled term.
+                </p>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              disabled={discarding}
+              onClick={onDiscard}
+              className="h-9 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold px-4 gap-2 shadow-xs shrink-0 self-start sm:self-center cursor-pointer"
+            >
+              {discarding ? <Loader2 className="size-3.5 animate-spin" /> : <FileUp className="size-3.5" />}
+              <span>Submit another file</span>
+            </Button>
+          </div>
+
+          <div className="p-3 rounded-xl bg-rose-50/70 border border-rose-200/80 text-xs text-rose-900 space-y-1">
+            <span className="font-bold block">Detected mismatch:</span>
+            <ul className="list-disc list-inside space-y-1 font-medium text-[11px] leading-relaxed">
+              {termMismatch?.map((reason) => (
+                <li key={reason}>{reason}</li>
+              ))}
+            </ul>
           </div>
         </div>
       )}
@@ -168,7 +215,12 @@ export function CcgGradeReviewTable({
           </Badge>
         </div>
         <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-          {hasMismatch ? (
+          {hasTermMismatch ? (
+            <>
+              <XCircle className="size-3.5 text-rose-600" />
+              <span className="text-rose-700 font-semibold">Verification Blocked (Term Mismatch)</span>
+            </>
+          ) : hasMismatch ? (
             <>
               <XCircle className="size-3.5 text-rose-600" />
               <span className="text-rose-700 font-semibold">Verification Blocked (Course Mismatch)</span>
@@ -312,9 +364,11 @@ export function CcgGradeReviewTable({
           Submission Confirmation
         </p>
         <p className="text-[11px] text-muted-foreground leading-relaxed">
-          {hasMismatch
-            ? "Submission is currently blocked because the courses or grades on this slip do not match your officially approved enrolled course load. Please click 'Submit another file' to upload a matching Certified Copy of Grades."
-            : "By confirming, you submit your official grade slip for review. The Scholarship Coordinator will verify your grades and GPA against your scholarship agreement guidelines."}
+          {hasTermMismatch
+            ? "Submission is blocked because the school year or semester on this CCG does not match your approved enrollment. Please click 'Submit another file' to upload the Certified Copy of Grades for your enrolled term."
+            : hasMismatch
+              ? "Submission is currently blocked because the courses or grades on this slip do not match your officially approved enrolled course load. Please click 'Submit another file' to upload a matching Certified Copy of Grades."
+              : "By confirming, you submit your official grade slip for review. The Scholarship Coordinator will verify your grades and GPA against your scholarship agreement guidelines."}
         </p>
       </div>
 
@@ -343,16 +397,22 @@ export function CcgGradeReviewTable({
 
         <Button
           type="button"
-          disabled={confirming || doc.status === "NEEDS_REUPLOAD" || gradeItems.length === 0 || hasMismatch}
+          disabled={confirming || doc.status === "NEEDS_REUPLOAD" || gradeItems.length === 0 || submissionBlocked}
           onClick={onConfirm}
           className={`h-9 rounded-xl text-white text-xs font-bold px-5 gap-1.5 shadow-xs cursor-pointer ${
-            hasMismatch
+            submissionBlocked
               ? "bg-stone-400 cursor-not-allowed opacity-60"
               : "bg-[#0a4f42] hover:bg-[#083c32]"
           }`}
         >
           {confirming ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
-          <span>{hasMismatch ? "Submission Blocked (Subject Mismatch)" : "Confirm & Submit Grade Slip for Audit"}</span>
+          <span>
+            {hasTermMismatch
+              ? "Submission Blocked (Term Mismatch)"
+              : hasMismatch
+                ? "Submission Blocked (Subject Mismatch)"
+                : "Confirm & Submit Grade Slip for Audit"}
+          </span>
         </Button>
       </div>
     </div>

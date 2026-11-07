@@ -3,7 +3,7 @@
 import { AlertTriangle, ArrowRight, Clock, FileText, FileUp, Info, ShieldAlert, XCircle } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,26 +34,35 @@ interface CcgUploadCardProps {
 }
 
 function normalizeAy(raw?: string): string {
-  if (!raw) return "2025-2026";
-  const match = raw.match(/\d{4}\s*-\s*\d{4}/);
-  return match ? match[0].replace(/\s+/g, "") : raw.replace(/^(a\.?y\.?|s\.?y\.?)\s*/i, "").trim();
+  if (!raw) return "";
+  const match = raw.match(/(\d{4})\s*[-–—/]\s*(\d{2,4})/);
+  if (!match) return raw.replace(/^(a\.?y\.?|s\.?y\.?)\s*/i, "").trim();
+  const start = Number(match[1]);
+  const end =
+    match[2].length === 2 ? Math.floor(start / 100) * 100 + Number(match[2]) : Number(match[2]);
+  return `${start}-${end}`;
 }
 
 function normalizeSem(raw?: string): string {
-  if (!raw) return "1st Semester";
+  if (!raw) return "";
+  if (/summer|mid[\s-]?year/i.test(raw)) return "Summer";
   if (/second|2nd|sem\s*2|2nd\s*sem/i.test(raw)) return "2nd Semester";
   if (/first|1st|sem\s*1|1st\s*sem/i.test(raw)) return "1st Semester";
   if (/third|3rd|sem\s*3|3rd\s*sem/i.test(raw)) return "3rd Semester";
-  if (/summer|midyear/i.test(raw)) return "Summer";
-  return raw;
+  if (/annual|whole\s*year/i.test(raw)) return "Annual";
+  return raw.trim();
 }
 
 export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUploadCardProps) {
   const { socket } = useContext(SocketContext);
 
-  const [academicYear, setAcademicYear] = useState("2025-2026");
-  const [semester, setSemester] = useState("2nd Semester");
+  const [academicYear, setAcademicYear] = useState("");
+  const [semester, setSemester] = useState("");
   const [enrollmentDetected, setEnrollmentDetected] = useState<string | null>(null);
+  const [extractedTerm, setExtractedTerm] = useState<{
+    academic_year?: string;
+    semester?: string;
+  } | null>(null);
   const [enrollmentState, setEnrollmentState] = useState<CurrentEnrollmentState | null>(null);
   const [enrollmentLoading, setEnrollmentLoading] = useState(true);
 
@@ -83,6 +92,10 @@ export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUplo
         setAcademicYear(ay);
         setSemester(sem);
         setEnrollmentDetected(`${ay} • ${sem}`);
+      } else {
+        setAcademicYear("");
+        setSemester("");
+        setEnrollmentDetected(null);
       }
     } catch (err) {
       console.error("Failed to load active term enrollment:", err);
@@ -121,12 +134,24 @@ export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUplo
     if (typeof extracted.general_average === "number" || typeof extracted.general_average === "string") {
       setGeneralAvg(Number(extracted.general_average) || undefined);
     }
-    if (typeof extracted.academic_year === "string" && extracted.academic_year.trim()) {
-      setAcademicYear(normalizeAy(extracted.academic_year));
-    }
-    if (typeof extracted.semester === "string" && extracted.semester.trim()) {
-      setSemester(normalizeSem(extracted.semester));
-    }
+
+    const detectedAcademicYear =
+      typeof extracted.academic_year === "string" && extracted.academic_year.trim()
+        ? extracted.academic_year.trim()
+        : undefined;
+    const detectedSemester =
+      typeof extracted.semester === "string" && extracted.semester.trim()
+        ? extracted.semester.trim()
+        : undefined;
+
+    // Keep the term detected on the CCG separate from the enrollment term.
+    // The enrollment term is authoritative; extraction is only used to warn
+    // the scholar when the uploaded CCG belongs to a different term.
+    setExtractedTerm(
+      detectedAcademicYear || detectedSemester
+        ? { academic_year: detectedAcademicYear, semester: detectedSemester }
+        : null,
+    );
   }, []);
 
   // 2. Fetch initial draft / pending CCG document
@@ -285,6 +310,29 @@ export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUplo
   const enrollmentStatus = currentEnrollment?.status;
   const isEnrollmentApproved = enrollmentStatus === "APPROVED";
 
+  const termMismatch = useMemo(() => {
+    if (!academicYear || !semester || !extractedTerm) return null;
+
+    const mismatches: string[] = [];
+    const detectedAy = normalizeAy(extractedTerm.academic_year);
+    const detectedSem = normalizeSem(extractedTerm.semester);
+    const enrolledAy = normalizeAy(academicYear);
+    const enrolledSem = normalizeSem(semester);
+
+    if (detectedAy && detectedAy !== enrolledAy) {
+      mismatches.push(
+        `The uploaded CCG shows AY ${detectedAy}, but your approved enrollment is AY ${enrolledAy}.`,
+      );
+    }
+    if (detectedSem && detectedSem !== enrolledSem) {
+      mismatches.push(
+        `The uploaded CCG shows ${detectedSem}, but your approved enrollment is ${enrolledSem}.`,
+      );
+    }
+
+    return mismatches.length > 0 ? mismatches : null;
+  }, [academicYear, semester, extractedTerm]);
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) setFile(e.target.files[0]);
   };
@@ -306,6 +354,7 @@ export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUplo
     }
     try {
       setUploading(true);
+      setExtractedTerm(null);
       const res = await uploadDocuments([file], "CCG");
       setDoc(res);
       setAnalyzingOcr(true);
@@ -327,6 +376,7 @@ export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUplo
       setFile(null);
       setGradeItems([]);
       setGeneralAvg(undefined);
+      setExtractedTerm(null);
       setAnalyzingOcr(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to discard draft.");
@@ -338,6 +388,12 @@ export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUplo
   const handleConfirmAndSubmit = async () => {
     if (!isEnrollmentApproved) {
       toast.error("You cannot submit grades without an approved start-of-term enrollment.");
+      return;
+    }
+    if (termMismatch) {
+      toast.error(
+        "The uploaded CCG's school year or semester does not match your approved enrollment. Please upload the CCG for your enrolled term.",
+      );
       return;
     }
     if (!doc) return;
@@ -794,9 +850,7 @@ export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUplo
               <CcgFileDropzone
                 enrollmentDetected={enrollmentDetected}
                 academicYear={academicYear}
-                setAcademicYear={setAcademicYear}
                 semester={semester}
-                setSemester={setSemester}
                 file={file}
                 onFileSelect={handleFileSelect}
                 uploading={uploading}
@@ -831,9 +885,8 @@ export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUplo
             <CcgGradeReviewTable
               doc={doc}
               academicYear={academicYear}
-              setAcademicYear={setAcademicYear}
               semester={semester}
-              setSemester={setSemester}
+              termMismatch={termMismatch}
               gradeItems={gradeItems}
               enrolledSubjects={currentEnrollment?.enrolled_subjects || []}
               setGradeItems={setGradeItems}

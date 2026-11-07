@@ -1,6 +1,6 @@
 "use client";
 
-import { Info, Loader2, Upload } from "lucide-react";
+import { Info, Loader2, Lock, Upload } from "lucide-react";
 import type React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface CcgFileDropzoneProps {
   enrollmentDetected: string | null;
   academicYear: string;
-  setAcademicYear: (ay: string) => void;
   semester: string;
-  setSemester: (sem: string) => void;
   file: File | null;
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   uploading: boolean;
@@ -22,9 +20,7 @@ interface CcgFileDropzoneProps {
 export function CcgFileDropzone({
   enrollmentDetected,
   academicYear,
-  setAcademicYear,
   semester,
-  setSemester,
   file,
   onFileSelect,
   uploading,
@@ -35,9 +31,9 @@ export function CcgFileDropzone({
       {enrollmentDetected && (
         <div className="p-3 rounded-xl bg-teal-50/70 border border-teal-200 flex items-center justify-between text-xs text-teal-900">
           <div className="flex items-center gap-2">
-            <Info className="size-4 text-[#0a4f42]" />
+            <Lock className="size-4 text-[#0a4f42]" />
             <span>
-              Initial period pre-filled from your enrolled term: <strong>{enrollmentDetected}</strong>
+              Academic term locked to your approved enrollment: <strong>{enrollmentDetected}</strong>
             </span>
           </div>
           <Badge variant="outline" className="bg-white border-teal-300 text-[10px] text-teal-800 font-bold">
@@ -54,21 +50,22 @@ export function CcgFileDropzone({
           <Input
             id="academic-year-input"
             value={academicYear}
-            onChange={(e) => setAcademicYear(e.target.value)}
-            placeholder="e.g. 2025-2026"
-            className="h-9 w-full rounded-xl bg-white text-xs font-semibold text-navy border-input shadow-xs px-3"
+            readOnly
+            aria-readonly="true"
+            placeholder="Syncing from enrollment..."
+            className="h-9 w-full rounded-xl bg-stone-50 text-xs font-semibold text-navy border-input shadow-xs px-3 cursor-not-allowed"
           />
         </div>
         <div>
           <label htmlFor="semester-select" className="text-xs font-semibold text-slate-700 block mb-1">
             Semester
           </label>
-          <Select value={semester} onValueChange={setSemester}>
+          <Select value={semester} disabled>
             <SelectTrigger
               id="semester-select"
-              className="h-9! min-h-9! py-1.5! w-full rounded-xl bg-white text-xs font-semibold text-navy border-input shadow-xs px-3"
+              className="h-9! min-h-9! py-1.5! w-full rounded-xl bg-stone-50 text-xs font-semibold text-navy border-input shadow-xs px-3 cursor-not-allowed"
             >
-              <SelectValue placeholder="Select Semester" />
+              <SelectValue placeholder="Syncing from enrollment..." />
             </SelectTrigger>
             <SelectContent className="rounded-xl border-line">
               <SelectItem value="1st Semester" className="text-xs font-medium">
@@ -87,6 +84,12 @@ export function CcgFileDropzone({
           </Select>
         </div>
       </div>
+
+      <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+        <Info className="size-3.5 text-[#0a4f42]" />
+        The CCG you upload must show the same school year and semester as your approved enrollment. A mismatched
+        term will be blocked.
+      </p>
 
       <div className="flex flex-col items-center justify-center border-2 border-dashed border-line rounded-2xl p-8 bg-[#faf8f5] hover:bg-[#f5f2ed] transition-colors cursor-pointer text-center relative">
         <input
