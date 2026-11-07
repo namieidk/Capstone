@@ -87,8 +87,8 @@ export function CcgFileDropzone({
 
       <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
         <Info className="size-3.5 text-[#0a4f42]" />
-        The CCG you upload must show the same school year and semester as your approved enrollment. A mismatched
-        term will be blocked.
+        The CCG you upload must be issued under your registered name and show the same school year and semester as
+        your approved enrollment. A mismatched name or term will be blocked.
       </p>
 
       <div className="flex flex-col items-center justify-center border-2 border-dashed border-line rounded-2xl p-8 bg-[#faf8f5] hover:bg-[#f5f2ed] transition-colors cursor-pointer text-center relative">

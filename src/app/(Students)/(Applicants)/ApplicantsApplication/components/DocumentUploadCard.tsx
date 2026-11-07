@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, GraduationCap, Loader2, UploadCloud, X } from "lucide-react";
+import { FileText, GraduationCap, Info, Loader2, UploadCloud, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -65,6 +65,14 @@ export function DocumentUploadCard({
             </div>
           </div>
         </div>
+
+        <p className="flex items-start gap-2 text-xs text-muted-foreground leading-relaxed">
+          <Info className="mt-0.5 size-3.5 shrink-0 text-sky-700" />
+          <span>
+            The document must be issued under your registered first and last name. Uploads whose printed name does not
+            match your account, or whose name cannot be read, will be rejected automatically.
+          </span>
+        </p>
 
         <div>
           <Input
