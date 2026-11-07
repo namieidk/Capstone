@@ -18,6 +18,38 @@ interface VerifyORModalProps {
   onSuccess: () => void;
 }
 
+function normalizeSemester(sem?: string | null): string {
+  if (!sem) return "";
+  const s = sem.trim().toLowerCase();
+  if (s.includes("summer") || s.includes("midyear") || s.includes("mid-year")) {
+    return "Summer";
+  }
+  if (s.includes("3rd") || s.includes("third") || s.includes("tri 3") || s.includes("trimest 3")) {
+    return "3rd Trimester";
+  }
+  if (s.includes("2nd") || s.includes("second") || s.includes("sem 2") || s.includes("term 2")) {
+    return "2nd Semester";
+  }
+  if (s.includes("1st") || s.includes("first") || s.includes("sem 1") || s.includes("term 1")) {
+    return "1st Semester";
+  }
+  return sem.trim();
+}
+
+function normalizeAcademicYear(ay?: string | null): string {
+  if (!ay) return "";
+  const clean = ay.replace(/^(A\.?Y\.?|S\.?Y\.?|SCHOOL\s+YEAR|ACADEMIC\s+YEAR)[:\s]*/i, "").trim();
+  const match = clean.match(/(\d{2,4})\s*[-/]\s*(\d{2,4})/);
+  if (match) {
+    let startYear = match[1];
+    let endYear = match[2];
+    if (startYear.length === 2) startYear = `20${startYear}`;
+    if (endYear.length === 2) endYear = `20${endYear}`;
+    return `${startYear}-${endYear}`;
+  }
+  return clean.replace(/\s+/g, "");
+}
+
 export function VerifyORModal({ disbursement, open, onClose, onSuccess }: VerifyORModalProps) {
   const [submitting, setSubmitting] = useState(false);
   const [showRejectForm, setShowRejectForm] = useState(false);
@@ -241,6 +273,50 @@ export function VerifyORModal({ disbursement, open, onClose, onSuccess }: Verify
                         </strong>
                       </div>
                     )}
+                    {disbursement.or_document.extracted_data.academic_year && (() => {
+                      const orAy = disbursement.or_document.extracted_data.academic_year;
+                      const expAy = disbursement.academic_year;
+                      const isMatch = Boolean(
+                        orAy && expAy && normalizeAcademicYear(orAy) === normalizeAcademicYear(expAy)
+                      );
+                      return (
+                        <div>
+                          <span className="text-slate-500">School Year: </span>
+                          <strong className={isMatch ? "text-emerald-800 font-semibold" : "text-rose-600 font-bold"}>
+                            {orAy}
+                          </strong>
+                          <span
+                            className={`ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                              isMatch ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
+                            }`}
+                          >
+                            {isMatch ? "Match" : "Mismatch"}
+                          </span>
+                        </div>
+                      );
+                    })()}
+                    {disbursement.or_document.extracted_data.semester && (() => {
+                      const orSem = disbursement.or_document.extracted_data.semester;
+                      const expSem = disbursement.semester;
+                      const isMatch = Boolean(
+                        orSem && expSem && normalizeSemester(orSem) === normalizeSemester(expSem)
+                      );
+                      return (
+                        <div>
+                          <span className="text-slate-500">Semester: </span>
+                          <strong className={isMatch ? "text-emerald-800 font-semibold" : "text-rose-600 font-bold"}>
+                            {orSem}
+                          </strong>
+                          <span
+                            className={`ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                              isMatch ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
+                            }`}
+                          >
+                            {isMatch ? "Match" : "Mismatch"}
+                          </span>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               )}

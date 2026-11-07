@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   ExternalLink,
   FileCheck2,
+  GraduationCap,
   Hash,
   Loader2,
   Sparkles,
@@ -38,6 +39,38 @@ interface SubmitORDialogProps {
   onSuccess: () => void;
 }
 
+function normalizeSemester(sem?: string | null): string {
+  if (!sem) return "";
+  const s = sem.trim().toLowerCase();
+  if (s.includes("summer") || s.includes("midyear") || s.includes("mid-year")) {
+    return "Summer";
+  }
+  if (s.includes("3rd") || s.includes("third") || s.includes("tri 3") || s.includes("trimest 3")) {
+    return "3rd Trimester";
+  }
+  if (s.includes("2nd") || s.includes("second") || s.includes("sem 2") || s.includes("term 2")) {
+    return "2nd Semester";
+  }
+  if (s.includes("1st") || s.includes("first") || s.includes("sem 1") || s.includes("term 1")) {
+    return "1st Semester";
+  }
+  return sem.trim();
+}
+
+function normalizeAcademicYear(ay?: string | null): string {
+  if (!ay) return "";
+  const clean = ay.replace(/^(A\.?Y\.?|S\.?Y\.?|SCHOOL\s+YEAR|ACADEMIC\s+YEAR)[:\s]*/i, "").trim();
+  const match = clean.match(/(\d{2,4})\s*[-/]\s*(\d{2,4})/);
+  if (match) {
+    let startYear = match[1];
+    let endYear = match[2];
+    if (startYear.length === 2) startYear = `20${startYear}`;
+    if (endYear.length === 2) endYear = `20${endYear}`;
+    return `${startYear}-${endYear}`;
+  }
+  return clean.replace(/\s+/g, "");
+}
+
 export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: SubmitORDialogProps) {
   const [fileUrl, setFileUrl] = useState("");
   const [fileName, setFileName] = useState("");
@@ -56,6 +89,32 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
     effectiveAmount != null && Math.abs(effectiveAmount - expectedAmount) > 0.01;
   const isAmountMatching =
     effectiveAmount != null && Math.abs(effectiveAmount - expectedAmount) <= 0.01;
+
+  const expectedAcademicYear = disbursement.academic_year;
+  const expectedSemester = disbursement.semester;
+
+  const detectedAcademicYear = extractedData?.academic_year || null;
+  const detectedSemester = extractedData?.semester || null;
+
+  const isSemMismatch = Boolean(
+    detectedSemester &&
+      expectedSemester &&
+      normalizeSemester(detectedSemester) !== normalizeSemester(expectedSemester)
+  );
+
+  const isAyMismatch = Boolean(
+    detectedAcademicYear &&
+      expectedAcademicYear &&
+      normalizeAcademicYear(detectedAcademicYear) !== normalizeAcademicYear(expectedAcademicYear)
+  );
+
+  const isTermMismatch = isSemMismatch || isAyMismatch;
+
+  const isTermMatching = Boolean(
+    (detectedSemester || detectedAcademicYear) &&
+      !isSemMismatch &&
+      !isAyMismatch
+  );
 
   const handleClose = () => {
     setFileUrl("");
@@ -85,9 +144,32 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
         }
         const scannedAmount =
           res.extracted_data.amount_paid != null ? Number(res.extracted_data.amount_paid) : null;
-        if (scannedAmount != null && Math.abs(scannedAmount - expectedAmount) > 0.01) {
+        const scannedSem = res.extracted_data.semester;
+        const scannedAy = res.extracted_data.academic_year;
+
+        const amountMismatch =
+          scannedAmount != null && Math.abs(scannedAmount - expectedAmount) > 0.01;
+        const semMismatch = Boolean(
+          scannedSem &&
+            expectedSemester &&
+            normalizeSemester(scannedSem) !== normalizeSemester(expectedSemester)
+        );
+        const ayMismatch = Boolean(
+          scannedAy &&
+            expectedAcademicYear &&
+            normalizeAcademicYear(scannedAy) !== normalizeAcademicYear(expectedAcademicYear)
+        );
+
+        if (amountMismatch) {
           toast.error(
             `Receipt Rejected: Detected amount (₱${scannedAmount.toLocaleString("en-PH", { minimumFractionDigits: 2 })}) does not match the check disbursement (₱${expectedAmount.toLocaleString("en-PH", { minimumFractionDigits: 2 })}).`
+          );
+        } else if (semMismatch || ayMismatch) {
+          const reasons: string[] = [];
+          if (semMismatch) reasons.push(`Semester: "${scannedSem}" (Expected: "${expectedSemester}")`);
+          if (ayMismatch) reasons.push(`School Year: "${scannedAy}" (Expected: "${expectedAcademicYear}")`);
+          toast.error(
+            `Receipt Rejected: Scanned term does not match your enrolled term (${reasons.join(", ")}).`
           );
         } else {
           toast.success("Receipt scanned successfully!");
@@ -112,6 +194,16 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
     if (isAmountMismatch) {
       toast.error(
         `Submission blocked: The receipt amount (₱${effectiveAmount?.toLocaleString("en-PH", { minimumFractionDigits: 2 })}) does not match the check disbursement amount (₱${expectedAmount.toLocaleString("en-PH", { minimumFractionDigits: 2 })}).`
+      );
+      return;
+    }
+
+    if (isTermMismatch) {
+      const mismatches: string[] = [];
+      if (isSemMismatch) mismatches.push(`Semester ("${detectedSemester}" vs enrolled "${expectedSemester}")`);
+      if (isAyMismatch) mismatches.push(`School Year ("${detectedAcademicYear}" vs enrolled "${expectedAcademicYear}")`);
+      toast.error(
+        `Submission blocked: The scanned term does not match your enrolled term (${mismatches.join(", ")}).`
       );
       return;
     }
@@ -320,6 +412,63 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
             </div>
           )}
 
+          {/* Term & School Year Validation Feedback */}
+          {fileUrl && isTermMismatch && (
+            <div className="p-4 bg-rose-50 border-2 border-rose-300 rounded-xl space-y-2.5 text-xs text-rose-950 animate-in fade-in duration-200">
+              <div className="flex items-center gap-2 text-rose-800 font-bold">
+                <XCircle className="size-4.5 text-rose-600 shrink-0" />
+                <span>Receipt Rejected: Term & School Year Mismatch</span>
+              </div>
+              <p className="text-[11px] leading-relaxed text-rose-800">
+                The term detected on this receipt does not match your enrolled semester and school year for this tuition payment:
+              </p>
+              <div className="p-2.5 bg-rose-100/70 rounded-lg text-[11px] font-semibold text-rose-900 border border-rose-200 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-stone-600">Scanned Receipt Term:</span>
+                  <span className="font-mono font-bold text-rose-700">
+                    {[detectedAcademicYear, detectedSemester].filter(Boolean).join(" • ") || "Unrecognized"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between border-t border-rose-200/80 pt-1">
+                  <span className="text-stone-600">Required Enrolled Term:</span>
+                  <span className="font-mono font-bold text-navy">
+                    {expectedAcademicYear} • {expectedSemester}
+                  </span>
+                </div>
+              </div>
+              <p className="text-[11px] text-rose-700">
+                Official Receipts must correspond to the exact enrolled semester and school year of the issued tuition check. Submission is blocked until a matching receipt is uploaded.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setFileUrl("");
+                  setFileName("");
+                  setOrNumber("");
+                  setExtractedData(null);
+                  setManualAmount("");
+                }}
+                className="h-7 text-xs font-semibold text-rose-700 border-rose-300 hover:bg-rose-100/70"
+              >
+                Upload Correct Receipt
+              </Button>
+            </div>
+          )}
+
+          {fileUrl && isTermMatching && (
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs text-emerald-900">
+              <div className="flex items-center gap-1.5 font-bold">
+                <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
+                <span>Enrolled Term Verified</span>
+              </div>
+              <span className="font-mono font-extrabold text-emerald-800">
+                {expectedAcademicYear} • {expectedSemester}
+              </span>
+            </div>
+          )}
+
           {fileUrl && detectedAmount === null && (
             <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl space-y-2 text-xs">
               <div className="flex items-center gap-1.5 text-amber-900 font-bold">
@@ -423,6 +572,28 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
                     </span>
                   </div>
                 )}
+                {extractedData.academic_year && (
+                  <div className="flex items-center gap-1.5 text-slate-700">
+                    <Calendar className="size-3 text-slate-400" />
+                    <span>
+                      School Year:{" "}
+                      <strong className={isAyMismatch ? "text-rose-700 font-bold" : "text-slate-900"}>
+                        {extractedData.academic_year}
+                      </strong>
+                    </span>
+                  </div>
+                )}
+                {extractedData.semester && (
+                  <div className="flex items-center gap-1.5 text-slate-700">
+                    <GraduationCap className="size-3 text-slate-400" />
+                    <span>
+                      Semester:{" "}
+                      <strong className={isSemMismatch ? "text-rose-700 font-bold" : "text-slate-900"}>
+                        {extractedData.semester}
+                      </strong>
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -453,23 +624,28 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
                 !fileUrl ||
                 !orNumber.trim() ||
                 isAmountMismatch ||
+                isTermMismatch ||
                 (detectedAmount === null && !manualAmount)
               }
               className={`h-9 rounded-xl text-xs font-bold px-5 gap-1.5 transition-colors ${
-                isAmountMismatch
+                isAmountMismatch || isTermMismatch
                   ? "bg-rose-600 hover:bg-rose-700 text-white cursor-not-allowed opacity-90"
                   : "bg-[#0a4f42] hover:bg-[#083c32] text-white"
               }`}
             >
               {submitting ? (
                 <Loader2 className="size-3.5 animate-spin" />
-              ) : isAmountMismatch ? (
+              ) : isAmountMismatch || isTermMismatch ? (
                 <XCircle className="size-3.5" />
               ) : (
                 <CheckCircle2 className="size-3.5" />
               )}
               <span>
-                {isAmountMismatch ? "Submission Blocked (Wrong Amount)" : "Confirm & Submit Receipt"}
+                {isAmountMismatch
+                  ? "Submission Blocked (Wrong Amount)"
+                  : isTermMismatch
+                    ? "Submission Blocked (Term Mismatch)"
+                    : "Confirm & Submit Receipt"}
               </span>
             </Button>
           </div>

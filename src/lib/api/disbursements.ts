@@ -187,6 +187,8 @@ export interface ExtractedOfficialReceiptData {
   payment_mode?: string | null;
   check_number_reference?: string | null;
   remarks?: string | null;
+  academic_year?: string | null;
+  semester?: string | null;
   confidence_level?: string | null;
 }
 
