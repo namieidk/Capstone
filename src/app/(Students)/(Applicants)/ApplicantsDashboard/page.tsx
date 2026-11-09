@@ -60,6 +60,7 @@ export default function DashboardPage() {
 
   const isRejected = application?.status === "REJECTED";
   const isApproved = application?.status === "APPROVED";
+  const rejectionRemarks = application?.rejection_reason || application?.scholar_profile?.archive_notes || null;
   const verifiedCount = documents.filter((d) => d.status === "VERIFIED" || d.status === "STUDENT_CONFIRMED").length;
   const totalDocs = documents.length;
 
@@ -132,12 +133,12 @@ export default function DashboardPage() {
               </div>
 
               {/* Reviewer Feedback / Remarks */}
-              {application?.rejection_reason && (
+              {rejectionRemarks && (
                 <div className="mt-5 rounded-xl border border-destructive/20 bg-destructive/5 p-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-destructive mb-1">
                     Evaluation Committee Feedback
                   </p>
-                  <p className="text-sm text-foreground/90 leading-relaxed italic">"{application.rejection_reason}"</p>
+                  <p className="text-sm text-foreground/90 leading-relaxed italic">"{rejectionRemarks}"</p>
                 </div>
               )}
 

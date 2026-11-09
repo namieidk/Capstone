@@ -30,7 +30,6 @@ export const GRANTOR_NAV_GROUPS: NavGroup[] = [
       { key: "scholars", label: "Scholars", icon: GraduationCap, href: "/grantMonitor" },
       { key: "payments", label: "Disbursements", icon: CreditCard, href: "/grantPayment" },
       { key: "meeting", label: "Meetings", icon: Calendar, href: "/grantMeeting" },
-      { key: "archive", label: "Archive", icon: Archive, href: "/grantArchive" },
     ],
   },
   {
@@ -44,6 +43,7 @@ export const GRANTOR_NAV_GROUPS: NavGroup[] = [
 
 export const GRANTOR_NAV_ITEMS: NavItem[] = [
   ...GRANTOR_NAV_GROUPS.flatMap((group) => group.items),
+  { key: "archive", label: "Archive", icon: Archive, href: "/grantArchive" },
   { key: "settings", label: "Settings", icon: Settings, href: "/grantSettings" },
   { key: "profile", label: "Profile", icon: User, href: "/grantProfile" },
 ];

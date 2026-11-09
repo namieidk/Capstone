@@ -39,7 +39,6 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
   },
   // Hidden (not removed): kept so routes stay reachable and can be re-enabled.
   { key: "monitor", label: "Monitor", icon: Activity, href: "/Adminmonitor", hidden: true },
-  { key: "archive", label: "Archive", icon: Archive, href: "/AdminArchive" },
   {
     key: "meeting",
     label: "Meeting",
@@ -85,6 +84,7 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
     icon: SlidersHorizontal,
     href: "/GlobalSettings",
   },
+  { key: "archive", label: "Archive", icon: Archive, href: "/AdminArchive" },
   {
     key: "settings",
     label: "Settings",

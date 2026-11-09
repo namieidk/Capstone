@@ -70,7 +70,7 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
   const displayName = user ? `${user.first_name} ${user.last_name}` : "Guest";
   const displayInitials = user ? getInitials(user.first_name, user.last_name) : "G";
 
-  const isFooterItem = (key: string) => key === "settings" || key === "profile";
+  const isFooterItem = (key: string) => key === "archive" || key === "settings" || key === "profile";
   const mainItems = config.items.filter((item) => !item.hidden && !isFooterItem(item.key));
   const footerNavItems = config.items.filter((item) => !item.hidden && isFooterItem(item.key));
 

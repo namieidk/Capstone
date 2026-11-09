@@ -70,7 +70,7 @@ export default function ApplicantsApplicationPage() {
       ]);
       setApplication(app);
       setDocuments(docs);
-      if (!initializedRef.current) {
+      if (!initializedRef.current || app?.status === "REJECTED" || app?.status === "APPROVED") {
         setStep(resolveStep(app, docs));
         initializedRef.current = true;
       }

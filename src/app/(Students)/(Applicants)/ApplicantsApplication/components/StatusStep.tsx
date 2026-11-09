@@ -55,6 +55,7 @@ export function StatusStep({
   const meta = appStatusMeta(application.status);
   const isApproved = application.status === "APPROVED";
   const isRejected = application.status === "REJECTED";
+  const rejectionRemarks = application.rejection_reason || application.scholar_profile?.archive_notes || null;
   const verifiedDocsCount = documents.filter((d) => d.status === "VERIFIED" || d.status === "STUDENT_CONFIRMED").length;
 
   const gmailInquiryUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=support@viascholar.edu&su=${encodeURIComponent(
@@ -77,7 +78,7 @@ export function StatusStep({
               <div className="flex flex-col gap-1.5 max-w-2xl">
                 <div className="flex items-center gap-2">
                   <Badge variant="destructive" className="px-2.5 py-0.5 text-xs font-semibold">
-                    Application Unsuccessful
+                    Company Verdict: Not Accepted
                   </Badge>
                   {application?.decision_at && (
                     <span className="text-xs text-muted-foreground">
@@ -109,12 +110,12 @@ export function StatusStep({
           </div>
 
           {/* Official Feedback / Remarks */}
-          {application.rejection_reason && (
+          {rejectionRemarks && (
             <div className="mt-5 rounded-xl border border-destructive/20 bg-destructive/5 p-4">
               <p className="text-xs font-semibold uppercase tracking-wider text-destructive mb-1">
                 Evaluation Committee Remarks:
               </p>
-              <p className="text-sm leading-relaxed text-foreground italic">"{application.rejection_reason}"</p>
+              <p className="text-sm leading-relaxed text-foreground italic">"{rejectionRemarks}"</p>
             </div>
           )}
 

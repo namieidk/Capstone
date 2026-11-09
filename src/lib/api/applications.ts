@@ -18,6 +18,8 @@ export interface Application {
   decision_at?: string | null;
   provider_notes?: string | null;
   rejection_reason?: string | null;
+  archived_at?: string | null;
+  scholar_profile?: Partial<ScholarProfileSummary> | null;
 }
 
 // Mirrors the backend ScholarProfile row as included by GET /applications
@@ -36,6 +38,9 @@ export interface ScholarProfileSummary {
   school_address?: string | null;
   relative_employee?: string | null;
   current_year_level?: number | null;
+  archived_at?: string | null;
+  archive_reason?: string | null;
+  archive_notes?: string | null;
   _count?: {
     documents: number;
     contracts?: number;

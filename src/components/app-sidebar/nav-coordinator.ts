@@ -30,7 +30,6 @@ export const COORDINATOR_NAV_GROUPS: NavGroup[] = [
       { key: "scholars", label: "Scholars", icon: GraduationCap, href: "/CoordinatorMonitor" },
       { key: "payment", label: "Disbursements", icon: CreditCard, href: "/CoordinatorPayment" },
       { key: "meeting", label: "Meetings", icon: Calendar, href: "/CoordinatorMeeting" },
-      { key: "archive", label: "Archive", icon: Archive, href: "/CoordinatorArchive" },
     ],
   },
   {
@@ -44,6 +43,7 @@ export const COORDINATOR_NAV_GROUPS: NavGroup[] = [
 
 export const COORDINATOR_NAV_ITEMS: NavItem[] = [
   ...COORDINATOR_NAV_GROUPS.flatMap((group) => group.items),
+  { key: "archive", label: "Archive", icon: Archive, href: "/CoordinatorArchive" },
   { key: "settings", label: "Settings", icon: Settings, href: "/CoordinatorSettings" },
   { key: "profile", label: "Profile", icon: User, href: "/CoordinatorProfile" },
 ];
