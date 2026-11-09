@@ -1,196 +1,310 @@
 "use client";
 
-import { ArrowRight, Clock, Mail, TrendingDown, TrendingUp } from "lucide-react";
-import { useState } from "react";
+import { Archive, ArrowRight, Clock, Mail, TrendingDown, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
 import { type ActiveScholar, GRADE_STATUS_COLORS, PAYMENT_STATUS_COLORS } from "@/components/Coordinatorshared";
+import { useToast } from "@/components/ToastContext";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
+import { ApiError } from "@/lib/api";
+import {
+  archiveReasonLabel,
+  archiveScholar,
+  SCHOLAR_ARCHIVE_REASONS,
+  type ScholarArchiveReason,
+} from "@/lib/api/archive";
 
 interface ScholarMonitorDrawerProps {
   scholar: ActiveScholar | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onArchived?: () => void;
 }
 
-export function ScholarMonitorDrawer({ scholar, open, onOpenChange }: ScholarMonitorDrawerProps) {
+export function ScholarMonitorDrawer({ scholar, open, onOpenChange, onArchived }: ScholarMonitorDrawerProps) {
   const [view, setView] = useState<"overview" | "history">("overview");
+  const { showToast } = useToast();
+  const [confirmArchive, setConfirmArchive] = useState(false);
+  const [archiveReason, setArchiveReason] = useState<ScholarArchiveReason>("GRADUATED");
+  const [archiveNotes, setArchiveNotes] = useState("");
+  const [archiving, setArchiving] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setView("overview");
+      setConfirmArchive(false);
+      setArchiveReason("GRADUATED");
+      setArchiveNotes("");
+      setArchiving(false);
+    }
+  }, [open]);
 
   if (!scholar) return null;
 
+  async function handleArchive() {
+    if (!scholar) return;
+    setArchiving(true);
+    try {
+      await archiveScholar(scholar.id, {
+        archive_reason: archiveReason,
+        archive_notes: archiveNotes.trim() || undefined,
+      });
+      showToast("Scholar archived successfully.", "success");
+      setConfirmArchive(false);
+      onOpenChange(false);
+      onArchived?.();
+    } catch (err) {
+      showToast(err instanceof ApiError ? err.message : "Failed to archive scholar.", "error");
+      setConfirmArchive(false);
+    } finally {
+      setArchiving(false);
+    }
+  }
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto p-6 space-y-5">
-        <SheetHeader className="pb-3 border-b border-border space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-sm">
-              {scholar.initials}
-            </div>
-            <div>
-              <SheetTitle className="text-base font-bold text-foreground">{scholar.name}</SheetTitle>
-              <p className="text-xs text-muted-foreground">{scholar.course}</p>
-            </div>
-          </div>
-        </SheetHeader>
-
-        {view === "overview" ? (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Current Standing
-              </span>
-              <div className="grid grid-cols-2 gap-2.5">
-                <div className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-0.5">
-                  <span className="text-[11px] text-muted-foreground">Current GWA</span>
-                  <div className="text-lg font-bold text-foreground flex items-center gap-1.5">
-                    {scholar.gwa}%
-                    {scholar.trend === "up" ? (
-                      <TrendingUp className="w-4 h-4 text-emerald-600" />
-                    ) : (
-                      <TrendingDown className="w-4 h-4 text-rose-500" />
-                    )}
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-0.5">
-                  <span className="text-[11px] text-muted-foreground">Disbursement</span>
-                  <div className="text-base font-bold text-foreground">{scholar.disbursement}</div>
-                </div>
+    <>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent className="w-full sm:max-w-md overflow-y-auto p-6 space-y-5">
+          <SheetHeader className="pb-3 border-b border-border space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-sm">
+                {scholar.initials}
+              </div>
+              <div>
+                <SheetTitle className="text-base font-bold text-foreground">{scholar.name}</SheetTitle>
+                <p className="text-xs text-muted-foreground">{scholar.course}</p>
               </div>
             </div>
+          </SheetHeader>
 
-            <div className="space-y-2">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Semester Payment
-              </span>
-              <Card className="border-border bg-card shadow-xs">
-                <CardContent className="p-3.5 flex items-center justify-between">
-                  <div>
-                    <div className="font-semibold text-xs text-foreground">{scholar.currentPayment.term}</div>
-                    <div className="text-base font-bold text-primary">
-                      ₱{scholar.currentPayment.amount.toLocaleString()}
+          {view === "overview" ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Current Standing
+                </span>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-0.5">
+                    <span className="text-[11px] text-muted-foreground">Current GWA</span>
+                    <div className="text-lg font-bold text-foreground flex items-center gap-1.5">
+                      {scholar.gwa}%
+                      {scholar.trend === "up" ? (
+                        <TrendingUp className="w-4 h-4 text-emerald-600" />
+                      ) : (
+                        <TrendingDown className="w-4 h-4 text-rose-500" />
+                      )}
                     </div>
                   </div>
-                  <Badge
-                    variant="secondary"
-                    className="text-[11px] py-0.5"
-                    style={{
-                      backgroundColor: PAYMENT_STATUS_COLORS[scholar.currentPayment.status].bg,
-                      color: PAYMENT_STATUS_COLORS[scholar.currentPayment.status].text,
-                    }}
-                  >
-                    {scholar.currentPayment.status}
-                  </Badge>
-                </CardContent>
-              </Card>
-            </div>
 
-            <div className="pt-1">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setView("history")}
-                className="w-full justify-between text-xs h-9"
-              >
-                <span className="flex items-center gap-1.5">
-                  <Clock className="w-4 h-4 text-primary" />
-                  View Academic & Payment History
+                  <div className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-0.5">
+                    <span className="text-[11px] text-muted-foreground">Disbursement</span>
+                    <div className="text-base font-bold text-foreground">{scholar.disbursement}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Semester Payment
                 </span>
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </div>
-
-            <div className="p-3.5 rounded-lg bg-muted/30 border border-border/60 text-xs text-muted-foreground space-y-1">
-              <span className="font-semibold text-foreground">Monitoring Note:</span>
-              <p className="text-[11px] leading-relaxed">
-                {scholar.health === "good" && "This scholar is meeting all retention requirements. No action needed."}
-                {scholar.health === "warn" &&
-                  "Active probation or pending document upload. Regular follow-up recommended."}
-                {scholar.health === "bad" &&
-                  "Academic audit requirement flagged. Action is required before disbursement can proceed."}
-              </p>
-            </div>
-
-            <Button size="sm" className="w-full gap-1.5 bg-primary text-primary-foreground text-xs h-9">
-              <Mail className="w-4 h-4" />
-              Message Scholar
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setView("overview")}
-              className="text-xs h-8 -ml-2 text-muted-foreground"
-            >
-              ← Back to overview
-            </Button>
-
-            <div className="space-y-2">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Grade History
-              </span>
-              <div className="space-y-1.5">
-                {scholar.gradeHistory.map((g) => (
-                  <div
-                    key={`${g.term}-${g.gwa}`}
-                    className="p-2.5 rounded-md bg-muted/40 border border-border/60 flex items-center justify-between text-xs"
-                  >
+                <Card className="border-border bg-card shadow-xs">
+                  <CardContent className="p-3.5 flex items-center justify-between">
                     <div>
-                      <div className="font-semibold text-foreground">{g.term}</div>
-                      <div className="text-[11px] text-muted-foreground">GWA: {g.gwa}%</div>
+                      <div className="font-semibold text-xs text-foreground">{scholar.currentPayment.term}</div>
+                      <div className="text-base font-bold text-primary">
+                        ₱{scholar.currentPayment.amount.toLocaleString()}
+                      </div>
                     </div>
                     <Badge
                       variant="secondary"
-                      className="text-[10px] py-0"
+                      className="text-[11px] py-0.5"
                       style={{
-                        backgroundColor: GRADE_STATUS_COLORS[g.status].bg,
-                        color: GRADE_STATUS_COLORS[g.status].text,
+                        backgroundColor: PAYMENT_STATUS_COLORS[scholar.currentPayment.status].bg,
+                        color: PAYMENT_STATUS_COLORS[scholar.currentPayment.status].text,
                       }}
                     >
-                      {g.status}
+                      {scholar.currentPayment.status}
                     </Badge>
-                  </div>
-                ))}
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="pt-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setView("history")}
+                  className="w-full justify-between text-xs h-9"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="w-4 h-4 text-primary" />
+                    View Academic & Payment History
+                  </span>
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <div className="p-3.5 rounded-lg bg-muted/30 border border-border/60 text-xs text-muted-foreground space-y-1">
+                <span className="font-semibold text-foreground">Monitoring Note:</span>
+                <p className="text-[11px] leading-relaxed">
+                  {scholar.health === "good" && "This scholar is meeting all retention requirements. No action needed."}
+                  {scholar.health === "warn" &&
+                    "Active probation or pending document upload. Regular follow-up recommended."}
+                  {scholar.health === "bad" &&
+                    "Academic audit requirement flagged. Action is required before disbursement can proceed."}
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2 pt-1">
+                <Button size="sm" className="w-full gap-1.5 bg-primary text-primary-foreground text-xs h-9">
+                  <Mail className="w-4 h-4" />
+                  Message Scholar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full gap-1.5 text-xs h-9 text-bad border-bad/30 hover:bg-bad-bg"
+                  onClick={() => setConfirmArchive(true)}
+                  type="button"
+                >
+                  <Archive className="w-4 h-4" />
+                  Archive Scholar
+                </Button>
               </div>
             </div>
+          ) : (
+            <div className="space-y-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setView("overview")}
+                className="text-xs h-8 -ml-2 text-muted-foreground"
+              >
+                ← Back to overview
+              </Button>
 
-            <div className="space-y-2">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Payment History
-              </span>
-              <div className="space-y-1.5">
-                {scholar.paymentHistory.map((p) => (
-                  <div
-                    key={`${p.term}-${p.date}`}
-                    className="p-2.5 rounded-md bg-muted/40 border border-border/60 flex items-center justify-between text-xs"
-                  >
-                    <div>
-                      <div className="font-semibold text-foreground">{p.term}</div>
-                      <div className="text-[11px] text-muted-foreground">{p.date}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-foreground">₱{p.amount.toLocaleString()}</div>
+              <div className="space-y-2">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Grade History
+                </span>
+                <div className="space-y-1.5">
+                  {scholar.gradeHistory.map((g) => (
+                    <div
+                      key={`${g.term}-${g.gwa}`}
+                      className="p-2.5 rounded-md bg-muted/40 border border-border/60 flex items-center justify-between text-xs"
+                    >
+                      <div>
+                        <div className="font-semibold text-foreground">{g.term}</div>
+                        <div className="text-[11px] text-muted-foreground">GWA: {g.gwa}%</div>
+                      </div>
                       <Badge
                         variant="secondary"
                         className="text-[10px] py-0"
                         style={{
-                          backgroundColor: PAYMENT_STATUS_COLORS[p.status].bg,
-                          color: PAYMENT_STATUS_COLORS[p.status].text,
+                          backgroundColor: GRADE_STATUS_COLORS[g.status].bg,
+                          color: GRADE_STATUS_COLORS[g.status].text,
                         }}
                       >
-                        {p.status}
+                        {g.status}
                       </Badge>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Payment History
+                </span>
+                <div className="space-y-1.5">
+                  {scholar.paymentHistory.map((p) => (
+                    <div
+                      key={`${p.term}-${p.date}`}
+                      className="p-2.5 rounded-md bg-muted/40 border border-border/60 flex items-center justify-between text-xs"
+                    >
+                      <div>
+                        <div className="font-semibold text-foreground">{p.term}</div>
+                        <div className="text-[11px] text-muted-foreground">{p.date}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-foreground">₱{p.amount.toLocaleString()}</div>
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] py-0"
+                          style={{
+                            backgroundColor: PAYMENT_STATUS_COLORS[p.status].bg,
+                            color: PAYMENT_STATUS_COLORS[p.status].text,
+                          }}
+                        >
+                          {p.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      <AlertDialog open={confirmArchive} onOpenChange={setConfirmArchive}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive {scholar.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Archived scholars are hidden from active lists but never deleted. They keep all linked records, and the
+              action can be undone from the Archive page. Choose the reason for archiving.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-3 py-1">
+            <Select value={archiveReason} onValueChange={(value) => setArchiveReason(value as ScholarArchiveReason)}>
+              <SelectTrigger aria-label="Archive reason" className="h-10 text-sm w-full">
+                <SelectValue placeholder="Select a reason" />
+              </SelectTrigger>
+              <SelectContent>
+                {SCHOLAR_ARCHIVE_REASONS.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {archiveReasonLabel(r)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Textarea
+              value={archiveNotes}
+              onChange={(e) => setArchiveNotes(e.target.value)}
+              placeholder="Optional note (e.g. graduated in June 2026)"
+              className="text-sm resize-none min-h-[70px]"
+            />
           </div>
-        )}
-      </SheetContent>
-    </Sheet>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={archiving}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleArchive}
+              disabled={archiving}
+              className="bg-navy text-white hover:bg-navy/90"
+            >
+              {archiving ? "Archiving..." : "Confirm Archive"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

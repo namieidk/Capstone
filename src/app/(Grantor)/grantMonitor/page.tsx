@@ -196,7 +196,7 @@ export default function GrantorMonitorPage() {
       />
 
       {/* Active Scholar Monitor Drawer */}
-      <ScholarMonitorDrawer scholar={selectedScholar} open={openMonitorDrawer} onOpenChange={setOpenMonitorDrawer} />
+      <ScholarMonitorDrawer scholar={selectedScholar} open={openMonitorDrawer} onOpenChange={setOpenMonitorDrawer} onArchived={refreshAll} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, Building2, Check, Plus, Trash2, X } from "lucide-react";
+import { AlertCircle, Archive, Building2, Check, Plus, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   AlertDialog,
@@ -18,16 +18,23 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  type ArchiveRecordInput,
+  archiveReasonLabel,
+  SCHOOL_ARCHIVE_REASONS,
+  type SchoolArchiveReason,
+} from "@/lib/api/archive";
 import type { School, SchoolGrading, SchoolInput } from "@/lib/api/settings";
 import { schoolSchema } from "@/lib/validation";
 
 interface SchoolSheetProps {
   school: School | null;
   open: boolean;
+  canDelete?: boolean;
   onOpenChange: (open: boolean) => void;
   gradingSystems?: SchoolGrading[];
   onUpdate: (id: number, input: Partial<SchoolInput>) => Promise<void>;
-  onDelete: (id: number) => Promise<void>;
+  onDelete: (id: number, data: ArchiveRecordInput) => Promise<void>;
 }
 
 interface SpecialCodeEntry {
@@ -75,7 +82,7 @@ function getDefaultSpecialCodes(scale: string): SpecialCodeEntry[] {
   ];
 }
 
-export function SchoolSheet({ school, open, onOpenChange, onUpdate, onDelete }: SchoolSheetProps) {
+export function SchoolSheet({ school, open, canDelete = false, onOpenChange, onUpdate, onDelete }: SchoolSheetProps) {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [address, setAddress] = useState("");
@@ -88,6 +95,8 @@ export function SchoolSheet({ school, open, onOpenChange, onUpdate, onDelete }: 
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [archiveReason, setArchiveReason] = useState<SchoolArchiveReason>("SCHOOL_CLOSED");
+  const [archiveNotes, setArchiveNotes] = useState("");
   const [error, setError] = useState("");
 
   const isPending = Boolean(school && !school.is_active);
@@ -121,6 +130,9 @@ export function SchoolSheet({ school, open, onOpenChange, onUpdate, onDelete }: 
       }
 
       setIsActive(school.is_active);
+      setConfirmDelete(false);
+      setArchiveReason("SCHOOL_CLOSED");
+      setArchiveNotes("");
       setError("");
     }
   }, [school, open]);
@@ -203,11 +215,14 @@ export function SchoolSheet({ school, open, onOpenChange, onUpdate, onDelete }: 
     setDeleting(true);
     setError("");
     try {
-      await onDelete(school.school_id);
+      await onDelete(school.school_id, {
+        archive_reason: archiveReason,
+        archive_notes: archiveNotes.trim() || undefined,
+      });
       setConfirmDelete(false);
       onOpenChange(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete school.");
+      setError(err instanceof Error ? err.message : "Failed to archive school.");
     } finally {
       setDeleting(false);
     }
@@ -257,7 +272,9 @@ export function SchoolSheet({ school, open, onOpenChange, onUpdate, onDelete }: 
                     <span>Pending Institution Verification</span>
                   </div>
                   <p className="mt-1 text-[11px] text-amber-800/90 leading-relaxed">
-                    This school was proposed by an applicant during their scholarship application. Please review or complete the details below, assign an appropriate grading scale, and click <strong>Verify Institution</strong> to activate it for all scholars.
+                    This school was proposed by an applicant during their scholarship application. Please review or
+                    complete the details below, assign an appropriate grading scale, and click{" "}
+                    <strong>Verify Institution</strong> to activate it for all scholars.
                   </p>
                 </div>
               )}
@@ -432,16 +449,20 @@ export function SchoolSheet({ school, open, onOpenChange, onUpdate, onDelete }: 
             </div>
 
             <div className="mt-8 flex items-center justify-between border-t border-line pt-5">
-              <Button
-                type="button"
-                variant="outline"
-                className="h-10.5 px-4.5 rounded-xl text-sm font-medium text-bad border-bad/30 hover:bg-bad-bg"
-                onClick={() => setConfirmDelete(true)}
-                disabled={saving || deleting}
-              >
-                <Trash2 className="size-4 mr-1.5" />
-                Delete
-              </Button>
+              {canDelete ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-10.5 px-4.5 rounded-xl text-sm font-medium text-bad border-bad/30 hover:bg-bad-bg"
+                  onClick={() => setConfirmDelete(true)}
+                  disabled={saving || deleting}
+                >
+                  <Archive className="size-4 mr-1.5" />
+                  Archive
+                </Button>
+              ) : (
+                <div />
+              )}
               <div className="flex items-center gap-3">
                 <Button
                   type="button"
@@ -477,16 +498,39 @@ export function SchoolSheet({ school, open, onOpenChange, onUpdate, onDelete }: 
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {school.school_name}?</AlertDialogTitle>
+            <AlertDialogTitle>Archive {school.school_name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove this academic institution? If scholars are already linked to this school,
-              it will be safely deactivated instead of deleted.
+              This will move the institution to the archive. Scholars already linked to this school will keep their
+              records and references intact, but the school will no longer appear in active lists. Choose the reason for
+              archiving.
             </AlertDialogDescription>
           </AlertDialogHeader>
+
+          <div className="space-y-3 py-1">
+            <Select value={archiveReason} onValueChange={(value) => setArchiveReason(value as SchoolArchiveReason)}>
+              <SelectTrigger aria-label="Archive reason" className="h-10 text-sm w-full">
+                <SelectValue placeholder="Select a reason" />
+              </SelectTrigger>
+              <SelectContent>
+                {SCHOOL_ARCHIVE_REASONS.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {archiveReasonLabel(r)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Textarea
+              value={archiveNotes}
+              onChange={(e) => setArchiveNotes(e.target.value)}
+              placeholder="Optional note (e.g. campus closed or merged)"
+              className="text-sm resize-none min-h-[70px]"
+            />
+          </div>
+
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={deleting} className="bg-bad text-white hover:bg-bad/90">
-              {deleting ? "Deleting..." : "Confirm Delete"}
+              {deleting ? "Archiving..." : "Confirm Archive"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

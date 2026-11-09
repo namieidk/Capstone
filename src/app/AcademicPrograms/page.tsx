@@ -9,11 +9,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useAuth } from "@/contexts/AuthContext";
 import { useSocketEvent } from "@/contexts/SocketContext";
 import { ApiError } from "@/lib/api";
+import { type ArchiveRecordInput, archiveProgram } from "@/lib/api/archive";
 import {
   type AcademicProgram,
   type AcademicProgramInput,
   createAcademicProgram,
-  deleteAcademicProgram,
   listAcademicPrograms,
   updateAcademicProgram,
 } from "@/lib/api/settings";
@@ -34,6 +34,7 @@ export default function AcademicProgramsPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const canManage = user?.role === "ADMIN" || user?.role === "GRANTOR" || user?.role === "COORDINATOR";
+  const canArchive = user?.role === "ADMIN" || user?.role === "GRANTOR";
 
   const fetchPrograms = useCallback(async () => {
     setLoading(true);
@@ -100,15 +101,15 @@ export default function AcademicProgramsPage() {
     }
   }
 
-  async function handleDelete(id: number): Promise<void> {
+  async function handleDelete(id: number, data: ArchiveRecordInput): Promise<void> {
     try {
-      await deleteAcademicProgram(id);
-      showToast("Academic program removed successfully.");
+      const res = await archiveProgram(id, data);
+      showToast(res.message || "Academic program archived successfully.");
       setSelectedProgram(null);
       await fetchPrograms();
     } catch (err) {
-      console.error("Failed to delete program:", err);
-      throw new Error(err instanceof ApiError ? err.message : "Failed to delete program.");
+      console.error("Failed to archive program:", err);
+      throw new Error(err instanceof ApiError ? err.message : "Failed to archive program.");
     }
   }
 
@@ -156,7 +157,7 @@ export default function AcademicProgramsPage() {
       <ProgramSheet
         program={selectedProgram}
         open={!!selectedProgram}
-        canDelete={canManage}
+        canDelete={canArchive}
         onOpenChange={(open) => !open && setSelectedProgram(null)}
         onUpdate={handleUpdate}
         onDelete={handleDelete}

@@ -9,14 +9,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useAuth } from "@/contexts/AuthContext";
 import { useSocketEvent } from "@/contexts/SocketContext";
 import { ApiError } from "@/lib/api";
-import {
-  createSchool,
-  deleteSchool,
-  listSchools,
-  type School,
-  type SchoolInput,
-  updateSchool,
-} from "@/lib/api/settings";
+import { type ArchiveRecordInput, archiveSchool } from "@/lib/api/archive";
+import { createSchool, listSchools, type School, type SchoolInput, updateSchool } from "@/lib/api/settings";
 import { AddSchoolSheet } from "../GradingSystems/components/AddSchoolSheet";
 import { SchoolSheet } from "../GradingSystems/components/SchoolSheet";
 import { SchoolTable } from "../GradingSystems/components/SchoolTable";
@@ -33,6 +27,7 @@ export default function SchoolsPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const canManage = user?.role === "ADMIN" || user?.role === "GRANTOR" || user?.role === "COORDINATOR";
+  const canArchive = user?.role === "ADMIN" || user?.role === "GRANTOR";
 
   const fetchSchools = useCallback(async () => {
     setLoading(true);
@@ -99,15 +94,15 @@ export default function SchoolsPage() {
     }
   }
 
-  async function handleDelete(id: number): Promise<void> {
+  async function handleDelete(id: number, data: ArchiveRecordInput): Promise<void> {
     try {
-      const res = await deleteSchool(id);
-      showToast(res.message || "Academic institution removed successfully.");
+      const res = await archiveSchool(id, data);
+      showToast(res.message || "Academic institution archived successfully.");
       setSelectedSchool(null);
       await fetchSchools();
     } catch (err) {
-      console.error("Failed to delete school:", err);
-      throw new Error(err instanceof ApiError ? err.message : "Failed to delete school.");
+      console.error("Failed to archive school:", err);
+      throw new Error(err instanceof ApiError ? err.message : "Failed to archive school.");
     }
   }
 
@@ -155,6 +150,7 @@ export default function SchoolsPage() {
       <SchoolSheet
         school={selectedSchool}
         open={!!selectedSchool}
+        canDelete={canArchive}
         onOpenChange={(open) => !open && setSelectedSchool(null)}
         onUpdate={handleUpdate}
         onDelete={handleDelete}

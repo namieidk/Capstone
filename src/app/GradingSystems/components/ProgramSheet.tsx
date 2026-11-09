@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, BookOpen, Check, Trash2, X } from "lucide-react";
+import { AlertCircle, Archive, BookOpen, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   AlertDialog,
@@ -18,6 +18,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  type ArchiveRecordInput,
+  archiveReasonLabel,
+  PROGRAM_ARCHIVE_REASONS,
+  type ProgramArchiveReason,
+} from "@/lib/api/archive";
 import type { AcademicProgram, AcademicProgramInput } from "@/lib/api/settings";
 import { academicProgramSchema } from "@/lib/validation";
 
@@ -27,7 +33,7 @@ interface ProgramSheetProps {
   canDelete?: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdate: (id: number, input: Partial<AcademicProgramInput>) => Promise<void>;
-  onDelete: (id: number) => Promise<void>;
+  onDelete: (id: number, data: ArchiveRecordInput) => Promise<void>;
 }
 
 export function ProgramSheet({
@@ -47,6 +53,8 @@ export function ProgramSheet({
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [archiveReason, setArchiveReason] = useState<ProgramArchiveReason>("PROGRAM_OUTDATED");
+  const [archiveNotes, setArchiveNotes] = useState("");
 
   const isPending = Boolean(program && !program.is_active);
 
@@ -57,6 +65,9 @@ export function ProgramSheet({
       setCategory(program.category || "College");
       setDescription(program.description || "");
       setIsActive(program.is_active);
+      setShowConfirmDelete(false);
+      setArchiveReason("PROGRAM_OUTDATED");
+      setArchiveNotes("");
       setError("");
     }
   }, [program]);
@@ -100,11 +111,14 @@ export function ProgramSheet({
     if (!program) return;
     setDeleting(true);
     try {
-      await onDelete(program.program_id);
+      await onDelete(program.program_id, {
+        archive_reason: archiveReason,
+        archive_notes: archiveNotes.trim() || undefined,
+      });
       setShowConfirmDelete(false);
       onOpenChange(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete academic program.");
+      setError(err instanceof Error ? err.message : "Failed to archive academic program.");
     } finally {
       setDeleting(false);
     }
@@ -154,7 +168,9 @@ export function ProgramSheet({
                   <span>Pending Program Verification</span>
                 </div>
                 <p className="mt-1 text-[11px] text-amber-800/90 leading-relaxed">
-                  This academic program was proposed by an applicant during application. Please verify its official course title, assign an appropriate program code (e.g. BSIT, BSED), and click <strong>Verify Program</strong> to activate it for all scholars.
+                  This academic program was proposed by an applicant during application. Please verify its official
+                  course title, assign an appropriate program code (e.g. BSIT, BSED), and click{" "}
+                  <strong>Verify Program</strong> to activate it for all scholars.
                 </p>
               </div>
             )}
@@ -237,8 +253,8 @@ export function ProgramSheet({
                   onClick={() => setShowConfirmDelete(true)}
                   disabled={saving || deleting}
                 >
-                  <Trash2 className="size-4" />
-                  Delete
+                  <Archive className="size-4" />
+                  Archive
                 </Button>
               ) : (
                 <div />
@@ -265,15 +281,38 @@ export function ProgramSheet({
       <AlertDialog open={showConfirmDelete} onOpenChange={setShowConfirmDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Academic Program</AlertDialogTitle>
+            <AlertDialogTitle>Archive Academic Program</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete{" "}
+              Are you sure you want to archive{" "}
               <strong>
                 {program.program_name} ({program.program_code})
               </strong>
-              ? This action cannot be undone.
+              ? It will no longer appear in active lists but will remain in the archive for records. Choose the reason
+              for archiving.
             </AlertDialogDescription>
           </AlertDialogHeader>
+
+          <div className="space-y-3 py-1">
+            <Select value={archiveReason} onValueChange={(value) => setArchiveReason(value as ProgramArchiveReason)}>
+              <SelectTrigger aria-label="Archive reason" className="h-10 text-sm w-full">
+                <SelectValue placeholder="Select a reason" />
+              </SelectTrigger>
+              <SelectContent>
+                {PROGRAM_ARCHIVE_REASONS.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {archiveReasonLabel(r)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Textarea
+              value={archiveNotes}
+              onChange={(e) => setArchiveNotes(e.target.value)}
+              placeholder="Optional note (e.g. curriculum replaced in AY 2026–2027)"
+              className="text-sm resize-none min-h-[70px]"
+            />
+          </div>
+
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
@@ -281,7 +320,7 @@ export function ProgramSheet({
               disabled={deleting}
               className="bg-bad text-bad-fg hover:bg-bad/90"
             >
-              {deleting ? "Deleting..." : "Delete Program"}
+              {deleting ? "Archiving..." : "Archive Program"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

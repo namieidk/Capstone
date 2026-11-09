@@ -44,8 +44,8 @@ function getErrorMessage(status: number, data: unknown): string {
         }
         return "Invalid email or password.";
       }
-      if (status === 403) return "You do not have permission to perform this action.";
-      if (status === 404) return "The requested resource was not found.";
+      if (status === 403) return msg;
+      if (status === 404) return msg;
       if (status === 409) return msg;
       return msg;
     }

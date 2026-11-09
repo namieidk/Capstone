@@ -297,7 +297,7 @@ export default function CoordinatorMonitorPage() {
       />
 
       {/* Active Scholar Monitor Drawer */}
-      <ScholarMonitorDrawer scholar={selectedScholar} open={openMonitorDrawer} onOpenChange={setOpenMonitorDrawer} />
+      <ScholarMonitorDrawer scholar={selectedScholar} open={openMonitorDrawer} onOpenChange={setOpenMonitorDrawer} onArchived={refreshAll} />
     </div>
   );
 }

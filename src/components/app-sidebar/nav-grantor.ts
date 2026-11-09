@@ -1,4 +1,5 @@
 import {
+  Archive,
   BarChart3,
   BookOpen,
   Building2,
@@ -29,6 +30,7 @@ export const GRANTOR_NAV_GROUPS: NavGroup[] = [
       { key: "scholars", label: "Scholars", icon: GraduationCap, href: "/grantMonitor" },
       { key: "payments", label: "Disbursements", icon: CreditCard, href: "/grantPayment" },
       { key: "meeting", label: "Meetings", icon: Calendar, href: "/grantMeeting" },
+      { key: "archive", label: "Archive", icon: Archive, href: "/grantArchive" },
     ],
   },
   {
