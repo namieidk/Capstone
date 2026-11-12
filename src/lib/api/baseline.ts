@@ -150,8 +150,8 @@ export interface PendingBaselineItem {
 }
 
 // 1. Get Scholar Baseline State
-export async function getMyBaseline(): Promise<ScholarBaselineState> {
-  return apiGet<ScholarBaselineState>(`${B}/me`);
+export async function getMyBaseline(forceRefresh = true): Promise<ScholarBaselineState> {
+  return apiGet<ScholarBaselineState>(`${B}/me${forceRefresh ? "?refresh=true" : ""}`);
 }
 
 // 2. Select or propose school

@@ -58,6 +58,9 @@ export default function ScholarProspectusPage() {
     socket.on("school_grading:verified", handleRefresh);
     socket.on("document:verified", handleRefresh);
     socket.on("grade_report:verified", handleRefresh);
+    socket.on("enrollment:approved", handleRefresh);
+    socket.on("enrollment:changes_requested", handleRefresh);
+    socket.on("enrollment:rejected", handleRefresh);
 
     return () => {
       socket.off("baseline:prospectus_processed", handleRefresh);
@@ -68,6 +71,9 @@ export default function ScholarProspectusPage() {
       socket.off("school_grading:verified", handleRefresh);
       socket.off("document:verified", handleRefresh);
       socket.off("grade_report:verified", handleRefresh);
+      socket.off("enrollment:approved", handleRefresh);
+      socket.off("enrollment:changes_requested", handleRefresh);
+      socket.off("enrollment:rejected", handleRefresh);
     };
   }, [socket, fetchBaseline]);
 

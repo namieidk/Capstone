@@ -85,9 +85,13 @@ export function GrantorEnrollmentsTab({
   };
 
   const getStatusBadge = (item: TermEnrollment) => {
-    if (item.status === "APPROVED") {
+    const isEndorsedOrCompleted =
+      item.status === "APPROVED" ||
+      (item.status === "COMPLETED" && Boolean(item.disbursement || item.reviewed_by_employee_id));
+
+    if (isEndorsedOrCompleted) {
       const disbStatus = item.disbursement?.status;
-      if (disbStatus === "SETTLED") {
+      if (disbStatus === "SETTLED" || item.status === "COMPLETED") {
         return (
           <Badge className="bg-emerald-50 text-emerald-800 border-emerald-300 text-xs gap-1 font-semibold py-0.5">
             <CheckCircle2 className="size-3 text-emerald-600" />

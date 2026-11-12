@@ -85,7 +85,9 @@ export function GrantorEnrollmentDrawer({ enrollmentId, open, onClose, onReviewe
         rawDocUrl.startsWith("data:"))
   );
   const activeDocUrl = isValidDocUrl ? rawDocUrl : null;
-  const isEndorsed = enrollment?.status === "APPROVED";
+  const isEndorsed =
+    enrollment?.status === "APPROVED" ||
+    (enrollment?.status === "COMPLETED" && Boolean(enrollment?.disbursement || enrollment?.reviewed_by_employee_id));
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end transition-opacity">
