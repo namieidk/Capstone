@@ -31,6 +31,7 @@ import {
   submitScholarOfficialReceipt,
   uploadOfficialReceiptFile,
 } from "@/lib/api/disbursements";
+import { timeExtraction } from "@/lib/extraction-timer";
 
 interface SubmitORDialogProps {
   disbursement: DisbursementItem | null;
@@ -131,7 +132,11 @@ export function SubmitORDialog({ disbursement, open, onClose, onSuccess }: Submi
 
     try {
       setUploading(true);
-      const res = await uploadOfficialReceiptFile(file);
+      const res = await timeExtraction(
+        "Receipt",
+        () => uploadOfficialReceiptFile(file),
+        { files: [file], fileName: file.name, fileSize: file.size }
+      );
 
       setFileUrl(res.file_url);
       setFileName(res.file_name);

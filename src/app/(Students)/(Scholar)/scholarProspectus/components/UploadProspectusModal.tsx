@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { uploadProspectus } from "@/lib/api/baseline";
+import { timeExtraction } from "@/lib/extraction-timer";
 
 interface UploadProspectusModalProps {
   open: boolean;
@@ -33,7 +34,11 @@ export function UploadProspectusModal({ open, onOpenChange, onSuccess }: UploadP
       const formData = new FormData();
       formData.append("files", file);
 
-      await uploadProspectus(formData);
+      await timeExtraction(
+        "Prospectus",
+        () => uploadProspectus(formData),
+        { files: [file], fileName: file.name, fileSize: file.size }
+      );
       onSuccess();
       onOpenChange(false);
       setFile(null);

@@ -16,6 +16,7 @@ import {
   retryDocumentOcr,
   type ScholarDocument,
 } from "@/lib/api/documents";
+import { resolveApplicantDocType, startExtractionTimer } from "@/lib/extraction-timer";
 import { DocumentListItem } from "./DocumentListItem";
 import { DocumentReviewDialog } from "./DocumentReviewDialog";
 import { DocumentStatusBanner } from "./DocumentStatusBanner";
@@ -96,6 +97,9 @@ export function DocumentsStep({
     try {
       setRetryingId(docId);
       setError("");
+      const doc = documents.find((d) => d.document_id === docId);
+      const docType = resolveApplicantDocType(doc?.document_type || targetDocType);
+      startExtractionTimer(docType, { documentId: docId, isRetry: true });
       await retryDocumentOcr(docId);
     } catch (err: unknown) {
       const msg =

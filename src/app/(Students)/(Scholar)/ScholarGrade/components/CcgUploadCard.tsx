@@ -19,6 +19,7 @@ import {
   type ScholarDocument,
   uploadDocuments,
 } from "@/lib/api/documents";
+import { endExtractionTimer, startExtractionTimer } from "@/lib/extraction-timer";
 import { type CurrentEnrollmentState, getCurrentEnrollment } from "@/lib/api/enrollment";
 import { CcgCardSkeleton } from "./CcgCardSkeleton";
 import { CcgFileDropzone } from "./CcgFileDropzone";
@@ -220,6 +221,22 @@ export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUplo
           if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
           setDoc((prev) => (prev ? { ...prev, ...fresh } : null));
           setAnalyzingOcr(false);
+          const rawExt = (fresh.confirmed_data || fresh.extracted_data || {}) as Record<string, unknown>;
+          const gradesList = rawExt.grades || rawExt.grade_items || rawExt.subjects;
+          const extractionDetails = {
+            status: fresh.status,
+            reason: fresh.rejection_reason,
+            general_average: rawExt.general_average,
+            subjects_count: Array.isArray(gradesList) ? gradesList.length : undefined,
+          };
+          endExtractionTimer(currentDocId, {
+            status: fresh.status === "NEEDS_REUPLOAD" ? "REJECTED" : "SUCCESS",
+            details: extractionDetails,
+          });
+          endExtractionTimer("CCG", {
+            status: fresh.status === "NEEDS_REUPLOAD" ? "REJECTED" : "SUCCESS",
+            details: extractionDetails,
+          });
           if (fresh.status === "NEEDS_REUPLOAD") {
             toast.error(
               fresh.rejection_reason ||
@@ -253,6 +270,22 @@ export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUplo
           .then((fresh) => {
             setDoc((prev) => (prev ? { ...prev, ...fresh } : null));
             setAnalyzingOcr(false);
+            const rawExt = (fresh.confirmed_data || fresh.extracted_data || {}) as Record<string, unknown>;
+            const gradesList = rawExt.grades || rawExt.grade_items || rawExt.subjects;
+            const extractionDetails = {
+              status: fresh.status,
+              reason: fresh.rejection_reason,
+              general_average: rawExt.general_average,
+              subjects_count: Array.isArray(gradesList) ? gradesList.length : undefined,
+            };
+            endExtractionTimer(payload.documentId, {
+              status: fresh.status === "NEEDS_REUPLOAD" ? "REJECTED" : "SUCCESS",
+              details: extractionDetails,
+            });
+            endExtractionTimer("CCG", {
+              status: fresh.status === "NEEDS_REUPLOAD" ? "REJECTED" : "SUCCESS",
+              details: extractionDetails,
+            });
             if (fresh.status === "NEEDS_REUPLOAD") {
               toast.error(
                 fresh.rejection_reason ||
@@ -355,11 +388,21 @@ export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUplo
     try {
       setUploading(true);
       setExtractedTerm(null);
+      startExtractionTimer("CCG", { files: [file], fileName: file.name, fileSize: file.size });
       const res = await uploadDocuments([file], "CCG");
       setDoc(res);
       setAnalyzingOcr(true);
+      if (res?.document_id) {
+        startExtractionTimer("CCG", {
+          documentId: res.document_id,
+          files: [file],
+          fileName: file.name,
+          fileSize: file.size,
+        });
+      }
       toast.success("Document uploaded! Extracting course grades...");
     } catch (err) {
+      endExtractionTimer("CCG", { status: "FAILED" });
       toast.error(err instanceof Error ? err.message : "Failed to upload CCG.");
     } finally {
       setUploading(false);

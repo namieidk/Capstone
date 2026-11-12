@@ -18,6 +18,7 @@ import {
   uploadCorDocument,
   uploadSoaDocument,
 } from "@/lib/api/enrollment";
+import { timeExtraction } from "@/lib/extraction-timer";
 
 export function useScholarEnrollmentState() {
   const { socket } = useContext(SocketContext);
@@ -232,7 +233,11 @@ export function useScholarEnrollmentState() {
   const handleCorUpload = async (file: File) => {
     try {
       setIsUploadingCor(true);
-      const res = await uploadCorDocument(file);
+      const res = await timeExtraction(
+        "COR",
+        () => uploadCorDocument(file),
+        { files: [file], fileName: file.name, fileSize: file.size }
+      );
       setCorDocId(res.document_id);
       setCorFile({ name: file.name, size: `${(file.size / 1024).toFixed(1)} KB`, url: res.file_url });
       updateExtractedState(res.extracted_data);
@@ -249,7 +254,11 @@ export function useScholarEnrollmentState() {
   const handleSoaUpload = async (file: File) => {
     try {
       setIsUploadingSoa(true);
-      const res = await uploadSoaDocument(file);
+      const res = await timeExtraction(
+        "Assessment",
+        () => uploadSoaDocument(file),
+        { files: [file], fileName: file.name, fileSize: file.size }
+      );
       setSoaDocId(res.document_id);
       setSoaFile({ name: file.name, size: `${(file.size / 1024).toFixed(1)} KB`, url: res.file_url });
       updateExtractedState(res.extracted_data);
@@ -266,7 +275,11 @@ export function useScholarEnrollmentState() {
   const handleConsolidatedUpload = async (file: File) => {
     try {
       setIsUploadingConsolidated(true);
-      const res = await uploadConsolidatedDocument(file);
+      const res = await timeExtraction(
+        "COR & Assessment (Consolidated)",
+        () => uploadConsolidatedDocument(file),
+        { files: [file], fileName: file.name, fileSize: file.size }
+      );
       setCorDocId(res.document_id);
       setConsolidatedFile({ name: file.name, size: `${(file.size / 1024).toFixed(1)} KB`, url: res.file_url });
       updateExtractedState(res.extracted_data);

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { type ScholarProspectus, uploadProspectus } from "@/lib/api/baseline";
+import { timeExtraction } from "@/lib/extraction-timer";
 
 interface Step2ProspectusUploadProps {
   existingProspectus?: ScholarProspectus | null;
@@ -64,7 +65,11 @@ export function Step2ProspectusUpload({ existingProspectus, onSuccess, onBack }:
         formData.append("files", f);
       }
 
-      const res = await uploadProspectus(formData);
+      const res = await timeExtraction(
+        "Prospectus",
+        () => uploadProspectus(formData),
+        { files, fileName: files.map((f) => f.name).join(", ") }
+      );
       setExtractedResult(res.prospectus);
     } catch (err: unknown) {
       console.error("Prospectus extraction failed:", err);

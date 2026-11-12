@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { uploadHistoricalCcg } from "@/lib/api/baseline";
+import { timeExtraction } from "@/lib/extraction-timer";
 
 interface UploadHistoricalCcgModalProps {
   open: boolean;
@@ -37,7 +38,11 @@ export function UploadHistoricalCcgModal({ open, onOpenChange, onSuccess }: Uplo
       const formData = new FormData();
       formData.append("files", file);
 
-      const res = await uploadHistoricalCcg(formData);
+      const res = await timeExtraction(
+        "Historical CCG",
+        () => uploadHistoricalCcg(formData),
+        { files: [file], fileName: file.name, fileSize: file.size }
+      );
       setResultSummary({
         creditedCount: res.matched_credited?.length || 0,
         unmappedCount: res.unmapped_items?.length || 0,

@@ -17,6 +17,7 @@ import {
   type ScholarDocument,
   uploadDocuments,
 } from "@/lib/api/documents";
+import { endExtractionTimer, resolveApplicantDocType, startExtractionTimer } from "@/lib/extraction-timer";
 import type { ApplicationFormValues } from "@/lib/validation";
 import { ApplicationStep } from "./components/ApplicationStep";
 import { DocumentsStep } from "./components/DocumentsStep";
@@ -87,7 +88,19 @@ export default function ApplicantsApplicationPage() {
   }, [fetchAll]);
 
   // Real-time lifecycle events for applicant application
-  useSocketEvent("document:ocr_completed", async () => {
+  useSocketEvent("document:ocr_completed", async (payload: unknown) => {
+    const ocrData = payload as { documentId?: number; documentType?: string; status?: string } | undefined;
+    const docType = resolveApplicantDocType(ocrData?.documentType);
+    if (ocrData?.documentId) {
+      endExtractionTimer(ocrData.documentId, {
+        status: ocrData.status === "NEEDS_REUPLOAD" ? "REJECTED" : "SUCCESS",
+        details: ocrData as Record<string, unknown>,
+      });
+    }
+    endExtractionTimer(docType, {
+      status: ocrData?.status === "NEEDS_REUPLOAD" ? "REJECTED" : "SUCCESS",
+      details: ocrData as Record<string, unknown>,
+    });
     await refreshDocuments();
     showToast("AI extraction completed! Your grades are ready to review.");
   });
@@ -111,6 +124,19 @@ export default function ApplicantsApplicationPage() {
         setDocuments(fresh);
         if (!fresh.some((d) => d.status === "PENDING") || attempts >= 15) {
           clearInterval(interval);
+          fresh.forEach((d) => {
+            if (d.status !== "PENDING") {
+              const dt = resolveApplicantDocType(d.document_type);
+              endExtractionTimer(d.document_id, {
+                status: d.status === "NEEDS_REUPLOAD" ? "REJECTED" : "SUCCESS",
+                details: { extracted_data: d.extracted_data },
+              });
+              endExtractionTimer(dt, {
+                status: d.status === "NEEDS_REUPLOAD" ? "REJECTED" : "SUCCESS",
+                details: { extracted_data: d.extracted_data },
+              });
+            }
+          });
         }
       } catch {
         // Silently retry
@@ -196,13 +222,34 @@ export default function ApplicantsApplicationPage() {
   }
 
   async function handleUpload(files: File[], type: string): Promise<void> {
+    const docType = resolveApplicantDocType(type);
+    startExtractionTimer(docType, {
+      files,
+      fileName: files.map((f) => f.name).join(", "),
+      fileSize: files.reduce((sum, f) => sum + f.size, 0),
+    });
     await wrapAction(async () => {
-      await uploadDocuments(files, type);
+      const res = await uploadDocuments(files, type);
+      if (res?.document_id) {
+        startExtractionTimer(docType, {
+          documentId: res.document_id,
+          files,
+          fileName: files.map((f) => f.name).join(", "),
+        });
+      }
       await refreshDocuments();
     }, "Documents uploaded successfully!");
   }
 
   async function handleReplace(id: number, files: File[]): Promise<void> {
+    const targetDoc = documents.find((d) => d.document_id === id);
+    const docType = resolveApplicantDocType(targetDoc?.document_type);
+    startExtractionTimer(docType, {
+      documentId: id,
+      files,
+      fileName: files.map((f) => f.name).join(", "),
+      isReplace: true,
+    });
     await wrapAction(async () => {
       await replaceDocument(id, files);
       await refreshDocuments();
