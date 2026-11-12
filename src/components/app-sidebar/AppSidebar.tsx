@@ -113,12 +113,15 @@ export function AppSidebar({ role, ...props }: AppSidebarProps) {
         >
           <Link
             href={item.href}
-            className="flex h-full w-full items-center justify-start gap-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0"
+            className="flex h-full w-full items-center justify-start gap-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 relative"
           >
             <Icon
               className={`size-4.5 shrink-0 transition-colors my-auto ${isActive ? "text-white!" : "text-white/80"}`}
             />
             <span className="truncate group-data-[collapsible=icon]:hidden">{item.label}</span>
+            {itemBadge !== undefined && (
+              <span className="absolute top-1 right-1 size-2 rounded-full bg-amber hidden group-data-[collapsible=icon]:block shadow-xs" />
+            )}
           </Link>
         </SidebarMenuButton>
         {itemBadge !== undefined && (

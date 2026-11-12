@@ -100,6 +100,11 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
               );
             };
 
+            // Academic appeals awaiting Grantor verdict
+            const grantorPendingAppealsCount = Array.isArray(appeals)
+              ? appeals.filter((a) => a.appeal_status === "PENDING_GRANTOR").length
+              : 0;
+
             if (opts.role === "grantor") {
               // For Grantor: count Coordinator-endorsed enrollments awaiting authorization
               pendingEnrollments = enrollments.filter(
@@ -107,8 +112,13 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
               ).length;
               // For Grantor: count disbursements pending batch authorization
               pendingDisbursements = disbList.filter((d) => d.status === "PENDING").length;
-              // For Grantor: count pending academic second-chance appeals
-              pendingAppeals = appeals.filter((a) => a.appeal_status === "PENDING_GRANTOR").length;
+              // For Grantor: count strictly pending second-chance appeals awaiting decision
+              pendingAppeals = grantorPendingAppealsCount;
+
+              // Grantor Scholars badge strictly reflects actionable pendings (endorsed enrollments + pending appeals).
+              // Never include coordinator-only baseline reviews, and never count scholars on probation / "Needs Attention".
+              setScholars(pendingEnrollments + pendingAppeals);
+              setDisbursements(pendingDisbursements);
             } else if (opts.role === "coordinator") {
               // For Coordinator: count enrollments awaiting coordinator audit
               pendingEnrollments = enrollments.filter((e) => e.status === "PENDING_REVIEW").length;
@@ -122,8 +132,11 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
                   isScholarGradeDoc(g) &&
                   (g.status === "PENDING" || g.status === "STUDENT_CONFIRMED" || g.status === "PASSED_PRECHECK"),
               ).length;
+
+              setScholars(pendingBaselines + pendingEnrollments + pendingGradeAudits);
+              setDisbursements(pendingDisbursements);
             } else {
-              // For Admin
+              // For Admin: sum all staff action queues
               pendingEnrollments = enrollments.filter(
                 (e) =>
                   e.status === "PENDING_REVIEW" ||
@@ -135,11 +148,11 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
               pendingGradeAudits = gradeDocs.filter(
                 (g) => isScholarGradeDoc(g) && (g.status === "PENDING" || g.status === "STUDENT_CONFIRMED"),
               ).length;
-              pendingAppeals = appeals.filter((a) => a.appeal_status === "PENDING_GRANTOR").length;
-            }
+              pendingAppeals = grantorPendingAppealsCount;
 
-            setScholars(pendingBaselines + pendingEnrollments + pendingGradeAudits + pendingAppeals);
-            setDisbursements(pendingDisbursements);
+              setScholars(pendingBaselines + pendingEnrollments + pendingGradeAudits + pendingAppeals);
+              setDisbursements(pendingDisbursements);
+            }
           }
         })
         .catch(() => undefined);
@@ -204,6 +217,11 @@ export function useStaffBadges(opts: { includeApplicants: boolean; role?: Sideba
   useSocketEvent("document:changes_requested", refreshBadges);
   useSocketEvent("academic_appeal:submitted", refreshBadges);
   useSocketEvent("academic_appeal:reviewed", refreshBadges);
+  useSocketEvent("grade_report:appealed", refreshBadges);
+  useSocketEvent("grade_report:appeal_decided", refreshBadges);
+  useSocketEvent("appeal:submitted", refreshBadges);
+  useSocketEvent("appeal:reviewed", refreshBadges);
+  useSocketEvent("grade_report:evaluated", refreshBadges);
   useSocketEvent("contract:created", refreshBadges);
   useSocketEvent("contract:signed", refreshBadges);
   useSocketEvent("school:created", refreshBadges);

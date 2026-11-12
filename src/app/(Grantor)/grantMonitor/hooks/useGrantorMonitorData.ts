@@ -107,6 +107,10 @@ export function useGrantorMonitorData() {
     socket.on("grade_report:submitted", handleRefresh);
     socket.on("academic_appeal:submitted", handleRefresh);
     socket.on("academic_appeal:reviewed", handleRefresh);
+    socket.on("grade_report:appealed", handleRefresh);
+    socket.on("grade_report:appeal_decided", handleRefresh);
+    socket.on("appeal:submitted", handleRefresh);
+    socket.on("appeal:reviewed", handleRefresh);
 
     return () => {
       socket.off("baseline:submitted_for_review", handleRefresh);
@@ -124,6 +128,10 @@ export function useGrantorMonitorData() {
       socket.off("grade_report:submitted", handleRefresh);
       socket.off("academic_appeal:submitted", handleRefresh);
       socket.off("academic_appeal:reviewed", handleRefresh);
+      socket.off("grade_report:appealed", handleRefresh);
+      socket.off("grade_report:appeal_decided", handleRefresh);
+      socket.off("appeal:submitted", handleRefresh);
+      socket.off("appeal:reviewed", handleRefresh);
     };
   }, [socket, refreshAll]);
 

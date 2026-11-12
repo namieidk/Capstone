@@ -34,6 +34,10 @@ export function useGrantorDashboardData() {
   useSocketEvent("application:endorsed", () => fetchDashboardData(true));
   useSocketEvent("appeal:submitted", () => fetchDashboardData(true));
   useSocketEvent("appeal:reviewed", () => fetchDashboardData(true));
+  useSocketEvent("academic_appeal:submitted", () => fetchDashboardData(true));
+  useSocketEvent("academic_appeal:reviewed", () => fetchDashboardData(true));
+  useSocketEvent("grade_report:appealed", () => fetchDashboardData(true));
+  useSocketEvent("grade_report:appeal_decided", () => fetchDashboardData(true));
   useSocketEvent("disbursement:authorized", () => fetchDashboardData(true));
   useSocketEvent("disbursement:updated", () => fetchDashboardData(true));
   useSocketEvent("disbursement:settled", () => fetchDashboardData(true));
