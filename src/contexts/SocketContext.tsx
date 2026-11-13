@@ -59,13 +59,57 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     }
 
     let isMounted = true;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let pingTimer: ReturnType<typeof setInterval> | null = null;
+
+    async function fetchSessionToken(): Promise<string | null> {
+      try {
+        const res = await fetch("/api/auth/token", { cache: "no-store" });
+        if (!res.ok) return null;
+        const data = (await res.json()) as { token?: string | null };
+        return data?.token ?? null;
+      } catch {
+        return null;
+      }
+    }
+
+    const handleWakeOrOnline = () => {
+      if (!isMounted) return;
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+        return;
+      }
+      const sock = activeSocketRef.current;
+      if (!sock) return;
+
+      if (sock.connected) {
+        sock.emit("ping");
+        return;
+      }
+
+      void fetchSessionToken().then((validToken) => {
+        if (validToken && isMounted && activeSocketRef.current && !activeSocketRef.current.connected) {
+          activeSocketRef.current.connect();
+        }
+      });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        handleWakeOrOnline();
+      }
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("focus", handleWakeOrOnline);
+      window.addEventListener("online", handleWakeOrOnline);
+    }
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+    }
 
     async function initSocket() {
       try {
-        const res = await fetch("/api/auth/token");
-        if (!res.ok) return;
-        const data = (await res.json()) as { token?: string | null };
-        const token = data?.token;
+        const token = await fetchSessionToken();
 
         if (!token || !isMounted) return;
 
@@ -81,8 +125,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         }
 
         const socketInstance = io(getSocketUrl(), {
-          auth: {
-            token: `Bearer ${token}`,
+          auth: (cb) => {
+            void fetchSessionToken().then((latestToken) => {
+              const activeToken = latestToken || token;
+              cb(activeToken ? { token: `Bearer ${activeToken}` } : {});
+            });
           },
           transports: ["websocket", "polling"],
           withCredentials: true,
@@ -91,8 +138,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           reconnectionDelay: 1000,
           reconnectionDelayMax: 5000,
         });
-
-        let pingTimer: NodeJS.Timeout | null = null;
 
         socketInstance.on("connect", () => {
           if (!isMounted) return;
@@ -131,9 +176,29 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
         socketInstance.on("disconnect", (reason) => {
           if (!isMounted) return;
-          if (pingTimer) clearInterval(pingTimer);
+          if (pingTimer) {
+            clearInterval(pingTimer);
+            pingTimer = null;
+          }
           setIsConnected(false);
           console.warn(`[Socket] Disconnected (Reason: ${reason})`);
+
+          if (reason === "io server disconnect") {
+            if (reconnectTimer) clearTimeout(reconnectTimer);
+            reconnectTimer = setTimeout(() => {
+              if (!isMounted) return;
+              void fetchSessionToken().then((validToken) => {
+                if (
+                  validToken &&
+                  isMounted &&
+                  activeSocketRef.current === socketInstance &&
+                  !socketInstance.connected
+                ) {
+                  socketInstance.connect();
+                }
+              });
+            }, 1500);
+          }
         });
 
         // Global lifecycle notifications
@@ -370,6 +435,15 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       isMounted = false;
+      if (pingTimer) clearInterval(pingTimer);
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("focus", handleWakeOrOnline);
+        window.removeEventListener("online", handleWakeOrOnline);
+      }
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      }
       if (activeSocketRef.current) {
         activeSocketRef.current.disconnect();
         activeSocketRef.current = null;
