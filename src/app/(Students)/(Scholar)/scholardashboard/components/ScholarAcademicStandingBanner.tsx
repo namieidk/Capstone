@@ -32,12 +32,12 @@ export function ScholarAcademicStandingBanner({ standing, profile }: ScholarAcad
 
     return (
       <div className="relative overflow-hidden rounded-2xl border border-rose-300 bg-rose-50/80 p-4 sm:p-5 text-rose-950 shadow-2xs">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-4">
           <div className="flex items-start gap-3">
             <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-700">
               <ShieldAlert className="size-5" />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-bold text-sm text-rose-950">
                   Academic Retention Deficiency — Direct Grantor Review Required
@@ -48,7 +48,7 @@ export function ScholarAcademicStandingBanner({ standing, profile }: ScholarAcad
                     : "Scholarship Archived"}
                 </Badge>
               </div>
-              <p className="text-xs text-rose-900/90 leading-relaxed max-w-2xl">
+              <p className="text-xs text-rose-900/90 leading-relaxed">
                 {isSecondChanceExhausted
                   ? `You have already used your 1-time in-app Second Chance Appeal, and your ${latest_report?.academic_year || "latest term"}${latest_report?.semester ? ` (${latest_report.semester})` : ""} evaluation (GWA: ${(latest_report?.gpa ?? gwa).toFixed(2)}) fell below the retention threshold (${threshold.toFixed(2)}). Your scholarship has been moved to the Archive. You still have read-only access to browse your records, and if you wish to request special restoration, please email the Grantor directly with the Coordinator CC'd.`
                   : `Your scholarship agreement has been archived following the ${latest_report?.academic_year || "latest term"}${latest_report?.semester ? ` (${latest_report.semester})` : ""} evaluation. You retain read-only access to your academic and financial records, and may email the Grantor directly with the Coordinator CC'd if you wish to request reconsideration.`}
@@ -64,7 +64,7 @@ export function ScholarAcademicStandingBanner({ standing, profile }: ScholarAcad
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-rose-200/70">
             <Button
               asChild
               size="sm"

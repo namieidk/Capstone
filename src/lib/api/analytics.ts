@@ -84,6 +84,8 @@ export interface ScholarOperationalItem {
   disbursementStatus: "DISBURSED" | "PENDING" | "NOT_APPLIED";
   assessmentAmount: number;
   disbursedAmount: number;
+  isArchived?: boolean;
+  archiveReason?: string | null;
 }
 
 export interface AnalyticsFilterOptions {

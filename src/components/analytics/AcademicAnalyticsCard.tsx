@@ -235,17 +235,17 @@ export function AcademicAnalyticsCard({
                 </p>
               </div>
 
-              {/* At Risk */}
+              {/* At Risk / Disqualified */}
               <div className="p-2.5 rounded-lg border border-line/60 bg-[#FAF8F5]/60 space-y-1">
                 <div className="flex items-center justify-center gap-1 text-[11px] font-bold text-rose-700">
                   <AlertTriangle className="size-3.5" />
-                  <span>At Risk</span>
+                  <span>At Risk / Disqualified</span>
                 </div>
                 <p className="text-lg font-black text-rose-700">
                   {data.standingBreakdown.flaggedCount}
                 </p>
                 <p className="text-[10px] text-muted-foreground">
-                  {data.standingBreakdown.flaggedPercent}% needing intervention
+                  {data.standingBreakdown.flaggedPercent}% below mark or disqualified
                 </p>
               </div>
             </div>

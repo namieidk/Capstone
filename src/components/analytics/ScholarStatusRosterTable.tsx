@@ -219,7 +219,21 @@ export function ScholarStatusRosterTable({
                     {/* Scholar info */}
                     <TableCell className="pl-5 py-3">
                       <div>
-                        <p className="font-bold text-xs text-[#14213a]">{s.name}</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="font-bold text-xs text-[#14213a]">{s.name}</p>
+                          {s.isArchived && (
+                            <Badge
+                              className={`border-none font-bold text-[10px] px-1.5 py-0 ${
+                                s.archiveReason === "FAILED_SECOND_CHANCE" ||
+                                s.archiveReason === "TERMINATED"
+                                  ? "bg-rose-100 text-rose-800"
+                                  : "bg-slate-100 text-slate-700"
+                              }`}
+                            >
+                              Archived
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-[11px] text-muted-foreground">{s.email}</p>
                         <span className="text-[10px] text-muted-foreground font-medium">{s.track}</span>
                       </div>
@@ -273,6 +287,18 @@ export function ScholarStatusRosterTable({
                           {s.gwa > 0 && (
                             <span className="text-[10px] text-muted-foreground mt-0.5 font-semibold">
                               GWA: {s.gwa.toFixed(2)}
+                            </span>
+                          )}
+                          {s.standing === "AT_RISK" && (
+                            <span className="text-[10px] font-semibold text-rose-700 mt-0.5">
+                              {s.isArchived && s.archiveReason === "FAILED_SECOND_CHANCE"
+                                ? "Disqualified"
+                                : "Below Threshold"}
+                            </span>
+                          )}
+                          {s.standing === "PROBATION" && (
+                            <span className="text-[10px] font-semibold text-amber-700 mt-0.5">
+                              On Probation
                             </span>
                           )}
                         </div>

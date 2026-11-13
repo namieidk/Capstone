@@ -17,7 +17,7 @@ export function ScholarCoordinatorAndMeetingsCard({ communication, meetings }: S
   const coordinatorTitle = communication.coordinator?.title || "Scholarship Coordinator";
 
   return (
-    <Card className="flex flex-col justify-between rounded-2xl border-line/80 bg-white shadow-2xs hover:shadow-xs transition-all">
+    <Card className="flex flex-col rounded-2xl border-line/80 bg-white shadow-2xs hover:shadow-xs transition-all">
       <CardHeader className="flex flex-row items-center justify-between pb-3 p-5">
         <div className="flex items-center gap-2.5">
           <div className="flex size-8.5 items-center justify-center rounded-xl bg-[#0a4f42]/10 text-[#0a4f42]">
@@ -42,7 +42,7 @@ export function ScholarCoordinatorAndMeetingsCard({ communication, meetings }: S
         </Button>
       </CardHeader>
 
-      <CardContent className="p-5 pt-0 space-y-4">
+      <CardContent className="flex flex-1 flex-col p-5 pt-0 space-y-4">
         {/* Coordinator contact box */}
         <div className="flex items-center justify-between rounded-xl border border-line/60 bg-[#FAF8F5] p-3">
           <div className="flex items-center gap-3">
@@ -76,7 +76,7 @@ export function ScholarCoordinatorAndMeetingsCard({ communication, meetings }: S
         </div>
 
         {/* Upcoming Meetings List */}
-        <div className="space-y-2">
+        <div className="flex flex-1 flex-col space-y-2">
           <div className="flex items-center justify-between">
             <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
               Upcoming Meetings & Check-ins
@@ -87,7 +87,7 @@ export function ScholarCoordinatorAndMeetingsCard({ communication, meetings }: S
           </div>
 
           {meetings.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-line/70 p-4 text-center text-xs text-muted-foreground">
+            <div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-line/70 p-4 text-center text-xs text-muted-foreground min-h-[96px]">
               <Calendar className="mx-auto mb-1.5 size-5 text-muted-foreground/50" />
               <p>No upcoming meetings scheduled.</p>
             </div>

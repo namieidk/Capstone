@@ -189,28 +189,39 @@ export function AcademicStandingCard({
               </div>
             </div>
 
-            <div className="pt-2.5 border-t border-rose-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div className="pt-3 border-t border-rose-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <span className="text-[11px] text-muted-foreground">
                 Your past term transcripts and records remain accessible in read-only mode.
               </span>
-              <div className="flex flex-wrap items-center gap-2 shrink-0">
-                <a
-                  href={gmailUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-700 text-white text-xs font-semibold hover:bg-rose-800 transition-colors"
+              <div className="flex flex-wrap items-center justify-end gap-2 shrink-0">
+                <Button
+                  asChild
+                  size="sm"
+                  className="h-9 rounded-full bg-rose-700 px-4 text-xs font-semibold text-white! hover:bg-rose-800 shadow-xs"
                 >
-                  <Mail className="size-3.5" />
-                  <span>Email Grantor via Gmail (CC Coordinator)</span>
-                  <ExternalLink className="size-3" />
-                </a>
-                <a
-                  href={mailtoUrl}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-300 bg-white text-rose-900 text-xs font-semibold hover:bg-rose-100/60 transition-colors"
+                  <a
+                    href={gmailUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "#ffffff" }}
+                    className="inline-flex items-center gap-1.5 text-white!"
+                  >
+                    <Mail className="size-3.5 text-white" />
+                    <span>Email Grantor via Gmail (CC Coordinator)</span>
+                    <ExternalLink className="size-3 text-white" />
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="h-9 rounded-full border-rose-300 bg-white px-3.5 text-xs font-semibold text-rose-900 hover:bg-rose-100/60"
                 >
-                  <Mail className="size-3.5" />
-                  <span>Open Default Mail App</span>
-                </a>
+                  <a href={mailtoUrl} className="inline-flex items-center gap-1.5">
+                    <Mail className="size-3.5" />
+                    <span>Open Default Mail App</span>
+                  </a>
+                </Button>
               </div>
             </div>
           </div>

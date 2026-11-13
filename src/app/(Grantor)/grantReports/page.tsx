@@ -79,6 +79,8 @@ export default function GrantAnalyticsPage() {
   useSocketEvent("enrollment:changes_requested", () => fetchAnalytics(selectedSemester, selectedAcademicYear));
   useSocketEvent("enrollment:rejected", () => fetchAnalytics(selectedSemester, selectedAcademicYear));
   useSocketEvent("document:verified", () => fetchAnalytics(selectedSemester, selectedAcademicYear));
+  useSocketEvent("scholar:archived", () => fetchAnalytics(selectedSemester, selectedAcademicYear));
+  useSocketEvent("scholar:restored", () => fetchAnalytics(selectedSemester, selectedAcademicYear));
 
   // Dynamic filter lists strictly from the database
   const availableYears = useMemo(() => {
