@@ -15,8 +15,22 @@ interface ScholarTermContextCardProps {
 export function ScholarTermContextCard({ enrollmentState, loading, onRefresh }: ScholarTermContextCardProps) {
   const status = enrollmentState?.enrollment?.status || "NOT_SUBMITTED";
   const completedPrev = enrollmentState?.completed_previous_enrollment;
+  const isAcademicLocked = Boolean(enrollmentState?.academic_lock?.is_locked);
 
   const renderStatusBadge = () => {
+    if (isAcademicLocked) {
+      return (
+        <Badge variant="outline" className="bg-amber-50 text-amber-900 border-amber-300 font-semibold gap-1">
+          <Clock className="size-3.5 text-amber-600" />
+          {enrollmentState?.academic_lock?.reason === "DISCONTINUED"
+            ? "Scholarship Discontinued"
+            : enrollmentState?.academic_lock?.reason === "APPEAL_PENDING"
+              ? "Appeal Under Review"
+              : "Action Required: Appeal"}
+        </Badge>
+      );
+    }
+
     switch (status) {
       case "APPROVED":
         return (
@@ -72,7 +86,7 @@ export function ScholarTermContextCard({ enrollmentState, loading, onRefresh }: 
             {enrollmentState.scholar.school_name || "Enrolled University"} •{" "}
             {enrollmentState.scholar.course_of_study || "Degree Program"}
           </p>
-          {completedPrev && !enrollment && (
+          {completedPrev && !enrollment && !isAcademicLocked && (
             <div className="flex items-center gap-2 flex-wrap text-xs">
               <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-800 border border-emerald-200">
                 <CheckCircle2 className="size-3 text-emerald-600" />
