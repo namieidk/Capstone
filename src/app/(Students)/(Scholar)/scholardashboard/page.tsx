@@ -65,8 +65,8 @@ export default function ScholarDashboardPage() {
         {/* 1. Scholar Identity & Program Header */}
         <ScholarDashboardHeader profile={data.profile} onRefresh={() => refetch(true)} isRefreshing={loading} />
 
-        {/* 2. Dynamic Academic Standing / Probation / Appeal Alert Banner */}
-        <ScholarAcademicStandingBanner standing={data.academic_standing} />
+        {/* 2. Dynamic Academic Standing / Probation / Appeal / Archived Alert Banner */}
+        <ScholarAcademicStandingBanner standing={data.academic_standing} profile={data.profile} />
 
         {/* 3. Core Metric KPI Cards (4 metrics) */}
         <ScholarKpiCards

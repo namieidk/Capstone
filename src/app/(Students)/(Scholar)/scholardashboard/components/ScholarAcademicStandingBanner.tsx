@@ -1,17 +1,116 @@
 "use client";
 
-import { AlertCircle, AlertTriangle, ArrowRight, CheckCircle2, Clock, ShieldCheck } from "lucide-react";
+import { AlertCircle, AlertTriangle, ArrowRight, CheckCircle2, Clock, ExternalLink, Mail, ShieldAlert, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { ScholarAcademicStanding } from "@/lib/api/scholar-dashboard";
+import type { ScholarAcademicStanding, ScholarProfileData } from "@/lib/api/scholar-dashboard";
+import { buildGrantorAppealEmailLinks } from "@/lib/utils/grantor-email";
 
 interface ScholarAcademicStandingBannerProps {
   standing: ScholarAcademicStanding;
+  profile?: ScholarProfileData;
 }
 
-export function ScholarAcademicStandingBanner({ standing }: ScholarAcademicStandingBannerProps) {
+export function ScholarAcademicStandingBanner({ standing, profile }: ScholarAcademicStandingBannerProps) {
   const { standing_type, gwa, threshold, latest_report } = standing;
+
+  if (standing_type === "DISCONTINUED") {
+    const scholarName = profile ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || "Scholar" : "Scholar";
+    const { grantorEmail, coordinatorEmail, gmailUrl, mailtoUrl } = buildGrantorAppealEmailLinks({
+      grantorEmail: standing.grantor_email,
+      coordinatorEmail: standing.coordinator_email,
+      scholarName,
+      studentNumber: profile?.student_number,
+      courseOfStudy: profile?.course_of_study,
+      academicYear: latest_report?.academic_year,
+      semester: latest_report?.semester,
+      gwa: latest_report?.gpa ?? gwa,
+    });
+    const isSecondChanceExhausted =
+      standing.second_chance_exhausted || profile?.archive_reason === "FAILED_SECOND_CHANCE";
+
+    return (
+      <div className="relative overflow-hidden rounded-2xl border border-rose-300 bg-rose-50/80 p-4 sm:p-5 text-rose-950 shadow-2xs">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-700">
+              <ShieldAlert className="size-5" />
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-bold text-sm text-rose-950">
+                  Academic Retention Deficiency — Direct Grantor Review Required
+                </span>
+                <Badge className="h-5 rounded-full border-rose-300 bg-rose-100 px-2 text-[10px] font-bold text-rose-800">
+                  {isSecondChanceExhausted
+                    ? "Scholarship Archived • 2nd Chance Exhausted"
+                    : "Scholarship Archived"}
+                </Badge>
+              </div>
+              <p className="text-xs text-rose-900/90 leading-relaxed max-w-2xl">
+                {isSecondChanceExhausted
+                  ? `You have already used your 1-time in-app Second Chance Appeal, and your ${latest_report?.academic_year || "latest term"}${latest_report?.semester ? ` (${latest_report.semester})` : ""} evaluation (GWA: ${(latest_report?.gpa ?? gwa).toFixed(2)}) fell below the retention threshold (${threshold.toFixed(2)}). Your scholarship has been moved to the Archive. You still have read-only access to browse your records, and if you wish to request special restoration, please email the Grantor directly with the Coordinator CC'd.`
+                  : `Your scholarship agreement has been archived following the ${latest_report?.academic_year || "latest term"}${latest_report?.semester ? ` (${latest_report.semester})` : ""} evaluation. You retain read-only access to your academic and financial records, and may email the Grantor directly with the Coordinator CC'd if you wish to request reconsideration.`}
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-0.5 text-[11px] text-rose-900/80">
+                <span className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-white/80 px-2 py-0.5 font-medium">
+                  <strong className="text-rose-950">To:</strong> {grantorEmail}
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-white/80 px-2 py-0.5 font-medium">
+                  <strong className="text-rose-950">CC:</strong> {coordinatorEmail}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <Button
+              asChild
+              size="sm"
+              className="h-9 rounded-full bg-rose-700 px-4 text-xs font-semibold text-white! hover:bg-rose-800 shadow-xs"
+            >
+              <a
+                href={gmailUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "#ffffff" }}
+                className="inline-flex items-center gap-1.5 text-white!"
+              >
+                <Mail className="size-3.5 text-white" />
+                <span>Email Grantor via Gmail (CC Coordinator)</span>
+                <ExternalLink className="size-3 text-white" />
+              </a>
+            </Button>
+
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="h-9 rounded-full border-rose-300 bg-white px-3.5 text-xs font-semibold text-rose-900 hover:bg-rose-100/60"
+            >
+              <a href={mailtoUrl} className="inline-flex items-center gap-1.5">
+                <Mail className="size-3.5" />
+                <span>Open Default Mail App</span>
+              </a>
+            </Button>
+
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="h-9 rounded-full px-3 text-xs font-semibold text-rose-900 hover:bg-rose-100/60"
+            >
+              <Link href="/ScholarGrade" className="inline-flex items-center gap-1">
+                <span>View Grade Audit</span>
+                <ArrowRight className="size-3.5" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (standing_type === "PROBATION") {
     return (

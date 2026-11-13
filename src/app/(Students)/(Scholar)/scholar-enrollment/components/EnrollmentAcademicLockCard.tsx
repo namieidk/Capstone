@@ -1,11 +1,12 @@
 "use client";
 
-import { AlertTriangle, ArrowRight, Clock, FileText, ShieldAlert } from "lucide-react";
+import { AlertTriangle, ArrowRight, Clock, ExternalLink, FileText, Mail, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { AcademicStandingLock } from "@/lib/api/enrollment";
+import { buildGrantorAppealEmailLinks } from "@/lib/utils/grantor-email";
 
 interface EnrollmentAcademicLockCardProps {
   lock: AcademicStandingLock;
@@ -14,6 +15,18 @@ interface EnrollmentAcademicLockCardProps {
 export function EnrollmentAcademicLockCard({ lock }: EnrollmentAcademicLockCardProps) {
   const isPending = lock.reason === "APPEAL_PENDING" || lock.appeal_status === "PENDING_GRANTOR";
   const isDiscontinued = lock.reason === "DISCONTINUED" || lock.appeal_status === "DENIED";
+  const isSecondChanceExhausted = lock.archive_reason === "FAILED_SECOND_CHANCE";
+
+  const { grantorEmail, coordinatorEmail, gmailUrl, mailtoUrl } = buildGrantorAppealEmailLinks({
+    grantorEmail: lock.grantor_email,
+    coordinatorEmail: lock.coordinator_email,
+    scholarName: lock.scholar_name,
+    studentNumber: lock.student_number,
+    courseOfStudy: lock.course_of_study,
+    academicYear: lock.academic_year,
+    semester: lock.semester,
+    gwa: lock.gpa,
+  });
 
   return (
     <Card
@@ -50,7 +63,9 @@ export function EnrollmentAcademicLockCard({ lock }: EnrollmentAcademicLockCardP
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-sm sm:text-base font-bold text-navy">
                   {isDiscontinued
-                    ? "Start-of-Term Enrollment Unavailable"
+                    ? isSecondChanceExhausted
+                      ? "Enrollment Locked • Scholarship Archived (2nd Chance Exhausted)"
+                      : "Start-of-Term Enrollment Unavailable"
                     : isPending
                       ? "Enrollment Paused • Appeal Awaiting Grantor Verdict"
                       : "Enrollment Paused • Academic Appeal Required"}
@@ -68,7 +83,7 @@ export function EnrollmentAcademicLockCard({ lock }: EnrollmentAcademicLockCardP
                   {isDiscontinued ? (
                     <>
                       <ShieldAlert className="size-3 text-rose-700" />
-                      Scholarship Concluded
+                      {isSecondChanceExhausted ? "Archived • 2nd Chance Failed" : "Scholarship Concluded"}
                     </>
                   ) : isPending ? (
                     <>
@@ -121,13 +136,71 @@ export function EnrollmentAcademicLockCard({ lock }: EnrollmentAcademicLockCardP
             {isPending
               ? "To ensure focus on your scholarship appeal, Certificate of Registration (COR) and Statement of Account (SOA) uploads are temporarily locked. Once the Grantor grants your appeal and lifts probation, start-of-term enrollment will automatically unlock so you can submit your matriculation credentials."
               : isDiscontinued
-                ? "The Grantor has reviewed your record and concluded that scholarship enrollment cannot be renewed for upcoming semesters."
+                ? "Your scholar record is currently archived. You retain read-only access to browse your academic and financial records. You may email the Grantor directly (CC Coordinator) to request special reconsideration — if the Grantor restores your record from the Archive, start-of-term enrollment will unlock automatically."
                 : "Your course marks or GWA for the previous semester did not meet the baseline retention criteria. Please file a Second Chance Appeal directly to the Grantor explaining your circumstances and action plan."}
           </p>
+
+          {isDiscontinued && (
+            <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-rose-900/80">
+              <span className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50/60 px-2 py-0.5 font-medium">
+                <strong className="text-rose-950">To:</strong> {grantorEmail}
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50/60 px-2 py-0.5 font-medium">
+                <strong className="text-rose-950">CC:</strong> {coordinatorEmail}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Action Button Footer */}
-        {!isDiscontinued && (
+        {isDiscontinued ? (
+          <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-border/50">
+            <span className="text-xs text-muted-foreground">
+              If the Grantor restores your record from the Archive, enrollment will unlock automatically.
+            </span>
+            <div className="flex flex-wrap items-center gap-2 ml-auto">
+              <Button
+                asChild
+                size="sm"
+                className="h-9 px-3.5 rounded-lg bg-rose-700 hover:bg-rose-800 text-xs font-semibold text-white! shadow-xs"
+              >
+                <a
+                  href={gmailUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "#ffffff" }}
+                  className="inline-flex items-center gap-1.5 text-white!"
+                >
+                  <Mail className="size-3.5 text-white" />
+                  <span>Email Grantor via Gmail (CC Coordinator)</span>
+                  <ExternalLink className="size-3 text-white" />
+                </a>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="h-9 px-3.5 rounded-lg border-rose-300 bg-white text-xs font-semibold text-rose-900 hover:bg-rose-50"
+              >
+                <a href={mailtoUrl} className="inline-flex items-center gap-1.5">
+                  <Mail className="size-3.5" />
+                  <span>Open Default Mail App</span>
+                </a>
+              </Button>
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="h-9 px-3 rounded-lg text-xs font-semibold text-navy hover:bg-slate-100"
+              >
+                <Link href="/ScholarGrade" className="inline-flex items-center gap-1.5">
+                  <FileText className="size-3.5" />
+                  <span>View Grade Records</span>
+                </Link>
+              </Button>
+            </div>
+          </div>
+        ) : (
           <div className="flex items-center justify-between gap-3 pt-1 border-t border-border/50">
             <span className="text-xs text-muted-foreground hidden sm:inline">
               {isPending

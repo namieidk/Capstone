@@ -20,6 +20,7 @@ interface GradeFlagAppealConfirmDialogProps {
   failedSubjectsText: string;
   isGwaDeficient: boolean;
   computedGwa: number;
+  isSecondChanceExhausted?: boolean;
   notes: string;
   onNotesChange: (notes: string) => void;
   onConfirm: () => void;
@@ -34,6 +35,7 @@ export function GradeFlagAppealConfirmDialog({
   failedSubjectsText,
   isGwaDeficient,
   computedGwa,
+  isSecondChanceExhausted = false,
   notes,
   onNotesChange,
   onConfirm,
@@ -45,11 +47,14 @@ export function GradeFlagAppealConfirmDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-rose-900">
             <ShieldAlert className="size-5 text-rose-600" />
-            Certify Academic Deficiency & Flag for Appeal
+            {isSecondChanceExhausted
+              ? "Confirm Deficiency & Archive Scholar (2nd Chance Failed)"
+              : "Certify Academic Deficiency & Flag for Appeal"}
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Certify this grade audit for {scholarName}. This will record the transcript grades and invite the scholar to
-            file an academic second chance appeal.
+            {isSecondChanceExhausted
+              ? `${scholarName} has already used their 1-time Second Chance Appeal and is on probation. Confirming this deficiency will automatically archive their scholarship and notify the Grantor.`
+              : `Certify this grade audit for ${scholarName}. This will record the transcript grades and invite the scholar to file an academic second chance appeal.`}
           </DialogDescription>
         </DialogHeader>
 
@@ -81,12 +86,28 @@ export function GradeFlagAppealConfirmDialog({
               <span>What happens next?</span>
             </div>
             <p className="text-[11px] leading-relaxed">
-              1. The scholar's grade report is marked as <span className="font-semibold text-rose-700">FLAGGED</span>.
-              <br />
-              2. The scholar is notified and prompted to submit an{" "}
-              <span className="font-semibold text-navy">Academic Second Chance Appeal</span> on their dashboard.
-              <br />
-              3. The Grantor reviews their appeal justification to grant or deny probationary continuation.
+              {isSecondChanceExhausted ? (
+                <>
+                  1. The grade report is marked <span className="font-semibold text-rose-700">FLAGGED</span> with 2nd-chance
+                  probation exhausted.
+                  <br />
+                  2. The scholar is automatically moved to the{" "}
+                  <span className="font-semibold text-navy">Archive (Failed 2nd Chance)</span> with read-only portal
+                  access and an option to email the Grantor directly (CC Coordinator).
+                  <br />
+                  3. Both the <span className="font-semibold text-navy">Grantor and Coordinator</span> are notified; the
+                  Grantor can restore the scholar from the Archive at any time if they decide to grant another chance.
+                </>
+              ) : (
+                <>
+                  1. The scholar&apos;s grade report is marked <span className="font-semibold text-rose-700">FLAGGED</span>.
+                  <br />
+                  2. The scholar is notified and prompted to submit an{" "}
+                  <span className="font-semibold text-navy">Academic Second Chance Appeal</span> on their dashboard.
+                  <br />
+                  3. The Grantor reviews their appeal justification to grant or deny probationary continuation.
+                </>
+              )}
             </p>
           </div>
 
@@ -123,8 +144,10 @@ export function GradeFlagAppealConfirmDialog({
             {isSubmitting ? (
               <>
                 <Loader2 className="size-4 animate-spin mr-1.5" />
-                Recording & Flagging...
+                {isSecondChanceExhausted ? "Recording & Archiving..." : "Recording & Flagging..."}
               </>
+            ) : isSecondChanceExhausted ? (
+              "Confirm & Archive Scholar"
             ) : (
               "Confirm & Flag for Appeal"
             )}

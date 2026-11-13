@@ -13,17 +13,24 @@ export interface ScholarProfileData {
   course_of_study?: string;
   current_year_level: number;
   academic_baseline_status: string;
+  archived_at?: string | null;
+  archive_reason?: string | null;
+  archive_notes?: string | null;
   avatar_url?: string;
   banner_url?: string;
 }
 
 export interface ScholarAcademicStanding {
-  standing_type: "GOOD_STANDING" | "PROBATION" | "ACTION_REQUIRED" | "PENDING_REVIEW";
+  standing_type: "GOOD_STANDING" | "PROBATION" | "ACTION_REQUIRED" | "PENDING_REVIEW" | "DISCONTINUED";
   gwa: number;
   threshold: number;
   is_on_probation: boolean;
+  is_discontinued?: boolean;
+  second_chance_exhausted?: boolean;
   is_flagged: boolean;
   has_pending_appeal: boolean;
+  grantor_email?: string;
+  coordinator_email?: string;
   latest_report: {
     report_id: number;
     academic_year: string;

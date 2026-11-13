@@ -42,6 +42,8 @@ export interface ScholarDocument {
     course_of_study?: string;
     school_name?: string;
     school_id?: number | null;
+    academic_baseline_status?: string;
+    archived_at?: string | null;
     school_grading_system?: {
       school_name: string;
       grading_scale: string;
@@ -83,6 +85,8 @@ export interface GradeReport {
   remarks?: string | null;
   submitted_at: string;
   reviewed_at?: string | null;
+  grantor_email?: string;
+  coordinator_email?: string;
   grade_items: GradeItem[];
   document?: ScholarDocument | null;
   appeal_document?: ScholarDocument | null;
@@ -93,6 +97,10 @@ export interface GradeReport {
     student_number?: string;
     school_name?: string;
     course_of_study?: string;
+    academic_baseline_status?: string;
+    archived_at?: string | null;
+    archive_reason?: string | null;
+    archive_notes?: string | null;
     school_grading_system?: {
       school_name: string;
       grading_scale: string;

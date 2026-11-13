@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Award, CheckCircle2, Clock, FileText } from "lucide-react";
+import { AlertTriangle, Award, CheckCircle2, Clock, ExternalLink, FileText, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,10 +8,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import type { GradeReport } from "@/lib/api/documents";
 import { formatRetentionThreshold } from "@/lib/formatters";
+import { buildGrantorAppealEmailLinks } from "@/lib/utils/grantor-email";
 
 interface AcademicStandingCardProps {
   latestReport: GradeReport | null;
   reportsCount: number;
+  hasPriorResolvedAppeal?: boolean;
   onOpenAppeal: () => void;
   loading?: boolean;
   gradeThreshold?: number;
@@ -20,6 +22,7 @@ interface AcademicStandingCardProps {
 export function AcademicStandingCard({
   latestReport,
   reportsCount,
+  hasPriorResolvedAppeal = false,
   onOpenAppeal,
   loading = false,
   gradeThreshold = 90,
@@ -52,23 +55,37 @@ export function AcademicStandingCard({
   const isFlagged = latestReport && (!latestReport.is_eligible || latestReport.status === "FLAGGED");
   const hasPendingAppeal = latestReport?.appeal_status === "PENDING_GRANTOR";
   const appealApproved = latestReport?.appeal_status === "APPROVED";
-  const appealDenied = latestReport?.appeal_status === "DENIED";
+  const isProfileDiscontinued =
+    latestReport?.scholar_profile?.academic_baseline_status === "DISCONTINUED" ||
+    Boolean(latestReport?.scholar_profile?.archived_at);
+  const appealDenied =
+    latestReport?.appeal_status === "DENIED" ||
+    isProfileDiscontinued ||
+    Boolean(isFlagged && !appealApproved && !hasPendingAppeal && hasPriorResolvedAppeal);
+  const isSecondChanceExhausted =
+    latestReport?.scholar_profile?.archive_reason === "FAILED_SECOND_CHANCE" ||
+    (appealDenied && hasPriorResolvedAppeal);
 
   const gwaValue = latestReport ? Number(latestReport.gpa).toFixed(2) : "—";
   const scholarProfile = user?.scholar_profile;
   const scholarName = `${user?.first_name || ""} ${user?.last_name || ""}`.trim() || "Scholar";
-  const studentNum = user?.scholar_profile?.student_number || "N/A";
+  const studentNum = user?.scholar_profile?.student_number || latestReport?.scholar_profile?.student_number || "N/A";
   const schoolGrading =
     latestReport?.scholar_profile?.school_grading_system ??
     scholarProfile?.school_grading_system ??
     (scholarProfile?.school_name ? { school_name: scholarProfile.school_name } : null);
   const thresholdLabel = formatRetentionThreshold(gradeThreshold, schoolGrading);
 
-  const mailtoSubject = encodeURIComponent(`[Inquiry] Scholarship Status Appeal - ${scholarName} (${studentNum})`);
-  const mailtoBody = encodeURIComponent(
-    `Dear Grantor and Coordinator,\n\nI am writing to respectfully follow up regarding my scholarship status and the appeal decision for ${latestReport?.academic_year || "Academic Year"} ${latestReport?.semester || "Semester"}.\n\nStudent Details:\n- Name: ${scholarName}\n- Student Number: ${studentNum}\n- School: ${user?.scholar_profile?.school_name || "N/A"}\n- Term GWA: ${gwaValue}\n\nThank you for your guidance.\n\nSincerely,\n${scholarName}`,
-  );
-  const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=grantor@viascholar.edu&cc=coordinator@viascholar.edu&su=${mailtoSubject}&body=${mailtoBody}`;
+  const { grantorEmail, coordinatorEmail, gmailUrl, mailtoUrl } = buildGrantorAppealEmailLinks({
+    grantorEmail: latestReport?.grantor_email,
+    coordinatorEmail: latestReport?.coordinator_email,
+    scholarName,
+    studentNumber: studentNum,
+    courseOfStudy: latestReport?.scholar_profile?.course_of_study || scholarProfile?.course_of_study,
+    academicYear: latestReport?.academic_year,
+    semester: latestReport?.semester,
+    gwa: latestReport?.gpa ?? gwaValue,
+  });
 
   return (
     <Card className="rounded-[18px]! border-line bg-white shadow-va-sm">
@@ -88,7 +105,7 @@ export function AcademicStandingCard({
             {appealDenied ? (
               <Badge className="bg-rose-100 text-rose-900 border-rose-300 text-xs font-semibold gap-1.5 py-1">
                 <AlertTriangle className="size-3.5 text-rose-600" />
-                Scholarship Discontinued (Appeal Denied)
+                {isSecondChanceExhausted ? "Scholarship Archived (2nd Chance Exhausted)" : "Scholarship Discontinued"}
               </Badge>
             ) : appealApproved ? (
               <Badge className="bg-emerald-50 text-emerald-800 border-emerald-300 text-xs font-semibold gap-1.5 py-1">
@@ -139,40 +156,62 @@ export function AcademicStandingCard({
           </div>
         </div>
 
-        {/* Appeal Denied Banner */}
+        {/* Appeal Denied / 2nd-Chance Exhausted Archived Banner */}
         {appealDenied ? (
           <div className="rounded-xl border border-rose-300 bg-rose-50/80 p-4 space-y-3">
             <div className="flex items-start gap-2.5">
               <AlertTriangle className="size-4 text-rose-600 shrink-0 mt-0.5" />
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <h4 className="text-xs font-bold text-rose-950">
-                  Second Chance Appeal Concluded: Scholarship Discontinued
+                  {isSecondChanceExhausted
+                    ? "Scholarship Archived: Second Chance Probation Exhausted"
+                    : "Second Chance Appeal Concluded: Scholarship Discontinued"}
                 </h4>
                 <p className="text-xs text-rose-800 leading-relaxed">
-                  The Grantor has reviewed your second chance appeal for {latestReport?.academic_year}{" "}
-                  {latestReport?.semester} and concluded that the scholarship agreement cannot be renewed.
+                  {isSecondChanceExhausted
+                    ? `You have already used your 1-time in-app Second Chance Appeal, and your grades for ${latestReport?.academic_year || "this term"} (${latestReport?.semester || ""}) did not meet the retention threshold. Your scholar record has been moved to the Archive. You may still browse your records in read-only mode, or email the Grantor directly (CC Coordinator) to request special restoration.`
+                    : `The Grantor has reviewed your second chance appeal for ${latestReport?.academic_year} ${latestReport?.semester} and concluded that the scholarship agreement cannot be renewed. If the Grantor restores your record from the Archive, your scholarship and next-term enrollment will automatically unlock.`}
                 </p>
+                <div className="flex flex-wrap items-center gap-2 pt-0.5 text-[11px] text-rose-900/80">
+                  <span className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-white/80 px-2 py-0.5 font-medium">
+                    <strong className="text-rose-950">To:</strong> {grantorEmail}
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-white/80 px-2 py-0.5 font-medium">
+                    <strong className="text-rose-950">CC:</strong> {coordinatorEmail}
+                  </span>
+                </div>
                 {latestReport?.appeal_decision_notes && (
                   <div className="mt-2 rounded-lg border border-rose-200 bg-white/70 p-2.5 text-xs text-rose-900">
-                    <span className="font-semibold text-rose-950">Grantor Remarks: </span>
-                    <em>"{latestReport.appeal_decision_notes}"</em>
+                    <span className="font-semibold text-rose-950">Review Notes: </span>
+                    <em>&ldquo;{latestReport.appeal_decision_notes}&rdquo;</em>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="pt-2 border-t border-rose-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="pt-2.5 border-t border-rose-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <span className="text-[11px] text-muted-foreground">
                 Your past term transcripts and records remain accessible in read-only mode.
               </span>
-              <a
-                href={gmailUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-navy text-white text-xs font-semibold hover:bg-navy/90 transition-colors shrink-0"
-              >
-                <span>Contact Grantor (CC Coordinator)</span>
-              </a>
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <a
+                  href={gmailUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-700 text-white text-xs font-semibold hover:bg-rose-800 transition-colors"
+                >
+                  <Mail className="size-3.5" />
+                  <span>Email Grantor via Gmail (CC Coordinator)</span>
+                  <ExternalLink className="size-3" />
+                </a>
+                <a
+                  href={mailtoUrl}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-300 bg-white text-rose-900 text-xs font-semibold hover:bg-rose-100/60 transition-colors"
+                >
+                  <Mail className="size-3.5" />
+                  <span>Open Default Mail App</span>
+                </a>
+              </div>
             </div>
           </div>
         ) : isFlagged && !appealApproved ? (

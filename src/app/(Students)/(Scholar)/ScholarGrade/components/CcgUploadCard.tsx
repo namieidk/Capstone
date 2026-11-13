@@ -553,7 +553,10 @@ export function CcgUploadCard({ onSuccess, latestReport, onOpenAppeal }: CcgUplo
           const isFlagged = latestReport && (!latestReport.is_eligible || latestReport.status === "FLAGGED");
           const hasPendingAppeal = latestReport?.appeal_status === "PENDING_GRANTOR";
           const appealApproved = latestReport?.appeal_status === "APPROVED";
-          const appealDenied = latestReport?.appeal_status === "DENIED";
+          const appealDenied =
+            latestReport?.appeal_status === "DENIED" ||
+            latestReport?.scholar_profile?.academic_baseline_status === "DISCONTINUED" ||
+            Boolean(latestReport?.scholar_profile?.archived_at);
           const isAcademicLocked = (isFlagged && !appealApproved) || appealDenied;
 
           if (isAcademicLocked && !doc) {

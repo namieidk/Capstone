@@ -47,17 +47,28 @@ export default function ScholarGradePage() {
     socket.on("grade_report:verified", handleRefresh);
     socket.on("document:verified", handleRefresh);
     socket.on("grade_report:appeal_decided", handleRefresh);
+    socket.on("scholar:archived", handleRefresh);
+    socket.on("scholar:restored", handleRefresh);
     socket.on("settings:updated", handleRefresh);
 
     return () => {
       socket.off("grade_report:verified", handleRefresh);
       socket.off("document:verified", handleRefresh);
       socket.off("grade_report:appeal_decided", handleRefresh);
+      socket.off("scholar:archived", handleRefresh);
+      socket.off("scholar:restored", handleRefresh);
       socket.off("settings:updated", handleRefresh);
     };
   }, [socket, fetchReports]);
 
   const latestReport = reports.length > 0 ? reports[0] : null;
+  const hasPriorResolvedAppeal = latestReport
+    ? reports.some(
+        (r) =>
+          r.report_id !== latestReport.report_id &&
+          (r.appeal_status === "APPROVED" || r.appeal_status === "DENIED"),
+      )
+    : false;
 
   return (
     <div className="min-h-full bg-[#faf8f5] pb-24">
@@ -68,6 +79,7 @@ export default function ScholarGradePage() {
         <AcademicStandingCard
           latestReport={latestReport}
           reportsCount={reports.length}
+          hasPriorResolvedAppeal={hasPriorResolvedAppeal}
           onOpenAppeal={() => setAppealModalOpen(true)}
           loading={loading}
           gradeThreshold={gradeThreshold}

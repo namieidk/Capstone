@@ -31,6 +31,10 @@ export function useScholarDashboardData() {
   // Real-time socket events for live sync
   useSocketEvent("baseline:frozen", () => fetchDashboardData(true));
   useSocketEvent("grade_report:evaluated", () => fetchDashboardData(true));
+  useSocketEvent("grade_report:verified", () => fetchDashboardData(true));
+  useSocketEvent("grade_report:appeal_decided", () => fetchDashboardData(true));
+  useSocketEvent("scholar:archived", () => fetchDashboardData(true));
+  useSocketEvent("scholar:restored", () => fetchDashboardData(true));
   useSocketEvent("enrollment:updated", () => fetchDashboardData(true));
   useSocketEvent("disbursement:updated", () => fetchDashboardData(true));
   useSocketEvent("disbursement:settled", () => fetchDashboardData(true));

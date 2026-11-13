@@ -116,6 +116,12 @@ export interface AcademicStandingLock {
   semester?: string;
   gpa?: number;
   evaluation_flag?: string;
+  archive_reason?: string | null;
+  scholar_name?: string;
+  student_number?: string;
+  course_of_study?: string;
+  grantor_email?: string;
+  coordinator_email?: string;
   message?: string;
 }
 

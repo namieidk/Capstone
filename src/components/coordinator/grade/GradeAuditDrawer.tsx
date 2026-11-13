@@ -99,6 +99,7 @@ export function GradeAuditDrawer({ documentId, open, onClose, onReviewed }: Grad
   const scholar = doc?.scholar_profile;
   const scholarName = scholar ? `${scholar.first_name || ""} ${scholar.last_name || ""}`.trim() : "Scholar";
   const schoolGrading = scholar?.school_grading_system;
+  const isAlreadyOnProbation = scholar?.academic_baseline_status === "ON_PROBATION";
 
   const isPassingGrade = useCallback(
     (grade: number) => {
@@ -180,7 +181,9 @@ export function GradeAuditDrawer({ documentId, open, onClose, onReviewed }: Grad
       toast.success(
         res.isEligible
           ? "Grades verified successfully! Scholar is cleared for the next term."
-          : "Grades recorded. Scholar flagged as Under Review / Academic Appeal required.",
+          : isAlreadyOnProbation
+            ? "2nd-chance probation failed. Scholar automatically moved to Archive and Grantor/Coordinator notified."
+            : "Grades recorded. Scholar flagged as Under Review / Academic Appeal required.",
       );
       setFlagAppealDialogOpen(false);
       onReviewed();
@@ -343,8 +346,20 @@ export function GradeAuditDrawer({ documentId, open, onClose, onReviewed }: Grad
                       )
                     </span>
                     <p className="text-[11px] text-rose-700 leading-snug">
-                      Certifying this CCG will record these grades and notify the scholar to submit an{" "}
-                      <span className="font-semibold underline">Academic Second Chance Appeal</span> for Grantor review.
+                      {isAlreadyOnProbation ? (
+                        <>
+                          This scholar is already on <span className="font-semibold underline">2nd-Chance Probation</span>.
+                          Confirming this deficiency will{" "}
+                          <span className="font-semibold">automatically archive the scholar (Failed 2nd Chance)</span>{" "}
+                          and notify both the Grantor and Coordinator.
+                        </>
+                      ) : (
+                        <>
+                          Certifying this CCG will record these grades and notify the scholar to submit an{" "}
+                          <span className="font-semibold underline">Academic Second Chance Appeal</span> for Grantor
+                          review.
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -393,7 +408,11 @@ export function GradeAuditDrawer({ documentId, open, onClose, onReviewed }: Grad
                     className="h-9.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold px-4 gap-1.5 shadow-xs"
                   >
                     <ShieldAlert className="size-4" />
-                    <span>Record & Flag for Academic Appeal</span>
+                    <span>
+                      {isAlreadyOnProbation
+                        ? "Confirm & Archive (2nd Chance Failed)"
+                        : "Record & Flag for Academic Appeal"}
+                    </span>
                   </Button>
                 ) : (
                   <Button
@@ -429,6 +448,7 @@ export function GradeAuditDrawer({ documentId, open, onClose, onReviewed }: Grad
         failedSubjectsText={failedSubjectsSummary}
         isGwaDeficient={isGwaDeficient}
         computedGwa={computedGwa}
+        isSecondChanceExhausted={isAlreadyOnProbation}
         notes={coordinatorNotes}
         onNotesChange={setCoordinatorNotes}
         onConfirm={handleVerify}

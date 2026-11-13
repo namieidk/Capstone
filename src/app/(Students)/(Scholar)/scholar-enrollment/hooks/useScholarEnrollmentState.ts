@@ -155,6 +155,8 @@ export function useScholarEnrollmentState() {
     socket.on("grade_report:appeal_decided", handleAppealUpdate);
     socket.on("grade_report:appealed", handleAppealUpdate);
     socket.on("grade_report:verified", handleAppealUpdate);
+    socket.on("scholar:archived", handleAppealUpdate);
+    socket.on("scholar:restored", handleAppealUpdate);
     return () => {
       socket.off("enrollment:approved", handleUpdate);
       socket.off("enrollment:changes_requested", handleUpdate);
@@ -162,6 +164,8 @@ export function useScholarEnrollmentState() {
       socket.off("grade_report:appeal_decided", handleAppealUpdate);
       socket.off("grade_report:appealed", handleAppealUpdate);
       socket.off("grade_report:verified", handleAppealUpdate);
+      socket.off("scholar:archived", handleAppealUpdate);
+      socket.off("scholar:restored", handleAppealUpdate);
     };
   }, [socket, fetchState]);
 
