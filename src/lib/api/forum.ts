@@ -19,6 +19,7 @@ export interface ForumComment {
   author_user_id: number;
   content: string;
   created_at: string;
+  updated_at?: string;
   author: ForumAuthor;
 }
 
@@ -67,8 +68,19 @@ export function createPost(data: { title: string; content: string; category?: st
   return apiPost<ForumPost>(`${B}/posts`, data);
 }
 
+export function updatePost(
+  id: number,
+  data: { title?: string; content?: string; category?: string },
+): Promise<ForumPost> {
+  return apiPatch<ForumPost>(`${B}/posts/${id}`, data);
+}
+
 export function addComment(postId: number, data: { content: string }): Promise<ForumComment> {
   return apiPost<ForumComment>(`${B}/posts/${postId}/comments`, data);
+}
+
+export function updateComment(id: number, data: { content: string }): Promise<ForumComment> {
+  return apiPatch<ForumComment>(`${B}/comments/${id}`, data);
 }
 
 export function deletePost(id: number): Promise<{ success: boolean }> {

@@ -16,12 +16,15 @@ import { useSocket } from "@/contexts/SocketContext";
 import {
   addComment,
   createPost,
+  deleteComment,
   deletePost,
   type ForumComment,
   type ForumPost,
   getPostById,
   getPosts,
   togglePin,
+  updateComment,
+  updatePost,
 } from "@/lib/api/forum";
 
 interface ForumContainerProps {
@@ -54,6 +57,13 @@ export function ForumContainer({
   const [openReplyId, setOpenReplyId] = useState<number | null>(null);
   const [replyDrafts, setReplyDrafts] = useState<Record<number, string>>({});
   const [submittingReply, setSubmittingReply] = useState<Record<number, boolean>>({});
+
+  // Inline post edit / delete state
+  const [editingPostId, setEditingPostId] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editContent, setEditContent] = useState("");
+  const [submittingEdit, setSubmittingEdit] = useState(false);
+  const [deletingPostId, setDeletingPostId] = useState<number | null>(null);
 
   const isStaff = ["ADMIN", "COORDINATOR", "GRANTOR"].includes(user?.role || "");
 
@@ -137,10 +147,66 @@ export function ForumContainer({
       });
     };
 
+    const handlePostUpdated = (payload: Partial<ForumPost> & { postId?: number }) => {
+      const targetId = payload.post_id ?? payload.postId;
+      if (!targetId) return;
+
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.post_id === targetId
+            ? {
+                ...p,
+                ...(payload.title !== undefined ? { title: payload.title } : {}),
+                ...(payload.content !== undefined ? { content: payload.content } : {}),
+                ...(payload.category !== undefined ? { category: payload.category } : {}),
+                ...(payload.is_pinned !== undefined ? { is_pinned: payload.is_pinned } : {}),
+                ...(payload.updated_at !== undefined ? { updated_at: payload.updated_at } : {}),
+              }
+            : p,
+        ),
+      );
+
+      setSelectedPostDetails((prev) => {
+        if (!prev || prev.post_id !== targetId) return prev;
+        return {
+          ...prev,
+          ...(payload.title !== undefined ? { title: payload.title } : {}),
+          ...(payload.content !== undefined ? { content: payload.content } : {}),
+          ...(payload.category !== undefined ? { category: payload.category } : {}),
+          ...(payload.is_pinned !== undefined ? { is_pinned: payload.is_pinned } : {}),
+          ...(payload.updated_at !== undefined ? { updated_at: payload.updated_at } : {}),
+        };
+      });
+    };
+
+    const handlePostDeleted = (payload: { postId?: number; post_id?: number }) => {
+      const targetId = payload.postId ?? payload.post_id;
+      if (!targetId) return;
+
+      setPosts((prev) => {
+        const remaining = prev.filter((p) => p.post_id !== targetId);
+        setSelectedId((curr) => (curr === targetId ? (remaining.length > 0 ? remaining[0].post_id : null) : curr));
+        return remaining;
+      });
+      setSelectedPostDetails((prev) => (prev?.post_id === targetId ? null : prev));
+      setOpenReplyId((curr) => (curr === targetId ? null : curr));
+      setEditingPostId((curr) => (curr === targetId ? null : curr));
+      setReplyDrafts((prev) => {
+        if (!(targetId in prev)) return prev;
+        const next = { ...prev };
+        delete next[targetId];
+        return next;
+      });
+    };
+
     socket.on("forum:new_post", handleNewPost);
+    socket.on("forum:post_updated", handlePostUpdated);
+    socket.on("forum:post_deleted", handlePostDeleted);
 
     return () => {
       socket.off("forum:new_post", handleNewPost);
+      socket.off("forum:post_updated", handlePostUpdated);
+      socket.off("forum:post_deleted", handlePostDeleted);
     };
   }, [socket]);
 
@@ -173,11 +239,55 @@ export function ForumContainer({
       }
     };
 
+    const handleCommentUpdated = (updated: ForumComment) => {
+      if (updated.post_id === selectedId) {
+        setSelectedPostDetails((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            comments: (prev.comments || []).map((c) =>
+              c.comment_id === updated.comment_id ? { ...c, ...updated } : c,
+            ),
+          };
+        });
+      }
+    };
+
+    const handleCommentDeleted = (payload: { commentId?: number; postId?: number }) => {
+      if (payload.postId === selectedId && payload.commentId) {
+        setSelectedPostDetails((prev) => {
+          if (!prev) return prev;
+          const remaining = (prev.comments || []).filter((c) => c.comment_id !== payload.commentId);
+          return {
+            ...prev,
+            comments: remaining,
+            comments_count: remaining.length,
+          };
+        });
+
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.post_id === selectedId
+              ? {
+                  ...p,
+                  comments_count: Math.max(0, (p.comments_count || 1) - 1),
+                  ...(p.comments ? { comments: p.comments.filter((c) => c.comment_id !== payload.commentId) } : {}),
+                }
+              : p,
+          ),
+        );
+      }
+    };
+
     socket.on("forum:new_comment", handleNewComment);
+    socket.on("forum:comment_updated", handleCommentUpdated);
+    socket.on("forum:comment_deleted", handleCommentDeleted);
 
     return () => {
       socket.emit("forum:leave_post", { postId: selectedId });
       socket.off("forum:new_comment", handleNewComment);
+      socket.off("forum:comment_updated", handleCommentUpdated);
+      socket.off("forum:comment_deleted", handleCommentDeleted);
     };
   }, [socket, selectedId]);
 
@@ -256,19 +366,149 @@ export function ForumContainer({
     }
   };
 
+  const handleStartEdit = (post: ForumPost) => {
+    setEditingPostId(post.post_id);
+    setEditTitle(post.title);
+    setEditContent(post.content);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPostId(null);
+    setEditTitle("");
+    setEditContent("");
+  };
+
+  const handleSaveEdit = async (postId: number) => {
+    const trimmedTitle = editTitle.trim();
+    const trimmedContent = editContent.trim();
+    if (trimmedTitle.length < 3 || trimmedContent.length < 5 || submittingEdit) return;
+
+    setSubmittingEdit(true);
+    try {
+      const updated = await updatePost(postId, {
+        title: trimmedTitle,
+        content: trimmedContent,
+      });
+
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.post_id === postId
+            ? { ...p, title: updated.title, content: updated.content, updated_at: updated.updated_at }
+            : p,
+        ),
+      );
+      if (selectedPostDetails?.post_id === postId) {
+        setSelectedPostDetails((prev) =>
+          prev ? { ...prev, title: updated.title, content: updated.content, updated_at: updated.updated_at } : prev,
+        );
+      }
+
+      handleCancelEdit();
+      showToast("Discussion post updated.", "success");
+    } catch (err) {
+      console.error("Failed to update post:", err);
+      const msg = err instanceof Error ? err.message : "Failed to update discussion. Please try again.";
+      showToast(msg, "error");
+    } finally {
+      setSubmittingEdit(false);
+    }
+  };
+
   const handleDeletePost = async (postId: number) => {
-    if (!window.confirm("Are you sure you want to delete this discussion?")) return;
+    if (deletingPostId === postId) return;
+    setDeletingPostId(postId);
     try {
       await deletePost(postId);
-      setPosts((prev) => prev.filter((p) => p.post_id !== postId));
+      const remaining = posts.filter((p) => p.post_id !== postId);
+      setPosts(remaining);
       if (selectedId === postId) {
-        const remaining = posts.filter((p) => p.post_id !== postId);
         setSelectedId(remaining.length > 0 ? remaining[0].post_id : null);
       }
-      showToast("Discussion post deleted.", "success");
+      if (selectedPostDetails?.post_id === postId) {
+        setSelectedPostDetails(null);
+      }
+      if (openReplyId === postId) {
+        setOpenReplyId(null);
+      }
+      if (editingPostId === postId) {
+        handleCancelEdit();
+      }
+      setReplyDrafts((prev) => {
+        if (!(postId in prev)) return prev;
+        const next = { ...prev };
+        delete next[postId];
+        return next;
+      });
+      showToast("Discussion post and its comments deleted.", "success");
     } catch (err) {
       console.error("Failed to delete post:", err);
-      showToast("Failed to delete discussion. Please try again.", "error");
+      const msg = err instanceof Error ? err.message : "Failed to delete discussion. Please try again.";
+      showToast(msg, "error");
+    } finally {
+      setDeletingPostId((curr) => (curr === postId ? null : curr));
+    }
+  };
+
+  const handleUpdateComment = async (commentId: number, content: string) => {
+    try {
+      const updated = await updateComment(commentId, { content });
+      setSelectedPostDetails((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          comments: (prev.comments || []).map((c) => (c.comment_id === commentId ? { ...c, ...updated } : c)),
+        };
+      });
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.comments
+            ? {
+                ...p,
+                comments: p.comments.map((c) => (c.comment_id === commentId ? { ...c, ...updated } : c)),
+              }
+            : p,
+        ),
+      );
+      showToast("Comment updated.", "success");
+    } catch (err) {
+      console.error("Failed to update comment:", err);
+      const msg = err instanceof Error ? err.message : "Failed to update comment. Please try again.";
+      showToast(msg, "error");
+      throw err;
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    try {
+      await deleteComment(commentId);
+      setSelectedPostDetails((prev) => {
+        if (!prev) return prev;
+        const remaining = (prev.comments || []).filter((c) => c.comment_id !== commentId);
+        return {
+          ...prev,
+          comments: remaining,
+          comments_count: remaining.length,
+        };
+      });
+      if (selectedId !== null) {
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.post_id === selectedId
+              ? {
+                  ...p,
+                  comments_count: Math.max(0, (p.comments_count || 1) - 1),
+                  ...(p.comments ? { comments: p.comments.filter((c) => c.comment_id !== commentId) } : {}),
+                }
+              : p,
+          ),
+        );
+      }
+      showToast("Comment deleted.", "success");
+    } catch (err) {
+      console.error("Failed to delete comment:", err);
+      const msg = err instanceof Error ? err.message : "Failed to delete comment. Please try again.";
+      showToast(msg, "error");
+      throw err;
     }
   };
 
@@ -363,8 +603,9 @@ export function ForumContainer({
                 {/* Posts List */}
                 {posts.map((post) => {
                   const isSelected = post.post_id === selectedId;
-                  const isAuthor = post.author_user_id === user?.user_id;
+                  const isAuthor = Boolean(user?.user_id && (post.author_user_id ?? post.author?.user_id) === user.user_id);
                   const isReplying = openReplyId === post.post_id;
+                  const isEditing = editingPostId === post.post_id;
                   const rawComments =
                     isSelected && selectedPostDetails?.comments ? selectedPostDetails.comments : post.comments || [];
                   const comments = dedupeComments(rawComments);
@@ -373,10 +614,16 @@ export function ForumContainer({
                     <ForumPostCard
                       key={`forum-post-${post.post_id}`}
                       post={post}
+                      currentUserId={user?.user_id}
                       isSelected={isSelected}
                       isAuthor={isAuthor}
                       isStaff={isStaff}
                       isReplying={isReplying}
+                      isEditing={isEditing}
+                      editTitle={isEditing ? editTitle : ""}
+                      editContent={isEditing ? editContent : ""}
+                      submittingEdit={submittingEdit}
+                      deleting={deletingPostId === post.post_id}
                       comments={comments}
                       replyDraft={replyDrafts[post.post_id] || ""}
                       submittingReply={!!submittingReply[post.post_id]}
@@ -393,7 +640,14 @@ export function ForumContainer({
                       }
                       onSubmitReply={() => handleAddReply(post.post_id)}
                       onTogglePin={() => handleTogglePin(post.post_id)}
+                      onStartEdit={() => handleStartEdit(post)}
+                      onCancelEdit={handleCancelEdit}
+                      onEditTitleChange={setEditTitle}
+                      onEditContentChange={setEditContent}
+                      onSubmitEdit={() => handleSaveEdit(post.post_id)}
                       onDelete={() => handleDeletePost(post.post_id)}
+                      onUpdateComment={handleUpdateComment}
+                      onDeleteComment={handleDeleteComment}
                     />
                   );
                 })}

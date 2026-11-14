@@ -1,21 +1,39 @@
 "use client";
 
-import { Eye, Loader2, MessageCircle, Pin, Send, Trash2 } from "lucide-react";
+import { Eye, Loader2, MessageCircle, Pencil, Pin, Save, Send, Trash2, X } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardFooter, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import type { ForumComment, ForumPost } from "@/lib/api/forum";
 import { ForumCommentItem } from "./ForumCommentItem";
 import { formatTime, getAuthorName, getInitials, getRoleBadgeVariant } from "./forum-utils";
 
 interface ForumPostCardProps {
   post: ForumPost;
+  currentUserId?: number;
   isSelected: boolean;
   isAuthor: boolean;
   isStaff: boolean;
   isReplying: boolean;
+  isEditing: boolean;
+  editTitle: string;
+  editContent: string;
+  submittingEdit: boolean;
+  deleting?: boolean;
   comments: ForumComment[];
   replyDraft: string;
   submittingReply: boolean;
@@ -24,15 +42,28 @@ interface ForumPostCardProps {
   onReplyDraftChange: (value: string) => void;
   onSubmitReply: () => void;
   onTogglePin: () => void;
+  onStartEdit: () => void;
+  onCancelEdit: () => void;
+  onEditTitleChange: (value: string) => void;
+  onEditContentChange: (value: string) => void;
+  onSubmitEdit: () => void;
   onDelete: () => void;
+  onUpdateComment: (commentId: number, content: string) => Promise<void>;
+  onDeleteComment: (commentId: number) => Promise<void>;
 }
 
 export function ForumPostCard({
   post,
+  currentUserId,
   isSelected,
   isAuthor,
   isStaff,
   isReplying,
+  isEditing,
+  editTitle,
+  editContent,
+  submittingEdit,
+  deleting = false,
   comments,
   replyDraft,
   submittingReply,
@@ -41,7 +72,14 @@ export function ForumPostCard({
   onReplyDraftChange,
   onSubmitReply,
   onTogglePin,
+  onStartEdit,
+  onCancelEdit,
+  onEditTitleChange,
+  onEditContentChange,
+  onSubmitEdit,
   onDelete,
+  onUpdateComment,
+  onDeleteComment,
 }: ForumPostCardProps) {
   const authorName = getAuthorName(post.author);
   const initials = getInitials(authorName);
@@ -97,26 +135,112 @@ export function ForumPostCard({
               </Button>
             )}
 
-            {(isAuthor || isStaff) && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={onDelete}
-                className="size-7 rounded-full text-muted-foreground hover:text-red-600 hover:bg-red-50"
-                title="Delete thread"
-              >
-                <Trash2 className="size-3.5" />
-              </Button>
+            {isAuthor && (
+              <>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={onStartEdit}
+                  disabled={isEditing || deleting}
+                  className="size-7 rounded-full text-muted-foreground hover:text-navy hover:bg-tint"
+                  title="Edit thread"
+                >
+                  <Pencil className="size-3.5" />
+                </Button>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      disabled={deleting}
+                      className="size-7 rounded-full text-muted-foreground hover:text-red-600 hover:bg-red-50"
+                      title="Delete thread"
+                    >
+                      {deleting ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="rounded-2xl border-line bg-white sm:max-w-md">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="text-base font-bold text-navy">
+                        Delete Forum Post?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed">
+                        This will permanently delete this post and all of its comments. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="h-8 rounded-full border-line px-4 text-xs font-medium">
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={onDelete}
+                        className="h-8 rounded-full bg-red-600 px-4 text-xs font-semibold text-white hover:bg-red-700"
+                      >
+                        Delete Post
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </>
             )}
           </div>
         </div>
 
-        {/* Title & Body Preview */}
-        <button type="button" onClick={onSelect} className="mt-3 w-full cursor-pointer text-left focus:outline-hidden">
-          <h2 className="text-base font-bold text-navy leading-snug tracking-tight hover:text-navy/90">{post.title}</h2>
-          <p className="mt-1.5 text-xs text-foreground/80 leading-relaxed whitespace-pre-line">{post.content}</p>
-        </button>
+        {/* Title & Body Preview or Inline Edit Form */}
+        {isEditing ? (
+          <div className="mt-3 space-y-2.5 rounded-xl border border-line bg-[#F9FBFB] p-3">
+            <Input
+              value={editTitle}
+              onChange={(e) => onEditTitleChange(e.target.value)}
+              placeholder="Thread title (min 3 characters)"
+              className="h-9 rounded-lg border-line bg-white font-semibold text-navy text-sm placeholder:text-muted-foreground/70"
+            />
+            <Textarea
+              value={editContent}
+              onChange={(e) => onEditContentChange(e.target.value)}
+              rows={3}
+              placeholder="Update post details (min 5 characters)..."
+              className="min-h-20 resize-y rounded-lg border-line bg-white text-xs leading-relaxed text-navy placeholder:text-muted-foreground/70"
+            />
+            <div className="flex items-center justify-end gap-2 pt-0.5">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onCancelEdit}
+                disabled={submittingEdit}
+                className="h-8 gap-1 rounded-full border-line px-3 text-xs font-medium"
+              >
+                <X className="size-3.5" />
+                <span>Cancel</span>
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={onSubmitEdit}
+                disabled={submittingEdit || editTitle.trim().length < 3 || editContent.trim().length < 5}
+                className="h-8 gap-1.5 rounded-full bg-navy px-4 text-xs font-semibold text-white hover:bg-navy/90 disabled:opacity-50"
+              >
+                {submittingEdit ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <>
+                    <Save className="size-3" />
+                    <span>Save Changes</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <button type="button" onClick={onSelect} className="mt-3 w-full cursor-pointer text-left focus:outline-hidden">
+            <h2 className="text-base font-bold text-navy leading-snug tracking-tight hover:text-navy/90">{post.title}</h2>
+            <p className="mt-1.5 text-xs text-foreground/80 leading-relaxed whitespace-pre-line">{post.content}</p>
+          </button>
+        )}
       </CardHeader>
 
       {/* Footer Actions */}
@@ -150,9 +274,20 @@ export function ForumPostCard({
             Replies ({comments.length})
           </p>
           <div className="space-y-3">
-            {comments.map((c) => (
-              <ForumCommentItem key={`forum-comment-${c.comment_id}`} comment={c} />
-            ))}
+            {comments.map((c) => {
+              const isCommentAuthor = Boolean(
+                currentUserId && (c.author_user_id ?? c.author?.user_id) === currentUserId,
+              );
+              return (
+                <ForumCommentItem
+                  key={`forum-comment-${c.comment_id}`}
+                  comment={c}
+                  isCommentAuthor={isCommentAuthor}
+                  onUpdateComment={onUpdateComment}
+                  onDeleteComment={onDeleteComment}
+                />
+              );
+            })}
           </div>
         </div>
       )}
