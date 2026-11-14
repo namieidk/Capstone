@@ -37,6 +37,7 @@ const DEFAULT_METRICS: AdminDashboardMetrics = {
 
 export function useAdminDashboardData() {
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState("");
 
   const [metrics, setMetrics] = useState<AdminDashboardMetrics>(DEFAULT_METRICS);
@@ -45,11 +46,15 @@ export function useAdminDashboardData() {
   const [schools, setSchools] = useState<SchoolGrading[]>([]);
   const [settings, setSettings] = useState<GlobalSettings | null>(null);
 
-  const fetchDashboardData = useCallback(async (silent = false) => {
+  const fetchDashboardData = useCallback(async (silent = false, forceRefresh = false) => {
     if (!silent) setLoading(true);
+    if (forceRefresh) setRefreshing(true);
     setLoadError("");
     try {
-      const data = await getAdminDashboardData();
+      const [data] = await Promise.all([
+        getAdminDashboardData(forceRefresh),
+        forceRefresh ? new Promise<void>((r) => setTimeout(r, 400)) : Promise.resolve(),
+      ]);
       setMetrics(data.metrics);
       const mappedStaff: StaffRow[] = (data.staff || []).map((s) => ({
         id: s.id,
@@ -77,8 +82,11 @@ export function useAdminDashboardData() {
       setLoadError(err instanceof ApiError ? err.message : "Failed to load dashboard data.");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
+
+  const refresh = useCallback(() => fetchDashboardData(true, true), [fetchDashboardData]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -115,6 +123,7 @@ export function useAdminDashboardData() {
 
   return {
     loading,
+    refreshing,
     loadError,
     metrics,
     staff,
@@ -122,5 +131,6 @@ export function useAdminDashboardData() {
     schools,
     settings,
     refetch: fetchDashboardData,
+    refresh,
   };
 }

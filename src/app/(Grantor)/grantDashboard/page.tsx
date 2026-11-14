@@ -17,7 +17,7 @@ import { useGrantorDashboardData } from "./hooks/useGrantorDashboardData";
 
 export default function GrantorDashboardPage() {
   const { user } = useAuth();
-  const { loading, loadError, data, refetch } = useGrantorDashboardData();
+  const { loading, refreshing, loadError, data, refetch, refresh } = useGrantorDashboardData();
 
   if (loading && !data) {
     return (
@@ -93,8 +93,8 @@ export default function GrantorDashboardPage() {
           grantorName={grantorName}
           grantorTitle={grantorTitle}
           grantorOrg={grantorOrg}
-          onRefresh={() => refetch(true)}
-          isRefreshing={loading}
+          onRefresh={refresh}
+          isRefreshing={refreshing}
         />
 
         {/* 2. Operational Verdict Banner */}

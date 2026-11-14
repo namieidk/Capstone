@@ -91,6 +91,7 @@ export interface CoordinatorDashboardResponse {
   recentConversations: CoordinatorConversationItem[];
 }
 
-export function getCoordinatorDashboardData() {
-  return apiGet<CoordinatorDashboardResponse>("/api/proxy/users/coordinator/dashboard");
+export function getCoordinatorDashboardData(forceRefresh = false) {
+  const qs = forceRefresh ? "?refresh=true" : "";
+  return apiGet<CoordinatorDashboardResponse>(`/api/proxy/users/coordinator/dashboard${qs}`);
 }

@@ -14,7 +14,7 @@ import { ScholarKpiCards } from "./components/ScholarKpiCards";
 import { useScholarDashboardData } from "./hooks/useScholarDashboardData";
 
 export default function ScholarDashboardPage() {
-  const { data, loading, loadError, refetch } = useScholarDashboardData();
+  const { data, loading, refreshing, loadError, refetch, refresh } = useScholarDashboardData();
 
   if (loading && !data) {
     return (
@@ -63,7 +63,7 @@ export default function ScholarDashboardPage() {
       {/* Main Content Body */}
       <div className="flex-1 space-y-6 p-4 sm:p-6 max-w-7xl w-full mx-auto">
         {/* 1. Scholar Identity & Program Header */}
-        <ScholarDashboardHeader profile={data.profile} onRefresh={() => refetch(true)} isRefreshing={loading} />
+        <ScholarDashboardHeader profile={data.profile} onRefresh={refresh} isRefreshing={refreshing} />
 
         {/* 2. Dynamic Academic Standing / Probation / Appeal / Archived Alert Banner */}
         <ScholarAcademicStandingBanner standing={data.academic_standing} profile={data.profile} />

@@ -91,6 +91,7 @@ export interface GrantorDashboardResponse {
   recentConversations: GrantorConversationItem[];
 }
 
-export async function getGrantorDashboardData(): Promise<GrantorDashboardResponse> {
-  return apiGet<GrantorDashboardResponse>("/api/proxy/users/grantor/dashboard");
+export async function getGrantorDashboardData(forceRefresh = false): Promise<GrantorDashboardResponse> {
+  const qs = forceRefresh ? "?refresh=true" : "";
+  return apiGet<GrantorDashboardResponse>(`/api/proxy/users/grantor/dashboard${qs}`);
 }

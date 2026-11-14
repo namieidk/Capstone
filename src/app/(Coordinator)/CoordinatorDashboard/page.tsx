@@ -16,7 +16,7 @@ import { useCoordinatorDashboardData } from "./hooks/useCoordinatorDashboardData
 
 export default function CoordinatorDashboardPage() {
   const { user } = useAuth();
-  const { data, loading, loadError, refetch } = useCoordinatorDashboardData();
+  const { data, loading, refreshing, loadError, refetch, refresh } = useCoordinatorDashboardData();
 
   const coordinatorName = user ? `${user.first_name} ${user.last_name}`.trim() : "Coordinator";
 
@@ -72,8 +72,8 @@ export default function CoordinatorDashboardPage() {
         {/* 1. Header & Identity */}
         <CoordinatorDashboardHeader
           coordinatorName={coordinatorName}
-          onRefresh={() => refetch(true)}
-          isRefreshing={loading}
+          onRefresh={refresh}
+          isRefreshing={refreshing}
         />
 
         {/* 2. Urgent Actions Alert Banner */}

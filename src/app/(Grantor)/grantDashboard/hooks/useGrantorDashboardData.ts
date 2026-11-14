@@ -7,22 +7,30 @@ import { type GrantorDashboardResponse, getGrantorDashboardData } from "@/lib/ap
 
 export function useGrantorDashboardData() {
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [data, setData] = useState<GrantorDashboardResponse | null>(null);
 
-  const fetchDashboardData = useCallback(async (silent = false) => {
+  const fetchDashboardData = useCallback(async (silent = false, forceRefresh = false) => {
     if (!silent) setLoading(true);
+    if (forceRefresh) setRefreshing(true);
     setLoadError("");
     try {
-      const res = await getGrantorDashboardData();
+      const [res] = await Promise.all([
+        getGrantorDashboardData(forceRefresh),
+        forceRefresh ? new Promise<void>((r) => setTimeout(r, 400)) : Promise.resolve(),
+      ]);
       setData(res);
     } catch (err) {
       console.error("Failed to load grantor dashboard data:", err);
       setLoadError(err instanceof ApiError ? err.message : "Failed to load dashboard data.");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
+
+  const refresh = useCallback(() => fetchDashboardData(true, true), [fetchDashboardData]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -53,8 +61,10 @@ export function useGrantorDashboardData() {
 
   return {
     loading,
+    refreshing,
     loadError,
     data,
     refetch: fetchDashboardData,
+    refresh,
   };
 }

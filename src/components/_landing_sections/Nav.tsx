@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -8,7 +10,17 @@ export function Nav() {
   return (
     <header className="fixed inset-x-0 top-3 sm:top-4 z-50 px-3 sm:px-4 md:px-6">
       <div className="mx-auto flex w-full max-w-295 items-center justify-between gap-3 sm:gap-4 md:gap-6 rounded-full bg-linear-to-r from-[#FBF9F3] to-[#F3EFE4] py-2 px-3 sm:py-2.5 sm:px-4 md:py-3 md:pl-5 md:pr-3 shadow-va-md">
-        <Link href="#top" className="flex shrink-0 items-center gap-2 sm:gap-2.5 md:gap-3">
+        <Link
+          href="#top"
+          onClick={(e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            if (window.location.hash) {
+              window.history.replaceState(null, "", window.location.pathname + window.location.search);
+            }
+          }}
+          className="flex shrink-0 items-center gap-2 sm:gap-2.5 md:gap-3"
+        >
           <span className="flex size-9 sm:size-10 md:size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F8F4EA]">
             <Image
               src="/logo_cropped.png"

@@ -139,6 +139,7 @@ export interface ScholarDashboardResponse {
   announcements: ScholarAnnouncementItem[];
 }
 
-export function getScholarDashboardSummary() {
-  return apiGet<ScholarDashboardResponse>("/api/proxy/academic-baseline/scholar/dashboard-summary");
+export function getScholarDashboardSummary(forceRefresh = false) {
+  const qs = forceRefresh ? "?refresh=true" : "";
+  return apiGet<ScholarDashboardResponse>(`/api/proxy/academic-baseline/scholar/dashboard-summary${qs}`);
 }

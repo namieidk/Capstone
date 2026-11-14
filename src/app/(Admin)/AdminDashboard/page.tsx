@@ -39,7 +39,8 @@ export default function AdminDashboardPage() {
   const [resetActing, setResetActing] = useState(false);
   const [resetActionError, setResetActionError] = useState("");
 
-  const { loading, loadError, metrics, staff, recentLogs, schools, refetch } = useAdminDashboardData();
+  const { loading, refreshing, loadError, metrics, staff, recentLogs, schools, refetch, refresh } =
+    useAdminDashboardData();
 
   // Handle Add Employee Form Submit
   const handleAddEmployeeSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -111,7 +112,12 @@ export default function AdminDashboardPage() {
   return (
     <div className="min-h-full bg-[#faf8f5]">
       {/* Consistent Page Header */}
-      <AdminDashboardHeader searchValue={searchQuery} onSearchChange={setSearchQuery} />
+      <AdminDashboardHeader
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        onRefresh={refresh}
+        isRefreshing={refreshing}
+      />
 
       <div className="px-3.5 sm:px-5 md:px-10 pb-24 space-y-5 mt-5">
         {loadError ? (

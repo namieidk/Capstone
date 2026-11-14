@@ -13,6 +13,13 @@ interface CoordinatorEnrollmentQueueCardProps {
 
 export function CoordinatorEnrollmentQueueCard({ enrollmentQueue }: CoordinatorEnrollmentQueueCardProps) {
   const getEnrollmentBadge = (status: string, hasCor: boolean) => {
+    if (status === "COMPLETED") {
+      return (
+        <Badge className="h-5.5 w-28 justify-center rounded-full border-emerald-300 bg-emerald-50 px-2 text-[10px] font-bold text-emerald-800">
+          <CheckCircle2 className="mr-1 size-3 shrink-0" /> Completed
+        </Badge>
+      );
+    }
     if (status === "APPROVED") {
       return (
         <Badge className="h-5.5 w-28 justify-center rounded-full border-emerald-300 bg-emerald-50 px-2 text-[10px] font-bold text-emerald-800">
@@ -24,6 +31,13 @@ export function CoordinatorEnrollmentQueueCard({ enrollmentQueue }: CoordinatorE
       return (
         <Badge className="h-5.5 w-28 justify-center rounded-full border-rose-300 bg-rose-50 px-2 text-[10px] font-bold text-rose-800">
           <ShieldAlert className="mr-1 size-3 shrink-0" /> Revision
+        </Badge>
+      );
+    }
+    if (status === "REJECTED") {
+      return (
+        <Badge className="h-5.5 w-28 justify-center rounded-full border-rose-300 bg-rose-50 px-2 text-[10px] font-bold text-rose-800">
+          <ShieldAlert className="mr-1 size-3 shrink-0" /> Rejected
         </Badge>
       );
     }

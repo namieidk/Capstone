@@ -45,7 +45,8 @@ export function getAuditLogs(params?: { page?: number; limit?: number }) {
   return apiGet<AuditLogsResponse>(`${B}/logs${query ? `?${query}` : ""}`);
 }
 
-export function getAdminDashboardData() {
+export function getAdminDashboardData(forceRefresh = false) {
+  const qs = forceRefresh ? "?refresh=true" : "";
   return apiGet<{
     metrics: {
       totalStaff: number;
@@ -75,7 +76,7 @@ export function getAdminDashboardData() {
     schools: Array<import("./settings").SchoolGrading>;
     settings: import("./settings").GlobalSettings | null;
     recentLogs: Array<AuditLogEntry>;
-  }>(`${B}/admin/dashboard`);
+  }>(`${B}/admin/dashboard${qs}`);
 }
 
 export function createStaff(data: {
