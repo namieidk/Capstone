@@ -53,7 +53,7 @@ export function ForumThreadOverview({ activePost, otherPosts, onSelectPost }: Fo
             </div>
 
             <p className="font-bold text-navy text-sm leading-tight">{activeAuthorName}</p>
-            {activeAuthorEmail ? (
+            {activePost?.author?.public_profile !== false && activeAuthorEmail ? (
               <p className="text-[0.72rem] text-muted-foreground mb-2 truncate max-w-full">{activeAuthorEmail}</p>
             ) : (
               <div className="mb-2" />
@@ -66,6 +66,41 @@ export function ForumThreadOverview({ activePost, otherPosts, onSelectPost }: Fo
               >
                 {activeRoleBadge.label}
               </Badge>
+            )}
+
+            {activePost?.author?.public_profile === false ? (
+              <p className="mt-2.5 text-[0.72rem] text-muted-foreground">
+                This scholar keeps their forum activity and bio private.
+              </p>
+            ) : (
+              <>
+                {activePost?.author?.bio && (
+                  <p className="mt-2.5 text-[0.74rem] leading-relaxed text-muted-foreground line-clamp-3">
+                    {activePost.author.bio}
+                  </p>
+                )}
+                {(typeof activePost?.author?.forum_posts_count === "number" ||
+                  typeof activePost?.author?.forum_comments_count === "number") && (
+                  <div className="mt-3 flex items-center gap-3 text-[0.7rem] text-muted-foreground">
+                    {typeof activePost?.author?.forum_posts_count === "number" && (
+                      <span>
+                        <strong className="font-semibold text-navy">
+                          {activePost.author.forum_posts_count}
+                        </strong>{" "}
+                        {activePost.author.forum_posts_count === 1 ? "post" : "posts"}
+                      </span>
+                    )}
+                    {typeof activePost?.author?.forum_comments_count === "number" && (
+                      <span>
+                        <strong className="font-semibold text-navy">
+                          {activePost.author.forum_comments_count}
+                        </strong>{" "}
+                        {activePost.author.forum_comments_count === 1 ? "reply" : "replies"}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
 

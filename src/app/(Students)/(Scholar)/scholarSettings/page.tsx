@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  AlertCircle,
   Bell,
   Check,
   CheckCircle2,
@@ -31,15 +32,21 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/AuthContext";
 import {
+  type ContactVerificationChannel,
+  type ContactVerificationSetupResponse,
   changeMyPassword,
+  deactivateMyAccount,
   getMe,
   getMySettings,
+  initiateContactVerification,
   initiateTwoFactorSetup,
   type TwoFactorMethod,
   type TwoFactorSetupResponse,
   type UserSettings,
   updateMySettings,
+  verifyContactVerification,
   verifyTwoFactorSetup,
 } from "@/lib/api/auth";
 import { getPasswordError } from "@/lib/validation";
@@ -165,6 +172,8 @@ const DEFAULT_SETTINGS: UserSettings = {
   forumDigest: false,
   twoFactor: false,
   twoFactorMethod: null,
+  emailVerified: false,
+  phoneVerified: false,
   publicProfile: false,
   passwordChangedAt: null,
 };
@@ -190,10 +199,11 @@ function formatPasswordChangedDesc(passwordChangedAt: string | null): string {
   })}.`;
 }
 
-type NotificationKey = "emailNotifs" | "smsNotifs" | "forumDigest";
+type NotificationKey = "emailNotifs" | "smsNotifs" | "forumDigest" | "publicProfile";
 
 export default function Settings() {
   const { showToast } = useToast();
+  const { logout } = useAuth();
 
   const [toggles, setToggles] = useState<UserSettings>(DEFAULT_SETTINGS);
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -212,6 +222,15 @@ export default function Settings() {
   const [twoFactorError, setTwoFactorError] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState(false);
 
+  // Contact (Email / Phone) verification dialog state
+  const [contactVerifyOpen, setContactVerifyOpen] = useState(false);
+  const [contactChannel, setContactChannel] = useState<ContactVerificationChannel>("EMAIL");
+  const [contactSetup, setContactSetup] = useState<ContactVerificationSetupResponse | null>(null);
+  const [contactSending, setContactSending] = useState(false);
+  const [contactCode, setContactCode] = useState("");
+  const [contactVerifying, setContactVerifying] = useState(false);
+  const [contactError, setContactError] = useState<string | null>(null);
+
   // Change password dialog state
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -222,6 +241,13 @@ export default function Settings() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [changingPassword, setChangingPassword] = useState(false);
+
+  // Deactivate account dialog state
+  const [deactivateOpen, setDeactivateOpen] = useState(false);
+  const [deactivateReason, setDeactivateReason] = useState("");
+  const [deactivateConfirmText, setDeactivateConfirmText] = useState("");
+  const [deactivating, setDeactivating] = useState(false);
+  const [deactivateError, setDeactivateError] = useState<string | null>(null);
 
   const fetchSettings = useCallback(async () => {
     setLoading(true);
@@ -366,6 +392,63 @@ export default function Settings() {
     }
   };
 
+  const handleSendContactVerification = async (channel: ContactVerificationChannel) => {
+    setContactSending(true);
+    setContactError(null);
+    try {
+      const data = await initiateContactVerification(channel);
+      setContactSetup(data);
+      setContactCode("");
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : `Failed to send ${channel === "EMAIL" ? "email" : "SMS"} verification code.`;
+      setContactError(message);
+    } finally {
+      setContactSending(false);
+    }
+  };
+
+  const openContactVerifyDialog = (channel: ContactVerificationChannel) => {
+    if (channel === "PHONE" && !phoneNumber) {
+      showToast("Please add a mobile phone number in your profile first.", "error");
+      return;
+    }
+    setContactChannel(channel);
+    setContactSetup(null);
+    setContactCode("");
+    setContactError(null);
+    setContactVerifyOpen(true);
+    void handleSendContactVerification(channel);
+  };
+
+  const handleVerifyContactSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const trimmed = contactCode.trim();
+    if (!/^\d{6}$/.test(trimmed)) {
+      setContactError("Please enter the 6-digit verification code.");
+      return;
+    }
+
+    setContactVerifying(true);
+    setContactError(null);
+    try {
+      const updated = await verifyContactVerification(contactChannel, trimmed);
+      setToggles(updated);
+      setContactVerifyOpen(false);
+      showToast(
+        contactChannel === "EMAIL" ? "Email address verified successfully." : "Phone number verified successfully.",
+        "success",
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Invalid verification code.";
+      setContactError(message);
+    } finally {
+      setContactVerifying(false);
+    }
+  };
+
   const openPasswordDialog = () => {
     setCurrentPassword("");
     setNewPassword("");
@@ -418,8 +501,36 @@ export default function Settings() {
     }
   };
 
-  const flipLocal = (key: "publicProfile") => {
-    setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
+  const openDeactivateDialog = () => {
+    setDeactivateReason("");
+    setDeactivateConfirmText("");
+    setDeactivateError(null);
+    setDeactivateOpen(true);
+  };
+
+  const handleDeactivateSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (deactivating) return;
+
+    if (deactivateConfirmText.trim().toUpperCase() !== "DEACTIVATE") {
+      setDeactivateError('Please type "DEACTIVATE" to confirm.');
+      return;
+    }
+
+    setDeactivating(true);
+    setDeactivateError(null);
+    try {
+      const trimmedReason = deactivateReason.trim();
+      const res = await deactivateMyAccount(trimmedReason ? { reason: trimmedReason } : {});
+      setDeactivateOpen(false);
+      showToast(res.message || "Your account has been deactivated.", "success");
+      await logout();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to deactivate account.";
+      setDeactivateError(message);
+    } finally {
+      setDeactivating(false);
+    }
   };
 
   const syncBadge = loading ? "Syncing..." : loadError ? undefined : "Synced";
@@ -588,23 +699,201 @@ export default function Settings() {
             </div>
           </SettingsSection>
 
-          <SettingsSection title="Privacy">
+          <SettingsSection title="Privacy" badge={syncBadge}>
             <SettingsRow
               label="Public profile"
               desc="Allow other scholars to view your forum activity and bio."
               on={toggles.publicProfile}
-              disabled={loading}
-              onToggle={() => flipLocal("publicProfile")}
+              disabled={loading || Boolean(loadError)}
+              saving={Boolean(savingKeys.publicProfile)}
+              onToggle={() => handleNotificationToggle("publicProfile", "Public profile")}
             />
           </SettingsSection>
 
-          <SettingsSection title="Account" danger>
+          <SettingsSection title="Account" badge={syncBadge}>
+            <div style={s.settingsRow}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
+                <div
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 10,
+                    background: "#F5F2EB",
+                    color: NAVY,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                    marginTop: 2,
+                  }}
+                >
+                  <Mail size={16} />
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+                    <p style={{ ...s.settingsRowLabel, marginBottom: 0 }}>Email address</p>
+                    {!loading &&
+                      !loadError &&
+                      (toggles.emailVerified ? (
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 4,
+                            fontSize: "0.72rem",
+                            fontWeight: 600,
+                            color: "#2E6F40",
+                            background: "#EDF7F0",
+                            border: "1px solid #C6E6D0",
+                            borderRadius: 999,
+                            padding: "2px 9px",
+                          }}
+                        >
+                          <CheckCircle2 size={12} />
+                          Verified
+                        </span>
+                      ) : (
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 4,
+                            fontSize: "0.72rem",
+                            fontWeight: 600,
+                            color: "#9A6700",
+                            background: "#FFF8E6",
+                            border: "1px solid #F5D78E",
+                            borderRadius: 999,
+                            padding: "2px 9px",
+                          }}
+                        >
+                          <AlertCircle size={12} />
+                          Unverified
+                        </span>
+                      ))}
+                  </div>
+                  <p style={{ ...s.settingsRowDesc, marginTop: 3 }}>
+                    {loading ? "Syncing email verification status..." : (userEmail ?? "No email address on file.")}
+                  </p>
+                </div>
+              </div>
+              {!loading && !loadError && !toggles.emailVerified && (
+                <button
+                  type="button"
+                  onClick={() => openContactVerifyDialog("EMAIL")}
+                  style={{
+                    ...s.settingsActionBtn,
+                    cursor: "pointer",
+                    flexShrink: 0,
+                  }}
+                >
+                  Verify email
+                </button>
+              )}
+            </div>
+
+            <div style={s.settingsRow}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
+                <div
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 10,
+                    background: "#F5F2EB",
+                    color: NAVY,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                    marginTop: 2,
+                  }}
+                >
+                  <Smartphone size={16} />
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+                    <p style={{ ...s.settingsRowLabel, marginBottom: 0 }}>Phone number</p>
+                    {!loading &&
+                      !loadError &&
+                      (toggles.phoneVerified && phoneNumber ? (
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 4,
+                            fontSize: "0.72rem",
+                            fontWeight: 600,
+                            color: "#2E6F40",
+                            background: "#EDF7F0",
+                            border: "1px solid #C6E6D0",
+                            borderRadius: 999,
+                            padding: "2px 9px",
+                          }}
+                        >
+                          <CheckCircle2 size={12} />
+                          Verified
+                        </span>
+                      ) : (
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 4,
+                            fontSize: "0.72rem",
+                            fontWeight: 600,
+                            color: "#9A6700",
+                            background: "#FFF8E6",
+                            border: "1px solid #F5D78E",
+                            borderRadius: 999,
+                            padding: "2px 9px",
+                          }}
+                        >
+                          <AlertCircle size={12} />
+                          Unverified
+                        </span>
+                      ))}
+                  </div>
+                  <p style={{ ...s.settingsRowDesc, marginTop: 3 }}>
+                    {loading
+                      ? "Syncing phone verification status..."
+                      : phoneNumber
+                        ? phoneNumber
+                        : "Add a mobile phone number in your profile first."}
+                  </p>
+                </div>
+              </div>
+              {!loading && !loadError && !(toggles.phoneVerified && Boolean(phoneNumber)) && (
+                <button
+                  type="button"
+                  disabled={!phoneNumber}
+                  onClick={() => openContactVerifyDialog("PHONE")}
+                  style={{
+                    ...s.settingsActionBtn,
+                    cursor: phoneNumber ? "pointer" : "not-allowed",
+                    opacity: phoneNumber ? 1 : 0.55,
+                    flexShrink: 0,
+                  }}
+                >
+                  Verify phone
+                </button>
+              )}
+            </div>
+
             <div style={s.settingsRow}>
               <div>
                 <p style={s.settingsRowLabel}>Deactivate account</p>
                 <p style={s.settingsRowDesc}>Temporarily disable your ViaScholar account.</p>
               </div>
-              <button type="button" style={s.settingsDangerBtn}>
+              <button
+                type="button"
+                style={{
+                  ...s.settingsDangerBtn,
+                  opacity: loading || loadError ? 0.6 : 1,
+                  cursor: loading || loadError ? "not-allowed" : "pointer",
+                }}
+                disabled={loading || Boolean(loadError)}
+                onClick={openDeactivateDialog}
+              >
                 Deactivate
               </button>
             </div>
@@ -757,22 +1046,6 @@ export default function Settings() {
                     <strong className="text-foreground">{setupData.destination}</strong> (valid for{" "}
                     {setupData.expiresInMinutes} minutes).
                   </p>
-                  {setupData.simulationCode && (
-                    <div className="flex items-center justify-between gap-2 rounded-lg border border-amber/30 bg-[#FFF9EB] px-3 py-2 text-xs text-[#8a6116]">
-                      <span>
-                        Preview code: <strong className="font-mono tracking-wider">{setupData.simulationCode}</strong>
-                      </span>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-7 border-amber/40 bg-white px-2.5 text-xs"
-                        onClick={() => setVerifyCode(setupData.simulationCode ?? "")}
-                      >
-                        Fill code
-                      </Button>
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -941,6 +1214,172 @@ export default function Settings() {
                   </>
                 ) : (
                   "Update password"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ---------------- Email / Phone Verification Dialog ---------------- */}
+      <Dialog open={contactVerifyOpen} onOpenChange={setContactVerifyOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-navy">
+              {contactChannel === "EMAIL" ? "Verify Email Address" : "Verify Phone Number"}
+            </DialogTitle>
+            <DialogDescription>
+              {contactChannel === "EMAIL"
+                ? "Enter the 6-digit verification code sent to your account email."
+                : "Enter the 6-digit verification code sent via SMS to your mobile number."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={(e) => void handleVerifyContactSubmit(e)} className="grid gap-3 py-2">
+            {contactSending && !contactSetup ? (
+              <div className="flex items-center justify-center gap-2 rounded-xl border border-border bg-muted/20 p-4 text-xs text-muted-foreground">
+                <Loader2 className="size-4 animate-spin text-navy" />
+                Sending verification code...
+              </div>
+            ) : contactSetup ? (
+              <div className="grid gap-2 rounded-xl border border-border bg-muted/20 p-3.5 text-xs text-muted-foreground">
+                <p>
+                  A 6-digit verification code was prepared for{" "}
+                  <strong className="text-foreground">{contactSetup.destination}</strong> (valid for{" "}
+                  {contactSetup.expiresInMinutes} minutes).
+                </p>
+              </div>
+            ) : null}
+
+            <div className="grid gap-1.5">
+              <Label htmlFor="contact-verify-code">6-digit verification code</Label>
+              <Input
+                id="contact-verify-code"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="000000"
+                value={contactCode}
+                onChange={(e) => {
+                  setContactCode(e.target.value.replace(/\D/g, "").slice(0, 6));
+                  if (contactError) setContactError(null);
+                }}
+                className="text-center font-mono text-base tracking-[0.35em]"
+              />
+            </div>
+
+            {contactError && (
+              <div className="rounded-lg bg-bad-bg px-3 py-2 text-xs font-medium text-bad">{contactError}</div>
+            )}
+
+            <DialogFooter className="flex-wrap justify-between gap-2 pt-2 sm:justify-between">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={contactSending || contactVerifying}
+                onClick={() => void handleSendContactVerification(contactChannel)}
+              >
+                {contactSending ? (
+                  <>
+                    <Loader2 className="size-3.5 animate-spin" /> Sending...
+                  </>
+                ) : (
+                  "Resend code"
+                )}
+              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={contactVerifying}
+                  onClick={() => setContactVerifyOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={contactVerifying || contactSending}>
+                  {contactVerifying ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" /> Verifying...
+                    </>
+                  ) : (
+                    "Verify"
+                  )}
+                </Button>
+              </div>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ---------------- Deactivate Account Dialog ---------------- */}
+      <Dialog
+        open={deactivateOpen}
+        onOpenChange={(open) => {
+          if (!deactivating) setDeactivateOpen(open);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Deactivate Account</DialogTitle>
+            <DialogDescription>
+              Your account status will be set to inactive and you will be signed out immediately. You will not be
+              able to log in until an administrator reactivates your account. Your scholar profile and records will
+              remain intact and will not be archived.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleDeactivateSubmit} className="space-y-4 py-1">
+            <div className="space-y-1.5">
+              <Label htmlFor="deactivate-reason">Reason (optional)</Label>
+              <Input
+                id="deactivate-reason"
+                type="text"
+                maxLength={500}
+                placeholder="Share why you are deactivating your account..."
+                value={deactivateReason}
+                onChange={(e) => setDeactivateReason(e.target.value)}
+                disabled={deactivating}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="deactivate-confirm">
+                Type <span className="font-semibold text-navy">DEACTIVATE</span> to confirm
+              </Label>
+              <Input
+                id="deactivate-confirm"
+                type="text"
+                autoComplete="off"
+                placeholder="DEACTIVATE"
+                value={deactivateConfirmText}
+                onChange={(e) => {
+                  setDeactivateConfirmText(e.target.value);
+                  if (deactivateError) setDeactivateError(null);
+                }}
+                disabled={deactivating}
+              />
+            </div>
+
+            {deactivateError && (
+              <div className="rounded-lg bg-bad-bg px-3 py-2 text-xs font-medium text-bad">{deactivateError}</div>
+            )}
+
+            <DialogFooter className="gap-2 pt-2">
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={deactivating}
+                onClick={() => setDeactivateOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" variant="destructive" disabled={deactivating}>
+                {deactivating ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" /> Deactivating...
+                  </>
+                ) : (
+                  "Deactivate Account"
                 )}
               </Button>
             </DialogFooter>

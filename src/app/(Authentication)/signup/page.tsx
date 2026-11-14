@@ -7,16 +7,18 @@ import { type ClipboardEvent, type FormEvent, type KeyboardEvent, useState } fro
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
+import { type MfaChallengeResponse, MfaRequiredError } from "@/lib/api/auth";
 import { formatPhilippinePhoneNumber, signUpSchema } from "@/lib/validation";
 import { AuthShell } from "../components/AuthShell";
 import { CheckboxField } from "../components/CheckboxField";
 import { InputField } from "../components/InputField";
+import { MfaVerificationStep } from "../components/MfaVerificationStep";
 import { ModeTabs } from "../components/ModeTabs";
 import { PasswordChecklist } from "../components/PasswordChecklist";
 import { SocialBlock } from "../components/SocialBlock";
 import { SuccessPanel } from "../components/SuccessPanel";
 
-function SignUpForm() {
+function SignUpForm({ onMfaRequired }: { onMfaRequired: (challenge: MfaChallengeResponse) => void }) {
   const { register } = useAuth();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -120,6 +122,11 @@ function SignUpForm() {
         phone_number: parseResult.data.phone,
       });
     } catch (err: unknown) {
+      if (err instanceof MfaRequiredError) {
+        setLoading(false);
+        onMfaRequired(err.challenge);
+        return;
+      }
       const message = err instanceof Error ? err.message : "Registration failed. Please try again.";
       setError(message);
       setLoading(false);
@@ -282,6 +289,7 @@ function SignedUpPanel() {
 
 export default function SignupPage() {
   const { user, loading } = useAuth();
+  const [mfaChallenge, setMfaChallenge] = useState<MfaChallengeResponse | null>(null);
 
   return (
     <AuthShell mode="signup" title="Create your account" subtitle="Start your scholarship application in minutes.">
@@ -294,11 +302,18 @@ export default function SignupPage() {
           <Skeleton className="h-20 w-full" />
           <Skeleton className="h-11 w-full rounded-full" />
         </div>
+      ) : !user && mfaChallenge ? (
+        <MfaVerificationStep
+          challenge={mfaChallenge}
+          purpose="REGISTER"
+          onSuccess={() => setMfaChallenge(null)}
+          onCancel={() => setMfaChallenge(null)}
+        />
       ) : !user ? (
         <div className="grid gap-6">
           <ModeTabs active="signup" />
-          <SignUpForm />
-          <SocialBlock />
+          <SignUpForm onMfaRequired={setMfaChallenge} />
+          <SocialBlock onMfaRequired={setMfaChallenge} />
           <p className="text-center text-[0.92rem] text-muted-foreground">
             Already have an account?{" "}
             <Link href="/login" className="font-semibold text-navy underline underline-offset-2 hover:text-amber">

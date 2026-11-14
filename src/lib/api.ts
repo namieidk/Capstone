@@ -39,10 +39,17 @@ function getErrorMessage(status: number, data: unknown): string {
 
     if (msg) {
       if (status === 401) {
-        if (msg.toLowerCase().includes("disabled")) {
+        const lowerMsg = msg.toLowerCase();
+        if (lowerMsg.includes("deactivated")) {
+          return "Your account has been deactivated. Please contact the administrator.";
+        }
+        if (lowerMsg.includes("disabled")) {
           return "Your account has been disabled. Please contact the administrator.";
         }
-        return "Invalid email or password.";
+        if (lowerMsg.includes("invalid credentials") || lowerMsg === "unauthorized") {
+          return "Invalid email or password.";
+        }
+        return msg;
       }
       if (status === 403) return msg;
       if (status === 404) return msg;

@@ -71,8 +71,38 @@ export interface RegisterResponse {
   user: User;
 }
 
+export interface MfaChallengeResponse {
+  mfaRequired: true;
+  mfaToken: string;
+  mfaMethod: "EMAIL_OTP" | "SMS_OTP" | "AUTHENTICATOR_APP";
+  mfaDestination: string;
+  emailDestination: string;
+  phoneDestination: string | null;
+  availableMethods: Array<"EMAIL_OTP" | "SMS_OTP" | "AUTHENTICATOR_APP">;
+  remember?: boolean;
+}
+
+export function isMfaChallengeResponse(value: unknown): value is MfaChallengeResponse {
+  return Boolean(
+    value &&
+      typeof value === "object" &&
+      "mfaRequired" in value &&
+      (value as { mfaRequired?: unknown }).mfaRequired === true,
+  );
+}
+
+export class MfaRequiredError extends Error {
+  readonly challenge: MfaChallengeResponse;
+
+  constructor(challenge: MfaChallengeResponse) {
+    super("Additional verification is required.");
+    this.name = "MfaRequiredError";
+    this.challenge = challenge;
+  }
+}
+
 export function login(email: string, password: string, remember?: boolean) {
-  return apiPost<LoginResponse>(`${B}/login`, { email, password, remember });
+  return apiPost<LoginResponse | MfaChallengeResponse>(`${B}/login`, { email, password, remember });
 }
 
 export function register(data: {
@@ -82,7 +112,7 @@ export function register(data: {
   last_name: string;
   phone_number: string;
 }) {
-  return apiPost<RegisterResponse>(`${B}/register`, data);
+  return apiPost<RegisterResponse | MfaChallengeResponse>(`${B}/register`, data);
 }
 
 export function getMe() {
@@ -136,12 +166,16 @@ export function executePasswordReset(token: string, new_password: string) {
 
 export type TwoFactorMethod = "EMAIL_OTP" | "SMS_OTP" | "AUTHENTICATOR_APP";
 
+export type ContactVerificationChannel = "EMAIL" | "PHONE";
+
 export interface UserSettings {
   emailNotifs: boolean;
   smsNotifs: boolean;
   forumDigest: boolean;
   twoFactor: boolean;
   twoFactorMethod: TwoFactorMethod | null;
+  emailVerified?: boolean;
+  phoneVerified?: boolean;
   publicProfile: boolean;
   passwordChangedAt: string | null;
 }
@@ -153,7 +187,13 @@ export interface TwoFactorSetupResponse {
   qrCodeDataUrl?: string;
   manualKey?: string;
   simulated?: boolean;
-  simulationCode?: string;
+}
+
+export interface ContactVerificationSetupResponse {
+  channel: ContactVerificationChannel;
+  destination: string;
+  expiresInMinutes: number;
+  simulated?: boolean;
 }
 
 export function getMySettings() {
@@ -177,6 +217,19 @@ export function verifyTwoFactorSetup(method: TwoFactorMethod, code: string) {
   });
 }
 
+export function initiateContactVerification(channel: ContactVerificationChannel) {
+  return apiPost<ContactVerificationSetupResponse>("/api/proxy/auth/me/contact-verification/send", {
+    channel,
+  });
+}
+
+export function verifyContactVerification(channel: ContactVerificationChannel, code: string) {
+  return apiPost<UserSettings>("/api/proxy/auth/me/contact-verification/verify", {
+    channel,
+    code,
+  });
+}
+
 export function changeMyPassword(data: {
   current_password: string;
   new_password: string;
@@ -187,6 +240,27 @@ export function changeMyPassword(data: {
   );
 }
 
+export function deactivateMyAccount(data?: { reason?: string; password?: string }) {
+  return apiPost<{ message: string }>("/api/proxy/auth/me/deactivate", data ?? {});
+}
+
 export function googleLogin(credential: string) {
-  return apiPost<LoginResponse>(`${B}/google`, { credential });
+  return apiPost<LoginResponse | MfaChallengeResponse>(`${B}/google`, { credential });
+}
+
+export function sendMfaChallenge(mfaToken: string, method: "EMAIL_OTP" | "SMS_OTP") {
+  return apiPost<{
+    mfaMethod: "EMAIL_OTP" | "SMS_OTP";
+    mfaDestination: string;
+  }>(`${B}/mfa/send`, { mfaToken, method });
+}
+
+export function verifyMfaChallenge(data: {
+  mfaToken: string;
+  code: string;
+  method?: TwoFactorMethod;
+  rememberDevice?: boolean;
+  remember?: boolean;
+}) {
+  return apiPost<LoginResponse>(`${B}/mfa/verify`, data);
 }

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
+import { type MfaChallengeResponse, MfaRequiredError } from "@/lib/api/auth";
 import { DASHBOARD_MAP } from "./data";
 
 export function GoogleIcon() {
@@ -69,7 +70,7 @@ declare global {
   }
 }
 
-export function SocialBlock() {
+export function SocialBlock({ onMfaRequired }: { onMfaRequired?: (challenge: MfaChallengeResponse) => void }) {
   const { loginWithGoogle } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -110,6 +111,11 @@ export function SocialBlock() {
           const user = await loginWithGoogle(response.credential);
           router.push(DASHBOARD_MAP[user.role] ?? "/ApplicantsApplication");
         } catch (err) {
+          if (err instanceof MfaRequiredError && onMfaRequired) {
+            setLoading(false);
+            onMfaRequired(err.challenge);
+            return;
+          }
           setError(err instanceof Error ? err.message : "Google Sign-In failed.");
           setLoading(false);
         }
@@ -174,7 +180,7 @@ export function SocialBlock() {
       setupGis();
     };
     document.body.appendChild(script);
-  }, [clientId, loginWithGoogle, router]);
+  }, [clientId, loginWithGoogle, onMfaRequired, router]);
 
   const handleManualGoogleClick = async () => {
     setLoading(true);
@@ -204,7 +210,12 @@ export function SocialBlock() {
                 router.push(DASHBOARD_MAP[user.role] ?? "/ApplicantsApplication");
               })
               .catch((err) => {
-                setError(err.message);
+                if (err instanceof MfaRequiredError && onMfaRequired) {
+                  setLoading(false);
+                  onMfaRequired(err.challenge);
+                  return;
+                }
+                setError(err instanceof Error ? err.message : "Google Sign-In failed.");
                 setLoading(false);
               });
           }
@@ -225,6 +236,11 @@ export function SocialBlock() {
         const user = await loginWithGoogle(simulatedEmail);
         router.push(DASHBOARD_MAP[user.role] ?? "/ApplicantsApplication");
       } catch (err) {
+        if (err instanceof MfaRequiredError && onMfaRequired) {
+          setLoading(false);
+          onMfaRequired(err.challenge);
+          return;
+        }
         setError(err instanceof Error ? err.message : "Google login failed.");
         setLoading(false);
       }

@@ -17,6 +17,13 @@ interface AuthContextValue {
     last_name: string;
     phone_number: string;
   }) => Promise<authApi.User>;
+  completeMfaLogin: (params: {
+    mfaToken: string;
+    code: string;
+    method?: authApi.TwoFactorMethod;
+    rememberDevice?: boolean;
+    remember?: boolean;
+  }) => Promise<authApi.User>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<authApi.User | null>;
 }
@@ -46,6 +53,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(
     async (email: string, password: string, remember?: boolean) => {
       const data = await authApi.login(email, password, remember);
+      if (authApi.isMfaChallengeResponse(data)) {
+        throw new authApi.MfaRequiredError(data);
+      }
       setUser(data.user);
       if (typeof window !== "undefined") {
         if (remember) {
@@ -64,6 +74,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginWithGoogle = useCallback(
     async (credential: string) => {
       const data = await authApi.googleLogin(credential);
+      if (authApi.isMfaChallengeResponse(data)) {
+        throw new authApi.MfaRequiredError(data);
+      }
       setUser(data.user);
       if (typeof window !== "undefined") {
         sessionStorage.setItem("vls_session_active", "true");
@@ -77,9 +90,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = useCallback(
     async (data: { email: string; password: string; first_name: string; last_name: string; phone_number: string }) => {
       const res = await authApi.register(data);
+      if (authApi.isMfaChallengeResponse(res)) {
+        throw new authApi.MfaRequiredError(res);
+      }
       setUser(res.user);
       if (typeof window !== "undefined") {
         sessionStorage.setItem("vls_session_active", "true");
+      }
+      refreshUser();
+      return res.user;
+    },
+    [refreshUser],
+  );
+
+  const completeMfaLogin = useCallback(
+    async (params: {
+      mfaToken: string;
+      code: string;
+      method?: authApi.TwoFactorMethod;
+      rememberDevice?: boolean;
+      remember?: boolean;
+    }) => {
+      const res = await authApi.verifyMfaChallenge(params);
+      setUser(res.user);
+      if (typeof window !== "undefined") {
+        if (params.remember || params.rememberDevice) {
+          localStorage.setItem("vls_remember", "true");
+        } else {
+          localStorage.removeItem("vls_remember");
+          sessionStorage.setItem("vls_session_active", "true");
+        }
       }
       refreshUser();
       return res.user;
@@ -98,7 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, register, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, register, completeMfaLogin, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

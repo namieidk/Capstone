@@ -11,6 +11,10 @@ export interface ForumAuthor {
   last_name?: string;
   avatar_url?: string | null;
   detail?: string | null;
+  bio?: string | null;
+  public_profile?: boolean;
+  forum_posts_count?: number | null;
+  forum_comments_count?: number | null;
 }
 
 export interface ForumTaggedUser {

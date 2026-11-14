@@ -22,6 +22,8 @@ import {
   WHITE,
 } from "@/components/StaffAuthShared";
 import { useAuth } from "@/contexts/AuthContext";
+import { type MfaChallengeResponse, MfaRequiredError } from "@/lib/api/auth";
+import { MfaVerificationStep } from "@/app/(Authentication)/components/MfaVerificationStep";
 
 // ============================================================
 // LOGIN FORM
@@ -40,6 +42,7 @@ function LoginForm({ role }: LoginFormProps) {
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [mfaChallenge, setMfaChallenge] = useState<MfaChallengeResponse | null>(null);
 
   const activeRoleInfo = ROLES.find((r) => r.key === role) ?? ROLES[0];
 
@@ -61,11 +64,36 @@ function LoginForm({ role }: LoginFormProps) {
       const path = dashboardMap[loggedInUser.role];
       if (path) router.push(path);
     } catch (err: unknown) {
+      if (err instanceof MfaRequiredError) {
+        setLoading(false);
+        setMfaChallenge(err.challenge);
+        return;
+      }
       const message = err instanceof Error ? err.message : "Login failed. Please try again.";
       setError(message);
       setLoading(false);
     }
   };
+
+  if (mfaChallenge) {
+    return (
+      <MfaVerificationStep
+        challenge={mfaChallenge}
+        purpose="LOGIN"
+        onSuccess={(loggedInUser) => {
+          setMfaChallenge(null);
+          const dashboardMap: Record<string, string> = {
+            ADMIN: "/AdminDashboard",
+            COORDINATOR: "/CoordinatorDashboard",
+            GRANTOR: "/grantDashboard",
+          };
+          const path = dashboardMap[loggedInUser.role];
+          if (path) router.push(path);
+        }}
+        onCancel={() => setMfaChallenge(null)}
+      />
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit}>

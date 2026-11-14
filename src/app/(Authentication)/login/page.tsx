@@ -7,15 +7,17 @@ import { type FormEvent, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
+import { type MfaChallengeResponse, MfaRequiredError } from "@/lib/api/auth";
 import { AuthShell } from "../components/AuthShell";
 import { CheckboxField } from "../components/CheckboxField";
 import { DASHBOARD_MAP, roleLabel } from "../components/data";
 import { InputField } from "../components/InputField";
+import { MfaVerificationStep } from "../components/MfaVerificationStep";
 import { ModeTabs } from "../components/ModeTabs";
 import { SocialBlock } from "../components/SocialBlock";
 import { SuccessPanel } from "../components/SuccessPanel";
 
-function SignInForm() {
+function SignInForm({ onMfaRequired }: { onMfaRequired: (challenge: MfaChallengeResponse) => void }) {
   const { login } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -54,6 +56,11 @@ function SignInForm() {
       const dashboardPath = getRoleTarget(loggedInUser);
       router.push(dashboardPath);
     } catch (err: unknown) {
+      if (err instanceof MfaRequiredError) {
+        setLoading(false);
+        onMfaRequired(err.challenge);
+        return;
+      }
       const message = err instanceof Error ? err.message : "Login failed. Please try again.";
       setError(message);
       setEmailError(true);
@@ -172,6 +179,7 @@ function SignedInPanel() {
 export default function LoginPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [mfaChallenge, setMfaChallenge] = useState<MfaChallengeResponse | null>(null);
 
   useEffect(() => {
     if (!loading && user) {
@@ -188,11 +196,21 @@ export default function LoginPage() {
           <Skeleton className="h-20 w-full" />
           <Skeleton className="h-11 w-full rounded-full" />
         </div>
+      ) : !user && mfaChallenge ? (
+        <MfaVerificationStep
+          challenge={mfaChallenge}
+          purpose="LOGIN"
+          onSuccess={(loggedInUser) => {
+            setMfaChallenge(null);
+            router.push(getRoleTarget(loggedInUser));
+          }}
+          onCancel={() => setMfaChallenge(null)}
+        />
       ) : !user ? (
         <div className="grid gap-6">
           <ModeTabs active="signin" />
-          <SignInForm />
-          <SocialBlock />
+          <SignInForm onMfaRequired={setMfaChallenge} />
+          <SocialBlock onMfaRequired={setMfaChallenge} />
           <div className="text-center text-[0.92rem]">
             <p className="text-muted-foreground">New to ViaScholar?</p>
             <Link

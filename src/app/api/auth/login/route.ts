@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 import { getBackendUrl } from "@/lib/backend-url";
+import { formatMfaChallengeResponse } from "@/lib/mfa-bff";
 
 export async function POST(request: NextRequest) {
   let body: { email?: string; password?: string; remember?: boolean };
@@ -12,13 +13,19 @@ export async function POST(request: NextRequest) {
 
   const { email, password, remember } = body;
   const backendUrl = getBackendUrl();
+  const cookieStore = await cookies();
+  const trustedDeviceToken = cookieStore.get("vls_trusted_device")?.value;
 
   let res: Response;
   try {
     res = await fetch(`${backendUrl}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({
+        email,
+        password,
+        ...(trustedDeviceToken ? { trusted_device_token: trustedDeviceToken } : {}),
+      }),
     });
   } catch (err) {
     console.error(`[Auth Login Proxy Error] Failed to reach backend at "${backendUrl}/auth/login":`, err);
@@ -52,13 +59,17 @@ export async function POST(request: NextRequest) {
     return Response.json({ message: Array.isArray(message) ? message.join(", ") : message }, { status: res.status });
   }
 
+  const mfaChallenge = formatMfaChallengeResponse(data, Boolean(remember));
+  if (mfaChallenge) {
+    return Response.json(mfaChallenge);
+  }
+
   if (!data || typeof data !== "object" || !("access_token" in data) || !("user" in data)) {
     return Response.json({ message: "Unexpected response from the server." }, { status: 500 });
   }
 
   const tokenData = data as { access_token: string; user: unknown };
 
-  const cookieStore = await cookies();
   const cookieOptions: {
     httpOnly: boolean;
     secure: boolean;

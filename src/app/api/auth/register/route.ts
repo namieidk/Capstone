@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 import { getBackendUrl } from "@/lib/backend-url";
+import { formatMfaChallengeResponse } from "@/lib/mfa-bff";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -28,6 +29,11 @@ export async function POST(request: NextRequest) {
       );
     }
     return Response.json(data, { status: res.status });
+  }
+
+  const mfaChallenge = formatMfaChallengeResponse(data, false);
+  if (mfaChallenge) {
+    return Response.json(mfaChallenge);
   }
 
   const cookieStore = await cookies();
