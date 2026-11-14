@@ -5,7 +5,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import type { ForumTaggedUser } from "@/lib/api/forum";
+import { ForumMentionTextarea, ForumStaffTagPicker } from "./ForumStaffTagPicker";
 
 interface ForumComposerProps {
   userInitials: string;
@@ -16,6 +17,10 @@ interface ForumComposerProps {
   onTitleChange: (value: string) => void;
   draftContent: string;
   onContentChange: (value: string) => void;
+  taggableStaff: ForumTaggedUser[];
+  selectedTagIds: number[];
+  onToggleTag: (userId: number) => void;
+  onSelectMention: (userId: number) => void;
   onSubmit: () => void;
   submitting: boolean;
 }
@@ -29,11 +34,15 @@ export function ForumComposer({
   onTitleChange,
   draftContent,
   onContentChange,
+  taggableStaff,
+  selectedTagIds,
+  onToggleTag,
+  onSelectMention,
   onSubmit,
   submitting,
 }: ForumComposerProps) {
   return (
-    <Card className="py-0 gap-0 rounded-2xl border-border/70 bg-white shadow-2xs transition-shadow hover:shadow-xs">
+    <Card className="overflow-visible py-0 gap-0 rounded-2xl border-border/70 bg-white shadow-2xs transition-shadow hover:shadow-xs">
       {!isComposing ? (
         <CardContent className="p-0 px-3.5 py-2">
           <div className="flex items-center gap-2.5">
@@ -74,12 +83,21 @@ export function ForumComposer({
             className="h-10 rounded-xl border-line bg-[#F9FBFB] font-semibold text-navy placeholder:text-muted-foreground/70"
           />
 
-          <Textarea
+          <ForumMentionTextarea
             value={draftContent}
-            onChange={(e) => onContentChange(e.target.value)}
+            onChange={onContentChange}
+            staff={taggableStaff}
+            onSelectMention={onSelectMention}
             rows={3}
-            placeholder="Share details, context, questions, or resources for other scholars..."
+            placeholder="Share details, questions, or type @ to tag a coordinator or grantor..."
             className="min-h-22.5 resize-y rounded-xl border-line bg-[#F9FBFB] text-xs leading-relaxed text-navy placeholder:text-muted-foreground/70"
+          />
+
+          <ForumStaffTagPicker
+            staff={taggableStaff}
+            selectedIds={selectedTagIds}
+            onToggleStaff={onToggleTag}
+            disabled={submitting}
           />
 
           <div className="flex items-center justify-between pt-1">

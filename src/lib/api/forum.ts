@@ -13,6 +13,17 @@ export interface ForumAuthor {
   detail?: string | null;
 }
 
+export interface ForumTaggedUser {
+  user_id: number;
+  name: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  role: "COORDINATOR" | "GRANTOR" | string;
+  title?: string | null;
+  avatar_url?: string | null;
+}
+
 export interface ForumComment {
   comment_id: number;
   post_id: number;
@@ -34,6 +45,8 @@ export interface ForumPost {
   created_at: string;
   updated_at: string;
   author: ForumAuthor;
+  tagged_user_ids?: number[];
+  tagged_users?: ForumTaggedUser[];
   comments_count?: number;
   comments?: ForumComment[];
 }
@@ -43,6 +56,10 @@ export interface PaginatedPostsResponse {
   page: number;
   limit: number;
   posts: ForumPost[];
+}
+
+export function getTaggableStaff(): Promise<ForumTaggedUser[]> {
+  return apiGet<ForumTaggedUser[]>(`${B}/taggable-staff`);
 }
 
 export function getPosts(params?: {
@@ -64,13 +81,18 @@ export function getPostById(id: number): Promise<ForumPost> {
   return apiGet<ForumPost>(`${B}/posts/${id}`);
 }
 
-export function createPost(data: { title: string; content: string; category?: string }): Promise<ForumPost> {
+export function createPost(data: {
+  title: string;
+  content: string;
+  category?: string;
+  tagged_user_ids?: number[];
+}): Promise<ForumPost> {
   return apiPost<ForumPost>(`${B}/posts`, data);
 }
 
 export function updatePost(
   id: number,
-  data: { title?: string; content?: string; category?: string },
+  data: { title?: string; content?: string; category?: string; tagged_user_ids?: number[] },
 ): Promise<ForumPost> {
   return apiPatch<ForumPost>(`${B}/posts/${id}`, data);
 }

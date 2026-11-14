@@ -8,6 +8,7 @@ import {
   GraduationCap,
   Home,
   Mail,
+  MessageSquare,
   Settings,
   User,
   Users,
@@ -21,6 +22,7 @@ export const GRANTOR_NAV_GROUPS: NavGroup[] = [
       { key: "dashboard", label: "Dashboard", icon: Home, href: "/grantDashboard" },
       { key: "reports", label: "Analytics", icon: BarChart3, href: "/grantReports" },
       { key: "message", label: "Messages", icon: Mail, href: "/grantMessage" },
+      { key: "forum", label: "Forum", icon: MessageSquare, href: "/grantForum" },
     ],
   },
   {

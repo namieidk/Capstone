@@ -17,14 +17,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardFooter, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import type { ForumComment, ForumPost } from "@/lib/api/forum";
+import type { ForumComment, ForumPost, ForumTaggedUser } from "@/lib/api/forum";
 import { ForumCommentItem } from "./ForumCommentItem";
+import { ForumMentionTextarea, ForumStaffTagPicker, ForumTaggedBadges } from "./ForumStaffTagPicker";
 import { formatTime, getAuthorName, getInitials, getRoleBadgeVariant } from "./forum-utils";
 
 interface ForumPostCardProps {
   post: ForumPost;
   currentUserId?: number;
+  taggableStaff: ForumTaggedUser[];
   isSelected: boolean;
   isAuthor: boolean;
   isStaff: boolean;
@@ -32,6 +33,7 @@ interface ForumPostCardProps {
   isEditing: boolean;
   editTitle: string;
   editContent: string;
+  editTagIds: number[];
   submittingEdit: boolean;
   deleting?: boolean;
   comments: ForumComment[];
@@ -46,6 +48,8 @@ interface ForumPostCardProps {
   onCancelEdit: () => void;
   onEditTitleChange: (value: string) => void;
   onEditContentChange: (value: string) => void;
+  onToggleEditTag: (userId: number) => void;
+  onSelectEditMention: (userId: number) => void;
   onSubmitEdit: () => void;
   onDelete: () => void;
   onUpdateComment: (commentId: number, content: string) => Promise<void>;
@@ -55,6 +59,7 @@ interface ForumPostCardProps {
 export function ForumPostCard({
   post,
   currentUserId,
+  taggableStaff,
   isSelected,
   isAuthor,
   isStaff,
@@ -62,6 +67,7 @@ export function ForumPostCard({
   isEditing,
   editTitle,
   editContent,
+  editTagIds,
   submittingEdit,
   deleting = false,
   comments,
@@ -76,6 +82,8 @@ export function ForumPostCard({
   onCancelEdit,
   onEditTitleChange,
   onEditContentChange,
+  onToggleEditTag,
+  onSelectEditMention,
   onSubmitEdit,
   onDelete,
   onUpdateComment,
@@ -87,7 +95,7 @@ export function ForumPostCard({
 
   return (
     <Card
-      className={`group py-0 gap-0 rounded-2xl transition-all duration-200 ${
+      className={`group overflow-visible py-0 gap-0 rounded-2xl transition-all duration-200 ${
         isSelected
           ? "border-amber/50 bg-white ring-2 ring-amber/20 shadow-md"
           : "border-border/70 bg-white shadow-xs hover:border-border hover:shadow-sm"
@@ -198,12 +206,20 @@ export function ForumPostCard({
               placeholder="Thread title (min 3 characters)"
               className="h-9 rounded-lg border-line bg-white font-semibold text-navy text-sm placeholder:text-muted-foreground/70"
             />
-            <Textarea
+            <ForumMentionTextarea
               value={editContent}
-              onChange={(e) => onEditContentChange(e.target.value)}
+              onChange={onEditContentChange}
+              staff={taggableStaff}
+              onSelectMention={onSelectEditMention}
               rows={3}
-              placeholder="Update post details (min 5 characters)..."
+              placeholder="Update post details (min 5 characters), or type @ to tag staff..."
               className="min-h-20 resize-y rounded-lg border-line bg-white text-xs leading-relaxed text-navy placeholder:text-muted-foreground/70"
+            />
+            <ForumStaffTagPicker
+              staff={taggableStaff}
+              selectedIds={editTagIds}
+              onToggleStaff={onToggleEditTag}
+              disabled={submittingEdit}
             />
             <div className="flex items-center justify-end gap-2 pt-0.5">
               <Button
@@ -236,10 +252,15 @@ export function ForumPostCard({
             </div>
           </div>
         ) : (
-          <button type="button" onClick={onSelect} className="mt-3 w-full cursor-pointer text-left focus:outline-hidden">
-            <h2 className="text-base font-bold text-navy leading-snug tracking-tight hover:text-navy/90">{post.title}</h2>
-            <p className="mt-1.5 text-xs text-foreground/80 leading-relaxed whitespace-pre-line">{post.content}</p>
-          </button>
+          <div className="mt-3 space-y-2.5">
+            <button type="button" onClick={onSelect} className="w-full cursor-pointer text-left focus:outline-hidden">
+              <h2 className="text-base font-bold text-navy leading-snug tracking-tight hover:text-navy/90">
+                {post.title}
+              </h2>
+              <p className="mt-1.5 text-xs text-foreground/80 leading-relaxed whitespace-pre-line">{post.content}</p>
+            </button>
+            <ForumTaggedBadges taggedUsers={post.tagged_users} compact />
+          </div>
         )}
       </CardHeader>
 

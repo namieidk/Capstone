@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ForumPost } from "@/lib/api/forum";
+import { ForumTaggedBadges } from "./ForumStaffTagPicker";
 import { formatTime, getAuthorEmail, getAuthorName, getInitials, getRoleBadgeVariant } from "./forum-utils";
 
 interface ForumThreadOverviewProps {
@@ -81,6 +82,12 @@ export function ForumThreadOverview({ activePost, otherPosts, onSelectPost }: Fo
               <p className="text-[0.68rem] text-muted-foreground mt-1">Total Replies</p>
             </div>
           </div>
+
+          {activePost.tagged_users && activePost.tagged_users.length > 0 && (
+            <div className="border-b border-border/50 py-3">
+              <ForumTaggedBadges taggedUsers={activePost.tagged_users} compact />
+            </div>
+          )}
 
           {/* Other Discussions Quick Links */}
           {otherPosts.length > 0 && (

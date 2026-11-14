@@ -8,6 +8,7 @@ import {
   GraduationCap,
   Home,
   Mail,
+  MessageSquare,
   Settings,
   User,
   Users,
@@ -21,6 +22,7 @@ export const COORDINATOR_NAV_GROUPS: NavGroup[] = [
       { key: "home", label: "Dashboard", icon: Home, href: "/CoordinatorDashboard" },
       { key: "reports", label: "Analytics", icon: BarChart3, href: "/CoordinatorReports" },
       { key: "message", label: "Messages", icon: Mail, href: "/CoordinatorMessage" },
+      { key: "forum", label: "Forum", icon: MessageSquare, href: "/CoordinatorForum" },
     ],
   },
   {

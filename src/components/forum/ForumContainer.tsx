@@ -20,8 +20,10 @@ import {
   deletePost,
   type ForumComment,
   type ForumPost,
+  type ForumTaggedUser,
   getPostById,
   getPosts,
+  getTaggableStaff,
   togglePin,
   updateComment,
   updatePost,
@@ -50,6 +52,8 @@ export function ForumContainer({
   // Composer state
   const [draftTitle, setDraftTitle] = useState("");
   const [draftContent, setDraftContent] = useState("");
+  const [draftTagIds, setDraftTagIds] = useState<number[]>([]);
+  const [taggableStaff, setTaggableStaff] = useState<ForumTaggedUser[]>([]);
   const [isComposing, setIsComposing] = useState(false);
   const [submittingPost, setSubmittingPost] = useState(false);
 
@@ -62,10 +66,25 @@ export function ForumContainer({
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
+  const [editTagIds, setEditTagIds] = useState<number[]>([]);
   const [submittingEdit, setSubmittingEdit] = useState(false);
   const [deletingPostId, setDeletingPostId] = useState<number | null>(null);
 
   const isStaff = ["ADMIN", "COORDINATOR", "GRANTOR"].includes(user?.role || "");
+
+  useEffect(() => {
+    let active = true;
+    getTaggableStaff()
+      .then((staff) => {
+        if (active) setTaggableStaff(Array.isArray(staff) ? staff : []);
+      })
+      .catch((err) => {
+        console.error("Failed to load taggable coordinators and grantors:", err);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // 1. Fetch posts with safe deduplication
   const fetchPosts = useCallback(async () => {
@@ -160,6 +179,8 @@ export function ForumContainer({
                 ...(payload.content !== undefined ? { content: payload.content } : {}),
                 ...(payload.category !== undefined ? { category: payload.category } : {}),
                 ...(payload.is_pinned !== undefined ? { is_pinned: payload.is_pinned } : {}),
+                ...(payload.tagged_user_ids !== undefined ? { tagged_user_ids: payload.tagged_user_ids } : {}),
+                ...(payload.tagged_users !== undefined ? { tagged_users: payload.tagged_users } : {}),
                 ...(payload.updated_at !== undefined ? { updated_at: payload.updated_at } : {}),
               }
             : p,
@@ -174,6 +195,8 @@ export function ForumContainer({
           ...(payload.content !== undefined ? { content: payload.content } : {}),
           ...(payload.category !== undefined ? { category: payload.category } : {}),
           ...(payload.is_pinned !== undefined ? { is_pinned: payload.is_pinned } : {}),
+          ...(payload.tagged_user_ids !== undefined ? { tagged_user_ids: payload.tagged_user_ids } : {}),
+          ...(payload.tagged_users !== undefined ? { tagged_users: payload.tagged_users } : {}),
           ...(payload.updated_at !== undefined ? { updated_at: payload.updated_at } : {}),
         };
       });
@@ -303,6 +326,7 @@ export function ForumContainer({
       const created = await createPost({
         title: finalTitle,
         content: contentText,
+        tagged_user_ids: draftTagIds,
       });
 
       setPosts((prev) => {
@@ -319,6 +343,7 @@ export function ForumContainer({
       setSelectedId(created.post_id);
       setDraftTitle("");
       setDraftContent("");
+      setDraftTagIds([]);
       setIsComposing(false);
       showToast("Discussion posted successfully!", "success");
     } catch (err) {
@@ -370,12 +395,14 @@ export function ForumContainer({
     setEditingPostId(post.post_id);
     setEditTitle(post.title);
     setEditContent(post.content);
+    setEditTagIds(post.tagged_user_ids ?? post.tagged_users?.map((u) => u.user_id) ?? []);
   };
 
   const handleCancelEdit = () => {
     setEditingPostId(null);
     setEditTitle("");
     setEditContent("");
+    setEditTagIds([]);
   };
 
   const handleSaveEdit = async (postId: number) => {
@@ -388,18 +415,35 @@ export function ForumContainer({
       const updated = await updatePost(postId, {
         title: trimmedTitle,
         content: trimmedContent,
+        tagged_user_ids: editTagIds,
       });
 
       setPosts((prev) =>
         prev.map((p) =>
           p.post_id === postId
-            ? { ...p, title: updated.title, content: updated.content, updated_at: updated.updated_at }
+            ? {
+                ...p,
+                title: updated.title,
+                content: updated.content,
+                tagged_user_ids: updated.tagged_user_ids,
+                tagged_users: updated.tagged_users,
+                updated_at: updated.updated_at,
+              }
             : p,
         ),
       );
       if (selectedPostDetails?.post_id === postId) {
         setSelectedPostDetails((prev) =>
-          prev ? { ...prev, title: updated.title, content: updated.content, updated_at: updated.updated_at } : prev,
+          prev
+            ? {
+                ...prev,
+                title: updated.title,
+                content: updated.content,
+                tagged_user_ids: updated.tagged_user_ids,
+                tagged_users: updated.tagged_users,
+                updated_at: updated.updated_at,
+              }
+            : prev,
         );
       }
 
@@ -534,6 +578,11 @@ export function ForumContainer({
     return posts.filter((p) => p.post_id !== activePost?.post_id);
   }, [posts, activePost]);
 
+  const availableTaggableStaff = useMemo(() => {
+    if (!user?.user_id) return taggableStaff;
+    return taggableStaff.filter((member) => member.user_id !== user.user_id);
+  }, [taggableStaff, user?.user_id]);
+
   const authorDisplayName = user
     ? `${user.first_name || ""} ${user.last_name || ""}`.trim() || user.email?.split("@")[0] || "Scholar"
     : "Scholar";
@@ -569,11 +618,18 @@ export function ForumContainer({
                     setIsComposing(false);
                     setDraftTitle("");
                     setDraftContent("");
+                    setDraftTagIds([]);
                   }}
                   draftTitle={draftTitle}
                   onTitleChange={setDraftTitle}
                   draftContent={draftContent}
                   onContentChange={setDraftContent}
+                  taggableStaff={availableTaggableStaff}
+                  selectedTagIds={draftTagIds}
+                  onToggleTag={(uid) =>
+                    setDraftTagIds((prev) => (prev.includes(uid) ? prev.filter((item) => item !== uid) : [...prev, uid]))
+                  }
+                  onSelectMention={(uid) => setDraftTagIds((prev) => (prev.includes(uid) ? prev : [...prev, uid]))}
                   onSubmit={handleCreatePost}
                   submitting={submittingPost}
                 />
@@ -615,6 +671,7 @@ export function ForumContainer({
                       key={`forum-post-${post.post_id}`}
                       post={post}
                       currentUserId={user?.user_id}
+                      taggableStaff={availableTaggableStaff}
                       isSelected={isSelected}
                       isAuthor={isAuthor}
                       isStaff={isStaff}
@@ -622,6 +679,7 @@ export function ForumContainer({
                       isEditing={isEditing}
                       editTitle={isEditing ? editTitle : ""}
                       editContent={isEditing ? editContent : ""}
+                      editTagIds={isEditing ? editTagIds : []}
                       submittingEdit={submittingEdit}
                       deleting={deletingPostId === post.post_id}
                       comments={comments}
@@ -644,6 +702,12 @@ export function ForumContainer({
                       onCancelEdit={handleCancelEdit}
                       onEditTitleChange={setEditTitle}
                       onEditContentChange={setEditContent}
+                      onToggleEditTag={(uid) =>
+                        setEditTagIds((prev) => (prev.includes(uid) ? prev.filter((item) => item !== uid) : [...prev, uid]))
+                      }
+                      onSelectEditMention={(uid) =>
+                        setEditTagIds((prev) => (prev.includes(uid) ? prev : [...prev, uid]))
+                      }
                       onSubmitEdit={() => handleSaveEdit(post.post_id)}
                       onDelete={() => handleDeletePost(post.post_id)}
                       onUpdateComment={handleUpdateComment}
