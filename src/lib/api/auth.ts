@@ -134,12 +134,26 @@ export function executePasswordReset(token: string, new_password: string) {
   });
 }
 
+export type TwoFactorMethod = "EMAIL_OTP" | "SMS_OTP" | "AUTHENTICATOR_APP";
+
 export interface UserSettings {
   emailNotifs: boolean;
   smsNotifs: boolean;
   forumDigest: boolean;
   twoFactor: boolean;
+  twoFactorMethod: TwoFactorMethod | null;
   publicProfile: boolean;
+  passwordChangedAt: string | null;
+}
+
+export interface TwoFactorSetupResponse {
+  method: TwoFactorMethod;
+  destination: string;
+  expiresInMinutes: number;
+  qrCodeDataUrl?: string;
+  manualKey?: string;
+  simulated?: boolean;
+  simulationCode?: string;
 }
 
 export function getMySettings() {
@@ -148,6 +162,29 @@ export function getMySettings() {
 
 export function updateMySettings(data: Partial<UserSettings>) {
   return apiPatch<UserSettings>("/api/proxy/auth/me/settings", data);
+}
+
+export function initiateTwoFactorSetup(method: TwoFactorMethod) {
+  return apiPost<TwoFactorSetupResponse>("/api/proxy/auth/me/2fa/setup", {
+    method,
+  });
+}
+
+export function verifyTwoFactorSetup(method: TwoFactorMethod, code: string) {
+  return apiPost<UserSettings>("/api/proxy/auth/me/2fa/verify", {
+    method,
+    code,
+  });
+}
+
+export function changeMyPassword(data: {
+  current_password: string;
+  new_password: string;
+}) {
+  return apiPost<{ message: string; passwordChangedAt: string }>(
+    "/api/proxy/auth/me/change-password",
+    data,
+  );
 }
 
 export function googleLogin(credential: string) {
