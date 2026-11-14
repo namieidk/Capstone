@@ -19,7 +19,6 @@ import {
   BORDER_SUBTLE,
   GOOD,
   LINE,
-  MenuIcon,
   NAVY,
   SHADOW_SM,
   s,
@@ -29,7 +28,7 @@ import {
   WARN_BG,
   WHITE,
 } from "@/components/Grantorshared";
-import { useSidebar } from "@/components/SidebarContext";
+import { PageHeader } from "@/components/PageHeader";
 
 // ============================================================
 // Page-local design tokens
@@ -333,8 +332,6 @@ const numberInputStyle: React.CSSProperties = {
 };
 
 export default function GrantorSettingsPage() {
-  const { toggleMobile } = useSidebar();
-
   const [toggles, setToggles] = useState<Toggles>({
     emailNotifs: true,
     disbursementAlerts: true,
@@ -358,15 +355,7 @@ export default function GrantorSettingsPage() {
       `}</style>
 
       {/* ---------------- Page-level navbar ---------------- */}
-      <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button type="button" className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
-          <MenuIcon />
-        </button>
-        <div>
-          <h1 style={s.topbarGreeting}>Settings</h1>
-          <p style={s.topbarSub}>Manage notifications, security, and account preferences.</p>
-        </div>
-      </header>
+      <PageHeader title="Settings" subtitle="Manage notifications, security, and account preferences." />
 
       <div style={{ ...s.mainContent, padding: s.mainContent.padding, flexGrow: 1, minHeight: 0, overflowY: "auto" }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "24px 4px 60px" }}>

@@ -8,7 +8,6 @@ import {
   BAD_BG,
   BORDER_SUBTLE,
   GOOD,
-  MenuIcon,
   NAVY,
   SHADOW_MD,
   SHADOW_SM,
@@ -19,7 +18,7 @@ import {
   WARN_BG,
   WHITE,
 } from "@/components/Adminshared";
-import { useSidebar } from "@/components/SidebarContext";
+import { PageHeader } from "@/components/PageHeader";
 
 // ============================================================
 // Page-local design tokens
@@ -260,8 +259,6 @@ const dangerBtnStyle: React.CSSProperties = {
 };
 
 export default function AdminSettingsPage() {
-  const { toggleMobile } = useSidebar();
-
   const [toggles, setToggles] = useState<Toggles>({
     emailNotifs: true,
     systemAlerts: true,
@@ -284,15 +281,7 @@ export default function AdminSettingsPage() {
       `}</style>
 
       {/* ---------------- Page-level navbar ---------------- */}
-      <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button type="button" className="vc-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
-          <MenuIcon />
-        </button>
-        <div>
-          <h1 style={s.topbarGreeting}>Settings</h1>
-          <p style={s.topbarSub}>Manage notifications, security, and account preferences.</p>
-        </div>
-      </header>
+      <PageHeader title="Settings" subtitle="Manage notifications, security, and account preferences." />
 
       <div style={{ ...s.mainContent, padding: s.mainContent.padding, flexGrow: 1, minHeight: 0, overflowY: "auto" }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "24px 4px 60px" }}>

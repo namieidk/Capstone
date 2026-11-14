@@ -134,6 +134,22 @@ export function executePasswordReset(token: string, new_password: string) {
   });
 }
 
+export interface UserSettings {
+  emailNotifs: boolean;
+  smsNotifs: boolean;
+  forumDigest: boolean;
+  twoFactor: boolean;
+  publicProfile: boolean;
+}
+
+export function getMySettings() {
+  return apiGet<UserSettings>("/api/proxy/auth/me/settings");
+}
+
+export function updateMySettings(data: Partial<UserSettings>) {
+  return apiPatch<UserSettings>("/api/proxy/auth/me/settings", data);
+}
+
 export function googleLogin(credential: string) {
   return apiPost<LoginResponse>(`${B}/google`, { credential });
 }

@@ -3,13 +3,12 @@
 import { Bell, ChevronRight, Eye, FileClock, KeyRound, Mail, MessageSquare, ShieldCheck, UserX } from "lucide-react";
 import type React from "react";
 import { type ReactNode, useState } from "react";
-import { useSidebar } from "../../../../components/SidebarContext";
+import { PageHeader } from "../../../../components/PageHeader";
 import {
   BAD,
   BAD_BG,
   GOOD,
   LINE,
-  MenuIcon,
   NAVY,
   s,
   TINT,
@@ -264,8 +263,6 @@ const dangerBtnStyle: React.CSSProperties = {
 };
 
 export default function SettingsPage() {
-  const { toggleMobile } = useSidebar();
-
   const [toggles, setToggles] = useState<Toggles>({
     emailNotifs: true,
     smsNotifs: false,
@@ -288,15 +285,7 @@ export default function SettingsPage() {
       `}</style>
 
       {/* ---------------- Page-level navbar ---------------- */}
-      <header style={{ ...s.topbar, flexShrink: 0 }}>
-        <button type="button" className="vd-mobile-toggle" onClick={toggleMobile} style={s.mobileToggle}>
-          <MenuIcon />
-        </button>
-        <div>
-          <h1 style={s.topbarGreeting}>Settings</h1>
-          <p style={s.topbarSub}>Manage your notifications, security, and privacy.</p>
-        </div>
-      </header>
+      <PageHeader title="Settings" subtitle="Manage your notifications, security, and privacy." />
 
       <div style={{ ...s.mainContent, padding: s.mainContent.padding, flexGrow: 1, minHeight: 0, overflowY: "auto" }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "24px 4px 60px" }}>
