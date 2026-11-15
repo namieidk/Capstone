@@ -92,8 +92,8 @@ function EmployeeSheetBody({
           </div>
 
           <div className="flex items-center justify-between pt-3">
-            <span className="text-xs text-muted-foreground">Sex</span>
-            <span className="text-sm font-semibold text-foreground">{employee.sex || "Not specified"}</span>
+            <span className="text-xs text-muted-foreground">Gender</span>
+            <span className="text-sm font-semibold text-foreground">{employee.gender || "Not specified"}</span>
           </div>
 
           <div className="flex items-center justify-between pt-3">

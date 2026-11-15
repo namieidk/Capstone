@@ -14,7 +14,7 @@ export interface AddEmployeeFields {
   middle_name: string;
   last_name: string;
   suffix: string;
-  sex: string;
+  gender: string;
   email: string;
   password: string;
   role: string;
@@ -27,7 +27,7 @@ export const INITIAL_ADD_FIELDS: AddEmployeeFields = {
   middle_name: "",
   last_name: "",
   suffix: "",
-  sex: "",
+  gender: "",
   email: "",
   password: "",
   role: "COORDINATOR",
@@ -39,7 +39,7 @@ export interface StaffRow {
   id: number;
   name: string;
   email: string;
-  sex?: string;
+  gender?: string;
   title: string;
   department: string;
   type: string;
@@ -66,7 +66,7 @@ export function toStaffRow(user: User): StaffRow {
       user.email,
     ),
     email: user.email,
-    sex: emp?.sex || user.sex || "",
+    gender: emp?.gender || user.gender || "",
     title: emp?.title ?? type,
     department: emp?.department ?? "—",
     type,

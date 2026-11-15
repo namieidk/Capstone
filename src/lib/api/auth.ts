@@ -10,7 +10,7 @@ export interface User {
   middle_name?: string | null;
   last_name: string;
   suffix?: string | null;
-  sex?: string | null;
+  gender?: string | null;
   is_active: boolean;
   avatar_url?: string;
   banner_url?: string;
@@ -23,7 +23,7 @@ export interface User {
     middle_name?: string | null;
     last_name?: string;
     suffix?: string | null;
-    sex?: string | null;
+    gender?: string | null;
     phone_number?: string;
     student_address?: string;
     school_address?: string;
@@ -63,7 +63,7 @@ export interface User {
     middle_name?: string | null;
     last_name?: string;
     suffix?: string | null;
-    sex?: string | null;
+    gender?: string | null;
     bio?: string;
     avatar_url?: string;
     banner_url?: string;
@@ -137,7 +137,7 @@ export function register(data: {
   middle_name?: string;
   last_name: string;
   suffix?: string;
-  sex?: string;
+  gender?: string;
   phone_number: string;
 }) {
   return apiPost<RegisterResponse | MfaChallengeResponse>(`${B}/register`, data);
@@ -152,7 +152,7 @@ export function updateMe(data: {
   middle_name?: string;
   last_name?: string;
   suffix?: string;
-  sex?: string;
+  gender?: string;
   bio?: string;
   phone_number?: string;
   student_address?: string;
@@ -286,7 +286,7 @@ export interface PublicScholarProfile {
   middle_name: string | null;
   last_name: string;
   suffix: string | null;
-  sex: string | null;
+  gender: string | null;
   email: string;
   bio: string | null;
   avatar_url: string | null;

@@ -316,7 +316,7 @@ export interface ScholarDetailProfile {
   middle_name?: string | null;
   last_name: string;
   suffix?: string | null;
-  sex?: string | null;
+  gender?: string | null;
   email: string;
   role: string;
   is_active: boolean;

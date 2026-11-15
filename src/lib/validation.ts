@@ -23,7 +23,7 @@ export function getPasswordError(value: string): string | null {
 }
 
 export const SUFFIX_OPTIONS = ["Jr.", "Sr.", "II", "III", "IV", "V"] as const;
-export const SEX_OPTIONS = ["Male", "Female", "Prefer not to say"] as const;
+export const GENDER_OPTIONS = ["Male", "Female", "Prefer not to say"] as const;
 
 // Add employee schema (provisioning Coordinator / Grantor / Admin accounts)
 export const addEmployeeSchema = z.object({
@@ -46,7 +46,7 @@ export const addEmployeeSchema = z.object({
     .max(100, "Last name is too long.")
     .regex(/^[a-zA-ZÀ-ÿñÑ\s]+$/, "Last name cannot contain numbers or special characters."),
   suffix: z.string().trim().max(30, "Suffix is too long.").optional(),
-  sex: z.string().trim().max(30, "Sex selection is invalid.").optional(),
+  gender: z.string().trim().max(30, "Gender selection is invalid.").optional(),
   email: z
     .string()
     .trim()
@@ -217,7 +217,7 @@ export const signUpSchema = z
       .max(100, "Last name is too long.")
       .regex(/^[a-zA-ZÀ-ÿñÑ\s]+$/, "Last name cannot contain numbers or special characters."),
     suffix: z.string().trim().max(30, "Suffix is too long.").optional(),
-    sex: z.string().trim().max(30, "Sex selection is invalid.").optional(),
+    gender: z.string().trim().max(30, "Gender selection is invalid.").optional(),
     email: z
       .string()
       .trim()
@@ -317,7 +317,7 @@ const baseProfileValidationFields = {
     .max(100, "Last name is too long.")
     .regex(/^[a-zA-ZÀ-ÿñÑ\s]+$/, "Last name cannot contain numbers or special characters."),
   suffix: z.string().trim().max(30, "Suffix is too long.").optional().or(z.literal("")),
-  sex: z.string().trim().max(30, "Sex selection is invalid.").optional().or(z.literal("")),
+  gender: z.string().trim().max(30, "Gender selection is invalid.").optional().or(z.literal("")),
   bio: z.string().trim().max(2000, "Bio is too long.").optional().or(z.literal("")),
 };
 

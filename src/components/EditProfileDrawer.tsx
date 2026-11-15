@@ -12,9 +12,9 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   type EditStaffProfileValues,
   editStaffProfileSchema,
+  GENDER_OPTIONS,
   getZodFieldErrors,
   preventDisallowedNameKey,
-  SEX_OPTIONS,
   SUFFIX_OPTIONS,
   sanitizePersonName,
 } from "@/lib/validation";
@@ -27,7 +27,7 @@ export interface EditProfileDrawerProps {
     middle_name?: string;
     last_name?: string;
     suffix?: string;
-    sex?: string;
+    gender?: string;
     title?: string;
     department?: string;
     bio?: string;
@@ -40,7 +40,7 @@ export interface EditProfileDrawerProps {
     middle_name: string;
     last_name: string;
     suffix: string;
-    sex: string;
+    gender: string;
     title: string;
     department: string;
     bio: string;
@@ -61,7 +61,7 @@ export default function EditProfileDrawer({
   const [middleName, setMiddleName] = useState(initialValues?.middle_name ?? "");
   const [lastName, setLastName] = useState(initialValues?.last_name ?? "");
   const [suffix, setSuffix] = useState(initialValues?.suffix ?? "");
-  const [sex, setSex] = useState(initialValues?.sex ?? "");
+  const [gender, setGender] = useState(initialValues?.gender ?? "");
   const [title, setTitle] = useState(initialValues?.title ?? "");
   const [department, setDepartment] = useState(initialValues?.department ?? "");
   const [bio, setBio] = useState(initialValues?.bio ?? "");
@@ -73,7 +73,7 @@ export default function EditProfileDrawer({
       setMiddleName(initialValues?.middle_name ?? "");
       setLastName(initialValues?.last_name ?? "");
       setSuffix(initialValues?.suffix ?? "");
-      setSex(initialValues?.sex ?? "");
+      setGender(initialValues?.gender ?? "");
       setTitle(initialValues?.title ?? "");
       setDepartment(initialValues?.department ?? "");
       setBio(initialValues?.bio ?? "");
@@ -107,7 +107,7 @@ export default function EditProfileDrawer({
       middle_name: middleName,
       last_name: lastName,
       suffix,
-      sex,
+      gender,
       title,
       department,
       bio,
@@ -122,7 +122,7 @@ export default function EditProfileDrawer({
       middle_name: parsed.data.middle_name ?? "",
       last_name: parsed.data.last_name,
       suffix: parsed.data.suffix ?? "",
-      sex: parsed.data.sex ?? "",
+      gender: parsed.data.gender ?? "",
       title: parsed.data.title,
       department: parsed.data.department,
       bio: parsed.data.bio ?? "",
@@ -230,16 +230,16 @@ export default function EditProfileDrawer({
               </Select>
             </div>
             <div>
-              <Label htmlFor="edit-sex" className="text-sm! font-semibold text-navy">
-                Sex
+              <Label htmlFor="edit-gender" className="text-sm! font-semibold text-navy">
+                Gender
               </Label>
-              <Select value={sex || "__NONE__"} onValueChange={(v) => setSex(v === "__NONE__" ? "" : v)}>
-                <SelectTrigger id="edit-sex" className={FIELD_INPUT}>
+              <Select value={gender || "__NONE__"} onValueChange={(v) => setGender(v === "__NONE__" ? "" : v)}>
+                <SelectTrigger id="edit-gender" className={FIELD_INPUT}>
                   <SelectValue placeholder="Not specified" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__NONE__">Not specified</SelectItem>
-                  {SEX_OPTIONS.map((opt) => (
+                  {GENDER_OPTIONS.map((opt) => (
                     <SelectItem key={opt} value={opt}>
                       {opt}
                     </SelectItem>

@@ -86,7 +86,7 @@ export default function GrantorProfilePage() {
       middle_name: string;
       last_name: string;
       suffix: string;
-      sex: string;
+      gender: string;
       title: string;
       department: string;
       bio: string;
@@ -150,7 +150,7 @@ export default function GrantorProfilePage() {
           middle_name: user.employee?.middle_name ?? user.middle_name ?? "",
           last_name: user.last_name,
           suffix: user.employee?.suffix ?? user.suffix ?? "",
-          sex: user.employee?.sex ?? user.sex ?? "",
+          gender: user.employee?.gender ?? user.gender ?? "",
           title: user.employee?.title ?? "",
           department: user.employee?.department ?? "",
           bio: user.bio ?? "",

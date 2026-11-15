@@ -40,7 +40,7 @@ export function ProfileDetailsCards({ user }: ProfileDetailsCardsProps) {
                 "Applicant",
               )}
             />
-            <InfoRow label="Sex" value={scholarProfile?.sex || user.sex || "Not specified"} />
+            <InfoRow label="Gender" value={scholarProfile?.gender || user.gender || "Not specified"} />
           </div>
         </CardContent>
       </Card>

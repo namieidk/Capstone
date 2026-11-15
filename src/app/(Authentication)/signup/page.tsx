@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { type MfaChallengeResponse, MfaRequiredError } from "@/lib/api/auth";
-import { formatPhilippinePhoneNumber, SEX_OPTIONS, SUFFIX_OPTIONS, signUpSchema } from "@/lib/validation";
+import { formatPhilippinePhoneNumber, GENDER_OPTIONS, SUFFIX_OPTIONS, signUpSchema } from "@/lib/validation";
 import { AuthShell } from "../components/AuthShell";
 import { CheckboxField } from "../components/CheckboxField";
 import { InputField } from "../components/InputField";
@@ -26,7 +26,7 @@ function SignUpForm({ onMfaRequired }: { onMfaRequired: (challenge: MfaChallenge
   const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
   const [suffix, setSuffix] = useState("");
-  const [sex, setSex] = useState("");
+  const [gender, setGender] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -109,7 +109,7 @@ function SignUpForm({ onMfaRequired }: { onMfaRequired: (challenge: MfaChallenge
       middleName,
       lastName,
       suffix,
-      sex,
+      gender,
       email,
       phone,
       password,
@@ -142,7 +142,7 @@ function SignUpForm({ onMfaRequired }: { onMfaRequired: (challenge: MfaChallenge
         ...(parseResult.data.middleName ? { middle_name: parseResult.data.middleName } : {}),
         last_name: parseResult.data.lastName,
         ...(parseResult.data.suffix ? { suffix: parseResult.data.suffix } : {}),
-        ...(parseResult.data.sex ? { sex: parseResult.data.sex } : {}),
+        ...(parseResult.data.gender ? { gender: parseResult.data.gender } : {}),
         phone_number: parseResult.data.phone,
       });
     } catch (err: unknown) {
@@ -220,22 +220,22 @@ function SignUpForm({ onMfaRequired }: { onMfaRequired: (challenge: MfaChallenge
         </Select>
       </div>
       <div className="grid gap-1.5">
-        <Label htmlFor="signup-sex" className="text-[0.94rem] font-medium text-navy">
-          Sex (Optional)
+        <Label htmlFor="signup-gender" className="text-[0.94rem] font-medium text-navy">
+          Gender (Optional)
         </Label>
         <Select
-          value={sex || "__NONE__"}
+          value={gender || "__NONE__"}
           onValueChange={(v) => {
-            setSex(v === "__NONE__" ? "" : v);
-            clearError("sex");
+            setGender(v === "__NONE__" ? "" : v);
+            clearError("gender");
           }}
         >
-          <SelectTrigger id="signup-sex" className="h-10 w-full">
-            <SelectValue placeholder="Select sex" />
+          <SelectTrigger id="signup-gender" className="h-10 w-full">
+            <SelectValue placeholder="Select gender" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="__NONE__">Prefer to leave blank</SelectItem>
-            {SEX_OPTIONS.map((option) => (
+            {GENDER_OPTIONS.map((option) => (
               <SelectItem key={option} value={option}>
                 {option}
               </SelectItem>

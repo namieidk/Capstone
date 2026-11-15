@@ -210,7 +210,7 @@ export default function ApplicantsProfilePage() {
             middle_name: scholarProfile?.middle_name ?? user.middle_name ?? "",
             last_name: user.last_name,
             suffix: scholarProfile?.suffix ?? user.suffix ?? "",
-            sex: scholarProfile?.sex ?? user.sex ?? "",
+            gender: scholarProfile?.gender ?? user.gender ?? "",
             phone_number: scholarProfile?.phone_number ?? "",
             student_address: scholarProfile?.student_address ?? "",
             bio: user.bio ?? "",

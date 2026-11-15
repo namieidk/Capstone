@@ -185,7 +185,7 @@ export default function AdminProfilePage() {
       middle_name: string;
       last_name: string;
       suffix: string;
-      sex: string;
+      gender: string;
       title: string;
       department: string;
       bio: string;
@@ -327,7 +327,11 @@ export default function AdminProfilePage() {
           <dl className="mt-4 space-y-4">
             <DetailRow icon={ShieldCheck} label="Role" value={displayRole} />
             <DetailRow icon={Building2} label="Department" value={user.employee?.department ?? "N/A"} />
-            <DetailRow icon={UserCheck} label="Sex" value={user.employee?.sex || user.sex || "Not specified"} />
+            <DetailRow
+              icon={UserCheck}
+              label="Gender"
+              value={user.employee?.gender || user.gender || "Not specified"}
+            />
             <DetailRow icon={CalendarDays} label="Member since" value={String(memberSince)} />
             <DetailRow icon={Mail} label="Email" value={user.email} href={`mailto:${user.email}`} />
           </dl>
@@ -342,7 +346,7 @@ export default function AdminProfilePage() {
           middle_name: user.employee?.middle_name ?? user.middle_name ?? "",
           last_name: user.last_name,
           suffix: user.employee?.suffix ?? user.suffix ?? "",
-          sex: user.employee?.sex ?? user.sex ?? "",
+          gender: user.employee?.gender ?? user.gender ?? "",
           title: user.employee?.title ?? "",
           department: user.employee?.department ?? "",
           bio: user.bio ?? "",

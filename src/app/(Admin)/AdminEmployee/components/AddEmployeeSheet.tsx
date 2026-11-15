@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { addEmployeeSchema, SEX_OPTIONS, SUFFIX_OPTIONS } from "@/lib/validation";
+import { addEmployeeSchema, GENDER_OPTIONS, SUFFIX_OPTIONS } from "@/lib/validation";
 import type { AddEmployeeFields } from "./employee-helpers";
 
 interface AddEmployeeSheetProps {
@@ -193,24 +193,24 @@ function AddEmployeeFormBody({
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="add-sex" className="text-xs font-semibold">
-            Sex
+          <Label htmlFor="add-gender" className="text-xs font-semibold">
+            Gender
           </Label>
           <Select
-            value={fields.sex || "__NONE__"}
+            value={fields.gender || "__NONE__"}
             onValueChange={(v) => {
-              set({ sex: v === "__NONE__" ? "" : v });
-              clearFieldError("sex");
+              set({ gender: v === "__NONE__" ? "" : v });
+              clearFieldError("gender");
             }}
           >
-            <SelectTrigger id="add-sex" className="h-10 sm:h-9 text-xs">
+            <SelectTrigger id="add-gender" className="h-10 sm:h-9 text-xs">
               <SelectValue placeholder="Not specified" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__NONE__" className="text-xs">
                 Not specified
               </SelectItem>
-              {SEX_OPTIONS.map((opt) => (
+              {GENDER_OPTIONS.map((opt) => (
                 <SelectItem key={opt} value={opt} className="text-xs">
                   {opt}
                 </SelectItem>

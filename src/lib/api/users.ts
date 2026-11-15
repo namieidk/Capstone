@@ -10,21 +10,21 @@ export interface AuditLogUser {
   middle_name?: string | null;
   last_name?: string;
   suffix?: string | null;
-  sex?: string | null;
+  gender?: string | null;
   name?: string;
   scholar_profile?: {
     first_name?: string;
     middle_name?: string | null;
     last_name?: string;
     suffix?: string | null;
-    sex?: string | null;
+    gender?: string | null;
   } | null;
   employee?: {
     first_name?: string;
     middle_name?: string | null;
     last_name?: string;
     suffix?: string | null;
-    sex?: string | null;
+    gender?: string | null;
   } | null;
 }
 
@@ -103,7 +103,7 @@ export function createStaff(data: {
   middle_name?: string;
   last_name: string;
   suffix?: string;
-  sex?: string;
+  gender?: string;
   title?: string;
   department?: string;
 }) {

@@ -13,9 +13,9 @@ import {
   type EditStudentProfileValues,
   editStudentProfileSchema,
   formatPhilippinePhoneNumber,
+  GENDER_OPTIONS,
   getZodFieldErrors,
   preventDisallowedNameKey,
-  SEX_OPTIONS,
   SUFFIX_OPTIONS,
   sanitizePersonName,
 } from "@/lib/validation";
@@ -25,7 +25,7 @@ export interface EditApplicantProfileValues {
   middle_name: string;
   last_name: string;
   suffix: string;
-  sex: string;
+  gender: string;
   phone_number: string;
   student_address: string;
   bio: string;
@@ -54,7 +54,7 @@ export function EditApplicantProfileDrawer({
   const [middleName, setMiddleName] = useState(initialValues?.middle_name ?? "");
   const [lastName, setLastName] = useState(initialValues?.last_name ?? "");
   const [suffix, setSuffix] = useState(initialValues?.suffix ?? "");
-  const [sex, setSex] = useState(initialValues?.sex ?? "");
+  const [gender, setGender] = useState(initialValues?.gender ?? "");
   const [phoneNumber, setPhoneNumber] = useState(initialValues?.phone_number ?? "");
   const [studentAddress, setStudentAddress] = useState(initialValues?.student_address ?? "");
   const [bio, setBio] = useState(initialValues?.bio ?? "");
@@ -66,7 +66,7 @@ export function EditApplicantProfileDrawer({
       setMiddleName(initialValues?.middle_name ?? "");
       setLastName(initialValues?.last_name ?? "");
       setSuffix(initialValues?.suffix ?? "");
-      setSex(initialValues?.sex ?? "");
+      setGender(initialValues?.gender ?? "");
       setPhoneNumber(formatPhilippinePhoneNumber(initialValues?.phone_number ?? ""));
       setStudentAddress(initialValues?.student_address ?? "");
       setBio(initialValues?.bio ?? "");
@@ -85,7 +85,7 @@ export function EditApplicantProfileDrawer({
       middle_name: middleName,
       last_name: lastName,
       suffix,
-      sex,
+      gender,
       phone_number: phoneNumber,
       student_address: studentAddress,
       bio,
@@ -100,7 +100,7 @@ export function EditApplicantProfileDrawer({
       middle_name: parsed.data.middle_name ?? "",
       last_name: parsed.data.last_name,
       suffix: parsed.data.suffix ?? "",
-      sex: parsed.data.sex ?? "",
+      gender: parsed.data.gender ?? "",
       phone_number: parsed.data.phone_number,
       student_address: parsed.data.student_address,
       bio: parsed.data.bio ?? "",
@@ -217,16 +217,16 @@ export function EditApplicantProfileDrawer({
               </Select>
             </div>
             <div>
-              <Label htmlFor="applicant-sex" className="text-sm! font-semibold text-navy">
-                Sex
+              <Label htmlFor="applicant-gender" className="text-sm! font-semibold text-navy">
+                Gender
               </Label>
-              <Select value={sex || "__NONE__"} onValueChange={(v) => setSex(v === "__NONE__" ? "" : v)}>
-                <SelectTrigger id="applicant-sex" className={FIELD_INPUT}>
+              <Select value={gender || "__NONE__"} onValueChange={(v) => setGender(v === "__NONE__" ? "" : v)}>
+                <SelectTrigger id="applicant-gender" className={FIELD_INPUT}>
                   <SelectValue placeholder="Not specified" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__NONE__">Not specified</SelectItem>
-                  {SEX_OPTIONS.map((opt) => (
+                  {GENDER_OPTIONS.map((opt) => (
                     <SelectItem key={opt} value={opt}>
                       {opt}
                     </SelectItem>

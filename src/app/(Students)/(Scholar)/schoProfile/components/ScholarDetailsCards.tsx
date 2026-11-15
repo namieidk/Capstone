@@ -52,7 +52,7 @@ export function ScholarDetailsCards({ user }: ScholarDetailsCardsProps) {
                 "Scholar",
               )}
             />
-            <InfoRow icon={UserCheck} label="Sex" value={scholar?.sex || user.sex || "Not specified"} />
+            <InfoRow icon={UserCheck} label="Gender" value={scholar?.gender || user.gender || "Not specified"} />
           </div>
         </CardContent>
       </Card>

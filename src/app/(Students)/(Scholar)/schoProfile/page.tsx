@@ -174,7 +174,7 @@ export default function SchoProfilePage() {
               middle_name: scholar?.middle_name || user.middle_name || "",
               last_name: user.last_name,
               suffix: scholar?.suffix || user.suffix || "",
-              sex: scholar?.sex || user.sex || "",
+              gender: scholar?.gender || user.gender || "",
               phone_number: scholar?.phone_number || "",
               student_address: scholar?.student_address || scholar?.home_address || "",
               bio: scholar?.bio || user.bio || "",

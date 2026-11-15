@@ -53,7 +53,7 @@ export function CoordinatorDetailsCards({ user }: CoordinatorDetailsCardsProps) 
       <dl className="mt-4 space-y-4">
         <DetailRow icon={Award} label="Role" value={title} />
         <DetailRow icon={Building2} label="Department" value={department} />
-        <DetailRow icon={UserCheck} label="Sex" value={user.employee?.sex || user.sex || "Not specified"} />
+        <DetailRow icon={UserCheck} label="Gender" value={user.employee?.gender || user.gender || "Not specified"} />
         <DetailRow icon={CalendarDays} label="Member since" value={String(memberSince)} />
         <DetailRow icon={Mail} label="Email" value={user.email} href={`mailto:${user.email}`} />
       </dl>

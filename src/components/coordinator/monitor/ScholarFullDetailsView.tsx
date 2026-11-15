@@ -258,35 +258,28 @@ export function ScholarFullDetailsView({
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
       {/* Top Navigation Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button asChild variant="outline" size="sm" className="gap-1.5 bg-white">
+      <div className="flex items-center">
+        <Button asChild variant="outline" size="default" className="h-10 px-4 text-sm font-medium gap-2 bg-white">
           <Link href={backHref}>
             <ArrowLeft className="w-4 h-4" />
             {backLabel}
           </Link>
         </Button>
-
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => void loadDetails()} className="gap-1.5 bg-white">
-            <RefreshCw className="w-3.5 h-3.5" />
-            Refresh Data
-          </Button>
-        </div>
       </div>
 
       {/* Scholar Profile Header Card */}
-      <Card className="overflow-hidden border-border shadow-sm bg-white">
+      <Card className="overflow-hidden border-border shadow-sm bg-white py-0 gap-0">
         <div
-          className="h-28 sm:h-32 w-full bg-cover bg-center"
+          className="h-32 sm:h-36 w-full bg-cover bg-center"
           style={
             profile.banner_url
               ? { backgroundImage: `url(${profile.banner_url})` }
               : { background: "linear-gradient(135deg, #1E3254 0%, #2C4875 100%)" }
           }
         />
-        <CardContent className="px-6 pb-6">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-12 mb-5">
-            <div className="flex items-end gap-4">
+        <CardContent className="px-6 pb-6 pt-0">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 -mt-12 mb-5">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-4">
               {profile.avatar_url ? (
                 <img
                   src={profile.avatar_url}
@@ -298,7 +291,7 @@ export function ScholarFullDetailsView({
                   {initials}
                 </div>
               )}
-              <div className="pb-1">
+              <div className="pt-1 sm:pt-15">
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-xl sm:text-2xl font-bold text-foreground">{fullName}</h1>
                   {profile.archived_at && (
@@ -315,7 +308,7 @@ export function ScholarFullDetailsView({
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 sm:pt-15">
               <Badge variant="outline" className={`font-medium ${healthMeta.badgeClass}`}>
                 {healthMeta.label}
               </Badge>
@@ -372,9 +365,9 @@ export function ScholarFullDetailsView({
             <div className="flex items-start gap-2.5 p-3 rounded-lg bg-slate-50 border border-slate-200/70">
               <User className="w-4 h-4 text-primary shrink-0 mt-0.5" />
               <div className="min-w-0">
-                <div className="text-muted-foreground">Sex & Joined</div>
+                <div className="text-muted-foreground">Gender & Joined</div>
                 <div className="font-semibold text-foreground truncate">
-                  {profile.sex || "—"} · {formatDate(profile.created_at)}
+                  {profile.gender || "—"} · {formatDate(profile.created_at)}
                 </div>
               </div>
             </div>

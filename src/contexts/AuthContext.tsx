@@ -17,7 +17,7 @@ interface AuthContextValue {
     middle_name?: string;
     last_name: string;
     suffix?: string;
-    sex?: string;
+    gender?: string;
     phone_number: string;
   }) => Promise<authApi.User>;
   completeMfaLogin: (params: {
@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       middle_name?: string;
       last_name: string;
       suffix?: string;
-      sex?: string;
+      gender?: string;
       phone_number: string;
     }) => {
       const res = await authApi.register(data);

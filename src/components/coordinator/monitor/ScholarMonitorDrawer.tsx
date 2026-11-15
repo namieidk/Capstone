@@ -154,11 +154,7 @@ export function ScholarMonitorDrawer({
               </div>
 
               <div className="flex flex-col gap-2 pt-1">
-                <Button
-                  asChild
-                  size="sm"
-                  className="w-full justify-between bg-navy hover:bg-navy/90 text-white! text-xs h-9"
-                >
+                <Button asChild variant="outline" size="sm" className="w-full justify-between text-xs h-9">
                   <Link
                     href={
                       detailsHref ??
@@ -167,10 +163,9 @@ export function ScholarMonitorDrawer({
                         : `/CoordinatorMonitor/${scholar.id}`)
                     }
                     onClick={() => onOpenChange(false)}
-                    className="text-white!"
                   >
                     <span className="flex items-center gap-1.5">
-                      <ExternalLink className="w-4 h-4" />
+                      <ExternalLink className="w-4 h-4 text-primary" />
                       View Full Details
                     </span>
                     <ArrowRight className="w-4 h-4" />
