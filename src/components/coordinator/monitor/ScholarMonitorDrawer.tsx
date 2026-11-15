@@ -1,6 +1,8 @@
 "use client";
 
-import { Archive, ArrowRight, Clock, Mail, TrendingDown, TrendingUp } from "lucide-react";
+import { Archive, ArrowRight, Clock, ExternalLink, Mail, TrendingDown, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { type ActiveScholar, GRADE_STATUS_COLORS, PAYMENT_STATUS_COLORS } from "@/components/Coordinatorshared";
 import { useToast } from "@/components/ToastContext";
@@ -33,9 +35,17 @@ interface ScholarMonitorDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onArchived?: () => void;
+  detailsHref?: string;
 }
 
-export function ScholarMonitorDrawer({ scholar, open, onOpenChange, onArchived }: ScholarMonitorDrawerProps) {
+export function ScholarMonitorDrawer({
+  scholar,
+  open,
+  onOpenChange,
+  onArchived,
+  detailsHref,
+}: ScholarMonitorDrawerProps) {
+  const pathname = usePathname();
   const [view, setView] = useState<"overview" | "history">("overview");
   const { showToast } = useToast();
   const [confirmArchive, setConfirmArchive] = useState(false);
@@ -143,7 +153,29 @@ export function ScholarMonitorDrawer({ scholar, open, onOpenChange, onArchived }
                 </Card>
               </div>
 
-              <div className="pt-1">
+              <div className="flex flex-col gap-2 pt-1">
+                <Button
+                  asChild
+                  size="sm"
+                  className="w-full justify-between bg-navy hover:bg-navy/90 text-white! text-xs h-9"
+                >
+                  <Link
+                    href={
+                      detailsHref ??
+                      (pathname?.startsWith("/grantMonitor")
+                        ? `/grantMonitor/${scholar.id}`
+                        : `/CoordinatorMonitor/${scholar.id}`)
+                    }
+                    onClick={() => onOpenChange(false)}
+                    className="text-white!"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <ExternalLink className="w-4 h-4" />
+                      View Full Details
+                    </span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"

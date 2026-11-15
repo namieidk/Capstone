@@ -308,3 +308,199 @@ export async function verifySchoolGrading(schoolId: number): Promise<SchoolGradi
 export async function getCoordinatorActiveScholars(): Promise<ActiveScholar[]> {
   return apiGet<ActiveScholar[]>(`${B}/coordinator/active-scholars`);
 }
+
+export interface ScholarDetailProfile {
+  profile_id: number;
+  user_id: number;
+  first_name: string;
+  middle_name?: string | null;
+  last_name: string;
+  suffix?: string | null;
+  sex?: string | null;
+  email: string;
+  role: string;
+  is_active: boolean;
+  is_email_verified: boolean;
+  public_profile: boolean;
+  phone_number: string;
+  is_phone_verified: boolean;
+  student_address?: string | null;
+  school_address?: string | null;
+  student_number?: string | null;
+  scholarship_track?: string | null;
+  course_of_study?: string | null;
+  school_name?: string | null;
+  academic_baseline_status: string;
+  current_year_level?: number | null;
+  bio?: string | null;
+  avatar_url?: string | null;
+  banner_url?: string | null;
+  archived_at?: string | null;
+  created_at: string;
+}
+
+export interface ScholarDetailDocument {
+  document_id: number;
+  scholar_profile_id: number;
+  document_type: string;
+  label?: string | null;
+  file_name?: string | null;
+  file_url: string;
+  file_size?: string | null;
+  file_type: string;
+  status: string;
+  rejection_reason?: string | null;
+  uploaded_at: string;
+  verified_at?: string | null;
+  reviewed_by_employee?: {
+    employee_id: number;
+    first_name: string;
+    last_name: string;
+  } | null;
+}
+
+export interface ScholarDetailProspectus extends Omit<ScholarProspectus, "subjects" | "document"> {
+  frozen_by_employee?: {
+    employee_id: number;
+    first_name: string;
+    last_name: string;
+    title?: string | null;
+  } | null;
+  document?: ScholarDetailDocument | null;
+  subjects: ProspectusSubject[];
+}
+
+export interface ScholarDetailDisbursement {
+  disbursement_id: number;
+  scholar_profile_id: number;
+  academic_year: string;
+  semester: string;
+  amount: number;
+  voucher_number?: string | null;
+  check_payee?: string | null;
+  check_number?: string | null;
+  bank_name?: string | null;
+  payment_method?: string | null;
+  status: string;
+  date_issued?: string | null;
+  date_claimed?: string | null;
+  or_number?: string | null;
+  or_payment_date?: string | null;
+  or_verified_at?: string | null;
+  settled_at?: string | null;
+  remarks?: string | null;
+  created_at: string;
+  or_document?: {
+    document_id: number;
+    file_url: string;
+    file_name?: string | null;
+    file_type: string;
+    status: string;
+  } | null;
+  approved_by_employee?: {
+    employee_id: number;
+    first_name: string;
+    last_name: string;
+  } | null;
+  settled_by_employee?: {
+    employee_id: number;
+    first_name: string;
+    last_name: string;
+  } | null;
+  term_enrollment?: {
+    enrollment_id: number;
+    academic_year: string;
+    semester: string;
+    year_level: number;
+    total_units: number;
+    total_assessment: number;
+    status: string;
+    cor_document?: { document_id: number; file_url: string; file_name?: string | null } | null;
+    soa_document?: { document_id: number; file_url: string; file_name?: string | null } | null;
+  } | null;
+}
+
+export interface ScholarDetailGradeReport {
+  report_id: number;
+  academic_year: string;
+  semester: string;
+  term?: string | null;
+  gpa: number;
+  status: string;
+  evaluation_flag?: string | null;
+  is_eligible: boolean;
+  appeal_status: string;
+  submitted_at: string;
+  reviewed_at?: string | null;
+  remarks?: string | null;
+  document?: {
+    document_id: number;
+    file_url: string;
+    file_name?: string | null;
+    status: string;
+  } | null;
+  grade_items: {
+    item_id: number;
+    subject_code: string;
+    subject_name?: string | null;
+    units: number;
+    grade: string;
+    is_passing: boolean;
+  }[];
+}
+
+export interface ScholarDetailTermEnrollment {
+  enrollment_id: number;
+  academic_year: string;
+  semester: string;
+  year_level: number;
+  total_units: number;
+  total_assessment: number;
+  status: string;
+  reviewed_at?: string | null;
+  coordinator_notes?: string | null;
+  created_at: string;
+  cor_document?: { document_id: number; file_url: string; file_name?: string | null; status: string } | null;
+  soa_document?: { document_id: number; file_url: string; file_name?: string | null; status: string } | null;
+}
+
+export interface ScholarDetailContract {
+  contract_id: number;
+  contract_number: string;
+  status: string;
+  effective_date?: string | null;
+  expiry_date?: string | null;
+  signed_at?: string | null;
+  document_url?: string | null;
+  signed_document_url?: string | null;
+}
+
+export interface CoordinatorScholarDetails {
+  scholar_profile: ScholarDetailProfile;
+  school_grading_system: SchoolGradingSystem | null;
+  prospectus: ScholarDetailProspectus | null;
+  documents: ScholarDetailDocument[];
+  disbursements: ScholarDetailDisbursement[];
+  grade_reports: ScholarDetailGradeReport[];
+  term_enrollments: ScholarDetailTermEnrollment[];
+  contracts: ScholarDetailContract[];
+  metrics: {
+    gwa: number | null;
+    health: "good" | "warn" | "bad";
+    total_subjects: number;
+    total_units: number;
+    credited_units: number;
+    enrolled_units: number;
+    remaining_units: number;
+    total_documents: number;
+    verified_documents: number;
+    pending_documents: number;
+    total_disbursements: number;
+    total_disbursed_amount: number;
+    settled_disbursed_amount: number;
+  };
+}
+
+export async function getCoordinatorScholarDetails(scholarProfileId: number): Promise<CoordinatorScholarDetails> {
+  return apiGet<CoordinatorScholarDetails>(`${B}/coordinator/scholars/${scholarProfileId}/details`);
+}

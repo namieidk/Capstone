@@ -148,8 +148,10 @@ export default function ScholarPublicProfilePage() {
                   </p>
                 </div>
                 <div className="pt-2">
-                  <Button asChild className="bg-navy hover:bg-navy/90 text-white font-medium px-6">
-                    <Link href="/SchoForum">Return to Forum</Link>
+                  <Button asChild className="bg-navy hover:bg-navy/90 text-white! font-medium px-6">
+                    <Link href="/SchoForum" className="text-white!">
+                      Return to Forum
+                    </Link>
                   </Button>
                 </div>
               </CardContent>
@@ -184,8 +186,10 @@ export default function ScholarPublicProfilePage() {
                   <p className="text-sm text-muted-foreground max-w-md mx-auto">{state.message}</p>
                 </div>
                 <div className="pt-2">
-                  <Button asChild className="bg-navy hover:bg-navy/90 text-white font-medium px-6">
-                    <Link href="/SchoForum">Return to Forum</Link>
+                  <Button asChild className="bg-navy hover:bg-navy/90 text-white! font-medium px-6">
+                    <Link href="/SchoForum" className="text-white!">
+                      Return to Forum
+                    </Link>
                   </Button>
                 </div>
               </CardContent>
