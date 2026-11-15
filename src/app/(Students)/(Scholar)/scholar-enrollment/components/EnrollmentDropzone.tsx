@@ -1,11 +1,13 @@
 "use client";
 
-import { CheckCircle2, FileText, Loader2, UploadCloud, X } from "lucide-react";
+import { AlertCircle, CheckCircle2, FileText, Loader2, UploadCloud, X } from "lucide-react";
 import type React from "react";
 import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { validateEnrollmentDocumentFile } from "@/lib/api/enrollment";
 
 interface EnrollmentDropzoneProps {
   title: string;
@@ -15,6 +17,8 @@ interface EnrollmentDropzoneProps {
   uploadedFile: { name: string; size?: string; url?: string } | null;
   onFileUpload: (file: File) => void;
   onClearFile?: () => void;
+  errorMessage?: string | null;
+  onClearError?: () => void;
   disabled?: boolean;
 }
 
@@ -26,10 +30,33 @@ export function EnrollmentDropzone({
   uploadedFile,
   onFileUpload,
   onClearFile,
+  errorMessage,
+  onClearError,
   disabled,
 }: EnrollmentDropzoneProps) {
   const [isDragOver, setIsDragOver] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const activeError = errorMessage || localError;
+
+  const dismissError = () => {
+    setLocalError(null);
+    onClearError?.();
+  };
+
+  const processSelectedFile = (file: File) => {
+    const validationError = validateEnrollmentDocumentFile(file);
+    if (validationError) {
+      onClearError?.();
+      setLocalError(validationError);
+      toast.error(validationError);
+      return;
+    }
+
+    setLocalError(null);
+    onClearError?.();
+    onFileUpload(file);
+  };
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -53,14 +80,14 @@ export function EnrollmentDropzone({
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
-      onFileUpload(file);
+      processSelectedFile(file);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      onFileUpload(file);
+      processSelectedFile(file);
       e.target.value = "";
     }
   };
@@ -89,7 +116,7 @@ export function EnrollmentDropzone({
         <CardDescription className="text-xs text-muted-foreground">{subtitle}</CardDescription>
       </CardHeader>
 
-      <CardContent className="p-4 pt-2 flex-1 flex flex-col justify-center">
+      <CardContent className="p-4 pt-2 flex-1 flex flex-col justify-center gap-3">
         {uploadedFile ? (
           <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-xl p-3.5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 overflow-hidden">
@@ -120,7 +147,10 @@ export function EnrollmentDropzone({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  onClick={onClearFile}
+                  onClick={() => {
+                    dismissError();
+                    onClearFile();
+                  }}
                   className="size-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                   title="Remove document"
                 >
@@ -141,7 +171,9 @@ export function EnrollmentDropzone({
             className={`w-full border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-35 focus:outline-none focus:ring-2 focus:ring-emerald-600/30 ${
               isDragOver
                 ? "border-emerald-600 bg-emerald-50/50"
-                : "border-border hover:border-emerald-600/50 hover:bg-muted/40"
+                : activeError
+                  ? "border-red-300 bg-red-50/20 hover:border-red-400"
+                  : "border-border hover:border-emerald-600/50 hover:bg-muted/40"
             } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <input
@@ -165,10 +197,28 @@ export function EnrollmentDropzone({
                   <UploadCloud className="size-5 text-emerald-700" />
                 </div>
                 <p className="text-xs font-semibold text-foreground">Click to upload or drag & drop</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">PDF, PNG, JPG, or WEBP (up to 15 MB)</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">PDF, PNG, JPG, JPEG, or WEBP (up to 15 MB)</p>
               </>
             )}
           </button>
+        )}
+
+        {activeError && (
+          <div
+            role="alert"
+            className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50/90 px-3 py-2.5 text-left text-xs text-red-800"
+          >
+            <AlertCircle className="size-4 text-red-600 shrink-0 mt-0.5" />
+            <p className="flex-1 leading-relaxed font-medium break-words">{activeError}</p>
+            <button
+              type="button"
+              onClick={dismissError}
+              aria-label="Dismiss upload error"
+              className="text-red-500 hover:text-red-700 shrink-0 p-0.5 rounded"
+            >
+              <X className="size-3.5" />
+            </button>
+          </div>
         )}
       </CardContent>
     </Card>

@@ -37,6 +37,8 @@ export default function ScholarEnrollmentPage() {
     setSoaFile,
     consolidatedFile,
     setConsolidatedFile,
+    uploadErrors,
+    clearUploadError,
     setCorDocId,
     setSoaDocId,
     enrolledSubjects,
@@ -153,16 +155,22 @@ export default function ScholarEnrollmentPage() {
                   isReadOnly={isReadOnly}
                   isUploadingConsolidated={isUploadingConsolidated}
                   consolidatedFile={consolidatedFile}
+                  consolidatedError={uploadErrors.consolidated}
                   onUploadConsolidated={handleConsolidatedUpload}
                   onClearConsolidated={handleClearConsolidated}
+                  onClearConsolidatedError={() => clearUploadError("consolidated")}
                   isUploadingCor={isUploadingCor}
                   corFile={corFile}
+                  corError={uploadErrors.cor}
                   onUploadCor={handleCorUpload}
                   onClearCor={handleClearCor}
+                  onClearCorError={() => clearUploadError("cor")}
                   isUploadingSoa={isUploadingSoa}
                   soaFile={soaFile}
+                  soaError={uploadErrors.soa}
                   onUploadSoa={handleSoaUpload}
                   onClearSoa={handleClearSoa}
+                  onClearSoaError={() => clearUploadError("soa")}
                 />
 
                 {/* Progressive Disclosure: Independent Loading States & Non-Destructive Review Cards */}
@@ -209,7 +217,9 @@ export default function ScholarEnrollmentPage() {
                             <Loader2 className="size-5 animate-spin text-emerald-700" />
                           </div>
                           <div>
-                            <h3 className="text-sm font-bold text-navy">Reading Certificate of Registration (COR)...</h3>
+                            <h3 className="text-sm font-bold text-navy">
+                              Reading Certificate of Registration (COR)...
+                            </h3>
                             <p className="text-xs text-muted-foreground mt-0.5">
                               Extracting enrolled courses, section schedules, and curriculum credit units.
                             </p>
@@ -220,7 +230,7 @@ export default function ScholarEnrollmentPage() {
                           <Skeleton className="h-24 w-full rounded-xl" />
                         </div>
                       </div>
-                    ) : enrolledSubjects.length > 0 || !!corFile ? (
+                    ) : enrolledSubjects.length > 0 || corFile ? (
                       <EnrolledSubjectsReview
                         subjects={enrolledSubjects}
                         academicYear={academicYear}
@@ -232,7 +242,8 @@ export default function ScholarEnrollmentPage() {
                       <div className="rounded-2xl border border-dashed border-border bg-white/70 p-6 text-center space-y-1 shadow-2xs">
                         <h4 className="text-xs font-bold text-navy">Awaiting Certificate of Registration (COR)</h4>
                         <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                          Upload your proof of enrolled subjects above to view extracted course codes, schedules, and credit units.
+                          Upload your proof of enrolled subjects above to view extracted course codes, schedules, and
+                          credit units.
                         </p>
                       </div>
                     )}
@@ -256,7 +267,7 @@ export default function ScholarEnrollmentPage() {
                           <Skeleton className="h-20 w-full rounded-xl" />
                         </div>
                       </div>
-                    ) : totalAssessment > 0 || !!soaFile || isConsolidated ? (
+                    ) : totalAssessment > 0 || soaFile || isConsolidated ? (
                       <BillingAssessmentSummary
                         totalAssessment={totalAssessment}
                         assessmentDate={assessmentDate}
@@ -267,7 +278,8 @@ export default function ScholarEnrollmentPage() {
                       <div className="rounded-2xl border border-dashed border-border bg-white/70 p-6 text-center space-y-1 shadow-2xs">
                         <h4 className="text-xs font-bold text-navy">Awaiting Statement of Account (SOA)</h4>
                         <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                          Upload your tuition assessment or student ledger above to review the financial breakdown and balance due.
+                          Upload your tuition assessment or student ledger above to review the financial breakdown and
+                          balance due.
                         </p>
                       </div>
                     )}

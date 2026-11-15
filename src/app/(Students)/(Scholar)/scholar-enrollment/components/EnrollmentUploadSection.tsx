@@ -15,16 +15,22 @@ interface EnrollmentUploadSectionProps {
   isReadOnly: boolean;
   isUploadingConsolidated: boolean;
   consolidatedFile: UploadedFileMetadata | null;
+  consolidatedError?: string | null;
   onUploadConsolidated: (file: File) => void;
   onClearConsolidated: () => void;
+  onClearConsolidatedError?: () => void;
   isUploadingCor: boolean;
   corFile: UploadedFileMetadata | null;
+  corError?: string | null;
   onUploadCor: (file: File) => void;
   onClearCor: () => void;
+  onClearCorError?: () => void;
   isUploadingSoa: boolean;
   soaFile: UploadedFileMetadata | null;
+  soaError?: string | null;
   onUploadSoa: (file: File) => void;
   onClearSoa: () => void;
+  onClearSoaError?: () => void;
 }
 
 export function EnrollmentUploadSection({
@@ -33,16 +39,22 @@ export function EnrollmentUploadSection({
   isReadOnly,
   isUploadingConsolidated,
   consolidatedFile,
+  consolidatedError,
   onUploadConsolidated,
   onClearConsolidated,
+  onClearConsolidatedError,
   isUploadingCor,
   corFile,
+  corError,
   onUploadCor,
   onClearCor,
+  onClearCorError,
   isUploadingSoa,
   soaFile,
+  soaError,
   onUploadSoa,
   onClearSoa,
+  onClearSoaError,
 }: EnrollmentUploadSectionProps) {
   return (
     <div className="space-y-4">
@@ -61,8 +73,10 @@ export function EnrollmentUploadSection({
               fileTypeLabel="Consolidated Form"
               isUploading={isUploadingConsolidated}
               uploadedFile={consolidatedFile}
+              errorMessage={consolidatedError}
               onFileUpload={onUploadConsolidated}
               onClearFile={onClearConsolidated}
+              onClearError={onClearConsolidatedError}
               disabled={isReadOnly}
             />
           </div>
@@ -74,8 +88,10 @@ export function EnrollmentUploadSection({
               fileTypeLabel="Proof of Subjects"
               isUploading={isUploadingCor}
               uploadedFile={corFile}
+              errorMessage={corError}
               onFileUpload={onUploadCor}
               onClearFile={onClearCor}
+              onClearError={onClearCorError}
               disabled={isReadOnly}
             />
 
@@ -85,8 +101,10 @@ export function EnrollmentUploadSection({
               fileTypeLabel="Proof of Billing"
               isUploading={isUploadingSoa}
               uploadedFile={soaFile}
+              errorMessage={soaError}
               onFileUpload={onUploadSoa}
               onClearFile={onClearSoa}
+              onClearError={onClearSoaError}
               disabled={isReadOnly}
             />
           </>

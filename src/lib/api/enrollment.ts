@@ -4,6 +4,52 @@ import type { ScholarProspectus, SchoolGradingSystem } from "./baseline";
 
 const E = "/api/proxy/term-enrollment";
 
+export const ACCEPTED_ENROLLMENT_EXTENSIONS = ["pdf", "png", "jpg", "jpeg", "webp"] as const;
+export const ACCEPTED_ENROLLMENT_MIME_TYPES = new Set([
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+  "image/jpg",
+  "image/webp",
+]);
+export const ACCEPTED_ENROLLMENT_FORMATS_LABEL = "PDF, PNG, JPG, JPEG, or WEBP";
+export const MAX_ENROLLMENT_FILE_SIZE_BYTES = 15 * 1024 * 1024;
+
+function getFileExtension(filename: string): string {
+  const trimmed = filename.trim();
+  const dotIndex = trimmed.lastIndexOf(".");
+  if (dotIndex <= 0 || dotIndex === trimmed.length - 1) return "";
+  return trimmed.slice(dotIndex + 1).toLowerCase();
+}
+
+/**
+ * Validates that a selected/dropped enrollment document matches accepted formats and size limits.
+ * Returns a human-readable error message if invalid, or null if valid.
+ */
+export function validateEnrollmentDocumentFile(file: File): string | null {
+  const ext = getFileExtension(file.name);
+  const mime = (file.type || "").trim().toLowerCase();
+  const hasAllowedExt = Boolean(ext && (ACCEPTED_ENROLLMENT_EXTENSIONS as readonly string[]).includes(ext));
+  const hasAllowedMime = Boolean(mime && ACCEPTED_ENROLLMENT_MIME_TYPES.has(mime));
+
+  if (ext && !hasAllowedExt) {
+    return `Unsupported file type (.${ext}) for "${file.name}". Please upload a ${ACCEPTED_ENROLLMENT_FORMATS_LABEL} file.`;
+  }
+  if (mime && !hasAllowedMime) {
+    return `Unsupported file format${ext ? ` (.${ext})` : ""} for "${file.name}". Please upload a ${ACCEPTED_ENROLLMENT_FORMATS_LABEL} file.`;
+  }
+  if (!hasAllowedExt && !hasAllowedMime) {
+    return `Unsupported file format for "${file.name}". Please upload a ${ACCEPTED_ENROLLMENT_FORMATS_LABEL} file.`;
+  }
+  if (file.size === 0) {
+    return `The selected file "${file.name}" is empty. Please upload a readable PDF or image document.`;
+  }
+  if (file.size > MAX_ENROLLMENT_FILE_SIZE_BYTES) {
+    return `File "${file.name}" exceeds the maximum upload limit of 15 MB.`;
+  }
+  return null;
+}
+
 export interface EnrolledSubjectItem {
   subject_code: string;
   descriptive_title: string;
@@ -193,55 +239,58 @@ export async function getCurrentEnrollment(academicYear?: string, semester?: str
   return apiGet<CurrentEnrollmentState>(`${E}/current${qStr ? `?${qStr}` : ""}`);
 }
 
-// 2. Upload COR document
-export async function uploadCorDocument(file: File): Promise<ExtractedEnrollmentResponse> {
+async function uploadEnrollmentDocument(
+  endpoint: string,
+  fallbackError: string,
+  file: File,
+): Promise<ExtractedEnrollmentResponse> {
+  const validationError = validateEnrollmentDocumentFile(file);
+  if (validationError) {
+    throw new Error(validationError);
+  }
+
   const preparedFile = await compressDocumentImage(file);
   const formData = new FormData();
   formData.append("files", preparedFile);
 
-  const res = await fetch(`${E}/upload-cor`, {
+  const res = await fetch(`${E}/${endpoint}`, {
     method: "POST",
     body: formData,
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || "Failed to upload and parse COR document.");
+    const rawMsg = Array.isArray(err?.message) ? err.message.join(". ") : err?.message;
+    const isOpaqueServerError = typeof rawMsg === "string" && /^internal\s+server\s+error$/i.test(rawMsg.trim());
+    throw new Error(!isOpaqueServerError && rawMsg ? rawMsg : fallbackError);
   }
   return res.json();
+}
+
+// 2. Upload COR document
+export async function uploadCorDocument(file: File): Promise<ExtractedEnrollmentResponse> {
+  return uploadEnrollmentDocument(
+    "upload-cor",
+    "We could not read a valid Certificate of Registration (COR) from this file. Please make sure you uploaded the correct document.",
+    file,
+  );
 }
 
 // 3. Upload SOA document
 export async function uploadSoaDocument(file: File): Promise<ExtractedEnrollmentResponse> {
-  const preparedFile = await compressDocumentImage(file);
-  const formData = new FormData();
-  formData.append("files", preparedFile);
-
-  const res = await fetch(`${E}/upload-soa`, {
-    method: "POST",
-    body: formData,
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || "Failed to upload and parse SOA document.");
-  }
-  return res.json();
+  return uploadEnrollmentDocument(
+    "upload-soa",
+    "We could not read a valid Statement of Account (SOA) from this file. Please make sure you uploaded the correct assessment or billing document.",
+    file,
+  );
 }
 
 // 4. Upload Consolidated COR+SOA document
 export async function uploadConsolidatedDocument(file: File): Promise<ExtractedEnrollmentResponse> {
-  const preparedFile = await compressDocumentImage(file);
-  const formData = new FormData();
-  formData.append("files", preparedFile);
-
-  const res = await fetch(`${E}/upload-consolidated`, {
-    method: "POST",
-    body: formData,
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || "Failed to upload and parse consolidated document.");
-  }
-  return res.json();
+  return uploadEnrollmentDocument(
+    "upload-consolidated",
+    "We could not read a valid Consolidated Enrollment & Assessment form from this file. Please verify the document and try again.",
+    file,
+  );
 }
 
 // 5. Run pre-audit checks

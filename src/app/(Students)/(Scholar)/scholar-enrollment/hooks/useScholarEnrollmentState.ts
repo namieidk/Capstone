@@ -17,6 +17,7 @@ import {
   uploadConsolidatedDocument,
   uploadCorDocument,
   uploadSoaDocument,
+  validateEnrollmentDocumentFile,
 } from "@/lib/api/enrollment";
 import { timeExtraction } from "@/lib/extraction-timer";
 
@@ -32,6 +33,11 @@ export function useScholarEnrollmentState() {
   const [isUploadingCor, setIsUploadingCor] = useState(false);
   const [isUploadingSoa, setIsUploadingSoa] = useState(false);
   const [isUploadingConsolidated, setIsUploadingConsolidated] = useState(false);
+  const [uploadErrors, setUploadErrors] = useState<{
+    cor: string | null;
+    soa: string | null;
+    consolidated: string | null;
+  }>({ cor: null, soa: null, consolidated: null });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
 
@@ -234,71 +240,103 @@ export function useScholarEnrollmentState() {
     }
   };
 
-  const handleCorUpload = async (file: File) => {
+  const clearUploadError = useCallback((slot: "cor" | "soa" | "consolidated") => {
+    setUploadErrors((prev) => (prev[slot] ? { ...prev, [slot]: null } : prev));
+  }, []);
+
+  const executeDocumentUpload = async ({
+    slot,
+    file,
+    timerLabel,
+    fallbackError,
+    setUploading,
+    uploader,
+    onSuccess,
+  }: {
+    slot: "cor" | "soa" | "consolidated";
+    file: File;
+    timerLabel: Parameters<typeof timeExtraction>[0];
+    fallbackError: string;
+    setUploading: (val: boolean) => void;
+    uploader: (file: File) => Promise<Awaited<ReturnType<typeof uploadCorDocument>>>;
+    onSuccess: (res: Awaited<ReturnType<typeof uploadCorDocument>>) => void;
+  }) => {
+    const validationError = validateEnrollmentDocumentFile(file);
+    if (validationError) {
+      setUploadErrors((prev) => ({ ...prev, [slot]: validationError }));
+      toast.error(validationError);
+      return;
+    }
+
+    clearUploadError(slot);
     try {
-      setIsUploadingCor(true);
-      const res = await timeExtraction(
-        "COR",
-        () => uploadCorDocument(file),
-        { files: [file], fileName: file.name, fileSize: file.size }
-      );
-      setCorDocId(res.document_id);
-      setCorFile({ name: file.name, size: `${(file.size / 1024).toFixed(1)} KB`, url: res.file_url });
+      setUploading(true);
+      const res = await timeExtraction(timerLabel, () => uploader(file), {
+        files: [file],
+        fileName: file.name,
+        fileSize: file.size,
+      });
+      onSuccess(res);
       updateExtractedState(res.extracted_data);
       if (res.audit_result) setAuditResult(res.audit_result);
-      toast.success("Certificate of Registration parsed & saved to draft!");
       fetchState();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to upload COR.");
+      const msg = err instanceof Error ? err.message : fallbackError;
+      setUploadErrors((prev) => ({ ...prev, [slot]: msg }));
+      toast.error(msg);
     } finally {
-      setIsUploadingCor(false);
+      setUploading(false);
     }
   };
 
-  const handleSoaUpload = async (file: File) => {
-    try {
-      setIsUploadingSoa(true);
-      const res = await timeExtraction(
-        "Assessment",
-        () => uploadSoaDocument(file),
-        { files: [file], fileName: file.name, fileSize: file.size }
-      );
-      setSoaDocId(res.document_id);
-      setSoaFile({ name: file.name, size: `${(file.size / 1024).toFixed(1)} KB`, url: res.file_url });
-      updateExtractedState(res.extracted_data);
-      if (res.audit_result) setAuditResult(res.audit_result);
-      toast.success("Statement of Account parsed & saved to draft!");
-      fetchState();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to upload SOA.");
-    } finally {
-      setIsUploadingSoa(false);
-    }
-  };
+  const handleCorUpload = (file: File) =>
+    executeDocumentUpload({
+      slot: "cor",
+      file,
+      timerLabel: "COR",
+      fallbackError: "Failed to upload COR.",
+      setUploading: setIsUploadingCor,
+      uploader: uploadCorDocument,
+      onSuccess: (res) => {
+        setCorDocId(res.document_id);
+        setCorFile({ name: file.name, size: `${(file.size / 1024).toFixed(1)} KB`, url: res.file_url });
+        toast.success("Certificate of Registration parsed & saved to draft!");
+      },
+    });
 
-  const handleConsolidatedUpload = async (file: File) => {
-    try {
-      setIsUploadingConsolidated(true);
-      const res = await timeExtraction(
-        "COR & Assessment (Consolidated)",
-        () => uploadConsolidatedDocument(file),
-        { files: [file], fileName: file.name, fileSize: file.size }
-      );
-      setCorDocId(res.document_id);
-      setConsolidatedFile({ name: file.name, size: `${(file.size / 1024).toFixed(1)} KB`, url: res.file_url });
-      updateExtractedState(res.extracted_data);
-      if (res.audit_result) setAuditResult(res.audit_result);
-      toast.success("Consolidated Matriculation parsed & saved to draft!");
-      fetchState();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to upload consolidated form.");
-    } finally {
-      setIsUploadingConsolidated(false);
-    }
-  };
+  const handleSoaUpload = (file: File) =>
+    executeDocumentUpload({
+      slot: "soa",
+      file,
+      timerLabel: "Assessment",
+      fallbackError: "Failed to upload SOA.",
+      setUploading: setIsUploadingSoa,
+      uploader: uploadSoaDocument,
+      onSuccess: (res) => {
+        setSoaDocId(res.document_id);
+        setSoaFile({ name: file.name, size: `${(file.size / 1024).toFixed(1)} KB`, url: res.file_url });
+        toast.success("Statement of Account parsed & saved to draft!");
+      },
+    });
+
+  const handleConsolidatedUpload = (file: File) =>
+    executeDocumentUpload({
+      slot: "consolidated",
+      file,
+      timerLabel: "COR & Assessment (Consolidated)",
+      fallbackError: "Failed to upload consolidated form.",
+      setUploading: setIsUploadingConsolidated,
+      uploader: uploadConsolidatedDocument,
+      onSuccess: (res) => {
+        setCorDocId(res.document_id);
+        setConsolidatedFile({ name: file.name, size: `${(file.size / 1024).toFixed(1)} KB`, url: res.file_url });
+        toast.success("Consolidated Matriculation parsed & saved to draft!");
+      },
+    });
 
   const handleClearCor = async () => {
     try {
+      clearUploadError("cor");
       setCorFile(null);
       setCorDocId(undefined);
       setEnrolledSubjects([]);
@@ -313,6 +351,7 @@ export function useScholarEnrollmentState() {
 
   const handleClearSoa = async () => {
     try {
+      clearUploadError("soa");
       setSoaFile(null);
       setSoaDocId(undefined);
       setTotalAssessment(0);
@@ -329,6 +368,7 @@ export function useScholarEnrollmentState() {
 
   const handleClearConsolidated = async () => {
     try {
+      clearUploadError("consolidated");
       setConsolidatedFile(null);
       setCorDocId(undefined);
       setSoaDocId(undefined);
@@ -461,6 +501,8 @@ export function useScholarEnrollmentState() {
     setSoaFile,
     consolidatedFile,
     setConsolidatedFile,
+    uploadErrors,
+    clearUploadError,
     setCorDocId,
     setSoaDocId,
     enrolledSubjects,
@@ -488,10 +530,7 @@ export function useScholarEnrollmentState() {
     semester: semester || enrollmentState?.enrollment?.semester || "",
     setSemester,
     yearLevel:
-      yearLevel ||
-      enrollmentState?.enrollment?.year_level ||
-      enrollmentState?.scholar?.current_year_level ||
-      1,
+      yearLevel || enrollmentState?.enrollment?.year_level || enrollmentState?.scholar?.current_year_level || 1,
     setYearLevel,
   };
 }
