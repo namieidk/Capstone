@@ -269,6 +269,42 @@ export function deactivateMyAccount(data?: { reason?: string; password?: string 
   return apiPost<{ message: string }>("/api/proxy/auth/me/deactivate", data ?? {});
 }
 
+export interface PublicScholarRecentPost {
+  post_id: number;
+  title: string;
+  category: string | null;
+  views_count: number;
+  comments_count: number;
+  created_at: string;
+}
+
+export interface PublicScholarProfile {
+  user_id: number;
+  is_public: boolean;
+  is_self: boolean;
+  first_name: string;
+  middle_name: string | null;
+  last_name: string;
+  suffix: string | null;
+  sex: string | null;
+  email: string;
+  bio: string | null;
+  avatar_url: string | null;
+  banner_url: string | null;
+  school_name: string | null;
+  course_of_study: string | null;
+  current_year_level: number | null;
+  scholarship_track: string | null;
+  member_since: string;
+  forum_posts_count: number;
+  forum_comments_count: number;
+  recent_posts: PublicScholarRecentPost[];
+}
+
+export function getPublicScholarProfile(userId: number) {
+  return apiGet<PublicScholarProfile>(`/api/proxy/auth/scholars/${userId}/public-profile`);
+}
+
 export function googleLogin(credential: string) {
   return apiPost<LoginResponse | MfaChallengeResponse>(`${B}/google`, { credential });
 }

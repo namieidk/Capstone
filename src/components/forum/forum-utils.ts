@@ -22,6 +22,16 @@ export function getAuthorEmail(author?: ForumAuthor | null): string {
   return author.email;
 }
 
+export function getScholarPublicProfileHref(
+  author?: ForumAuthor | null,
+  currentUserRole?: string | null,
+): string | null {
+  if (!author?.user_id) return null;
+  if (currentUserRole?.toUpperCase() !== "SCHOLAR") return null;
+  if (author.role?.toUpperCase() !== "SCHOLAR") return null;
+  return `/schoProfile/${author.user_id}`;
+}
+
 export function getInitials(name: string): string {
   if (!name?.trim() || name === "undefined undefined") return "VS";
   const parts = name.trim().split(" ").filter(Boolean);

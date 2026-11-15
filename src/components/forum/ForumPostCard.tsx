@@ -1,6 +1,7 @@
 "use client";
 
 import { Eye, Loader2, MessageCircle, Pencil, Pin, Save, Send, Trash2, X } from "lucide-react";
+import Link from "next/link";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,7 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardFooter, CardHeader } from "@/components/ui/card";
@@ -20,11 +21,18 @@ import { Input } from "@/components/ui/input";
 import type { ForumComment, ForumPost, ForumTaggedUser } from "@/lib/api/forum";
 import { ForumCommentItem } from "./ForumCommentItem";
 import { ForumMentionTextarea, ForumStaffTagPicker, ForumTaggedBadges } from "./ForumStaffTagPicker";
-import { formatTime, getAuthorName, getInitials, getRoleBadgeVariant } from "./forum-utils";
+import {
+  formatTime,
+  getAuthorName,
+  getInitials,
+  getRoleBadgeVariant,
+  getScholarPublicProfileHref,
+} from "./forum-utils";
 
 interface ForumPostCardProps {
   post: ForumPost;
   currentUserId?: number;
+  currentUserRole?: string;
   taggableStaff: ForumTaggedUser[];
   isSelected: boolean;
   isAuthor: boolean;
@@ -59,6 +67,7 @@ interface ForumPostCardProps {
 export function ForumPostCard({
   post,
   currentUserId,
+  currentUserRole,
   taggableStaff,
   isSelected,
   isAuthor,
@@ -92,6 +101,7 @@ export function ForumPostCard({
   const authorName = getAuthorName(post.author);
   const initials = getInitials(authorName);
   const roleBadge = getRoleBadgeVariant(post.author.role);
+  const profileHref = getScholarPublicProfileHref(post.author, currentUserRole);
 
   return (
     <Card
@@ -103,13 +113,28 @@ export function ForumPostCard({
     >
       <CardHeader className="p-5 pb-3">
         <div className="flex items-start justify-between gap-3">
-          <button type="button" onClick={onSelect} className="flex items-center gap-3 text-left focus:outline-hidden">
-            <Avatar className="size-10 ring-1 ring-border/50">
-              <AvatarFallback className="bg-tint font-bold text-navy text-xs">{initials}</AvatarFallback>
-            </Avatar>
+          <div className="flex items-center gap-3 text-left">
+            <button type="button" onClick={onSelect} className="shrink-0 rounded-full focus:outline-hidden">
+              <Avatar className="size-10 ring-1 ring-border/50">
+                <AvatarImage src={post.author.avatar_url || undefined} alt={authorName} />
+                <AvatarFallback className="bg-tint font-bold text-navy text-xs">{initials}</AvatarFallback>
+              </Avatar>
+            </button>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-navy hover:underline">{authorName}</span>
+                {profileHref ? (
+                  <Link href={profileHref} className="text-sm font-bold text-navy hover:underline focus:outline-hidden">
+                    {authorName}
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={onSelect}
+                    className="text-sm font-bold text-navy hover:underline text-left focus:outline-hidden"
+                  >
+                    {authorName}
+                  </button>
+                )}
                 <Badge
                   variant="outline"
                   className={`rounded-md px-1.5 py-0 text-[0.65rem] font-semibold ${roleBadge.className}`}
@@ -117,9 +142,15 @@ export function ForumPostCard({
                   {roleBadge.label}
                 </Badge>
               </div>
-              <span className="text-[0.7rem] text-muted-foreground">{formatTime(post.created_at)}</span>
+              <button
+                type="button"
+                onClick={onSelect}
+                className="text-[0.7rem] text-muted-foreground hover:text-foreground focus:outline-hidden"
+              >
+                {formatTime(post.created_at)}
+              </button>
             </div>
-          </button>
+          </div>
 
           <div className="flex items-center gap-1.5">
             {post.is_pinned && (
@@ -172,9 +203,7 @@ export function ForumPostCard({
                   </AlertDialogTrigger>
                   <AlertDialogContent className="rounded-2xl border-line bg-white sm:max-w-md">
                     <AlertDialogHeader>
-                      <AlertDialogTitle className="text-base font-bold text-navy">
-                        Delete Forum Post?
-                      </AlertDialogTitle>
+                      <AlertDialogTitle className="text-base font-bold text-navy">Delete Forum Post?</AlertDialogTitle>
                       <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed">
                         This will permanently delete this post and all of its comments. This action cannot be undone.
                       </AlertDialogDescription>
@@ -303,6 +332,7 @@ export function ForumPostCard({
                 <ForumCommentItem
                   key={`forum-comment-${c.comment_id}`}
                   comment={c}
+                  currentUserRole={currentUserRole}
                   isCommentAuthor={isCommentAuthor}
                   onUpdateComment={onUpdateComment}
                   onDeleteComment={onDeleteComment}

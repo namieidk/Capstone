@@ -67,7 +67,9 @@ function SettingsSection({ title, badge, children, danger }: SettingsSectionProp
         border: danger ? "1px solid #F0C9BC" : s.settingsSection.border,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
+      <div
+        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16 }}
+      >
         <h3
           style={{
             ...s.settingsSectionTitle,
@@ -375,10 +377,7 @@ export default function Settings() {
       const updated = await verifyTwoFactorSetup(setupData.method, trimmed);
       setToggles(updated);
       setTwoFactorOpen(false);
-      showToast(
-        `Two-factor authentication enabled (${TWO_FACTOR_METHOD_LABELS[setupData.method]}).`,
-        "success",
-      );
+      showToast(`Two-factor authentication enabled (${TWO_FACTOR_METHOD_LABELS[setupData.method]}).`, "success");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Invalid verification code.";
       setTwoFactorError(message);
@@ -606,7 +605,9 @@ export default function Settings() {
                     : `Registered mobile number: ${phoneNumber} (Verified)`
               }
               on={toggles.smsNotifs}
-              disabled={loading || Boolean(loadError) || (!toggles.smsNotifs && (!phoneNumber || !toggles.phoneVerified))}
+              disabled={
+                loading || Boolean(loadError) || (!toggles.smsNotifs && (!phoneNumber || !toggles.phoneVerified))
+              }
               saving={Boolean(savingKeys.smsNotifs)}
               onToggle={() => void handleNotificationToggle("smsNotifs", "SMS notifications")}
             />
@@ -709,7 +710,7 @@ export default function Settings() {
           <SettingsSection title="Privacy" badge={syncBadge}>
             <SettingsRow
               label="Public profile"
-              desc="Allow other scholars to view your forum activity and bio."
+              desc="Allow other scholars to view your public profile, bio, and forum activity."
               on={toggles.publicProfile}
               disabled={loading || Boolean(loadError)}
               saving={Boolean(savingKeys.publicProfile)}
@@ -929,7 +930,9 @@ export default function Settings() {
                   {
                     id: "EMAIL_OTP" as const,
                     title: "Email OTP",
-                    desc: userEmail ? `Send a 6-digit code to ${userEmail}` : "Send a 6-digit code to your account email",
+                    desc: userEmail
+                      ? `Send a 6-digit code to ${userEmail}`
+                      : "Send a 6-digit code to your account email",
                     icon: Mail,
                     disabled: false,
                   },
@@ -1211,7 +1214,12 @@ export default function Settings() {
             )}
 
             <DialogFooter className="pt-2">
-              <Button type="button" variant="outline" disabled={changingPassword} onClick={() => setPasswordOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={changingPassword}
+                onClick={() => setPasswordOpen(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={changingPassword}>
@@ -1329,9 +1337,9 @@ export default function Settings() {
           <DialogHeader>
             <DialogTitle>Deactivate Account</DialogTitle>
             <DialogDescription>
-              Your account status will be set to inactive and you will be signed out immediately. You will not be
-              able to log in until an administrator reactivates your account. Your scholar profile and records will
-              remain intact and will not be archived.
+              Your account status will be set to inactive and you will be signed out immediately. You will not be able
+              to log in until an administrator reactivates your account. Your scholar profile and records will remain
+              intact and will not be archived.
             </DialogDescription>
           </DialogHeader>
 
@@ -1372,12 +1380,7 @@ export default function Settings() {
             )}
 
             <DialogFooter className="gap-2 pt-2">
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={deactivating}
-                onClick={() => setDeactivateOpen(false)}
-              >
+              <Button type="button" variant="ghost" disabled={deactivating} onClick={() => setDeactivateOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit" variant="destructive" disabled={deactivating}>

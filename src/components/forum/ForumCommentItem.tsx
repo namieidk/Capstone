@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, Loader2, Pencil, Trash2, X } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import {
   AlertDialog,
@@ -13,15 +14,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ForumComment } from "@/lib/api/forum";
-import { formatTime, getAuthorName, getInitials, getRoleBadgeVariant } from "./forum-utils";
+import {
+  formatTime,
+  getAuthorName,
+  getInitials,
+  getRoleBadgeVariant,
+  getScholarPublicProfileHref,
+} from "./forum-utils";
 
 interface ForumCommentItemProps {
   comment: ForumComment;
+  currentUserRole?: string;
   isCommentAuthor?: boolean;
   onUpdateComment?: (commentId: number, content: string) => Promise<void>;
   onDeleteComment?: (commentId: number) => Promise<void>;
@@ -29,12 +37,14 @@ interface ForumCommentItemProps {
 
 export function ForumCommentItem({
   comment,
+  currentUserRole,
   isCommentAuthor = false,
   onUpdateComment,
   onDeleteComment,
 }: ForumCommentItemProps) {
   const authorName = getAuthorName(comment.author);
   const roleBadge = getRoleBadgeVariant(comment.author.role);
+  const profileHref = getScholarPublicProfileHref(comment.author, currentUserRole);
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(comment.content);
   const [submitting, setSubmitting] = useState(false);
@@ -79,6 +89,7 @@ export function ForumCommentItem({
   return (
     <div className="flex items-start gap-3 rounded-xl bg-white border border-border/50 p-3 shadow-2xs">
       <Avatar className="size-7 shrink-0 ring-1 ring-border/40 mt-0.5">
+        <AvatarImage src={comment.author.avatar_url || undefined} alt={authorName} />
         <AvatarFallback className="bg-tint text-[0.65rem] font-bold text-navy">
           {getInitials(authorName)}
         </AvatarFallback>
@@ -86,7 +97,13 @@ export function ForumCommentItem({
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2 mb-1">
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-xs font-bold text-navy truncate">{authorName}</span>
+            {profileHref ? (
+              <Link href={profileHref} className="text-xs font-bold text-navy truncate hover:underline">
+                {authorName}
+              </Link>
+            ) : (
+              <span className="text-xs font-bold text-navy truncate">{authorName}</span>
+            )}
             <Badge
               variant="outline"
               className={`rounded-sm px-1 py-0 text-[0.6rem] font-semibold ${roleBadge.className}`}

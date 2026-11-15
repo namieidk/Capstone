@@ -1,23 +1,38 @@
 "use client";
 
 import { Pin, Shield } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ForumPost } from "@/lib/api/forum";
 import { ForumTaggedBadges } from "./ForumStaffTagPicker";
-import { formatTime, getAuthorEmail, getAuthorName, getInitials, getRoleBadgeVariant } from "./forum-utils";
+import {
+  formatTime,
+  getAuthorEmail,
+  getAuthorName,
+  getInitials,
+  getRoleBadgeVariant,
+  getScholarPublicProfileHref,
+} from "./forum-utils";
 
 interface ForumThreadOverviewProps {
   activePost: ForumPost | null;
   otherPosts: ForumPost[];
+  currentUserRole?: string;
   onSelectPost: (id: number) => void;
 }
 
-export function ForumThreadOverview({ activePost, otherPosts, onSelectPost }: ForumThreadOverviewProps) {
+export function ForumThreadOverview({
+  activePost,
+  otherPosts,
+  currentUserRole,
+  onSelectPost,
+}: ForumThreadOverviewProps) {
   const activeAuthorName = activePost ? getAuthorName(activePost.author) : "";
   const activeAuthorEmail = activePost ? getAuthorEmail(activePost.author) : "";
   const activeRoleBadge = activePost ? getRoleBadgeVariant(activePost.author.role) : null;
+  const activeProfileHref = getScholarPublicProfileHref(activePost?.author, currentUserRole);
 
   return (
     <div className="hidden lg:col-span-4 lg:block sticky top-0 space-y-3.5">
@@ -46,13 +61,20 @@ export function ForumThreadOverview({ activePost, otherPosts, onSelectPost }: Fo
           <CardContent className="p-0 py-4 flex flex-col items-center text-center">
             <div className="relative mb-2.5">
               <Avatar className="size-14 ring-3 ring-amber/20 shadow-xs">
+                <AvatarImage src={activePost.author.avatar_url || undefined} alt={activeAuthorName} />
                 <AvatarFallback className="bg-amber-100 text-amber-900 font-bold text-base">
                   {getInitials(activeAuthorName)}
                 </AvatarFallback>
               </Avatar>
             </div>
 
-            <p className="font-bold text-navy text-sm leading-tight">{activeAuthorName}</p>
+            {activeProfileHref ? (
+              <Link href={activeProfileHref} className="font-bold text-navy text-sm leading-tight hover:underline">
+                {activeAuthorName}
+              </Link>
+            ) : (
+              <p className="font-bold text-navy text-sm leading-tight">{activeAuthorName}</p>
+            )}
             {activePost?.author?.public_profile !== false && activeAuthorEmail ? (
               <p className="text-[0.72rem] text-muted-foreground mb-2 truncate max-w-full">{activeAuthorEmail}</p>
             ) : (
@@ -84,17 +106,13 @@ export function ForumThreadOverview({ activePost, otherPosts, onSelectPost }: Fo
                   <div className="mt-3 flex items-center gap-3 text-[0.7rem] text-muted-foreground">
                     {typeof activePost?.author?.forum_posts_count === "number" && (
                       <span>
-                        <strong className="font-semibold text-navy">
-                          {activePost.author.forum_posts_count}
-                        </strong>{" "}
+                        <strong className="font-semibold text-navy">{activePost.author.forum_posts_count}</strong>{" "}
                         {activePost.author.forum_posts_count === 1 ? "post" : "posts"}
                       </span>
                     )}
                     {typeof activePost?.author?.forum_comments_count === "number" && (
                       <span>
-                        <strong className="font-semibold text-navy">
-                          {activePost.author.forum_comments_count}
-                        </strong>{" "}
+                        <strong className="font-semibold text-navy">{activePost.author.forum_comments_count}</strong>{" "}
                         {activePost.author.forum_comments_count === 1 ? "reply" : "replies"}
                       </span>
                     )}

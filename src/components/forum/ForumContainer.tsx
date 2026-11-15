@@ -93,7 +93,12 @@ export function ForumContainer({
       const unique = dedupePosts(res.posts || []);
       setPosts(unique);
       if (unique.length > 0 && selectedId === null) {
-        setSelectedId(unique[0].post_id);
+        const paramId =
+          typeof window !== "undefined"
+            ? Number.parseInt(new URLSearchParams(window.location.search).get("postId") || "", 10)
+            : Number.NaN;
+        const matched = Number.isInteger(paramId) ? unique.find((p) => p.post_id === paramId) : undefined;
+        setSelectedId(matched ? matched.post_id : unique[0].post_id);
       }
     } catch (err) {
       console.error("Failed to load forum posts:", err);
@@ -627,7 +632,9 @@ export function ForumContainer({
                   taggableStaff={availableTaggableStaff}
                   selectedTagIds={draftTagIds}
                   onToggleTag={(uid) =>
-                    setDraftTagIds((prev) => (prev.includes(uid) ? prev.filter((item) => item !== uid) : [...prev, uid]))
+                    setDraftTagIds((prev) =>
+                      prev.includes(uid) ? prev.filter((item) => item !== uid) : [...prev, uid],
+                    )
                   }
                   onSelectMention={(uid) => setDraftTagIds((prev) => (prev.includes(uid) ? prev : [...prev, uid]))}
                   onSubmit={handleCreatePost}
@@ -659,7 +666,9 @@ export function ForumContainer({
                 {/* Posts List */}
                 {posts.map((post) => {
                   const isSelected = post.post_id === selectedId;
-                  const isAuthor = Boolean(user?.user_id && (post.author_user_id ?? post.author?.user_id) === user.user_id);
+                  const isAuthor = Boolean(
+                    user?.user_id && (post.author_user_id ?? post.author?.user_id) === user.user_id,
+                  );
                   const isReplying = openReplyId === post.post_id;
                   const isEditing = editingPostId === post.post_id;
                   const rawComments =
@@ -671,6 +680,7 @@ export function ForumContainer({
                       key={`forum-post-${post.post_id}`}
                       post={post}
                       currentUserId={user?.user_id}
+                      currentUserRole={user?.role}
                       taggableStaff={availableTaggableStaff}
                       isSelected={isSelected}
                       isAuthor={isAuthor}
@@ -703,7 +713,9 @@ export function ForumContainer({
                       onEditTitleChange={setEditTitle}
                       onEditContentChange={setEditContent}
                       onToggleEditTag={(uid) =>
-                        setEditTagIds((prev) => (prev.includes(uid) ? prev.filter((item) => item !== uid) : [...prev, uid]))
+                        setEditTagIds((prev) =>
+                          prev.includes(uid) ? prev.filter((item) => item !== uid) : [...prev, uid],
+                        )
                       }
                       onSelectEditMention={(uid) =>
                         setEditTagIds((prev) => (prev.includes(uid) ? prev : [...prev, uid]))
@@ -718,7 +730,12 @@ export function ForumContainer({
               </div>
 
               {/* RIGHT COLUMN: Active Thread Spotlight & Community Guidelines */}
-              <ForumThreadOverview activePost={activePost} otherPosts={otherPosts} onSelectPost={handleSelectPost} />
+              <ForumThreadOverview
+                activePost={activePost}
+                otherPosts={otherPosts}
+                currentUserRole={user?.role}
+                onSelectPost={handleSelectPost}
+              />
             </div>
           </div>
         </div>
