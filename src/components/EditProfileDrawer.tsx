@@ -9,7 +9,15 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { SEX_OPTIONS, SUFFIX_OPTIONS } from "@/lib/validation";
+import {
+  type EditStaffProfileValues,
+  editStaffProfileSchema,
+  getZodFieldErrors,
+  preventDisallowedNameKey,
+  SEX_OPTIONS,
+  SUFFIX_OPTIONS,
+  sanitizePersonName,
+} from "@/lib/validation";
 
 export interface EditProfileDrawerProps {
   open: boolean;
@@ -57,6 +65,7 @@ export default function EditProfileDrawer({
   const [title, setTitle] = useState(initialValues?.title ?? "");
   const [department, setDepartment] = useState(initialValues?.department ?? "");
   const [bio, setBio] = useState(initialValues?.bio ?? "");
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof EditStaffProfileValues, string>>>({});
 
   useEffect(() => {
     if (open) {
@@ -68,42 +77,55 @@ export default function EditProfileDrawer({
       setTitle(initialValues?.title ?? "");
       setDepartment(initialValues?.department ?? "");
       setBio(initialValues?.bio ?? "");
+      setFieldErrors({});
     }
   }, [open, initialValues]);
 
+  const clearFieldError = (field: keyof EditStaffProfileValues) => {
+    setFieldErrors((prev) => (prev[field] ? { ...prev, [field]: undefined } : prev));
+  };
+
   const handleFirstNameChange = (val: string) => {
-    const clean = val.replace(/[^a-zA-ZÀ-ÿñÑ\s]/g, "");
-    setFirstName(clean);
+    setFirstName(sanitizePersonName(val));
+    clearFieldError("first_name");
   };
 
   const handleMiddleNameChange = (val: string) => {
-    const clean = val.replace(/[^a-zA-ZÀ-ÿñÑ\s.\-']/g, "");
-    setMiddleName(clean);
+    setMiddleName(sanitizePersonName(val));
+    clearFieldError("middle_name");
   };
 
   const handleLastNameChange = (val: string) => {
-    const clean = val.replace(/[^a-zA-ZÀ-ÿñÑ\s]/g, "");
-    setLastName(clean);
-  };
-
-  const handleNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
-    if (e.key.length === 1 && !/^[a-zA-ZÀ-ÿñÑ\s]$/.test(e.key)) {
-      e.preventDefault();
-    }
+    setLastName(sanitizePersonName(val));
+    clearFieldError("last_name");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const parsed = editStaffProfileSchema.safeParse({
+      first_name: firstName,
+      middle_name: middleName,
+      last_name: lastName,
+      suffix,
+      sex,
+      title,
+      department,
+      bio,
+    });
+    if (!parsed.success) {
+      setFieldErrors(getZodFieldErrors<keyof EditStaffProfileValues>(parsed.error.issues));
+      return;
+    }
+    setFieldErrors({});
     onSave({
-      first_name: firstName.trim(),
-      middle_name: middleName.trim(),
-      last_name: lastName.trim(),
-      suffix: suffix.trim(),
-      sex: sex.trim(),
-      title: title.trim(),
-      department: department.trim(),
-      bio: bio.trim(),
+      first_name: parsed.data.first_name,
+      middle_name: parsed.data.middle_name ?? "",
+      last_name: parsed.data.last_name,
+      suffix: parsed.data.suffix ?? "",
+      sex: parsed.data.sex ?? "",
+      title: parsed.data.title,
+      department: parsed.data.department,
+      bio: parsed.data.bio ?? "",
     });
   };
 
@@ -134,7 +156,7 @@ export default function EditProfileDrawer({
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-6 flex flex-1 flex-col gap-4">
+        <form onSubmit={handleSubmit} noValidate className="mt-6 flex flex-1 flex-col gap-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="edit-first-name" className="text-sm! font-semibold text-navy">
@@ -144,10 +166,13 @@ export default function EditProfileDrawer({
                 id="edit-first-name"
                 value={firstName}
                 onChange={(e) => handleFirstNameChange(e.target.value)}
-                onKeyDown={handleNameKeyDown}
-                required
-                className={FIELD_INPUT}
+                onKeyDown={preventDisallowedNameKey}
+                aria-invalid={Boolean(fieldErrors.first_name)}
+                className={`${FIELD_INPUT} ${fieldErrors.first_name ? "border-destructive!" : ""}`}
               />
+              {fieldErrors.first_name && (
+                <p className="mt-1 text-xs font-medium text-destructive">{fieldErrors.first_name}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="edit-last-name" className="text-sm! font-semibold text-navy">
@@ -157,10 +182,13 @@ export default function EditProfileDrawer({
                 id="edit-last-name"
                 value={lastName}
                 onChange={(e) => handleLastNameChange(e.target.value)}
-                onKeyDown={handleNameKeyDown}
-                required
-                className={FIELD_INPUT}
+                onKeyDown={preventDisallowedNameKey}
+                aria-invalid={Boolean(fieldErrors.last_name)}
+                className={`${FIELD_INPUT} ${fieldErrors.last_name ? "border-destructive!" : ""}`}
               />
+              {fieldErrors.last_name && (
+                <p className="mt-1 text-xs font-medium text-destructive">{fieldErrors.last_name}</p>
+              )}
             </div>
           </div>
 
@@ -173,8 +201,13 @@ export default function EditProfileDrawer({
               placeholder="Optional"
               value={middleName}
               onChange={(e) => handleMiddleNameChange(e.target.value)}
-              className={FIELD_INPUT}
+              onKeyDown={preventDisallowedNameKey}
+              aria-invalid={Boolean(fieldErrors.middle_name)}
+              className={`${FIELD_INPUT} ${fieldErrors.middle_name ? "border-destructive!" : ""}`}
             />
+            {fieldErrors.middle_name && (
+              <p className="mt-1 text-xs font-medium text-destructive">{fieldErrors.middle_name}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -218,28 +251,40 @@ export default function EditProfileDrawer({
 
           <div>
             <Label htmlFor="edit-title" className="text-sm! font-semibold text-navy">
-              Title
+              Title <span className="text-amber">*</span>
             </Label>
             <Input
               id="edit-title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                clearFieldError("title");
+              }}
               placeholder="e.g. System Administrator"
-              className={FIELD_INPUT}
+              aria-invalid={Boolean(fieldErrors.title)}
+              className={`${FIELD_INPUT} ${fieldErrors.title ? "border-destructive!" : ""}`}
             />
+            {fieldErrors.title && <p className="mt-1 text-xs font-medium text-destructive">{fieldErrors.title}</p>}
           </div>
 
           <div>
             <Label htmlFor="edit-department" className="text-sm! font-semibold text-navy">
-              Department
+              Department <span className="text-amber">*</span>
             </Label>
             <Input
               id="edit-department"
               value={department}
-              onChange={(e) => setDepartment(e.target.value)}
+              onChange={(e) => {
+                setDepartment(e.target.value);
+                clearFieldError("department");
+              }}
               placeholder="e.g. IT Department"
-              className={FIELD_INPUT}
+              aria-invalid={Boolean(fieldErrors.department)}
+              className={`${FIELD_INPUT} ${fieldErrors.department ? "border-destructive!" : ""}`}
             />
+            {fieldErrors.department && (
+              <p className="mt-1 text-xs font-medium text-destructive">{fieldErrors.department}</p>
+            )}
           </div>
 
           <div>
@@ -249,11 +294,16 @@ export default function EditProfileDrawer({
             <Textarea
               id="edit-bio"
               value={bio}
-              onChange={(e) => setBio(e.target.value)}
+              onChange={(e) => {
+                setBio(e.target.value);
+                clearFieldError("bio");
+              }}
               placeholder="A brief bio about your role and responsibilities..."
               rows={4}
-              className="mt-1.5 min-h-24! resize-y border-line bg-[#f7f9fb]! text-sm! md:text-sm!"
+              aria-invalid={Boolean(fieldErrors.bio)}
+              className={`mt-1.5 min-h-24! resize-y border-line bg-[#f7f9fb]! text-sm! md:text-sm! ${fieldErrors.bio ? "border-destructive!" : ""}`}
             />
+            {fieldErrors.bio && <p className="mt-1 text-xs font-medium text-destructive">{fieldErrors.bio}</p>}
           </div>
 
           {error && (

@@ -249,3 +249,90 @@ export const signUpSchema = z
   });
 
 export type SignUpFormValues = z.infer<typeof signUpSchema>;
+
+export const PERSON_NAME_ALLOWED_CHAR_REGEX = /^[a-zA-ZÀ-ÿñÑ\s]$/;
+
+export function sanitizePersonName(value: string): string {
+  return value.replace(/[^a-zA-ZÀ-ÿñÑ\s]/g, "");
+}
+
+export function preventDisallowedNameKey(e: {
+  key: string;
+  ctrlKey: boolean;
+  metaKey: boolean;
+  altKey: boolean;
+  preventDefault: () => void;
+}) {
+  if (e.ctrlKey || e.metaKey || e.altKey || e.key.length > 1) return;
+  if (!PERSON_NAME_ALLOWED_CHAR_REGEX.test(e.key)) {
+    e.preventDefault();
+  }
+}
+
+export function getZodFieldErrors<K extends string>(
+  issues: ReadonlyArray<{ path: PropertyKey[]; message: string }>,
+): Partial<Record<K, string>> {
+  const fieldErrors: Partial<Record<K, string>> = {};
+  for (const issue of issues) {
+    const field = issue.path[0];
+    if (typeof field === "string" && !fieldErrors[field as K]) {
+      fieldErrors[field as K] = issue.message;
+    }
+  }
+  return fieldErrors;
+}
+
+export const philippinePhoneSchema = z
+  .string()
+  .trim()
+  .min(1, "Phone number is required.")
+  .transform((val) => val.replace(/\s+/g, ""))
+  .pipe(
+    z
+      .string()
+      .regex(
+        /^09\d{9}$/,
+        "Phone number must be an 11-digit Philippine mobile number starting with 09 (e.g., 0917 123 4567).",
+      ),
+  );
+
+const baseProfileValidationFields = {
+  first_name: z
+    .string()
+    .trim()
+    .min(1, "First name is required.")
+    .max(100, "First name is too long.")
+    .regex(/^[a-zA-ZÀ-ÿñÑ\s]+$/, "First name cannot contain numbers or special characters."),
+  middle_name: z
+    .string()
+    .trim()
+    .max(100, "Middle name is too long.")
+    .regex(/^[a-zA-ZÀ-ÿñÑ\s]*$/, "Middle name cannot contain numbers or special characters.")
+    .optional()
+    .or(z.literal("")),
+  last_name: z
+    .string()
+    .trim()
+    .min(1, "Last name is required.")
+    .max(100, "Last name is too long.")
+    .regex(/^[a-zA-ZÀ-ÿñÑ\s]+$/, "Last name cannot contain numbers or special characters."),
+  suffix: z.string().trim().max(30, "Suffix is too long.").optional().or(z.literal("")),
+  sex: z.string().trim().max(30, "Sex selection is invalid.").optional().or(z.literal("")),
+  bio: z.string().trim().max(2000, "Bio is too long.").optional().or(z.literal("")),
+};
+
+export const editStudentProfileSchema = z.object({
+  ...baseProfileValidationFields,
+  phone_number: philippinePhoneSchema,
+  student_address: z.string().trim().min(1, "Permanent address is required.").max(500, "Address is too long."),
+});
+
+export type EditStudentProfileValues = z.infer<typeof editStudentProfileSchema>;
+
+export const editStaffProfileSchema = z.object({
+  ...baseProfileValidationFields,
+  title: z.string().trim().min(1, "Title is required.").max(100, "Title is too long."),
+  department: z.string().trim().min(1, "Department is required.").max(100, "Department is too long."),
+});
+
+export type EditStaffProfileValues = z.infer<typeof editStaffProfileSchema>;

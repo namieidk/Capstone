@@ -9,7 +9,16 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { SEX_OPTIONS, SUFFIX_OPTIONS } from "@/lib/validation";
+import {
+  type EditStudentProfileValues,
+  editStudentProfileSchema,
+  formatPhilippinePhoneNumber,
+  getZodFieldErrors,
+  preventDisallowedNameKey,
+  SEX_OPTIONS,
+  SUFFIX_OPTIONS,
+  sanitizePersonName,
+} from "@/lib/validation";
 
 export interface EditApplicantProfileValues {
   first_name: string;
@@ -49,6 +58,7 @@ export function EditApplicantProfileDrawer({
   const [phoneNumber, setPhoneNumber] = useState(initialValues?.phone_number ?? "");
   const [studentAddress, setStudentAddress] = useState(initialValues?.student_address ?? "");
   const [bio, setBio] = useState(initialValues?.bio ?? "");
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof EditStudentProfileValues, string>>>({});
 
   useEffect(() => {
     if (open) {
@@ -57,23 +67,43 @@ export function EditApplicantProfileDrawer({
       setLastName(initialValues?.last_name ?? "");
       setSuffix(initialValues?.suffix ?? "");
       setSex(initialValues?.sex ?? "");
-      setPhoneNumber(initialValues?.phone_number ?? "");
+      setPhoneNumber(formatPhilippinePhoneNumber(initialValues?.phone_number ?? ""));
       setStudentAddress(initialValues?.student_address ?? "");
       setBio(initialValues?.bio ?? "");
+      setFieldErrors({});
     }
   }, [open, initialValues]);
 
+  const clearFieldError = (field: keyof EditStudentProfileValues) => {
+    setFieldErrors((prev) => (prev[field] ? { ...prev, [field]: undefined } : prev));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const parsed = editStudentProfileSchema.safeParse({
+      first_name: firstName,
+      middle_name: middleName,
+      last_name: lastName,
+      suffix,
+      sex,
+      phone_number: phoneNumber,
+      student_address: studentAddress,
+      bio,
+    });
+    if (!parsed.success) {
+      setFieldErrors(getZodFieldErrors<keyof EditStudentProfileValues>(parsed.error.issues));
+      return;
+    }
+    setFieldErrors({});
     onSave({
-      first_name: firstName.trim(),
-      middle_name: middleName.trim(),
-      last_name: lastName.trim(),
-      suffix: suffix.trim(),
-      sex: sex.trim(),
-      phone_number: phoneNumber.trim(),
-      student_address: studentAddress.trim(),
-      bio: bio.trim(),
+      first_name: parsed.data.first_name,
+      middle_name: parsed.data.middle_name ?? "",
+      last_name: parsed.data.last_name,
+      suffix: parsed.data.suffix ?? "",
+      sex: parsed.data.sex ?? "",
+      phone_number: parsed.data.phone_number,
+      student_address: parsed.data.student_address,
+      bio: parsed.data.bio ?? "",
     });
   };
 
@@ -104,7 +134,7 @@ export function EditApplicantProfileDrawer({
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-6 flex flex-1 flex-col gap-4">
+        <form onSubmit={handleSubmit} noValidate className="mt-6 flex flex-1 flex-col gap-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="applicant-first-name" className="text-sm! font-semibold text-navy">
@@ -113,10 +143,17 @@ export function EditApplicantProfileDrawer({
               <Input
                 id="applicant-first-name"
                 value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                required
-                className={FIELD_INPUT}
+                onChange={(e) => {
+                  setFirstName(sanitizePersonName(e.target.value));
+                  clearFieldError("first_name");
+                }}
+                onKeyDown={preventDisallowedNameKey}
+                aria-invalid={Boolean(fieldErrors.first_name)}
+                className={`${FIELD_INPUT} ${fieldErrors.first_name ? "border-destructive!" : ""}`}
               />
+              {fieldErrors.first_name && (
+                <p className="mt-1 text-xs font-medium text-destructive">{fieldErrors.first_name}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="applicant-last-name" className="text-sm! font-semibold text-navy">
@@ -125,10 +162,17 @@ export function EditApplicantProfileDrawer({
               <Input
                 id="applicant-last-name"
                 value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                required
-                className={FIELD_INPUT}
+                onChange={(e) => {
+                  setLastName(sanitizePersonName(e.target.value));
+                  clearFieldError("last_name");
+                }}
+                onKeyDown={preventDisallowedNameKey}
+                aria-invalid={Boolean(fieldErrors.last_name)}
+                className={`${FIELD_INPUT} ${fieldErrors.last_name ? "border-destructive!" : ""}`}
               />
+              {fieldErrors.last_name && (
+                <p className="mt-1 text-xs font-medium text-destructive">{fieldErrors.last_name}</p>
+              )}
             </div>
           </div>
 
@@ -140,9 +184,17 @@ export function EditApplicantProfileDrawer({
               id="applicant-middle-name"
               placeholder="Optional"
               value={middleName}
-              onChange={(e) => setMiddleName(e.target.value.replace(/[^a-zA-ZÀ-ÿñÑ\s.\-']/g, ""))}
-              className={FIELD_INPUT}
+              onChange={(e) => {
+                setMiddleName(sanitizePersonName(e.target.value));
+                clearFieldError("middle_name");
+              }}
+              onKeyDown={preventDisallowedNameKey}
+              aria-invalid={Boolean(fieldErrors.middle_name)}
+              className={`${FIELD_INPUT} ${fieldErrors.middle_name ? "border-destructive!" : ""}`}
             />
+            {fieldErrors.middle_name && (
+              <p className="mt-1 text-xs font-medium text-destructive">{fieldErrors.middle_name}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -186,28 +238,46 @@ export function EditApplicantProfileDrawer({
 
           <div>
             <Label htmlFor="applicant-phone" className="text-sm! font-semibold text-navy">
-              Phone number
+              Phone number <span className="text-amber">*</span>
             </Label>
             <Input
               id="applicant-phone"
+              type="tel"
               value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="e.g. 09123456789"
-              className={FIELD_INPUT}
+              maxLength={13}
+              onChange={(e) => {
+                setPhoneNumber(formatPhilippinePhoneNumber(e.target.value));
+                clearFieldError("phone_number");
+              }}
+              placeholder="0917 123 4567"
+              aria-invalid={Boolean(fieldErrors.phone_number)}
+              className={`${FIELD_INPUT} ${fieldErrors.phone_number ? "border-destructive!" : ""}`}
             />
+            {fieldErrors.phone_number ? (
+              <p className="mt-1 text-xs font-medium text-destructive">{fieldErrors.phone_number}</p>
+            ) : (
+              <p className="mt-1 text-xs text-muted-foreground">Philippine mobile format (e.g. 0917 123 4567)</p>
+            )}
           </div>
 
           <div>
             <Label htmlFor="applicant-address" className="text-sm! font-semibold text-navy">
-              Permanent address
+              Permanent address <span className="text-amber">*</span>
             </Label>
             <Input
               id="applicant-address"
               value={studentAddress}
-              onChange={(e) => setStudentAddress(e.target.value)}
+              onChange={(e) => {
+                setStudentAddress(e.target.value);
+                clearFieldError("student_address");
+              }}
               placeholder="e.g. 123 Main St, City, Province"
-              className={FIELD_INPUT}
+              aria-invalid={Boolean(fieldErrors.student_address)}
+              className={`${FIELD_INPUT} ${fieldErrors.student_address ? "border-destructive!" : ""}`}
             />
+            {fieldErrors.student_address && (
+              <p className="mt-1 text-xs font-medium text-destructive">{fieldErrors.student_address}</p>
+            )}
           </div>
 
           <div>
@@ -217,11 +287,16 @@ export function EditApplicantProfileDrawer({
             <Textarea
               id="applicant-bio"
               value={bio}
-              onChange={(e) => setBio(e.target.value)}
+              onChange={(e) => {
+                setBio(e.target.value);
+                clearFieldError("bio");
+              }}
               placeholder="A brief bio about your academic goals and background..."
               rows={4}
-              className="mt-1.5 min-h-24! resize-y border-line bg-[#f7f9fb]! text-sm! md:text-sm!"
+              aria-invalid={Boolean(fieldErrors.bio)}
+              className={`mt-1.5 min-h-24! resize-y border-line bg-[#f7f9fb]! text-sm! md:text-sm! ${fieldErrors.bio ? "border-destructive!" : ""}`}
             />
+            {fieldErrors.bio && <p className="mt-1 text-xs font-medium text-destructive">{fieldErrors.bio}</p>}
           </div>
 
           {error && (
