@@ -18,13 +18,37 @@ import type { SchoolGradingSystem } from "@/lib/api/baseline";
 interface GradingSystemCardProps {
   schoolSystem?: SchoolGradingSystem | null;
   isFrozen: boolean;
-  onOpenSelection: () => void;
+  onOpenSelection?: () => void;
+  readOnly?: boolean;
 }
 
-export function GradingSystemCard({ schoolSystem, isFrozen, onOpenSelection }: GradingSystemCardProps) {
+export function GradingSystemCard({
+  schoolSystem,
+  isFrozen,
+  onOpenSelection,
+  readOnly = false,
+}: GradingSystemCardProps) {
   const [openDetails, setOpenDetails] = useState(false);
 
   if (!schoolSystem) {
+    if (readOnly) {
+      return (
+        <Card className="rounded-xl border border-amber-300/80 bg-amber-50/50 shadow-2xs">
+          <CardContent className="p-3.5 flex items-center gap-2.5">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-900">
+              <Building2 className="size-4 text-amber-800" />
+            </div>
+            <div className="min-w-0">
+              <span className="font-bold text-navy text-xs sm:text-sm block">No Grading Scale Configured</span>
+              <p className="text-[11px] text-muted-foreground">
+                This scholar has not selected an institution grading system yet.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
     return (
       <Card
         onClick={onOpenSelection}
@@ -194,7 +218,7 @@ export function GradingSystemCard({ schoolSystem, isFrozen, onOpenSelection }: G
           </div>
 
           <DialogFooter className="pt-2 border-t border-border flex sm:justify-between items-center gap-2">
-            {!isFrozen ? (
+            {!isFrozen && !readOnly && onOpenSelection ? (
               <Button
                 type="button"
                 variant="outline"
@@ -208,7 +232,9 @@ export function GradingSystemCard({ schoolSystem, isFrozen, onOpenSelection }: G
                 Change Institution
               </Button>
             ) : (
-              <div className="text-[11px] text-muted-foreground">Baseline is locked by coordinator.</div>
+              <div className="text-[11px] text-muted-foreground">
+                {isFrozen ? "Baseline is locked by coordinator." : "Institution grading scale reference."}
+              </div>
             )}
             <Button
               type="button"

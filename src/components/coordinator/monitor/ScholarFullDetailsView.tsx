@@ -24,6 +24,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { CurriculumMetricsSummary } from "@/app/(Students)/(Scholar)/scholarProspectus/components/CurriculumMetricsSummary";
+import { GradingSystemCard } from "@/app/(Students)/(Scholar)/scholarProspectus/components/GradingSystemCard";
+import { ProspectusChecklistTable } from "@/app/(Students)/(Scholar)/scholarProspectus/components/ProspectusChecklistTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +38,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   type CoordinatorScholarDetails,
   getCoordinatorScholarDetails,
-  type ProspectusSubject,
   type ScholarDetailDocument,
 } from "@/lib/api/baseline";
 
@@ -49,14 +51,6 @@ const HEALTH_META: Record<"good" | "warn" | "bad", { label: string; badgeClass: 
   good: { label: "Good Standing", badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200" },
   warn: { label: "Needs Attention", badgeClass: "bg-amber-50 text-amber-800 border-amber-200" },
   bad: { label: "At Risk / Hold", badgeClass: "bg-red-50 text-red-700 border-red-200" },
-};
-
-const SUBJECT_STATUS_CLASS: Record<string, string> = {
-  PASSED: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  CREDITED: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  ENROLLED: "bg-blue-50 text-blue-700 border-blue-200",
-  UNTAKEN: "bg-slate-100 text-slate-600 border-slate-200",
-  FAILED: "bg-red-50 text-red-700 border-red-200",
 };
 
 const DOCUMENT_STATUS_CLASS: Record<string, string> = {
@@ -116,8 +110,6 @@ export function ScholarFullDetailsView({
   const [details, setDetails] = useState<CoordinatorScholarDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [subjectSearch, setSubjectSearch] = useState("");
-  const [subjectStatusFilter, setSubjectStatusFilter] = useState<string>("ALL");
   const [docSearch, setDocSearch] = useState("");
   const [previewDoc, setPreviewDoc] = useState<{ title: string; url: string; fileType?: string | null } | null>(null);
 
@@ -144,26 +136,6 @@ export function ScholarFullDetailsView({
   useEffect(() => {
     void loadDetails();
   }, [loadDetails]);
-
-  const groupedSubjects = useMemo(() => {
-    const subjects = details?.prospectus?.subjects ?? [];
-    const term = subjectSearch.trim().toLowerCase();
-
-    const filtered = subjects.filter((s) => {
-      if (subjectStatusFilter !== "ALL" && s.status !== subjectStatusFilter) return false;
-      if (!term) return true;
-      return s.subject_code.toLowerCase().includes(term) || s.descriptive_title.toLowerCase().includes(term);
-    });
-
-    const groups = new Map<string, ProspectusSubject[]>();
-    for (const subject of filtered) {
-      const key = `Year ${subject.year_level} — ${subject.semester}`;
-      const existing = groups.get(key) ?? [];
-      existing.push(subject);
-      groups.set(key, existing);
-    }
-    return Array.from(groups.entries());
-  }, [details?.prospectus?.subjects, subjectSearch, subjectStatusFilter]);
 
   const filteredDocuments = useMemo(() => {
     const docs = details?.documents ?? [];
@@ -467,179 +439,106 @@ export function ScholarFullDetailsView({
       </div>
 
       {/* Main Detail Tabs: Prospectus | Documents Uploaded | Disbursements | Grade Reports & Terms */}
-      <Tabs defaultValue="prospectus" className="space-y-4">
-        <TabsList className="bg-white border border-border p-1 h-auto flex-wrap">
-          <TabsTrigger value="prospectus" className="gap-1.5 text-xs sm:text-sm">
-            <BookOpen className="w-4 h-4" />
-            Prospectus ({metrics.total_subjects})
+      <Tabs defaultValue="prospectus" className="mt-2 w-full space-y-4">
+        <TabsList className="grid h-auto! w-full grid-cols-2 rounded-2xl bg-[#f1efe9] p-0.5 sm:inline-grid sm:h-8! sm:w-auto sm:grid-cols-4 sm:rounded-full">
+          <TabsTrigger
+            value="prospectus"
+            className="gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-muted-foreground transition-all data-[state=active]:bg-white data-[state=active]:text-navy data-[state=active]:shadow-sm"
+          >
+            <BookOpen className="size-3.5" />
+            Prospectus
           </TabsTrigger>
-          <TabsTrigger value="documents" className="gap-1.5 text-xs sm:text-sm">
-            <FileText className="w-4 h-4" />
-            Documents Uploaded ({documents.length})
+          <TabsTrigger
+            value="documents"
+            className="gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-muted-foreground transition-all data-[state=active]:bg-white data-[state=active]:text-navy data-[state=active]:shadow-sm"
+          >
+            <FileText className="size-3.5" />
+            Documents
           </TabsTrigger>
-          <TabsTrigger value="disbursements" className="gap-1.5 text-xs sm:text-sm">
-            <Wallet className="w-4 h-4" />
-            Disbursements ({disbursements.length})
+          <TabsTrigger
+            value="disbursements"
+            className="gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-muted-foreground transition-all data-[state=active]:bg-white data-[state=active]:text-navy data-[state=active]:shadow-sm"
+          >
+            <Wallet className="size-3.5" />
+            Disbursements
           </TabsTrigger>
-          <TabsTrigger value="academics" className="gap-1.5 text-xs sm:text-sm">
-            <GraduationCap className="w-4 h-4" />
-            Grade Reports & Terms ({grade_reports.length + term_enrollments.length})
+          <TabsTrigger
+            value="academics"
+            className="gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-muted-foreground transition-all data-[state=active]:bg-white data-[state=active]:text-navy data-[state=active]:shadow-sm"
+          >
+            <GraduationCap className="size-3.5" />
+            Reports & Terms
           </TabsTrigger>
         </TabsList>
 
-        {/* TAB 1: PROSPECTUS */}
-        <TabsContent value="prospectus" className="space-y-4">
-          <Card className="border-border shadow-sm bg-white">
-            <CardHeader className="pb-3 border-b border-border/60">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                <div>
-                  <CardTitle className="text-base font-semibold flex items-center gap-2">
-                    <BookOpen className="w-4 h-4 text-primary" />
-                    Curriculum Prospectus
-                    {prospectus?.is_frozen && (
-                      <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
-                        <Lock className="w-3 h-3" />
-                        Frozen
+        {/* TAB 1: PROSPECTUS (Mirrors scholarProspectus layout in read-only mode) */}
+        <TabsContent value="prospectus" className="space-y-6">
+          {/* 1. Curriculum Verification Status Header */}
+          <Card className="rounded-xl border border-line bg-white shadow-2xs">
+            <CardContent className="p-3 sm:p-3.5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-tint text-navy">
+                  <CheckCircle2 className="size-4 text-navy" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs sm:text-sm font-bold text-navy">Curriculum Status:</span>
+                    {prospectus?.is_frozen || profile.academic_baseline_status === "BASELINE_FROZEN" ? (
+                      <Badge className="bg-emerald-50 text-emerald-800 border-emerald-300 gap-1.5 px-3 py-1 text-xs font-semibold">
+                        <Lock className="size-3.5 text-emerald-700" /> Baseline Locked & Verified
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-amber-50 text-amber-900 border-amber-300 gap-1.5 px-3 py-1 text-xs font-semibold">
+                        <Clock className="size-3.5 text-amber-700" />{" "}
+                        {formatStatusLabel(profile.academic_baseline_status)}
                       </Badge>
                     )}
-                  </CardTitle>
-                  {prospectus ? (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {prospectus.course_code ? `${prospectus.course_code} — ` : ""}
-                      {prospectus.course_name} · Curriculum AY {prospectus.curriculum_year}
-                      {prospectus.frozen_by_employee
-                        ? ` · Verified by ${prospectus.frozen_by_employee.first_name} ${prospectus.frozen_by_employee.last_name} (${formatDate(prospectus.frozen_at)})`
-                        : ""}
-                    </p>
-                  ) : (
-                    <p className="text-xs text-muted-foreground mt-1">No prospectus uploaded yet.</p>
-                  )}
-                </div>
-
-                {prospectus?.document && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => prospectus.document && openDocumentPreview(prospectus.document)}
-                    className="gap-1.5 shrink-0"
-                  >
-                    <Eye className="w-4 h-4" />
-                    View Prospectus File
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-
-            <CardContent className="p-4 sm:p-6 space-y-5">
-              {grading && (
-                <div className="flex flex-wrap items-center gap-4 text-xs bg-slate-50 border border-slate-200/80 rounded-lg px-4 py-2.5">
-                  <span className="font-semibold text-foreground">{grading.school_name}</span>
-                  <span className="text-muted-foreground">Scale: {formatStatusLabel(grading.grading_scale)}</span>
-                  <span className="text-muted-foreground">Highest: {grading.highest_grade}</span>
-                  <span className="text-muted-foreground">Passing: {grading.passing_grade}</span>
-                  <span className="text-muted-foreground">Failing: {grading.failing_grade}</span>
-                </div>
-              )}
-
-              {prospectus && prospectus.subjects.length > 0 ? (
-                <>
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                    <div className="relative flex-1 max-w-sm">
-                      <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
-                      <Input
-                        value={subjectSearch}
-                        onChange={(e) => setSubjectSearch(e.target.value)}
-                        placeholder="Search subject code or title..."
-                        className="pl-9 h-9 text-sm"
-                      />
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {["ALL", "PASSED", "CREDITED", "ENROLLED", "UNTAKEN", "FAILED"].map((st) => (
-                        <Button
-                          key={st}
-                          type="button"
-                          size="sm"
-                          variant={subjectStatusFilter === st ? "default" : "outline"}
-                          onClick={() => setSubjectStatusFilter(st)}
-                          className="h-8 text-xs px-2.5"
-                        >
-                          {st === "ALL" ? "All" : formatStatusLabel(st)}
-                        </Button>
-                      ))}
-                    </div>
                   </div>
-
-                  {groupedSubjects.length === 0 ? (
-                    <div className="text-center py-10 text-sm text-muted-foreground border border-dashed rounded-lg">
-                      No subjects match the current search or status filter.
-                    </div>
-                  ) : (
-                    <div className="space-y-5">
-                      {groupedSubjects.map(([termLabel, items]) => {
-                        const termUnits = items.reduce((sum, s) => sum + Number(s.units || 0), 0);
-                        return (
-                          <div key={termLabel} className="border border-border rounded-lg overflow-hidden">
-                            <div className="bg-slate-50 px-4 py-2.5 border-b border-border flex items-center justify-between">
-                              <span className="text-sm font-semibold text-foreground">{termLabel}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {items.length} subject{items.length === 1 ? "" : "s"} · {termUnits.toFixed(1)} units
-                              </span>
-                            </div>
-                            <Table>
-                              <TableHeader>
-                                <TableRow>
-                                  <TableHead className="w-32">Code</TableHead>
-                                  <TableHead>Subject Title</TableHead>
-                                  <TableHead className="w-20 text-right">Units</TableHead>
-                                  <TableHead className="w-24 text-right">Grade</TableHead>
-                                  <TableHead className="w-32">Status</TableHead>
-                                  <TableHead className="hidden md:table-cell">Notes / Term</TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {items.map((subj) => (
-                                  <TableRow key={subj.subject_id}>
-                                    <TableCell className="font-mono text-xs font-semibold">
-                                      {subj.subject_code}
-                                    </TableCell>
-                                    <TableCell className="text-sm">{subj.descriptive_title}</TableCell>
-                                    <TableCell className="text-right text-sm tabular-nums">
-                                      {Number(subj.units).toFixed(1)}
-                                    </TableCell>
-                                    <TableCell className="text-right text-sm font-semibold tabular-nums">
-                                      {subj.grade !== null && subj.grade !== undefined
-                                        ? Number(subj.grade).toFixed(2)
-                                        : "—"}
-                                    </TableCell>
-                                    <TableCell>
-                                      <Badge
-                                        variant="outline"
-                                        className={`text-[11px] ${SUBJECT_STATUS_CLASS[subj.status] ?? "bg-slate-100 text-slate-700"}`}
-                                      >
-                                        {formatStatusLabel(subj.status)}
-                                      </Badge>
-                                    </TableCell>
-                                    <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
-                                      {subj.credited_term || subj.remarks || "—"}
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="text-center py-12 text-sm text-muted-foreground border border-dashed rounded-lg">
-                  No prospectus subjects recorded for this scholar yet.
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {prospectus?.frozen_by_employee
+                      ? `Verified by ${prospectus.frozen_by_employee.first_name} ${prospectus.frozen_by_employee.last_name} on ${formatDate(prospectus.frozen_at)}`
+                      : "Read-only curriculum prospectus checklist synchronized with scholar academic records."}
+                  </p>
                 </div>
+              </div>
+
+              {prospectus?.document && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => prospectus.document && openDocumentPreview(prospectus.document)}
+                  className="h-8 gap-1.5 rounded-lg border-line text-navy hover:bg-tint text-xs font-semibold shrink-0"
+                >
+                  <Eye className="size-3.5" />
+                  View Prospectus File
+                </Button>
               )}
             </CardContent>
           </Card>
+
+          {/* 2. Institution Grading Scale Banner */}
+          <GradingSystemCard schoolSystem={grading} isFrozen={prospectus?.is_frozen ?? false} readOnly />
+
+          {/* 3. Progress & Unit Metrics Summary */}
+          <CurriculumMetricsSummary
+            courseName={prospectus?.course_name || profile.course_of_study}
+            courseCode={prospectus?.course_code}
+            curriculumYear={prospectus?.curriculum_year}
+            metrics={{
+              total_subjects: metrics.total_subjects,
+              total_units: metrics.total_units,
+              credited_subjects: (prospectus?.subjects ?? []).filter(
+                (s) => s.status === "PASSED" || s.status === "CREDITED",
+              ).length,
+              credited_units: metrics.credited_units,
+              untaken_subjects: (prospectus?.subjects ?? []).filter((s) => s.status === "UNTAKEN").length,
+              remaining_units: metrics.remaining_units,
+              is_baseline_frozen: prospectus?.is_frozen ?? false,
+            }}
+          />
+
+          {/* 4. Curriculum Checklist Table */}
+          <ProspectusChecklistTable subjects={prospectus?.subjects ?? []} />
         </TabsContent>
 
         {/* TAB 2: DOCUMENTS UPLOADED */}
@@ -670,35 +569,37 @@ export function ScholarFullDetailsView({
                     : "No documents match your filter."}
                 </div>
               ) : (
-                <Table>
+                <Table className="w-full md:table-fixed">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Document</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Uploaded</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="hidden md:table-cell">Review Details</TableHead>
-                      <TableHead className="text-right">Action</TableHead>
+                      <TableHead className="md:w-36">Type</TableHead>
+                      <TableHead className="md:w-28">Uploaded</TableHead>
+                      <TableHead className="md:w-36">Status</TableHead>
+                      <TableHead className="hidden md:table-cell md:w-44">Review Details</TableHead>
+                      <TableHead className="md:w-32 text-right">Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredDocuments.map((doc) => (
                       <TableRow key={doc.document_id}>
-                        <TableCell>
-                          <div className="font-medium text-sm text-foreground">
+                        <TableCell className="whitespace-normal wrap-break-word">
+                          <div className="font-medium text-sm text-foreground wrap-break-word">
                             {doc.label || doc.file_name || `Document #${doc.document_id}`}
                           </div>
                           {doc.file_name && (
-                            <div className="text-xs text-muted-foreground truncate max-w-xs">
+                            <div className="text-xs text-muted-foreground wrap-break-word">
                               {doc.file_name}
                               {doc.file_size ? ` · ${doc.file_size}` : ""}
                             </div>
                           )}
                         </TableCell>
-                        <TableCell className="text-xs font-medium text-foreground">
+                        <TableCell className="text-xs font-medium text-foreground whitespace-normal wrap-break-word">
                           {formatStatusLabel(doc.document_type)}
                         </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{formatDate(doc.uploaded_at)}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground whitespace-normal">
+                          {formatDate(doc.uploaded_at)}
+                        </TableCell>
                         <TableCell>
                           <Badge
                             variant="outline"
@@ -707,7 +608,7 @@ export function ScholarFullDetailsView({
                             {formatStatusLabel(doc.status)}
                           </Badge>
                         </TableCell>
-                        <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
+                        <TableCell className="hidden md:table-cell text-xs text-muted-foreground whitespace-normal wrap-break-word">
                           {doc.rejection_reason ? (
                             <span className="text-red-600">{doc.rejection_reason}</span>
                           ) : doc.reviewed_by_employee ? (
@@ -761,45 +662,51 @@ export function ScholarFullDetailsView({
                   No disbursements recorded for this scholar yet.
                 </div>
               ) : (
-                <Table>
+                <Table className="w-full md:table-fixed">
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Term</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="md:w-32">Term</TableHead>
+                      <TableHead className="md:w-28 text-right">Amount</TableHead>
                       <TableHead>Payment & Reference</TableHead>
-                      <TableHead>Dates</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Receipts & Docs</TableHead>
+                      <TableHead className="md:w-40">Dates</TableHead>
+                      <TableHead className="md:w-24">Status</TableHead>
+                      <TableHead className="md:w-32 text-right">Receipts & Docs</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {disbursements.map((item) => (
                       <TableRow key={item.disbursement_id}>
-                        <TableCell>
+                        <TableCell className="whitespace-normal wrap-break-word align-top">
                           <div className="font-medium text-sm text-foreground">AY {item.academic_year}</div>
                           <div className="text-xs text-muted-foreground">{item.semester}</div>
                         </TableCell>
-                        <TableCell className="text-right font-semibold text-sm tabular-nums">
+                        <TableCell className="text-right font-semibold text-sm tabular-nums align-top">
                           {formatCurrency(item.amount)}
                         </TableCell>
-                        <TableCell className="text-xs space-y-0.5">
-                          <div className="font-medium text-foreground">
+                        <TableCell className="text-xs space-y-0.5 whitespace-normal wrap-break-word align-top">
+                          <div className="font-medium text-foreground wrap-break-word">
                             {item.payment_method || "Direct Release"}
                             {item.bank_name ? ` · ${item.bank_name}` : ""}
                           </div>
-                          {item.check_number && <div className="text-muted-foreground">Check #{item.check_number}</div>}
-                          {item.voucher_number && (
-                            <div className="text-muted-foreground">Voucher #{item.voucher_number}</div>
+                          {item.check_number && (
+                            <div className="text-muted-foreground wrap-break-word">Check #{item.check_number}</div>
                           )}
-                          {item.or_number && <div className="text-emerald-700 font-medium">OR #{item.or_number}</div>}
-                          {item.remarks && <div className="text-muted-foreground italic">{item.remarks}</div>}
+                          {item.voucher_number && (
+                            <div className="text-muted-foreground wrap-break-word">Voucher #{item.voucher_number}</div>
+                          )}
+                          {item.or_number && (
+                            <div className="text-emerald-700 font-medium wrap-break-word">OR #{item.or_number}</div>
+                          )}
+                          {item.remarks && (
+                            <div className="text-muted-foreground italic wrap-break-word">{item.remarks}</div>
+                          )}
                         </TableCell>
-                        <TableCell className="text-xs text-muted-foreground space-y-0.5">
+                        <TableCell className="text-xs text-muted-foreground space-y-0.5 whitespace-normal align-top">
                           <div>Issued: {formatDate(item.date_issued)}</div>
                           <div>Claimed: {formatDate(item.date_claimed)}</div>
                           {item.settled_at && <div>Settled: {formatDate(item.settled_at)}</div>}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="align-top">
                           <Badge
                             variant="outline"
                             className={`text-[11px] ${DISBURSEMENT_STATUS_CLASS[item.status] ?? "bg-slate-100 text-slate-700"}`}
@@ -807,7 +714,7 @@ export function ScholarFullDetailsView({
                             {formatStatusLabel(item.status)}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right align-top">
                           <div className="inline-flex flex-wrap justify-end gap-1.5">
                             {item.or_document && (
                               <Button

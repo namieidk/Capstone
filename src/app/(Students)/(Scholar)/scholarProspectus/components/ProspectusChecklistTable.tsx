@@ -124,38 +124,40 @@ export function ProspectusChecklistTable({ subjects }: ProspectusChecklistTableP
                       </span>
                     </CardHeader>
                     <CardContent className="p-0">
-                      <Table>
+                      <Table className="w-full md:table-fixed">
                         <TableHeader>
                           <TableRow className="hover:bg-transparent text-[11px] text-muted-foreground bg-tint/20">
-                            <TableHead className="w-22.5 py-2 px-3 text-navy font-bold">Code</TableHead>
+                            <TableHead className="w-24 py-2 px-3 text-navy font-bold">Code</TableHead>
                             <TableHead className="py-2 px-3 text-navy font-bold">Descriptive Title</TableHead>
-                            <TableHead className="w-12.5 text-center py-2 px-2 text-navy font-bold">Units</TableHead>
-                            <TableHead className="w-21.25 text-center py-2 px-2 text-navy font-bold">Status</TableHead>
-                            <TableHead className="w-16.25 text-right py-2 px-3 text-navy font-bold">Grade</TableHead>
+                            <TableHead className="w-16 text-center py-2 px-2 text-navy font-bold">Units</TableHead>
+                            <TableHead className="w-24 text-center py-2 px-2 text-navy font-bold">Status</TableHead>
+                            <TableHead className="w-20 text-right py-2 px-3 text-navy font-bold">Grade</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {semSubjects.map((sub) => (
                             <TableRow key={sub.subject_id} className="text-xs border-b border-line/60 last:border-0">
-                              <TableCell className="font-mono font-bold text-navy py-2 px-3">
+                              <TableCell className="font-mono font-bold text-navy py-2.5 px-3 whitespace-normal wrap-break-word">
                                 {sub.subject_code}
                               </TableCell>
-                              <TableCell className="py-2 px-3 text-muted-foreground font-normal">
-                                <div className="text-navy font-medium line-clamp-1">{sub.descriptive_title}</div>
+                              <TableCell className="py-2.5 px-3 text-muted-foreground font-normal whitespace-normal wrap-break-word">
+                                <div className="text-navy font-medium leading-snug wrap-break-word">
+                                  {sub.descriptive_title}
+                                </div>
                                 {sub.prerequisites && sub.prerequisites.length > 0 && (
-                                  <div className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                                  <div className="text-[10px] text-muted-foreground flex flex-wrap items-center gap-1 mt-0.5">
                                     <span>Prereq:</span>
-                                    <span className="font-mono text-navy font-semibold">
+                                    <span className="font-mono text-navy font-semibold wrap-break-word">
                                       {sub.prerequisites.join(", ")}
                                     </span>
                                   </div>
                                 )}
                               </TableCell>
-                              <TableCell className="text-center font-semibold text-navy py-2 px-2">
+                              <TableCell className="text-center font-semibold text-navy py-2.5 px-2">
                                 {Number(sub.units).toFixed(1)}
                               </TableCell>
-                              <TableCell className="text-center py-2 px-2">{getStatusBadge(sub.status)}</TableCell>
-                              <TableCell className="text-right py-2 px-3 font-semibold">
+                              <TableCell className="text-center py-2.5 px-2">{getStatusBadge(sub.status)}</TableCell>
+                              <TableCell className="text-right py-2.5 px-3 font-semibold">
                                 {sub.grade != null ? (
                                   <span
                                     className={`px-1.5 py-0.5 rounded text-[11px] font-bold ${
