@@ -279,6 +279,11 @@ export default function Settings() {
   const handleNotificationToggle = async (key: NotificationKey, label: string) => {
     if (loading || savingKeys[key]) return;
 
+    if (key === "smsNotifs" && !toggles.smsNotifs && (!phoneNumber || !toggles.phoneVerified)) {
+      showToast("Please verify your phone number first before enabling SMS notifications.", "error");
+      return;
+    }
+
     const previousValue = toggles[key];
     const nextValue = !previousValue;
 
@@ -594,12 +599,14 @@ export default function Settings() {
               label="SMS notifications"
               desc="Receive a text preference for time-sensitive reminders."
               helper={
-                phoneNumber
-                  ? `Registered mobile number: ${phoneNumber}`
-                  : "No mobile number saved in your profile yet."
+                !phoneNumber
+                  ? "No mobile number saved in your profile yet. Add and verify a number first."
+                  : !toggles.phoneVerified
+                    ? `Registered mobile number: ${phoneNumber} — Verify your phone number in Account below to enable SMS notifications.`
+                    : `Registered mobile number: ${phoneNumber} (Verified)`
               }
               on={toggles.smsNotifs}
-              disabled={loading || Boolean(loadError)}
+              disabled={loading || Boolean(loadError) || (!toggles.smsNotifs && (!phoneNumber || !toggles.phoneVerified))}
               saving={Boolean(savingKeys.smsNotifs)}
               onToggle={() => void handleNotificationToggle("smsNotifs", "SMS notifications")}
             />

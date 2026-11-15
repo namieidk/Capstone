@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, CalendarDays, Camera, type LucideIcon, Mail, Pencil, ShieldCheck } from "lucide-react";
+import { Building2, CalendarDays, Camera, type LucideIcon, Mail, Pencil, ShieldCheck, UserCheck } from "lucide-react";
 import Image from "next/image";
 import type React from "react";
 import { useCallback, useRef, useState } from "react";
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { ApiError } from "@/lib/api";
-import { updateMe, uploadAvatar, uploadBanner } from "@/lib/api/auth";
+import { formatPersonName, updateMe, uploadAvatar, uploadBanner } from "@/lib/api/auth";
 
 // Soft green-tinted border (built from --forest, no blue-grey)
 const LINE = "border-[color-mix(in_srgb,var(--forest)_14%,white)]";
@@ -121,7 +121,17 @@ export default function AdminProfilePage() {
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  const displayName = user ? `${user.first_name} ${user.last_name}` : "";
+  const displayName = user
+    ? formatPersonName(
+        {
+          first_name: user.employee?.first_name ?? user.first_name,
+          middle_name: user.employee?.middle_name ?? user.middle_name,
+          last_name: user.employee?.last_name ?? user.last_name,
+          suffix: user.employee?.suffix ?? user.suffix,
+        },
+        "Admin",
+      )
+    : "";
   const displayInitials = user
     ? ((user.first_name?.[0] ?? "") + (user.last_name?.[0] ?? "")).toUpperCase() || "?"
     : "?";
@@ -170,7 +180,16 @@ export default function AdminProfilePage() {
   );
 
   const handleSaveProfile = useCallback(
-    async (values: { first_name: string; last_name: string; title: string; department: string; bio: string }) => {
+    async (values: {
+      first_name: string;
+      middle_name: string;
+      last_name: string;
+      suffix: string;
+      sex: string;
+      title: string;
+      department: string;
+      bio: string;
+    }) => {
       setSavingProfile(true);
       setSaveError("");
       try {
@@ -308,6 +327,7 @@ export default function AdminProfilePage() {
           <dl className="mt-4 space-y-4">
             <DetailRow icon={ShieldCheck} label="Role" value={displayRole} />
             <DetailRow icon={Building2} label="Department" value={user.employee?.department ?? "N/A"} />
+            <DetailRow icon={UserCheck} label="Sex" value={user.employee?.sex || user.sex || "Not specified"} />
             <DetailRow icon={CalendarDays} label="Member since" value={String(memberSince)} />
             <DetailRow icon={Mail} label="Email" value={user.email} href={`mailto:${user.email}`} />
           </dl>
@@ -319,7 +339,10 @@ export default function AdminProfilePage() {
         onClose={() => setDrawerOpen(false)}
         initialValues={{
           first_name: user.first_name,
+          middle_name: user.employee?.middle_name ?? user.middle_name ?? "",
           last_name: user.last_name,
+          suffix: user.employee?.suffix ?? user.suffix ?? "",
+          sex: user.employee?.sex ?? user.sex ?? "",
           title: user.employee?.title ?? "",
           department: user.employee?.department ?? "",
           bio: user.bio ?? "",

@@ -243,10 +243,18 @@ export function GradingFields({ values, onChange, idPrefix }: GradingFieldsProps
           id={`${idPrefix}-school-name`}
           placeholder="e.g. University of Mindanao"
           value={values.school_name}
-          onChange={(e) => set({ school_name: e.target.value })}
+          onChange={(e) => set({ school_name: e.target.value.replace(/[()]/g, "") })}
+          onKeyDown={(e) => {
+            if (e.key === "(" || e.key === ")") {
+              e.preventDefault();
+            }
+          }}
           required
           className="h-10"
         />
+        <p className="text-[11px] text-muted-foreground">
+          Do not include the school abbreviation or parentheses in the school name.
+        </p>
       </div>
 
       <div className="space-y-1.5">

@@ -7,7 +7,10 @@ export interface User {
   email: string;
   role: string;
   first_name: string;
+  middle_name?: string | null;
   last_name: string;
+  suffix?: string | null;
+  sex?: string | null;
   is_active: boolean;
   avatar_url?: string;
   banner_url?: string;
@@ -17,7 +20,10 @@ export interface User {
   scholar_profile?: {
     profile_id: number;
     first_name?: string;
+    middle_name?: string | null;
     last_name?: string;
+    suffix?: string | null;
+    sex?: string | null;
     phone_number?: string;
     student_address?: string;
     school_address?: string;
@@ -54,13 +60,32 @@ export interface User {
   employee?: {
     employee_id: number;
     first_name?: string;
+    middle_name?: string | null;
     last_name?: string;
+    suffix?: string | null;
+    sex?: string | null;
     bio?: string;
     avatar_url?: string;
     banner_url?: string;
     title?: string;
     department?: string;
   };
+}
+
+export function formatPersonName(
+  parts: {
+    first_name?: string | null;
+    middle_name?: string | null;
+    last_name?: string | null;
+    suffix?: string | null;
+  },
+  fallback = "User",
+): string {
+  const joined = [parts.first_name, parts.middle_name, parts.last_name, parts.suffix]
+    .map((part) => (typeof part === "string" ? part.trim() : ""))
+    .filter(Boolean)
+    .join(" ");
+  return joined || fallback;
 }
 
 export interface LoginResponse {
@@ -109,7 +134,10 @@ export function register(data: {
   email: string;
   password: string;
   first_name: string;
+  middle_name?: string;
   last_name: string;
+  suffix?: string;
+  sex?: string;
   phone_number: string;
 }) {
   return apiPost<RegisterResponse | MfaChallengeResponse>(`${B}/register`, data);
@@ -121,7 +149,10 @@ export function getMe() {
 
 export function updateMe(data: {
   first_name?: string;
+  middle_name?: string;
   last_name?: string;
+  suffix?: string;
+  sex?: string;
   bio?: string;
   phone_number?: string;
   student_address?: string;
@@ -230,14 +261,8 @@ export function verifyContactVerification(channel: ContactVerificationChannel, c
   });
 }
 
-export function changeMyPassword(data: {
-  current_password: string;
-  new_password: string;
-}) {
-  return apiPost<{ message: string; passwordChangedAt: string }>(
-    "/api/proxy/auth/me/change-password",
-    data,
-  );
+export function changeMyPassword(data: { current_password: string; new_password: string }) {
+  return apiPost<{ message: string; passwordChangedAt: string }>("/api/proxy/auth/me/change-password", data);
 }
 
 export function deactivateMyAccount(data?: { reason?: string; password?: string }) {

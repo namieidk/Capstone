@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Loader2, Mail, ShieldCheck, Smartphone } from "lucide-react";
+import { Loader2, Mail, ShieldCheck, Smartphone } from "lucide-react";
 import { type FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -38,9 +38,7 @@ export function MfaVerificationStep({ challenge, purpose, onSuccess, onCancel }:
       setActiveMethod(res.mfaMethod);
       setDestination(res.mfaDestination);
       setCode("");
-      setNotice(
-        `Verification code sent via ${method === "SMS_OTP" ? "SMS" : "email"} to ${res.mfaDestination}.`,
-      );
+      setNotice(`Verification code sent via ${method === "SMS_OTP" ? "SMS" : "email"} to ${res.mfaDestination}.`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to send verification code.");
     } finally {
@@ -89,8 +87,8 @@ export function MfaVerificationStep({ challenge, purpose, onSuccess, onCancel }:
   return (
     <form onSubmit={handleVerify} className="grid gap-4">
       <div className="rounded-xl border border-border bg-muted/40 p-4">
-        <div className="flex items-start gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-navy/10 text-navy">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-navy/10 text-navy">
             <ShieldCheck className="size-5" />
           </div>
           <div className="grid gap-1">
@@ -100,7 +98,7 @@ export function MfaVerificationStep({ challenge, purpose, onSuccess, onCancel }:
         </div>
 
         {purpose === "REGISTER" && (hasEmailOption || hasSmsOption) && (
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className={`mt-3.5 grid gap-2 ${hasEmailOption && hasSmsOption ? "grid-cols-2" : "grid-cols-1"}`}>
             {hasEmailOption && (
               <Button
                 type="button"
@@ -108,14 +106,14 @@ export function MfaVerificationStep({ challenge, purpose, onSuccess, onCancel }:
                 size="sm"
                 disabled={Boolean(sendingMethod) || verifying}
                 onClick={() => handleSwitchMethod("EMAIL_OTP")}
-                className="h-8 gap-1.5 rounded-full text-xs"
+                className="h-9 w-full gap-1.5 rounded-full text-xs font-medium"
               >
                 {sendingMethod === "EMAIL_OTP" ? (
                   <Loader2 className="size-3.5 animate-spin" />
                 ) : (
                   <Mail className="size-3.5" />
                 )}
-                Email ({challenge.emailDestination})
+                Email
               </Button>
             )}
 
@@ -126,14 +124,14 @@ export function MfaVerificationStep({ challenge, purpose, onSuccess, onCancel }:
                 size="sm"
                 disabled={Boolean(sendingMethod) || verifying}
                 onClick={() => handleSwitchMethod("SMS_OTP")}
-                className="h-8 gap-1.5 rounded-full text-xs"
+                className="h-9 w-full gap-1.5 rounded-full text-xs font-medium"
               >
                 {sendingMethod === "SMS_OTP" ? (
                   <Loader2 className="size-3.5 animate-spin" />
                 ) : (
                   <Smartphone className="size-3.5" />
                 )}
-                Phone SMS ({challenge.phoneDestination})
+                Phone SMS
               </Button>
             )}
           </div>
@@ -191,10 +189,7 @@ export function MfaVerificationStep({ challenge, purpose, onSuccess, onCancel }:
             Verifying…
           </>
         ) : (
-          <>
-            Verify and continue
-            <ArrowRight className="size-4" />
-          </>
+          "Verify and continue"
         )}
       </Button>
 
@@ -205,7 +200,6 @@ export function MfaVerificationStep({ challenge, purpose, onSuccess, onCancel }:
         onClick={onCancel}
         className="h-9 w-full rounded-full text-xs text-muted-foreground"
       >
-        <ArrowLeft className="size-3.5" />
         Back
       </Button>
     </form>

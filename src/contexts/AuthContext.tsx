@@ -14,7 +14,10 @@ interface AuthContextValue {
     email: string;
     password: string;
     first_name: string;
+    middle_name?: string;
     last_name: string;
+    suffix?: string;
+    sex?: string;
     phone_number: string;
   }) => Promise<authApi.User>;
   completeMfaLogin: (params: {
@@ -88,7 +91,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const register = useCallback(
-    async (data: { email: string; password: string; first_name: string; last_name: string; phone_number: string }) => {
+    async (data: {
+      email: string;
+      password: string;
+      first_name: string;
+      middle_name?: string;
+      last_name: string;
+      suffix?: string;
+      sex?: string;
+      phone_number: string;
+    }) => {
       const res = await authApi.register(data);
       if (authApi.isMfaChallengeResponse(res)) {
         throw new authApi.MfaRequiredError(res);
@@ -138,7 +150,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, register, completeMfaLogin, logout, refreshUser }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, loginWithGoogle, register, completeMfaLogin, logout, refreshUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

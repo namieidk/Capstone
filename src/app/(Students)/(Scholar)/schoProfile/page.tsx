@@ -171,7 +171,10 @@ export default function SchoProfilePage() {
             onClose={() => setDrawerOpen(false)}
             initialValues={{
               first_name: user.first_name,
+              middle_name: scholar?.middle_name || user.middle_name || "",
               last_name: user.last_name,
+              suffix: scholar?.suffix || user.suffix || "",
+              sex: scholar?.sex || user.sex || "",
               phone_number: scholar?.phone_number || "",
               student_address: scholar?.student_address || scholar?.home_address || "",
               bio: scholar?.bio || user.bio || "",

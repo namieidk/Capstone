@@ -286,10 +286,18 @@ export function SchoolSheet({ school, open, canDelete = false, onOpenChange, onU
                 <Input
                   id="edit-school-name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => setName(e.target.value.replace(/[()]/g, ""))}
+                  onKeyDown={(e) => {
+                    if (e.key === "(" || e.key === ")") {
+                      e.preventDefault();
+                    }
+                  }}
                   className="mt-1.5 h-10 text-sm"
                   required
                 />
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Do not include the school abbreviation or parentheses (use the Acronym / Code field below).
+                </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

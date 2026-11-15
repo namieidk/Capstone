@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import type { User } from "@/lib/api/auth";
+import { formatPersonName, type User } from "@/lib/api/auth";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -23,6 +23,28 @@ export function ProfileDetailsCards({ user }: ProfileDetailsCardsProps) {
 
   return (
     <>
+      {/* Personal Information */}
+      <Card className="rounded-xl border border-line bg-white shadow-xs">
+        <CardContent className="p-4 sm:p-5 space-y-2.5 sm:space-y-3">
+          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Personal Information</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+            <InfoRow
+              label="Full Name"
+              value={formatPersonName(
+                {
+                  first_name: scholarProfile?.first_name ?? user.first_name,
+                  middle_name: scholarProfile?.middle_name ?? user.middle_name,
+                  last_name: scholarProfile?.last_name ?? user.last_name,
+                  suffix: scholarProfile?.suffix ?? user.suffix,
+                },
+                "Applicant",
+              )}
+            />
+            <InfoRow label="Sex" value={scholarProfile?.sex || user.sex || "Not specified"} />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Academic & Personal Details */}
       <Card className="rounded-xl border border-line bg-white shadow-xs">
         <CardContent className="p-4 sm:p-5 space-y-2.5 sm:space-y-3">

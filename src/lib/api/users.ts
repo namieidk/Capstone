@@ -7,9 +7,25 @@ export interface AuditLogUser {
   email: string;
   role: string;
   first_name?: string;
+  middle_name?: string | null;
   last_name?: string;
+  suffix?: string | null;
+  sex?: string | null;
   name?: string;
-  employee?: { first_name?: string; last_name?: string } | null;
+  scholar_profile?: {
+    first_name?: string;
+    middle_name?: string | null;
+    last_name?: string;
+    suffix?: string | null;
+    sex?: string | null;
+  } | null;
+  employee?: {
+    first_name?: string;
+    middle_name?: string | null;
+    last_name?: string;
+    suffix?: string | null;
+    sex?: string | null;
+  } | null;
 }
 
 export interface AuditLogEntry {
@@ -84,7 +100,10 @@ export function createStaff(data: {
   password: string;
   role: string;
   first_name: string;
+  middle_name?: string;
   last_name: string;
+  suffix?: string;
+  sex?: string;
   title?: string;
   department?: string;
 }) {

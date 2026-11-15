@@ -37,6 +37,21 @@ const EMPTY_VALUES: Record<string, string> = {
   relative_employee: "",
 };
 
+function stripSchoolParentheses(name?: string): string {
+  return (name || "")
+    .replace(/\s*\([^)]*\)\s*/g, " ")
+    .replace(/[()]/g, "")
+    .trim();
+}
+
+function normalizePrefill(prefill: Record<string, string>): Record<string, string> {
+  const merged = { ...EMPTY_VALUES, ...prefill };
+  if (merged.school_name) {
+    merged.school_name = stripSchoolParentheses(merged.school_name);
+  }
+  return merged;
+}
+
 const FIELD_INPUT = "h-11! bg-white! text-sm! md:text-sm!";
 
 function Field({
@@ -72,10 +87,7 @@ export function ApplicationStep({
   hasConfirmedDoc = false,
   onSubmit,
 }: ApplicationStepProps) {
-  const [values, setValues] = useState<Record<string, string>>({
-    ...EMPTY_VALUES,
-    ...prefill,
-  });
+  const [values, setValues] = useState<Record<string, string>>(() => normalizePrefill(prefill));
   const [pristine, setPristine] = useState(true);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState("");
@@ -125,7 +137,10 @@ export function ApplicationStep({
       }
     }
     if (schoolName) {
-      const match = schools.find((s) => s.school_name.toLowerCase() === schoolName.toLowerCase());
+      const normalizedSchoolName = stripSchoolParentheses(schoolName);
+      const match = schools.find(
+        (s) => stripSchoolParentheses(s.school_name).toLowerCase() === normalizedSchoolName.toLowerCase(),
+      );
       if (!match) {
         setIsCustomSchool(true);
       } else if (match.address && !schoolAddress?.trim()) {
@@ -151,12 +166,15 @@ export function ApplicationStep({
   }
 
   const schoolOptions = useMemo<ComboboxOption[]>(() => {
-    const list: ComboboxOption[] = collegeSchools.map((s) => ({
-      label: s.school_code ? `${s.school_name} (${s.school_code})` : s.school_name,
-      value: s.school_name,
-      code: s.school_code ?? undefined,
-      address: s.address ?? undefined,
-    }));
+    const list: ComboboxOption[] = collegeSchools.map((s) => {
+      const cleanName = stripSchoolParentheses(s.school_name);
+      return {
+        label: s.school_code ? `${cleanName} (${s.school_code})` : cleanName,
+        value: cleanName,
+        code: s.school_code ?? undefined,
+        address: s.address ?? undefined,
+      };
+    });
     list.push({
       label: "Other / Not listed (specify)",
       value: "OTHER",
@@ -218,7 +236,7 @@ export function ApplicationStep({
 
   // Pick up profile data once it arrives, without clobbering user edits.
   useEffect(() => {
-    if (pristine) setValues({ ...EMPTY_VALUES, ...prefill });
+    if (pristine) setValues(normalizePrefill(prefill));
   }, [prefill, pristine]);
 
   const set = (key: string, value: string) => {
@@ -467,7 +485,13 @@ export function ApplicationStep({
               )}
             </Field>
 
-            <Field id="app-school-name" label="School name" required error={fieldErrors.school_name}>
+            <Field
+              id="app-school-name"
+              label="School name"
+              required
+              hint="Do not include the school abbreviation or parentheses in the school name."
+              error={fieldErrors.school_name}
+            >
               <Combobox<ComboboxOption>
                 items={schoolOptions}
                 value={selectedSchoolOption}
@@ -481,19 +505,21 @@ export function ApplicationStep({
                   }
                   if (selected.value === "OTHER") {
                     setIsCustomSchool(true);
-                    const customVal = schoolQuery.trim();
+                    const customVal = schoolQuery.replace(/[()]/g, "").trim();
                     set("school_name", customVal);
                     set("school_address", "");
                   } else {
                     setIsCustomSchool(false);
                     set("school_name", selected.value);
-                    const chosenSchool = schools.find((s) => s.school_name === selected.value);
+                    const chosenSchool = schools.find(
+                      (s) => stripSchoolParentheses(s.school_name).toLowerCase() === selected.value.toLowerCase(),
+                    );
                     if (chosenSchool?.address) {
                       set("school_address", chosenSchool.address);
                     }
                   }
                 }}
-                onInputValueChange={(q) => setSchoolQuery(q)}
+                onInputValueChange={(q) => setSchoolQuery(q.replace(/[()]/g, ""))}
                 filter={(item, query) => {
                   if (item.value === "OTHER") return true;
                   const q = query.trim().toLowerCase();
@@ -512,6 +538,11 @@ export function ApplicationStep({
                       ? "Loading schools..."
                       : "Type or search school name or acronym (e.g. USEP, UM, ADDU)..."
                   }
+                  onKeyDown={(e) => {
+                    if (e.key === "(" || e.key === ")") {
+                      e.preventDefault();
+                    }
+                  }}
                   className={`w-full ${FIELD_INPUT} rounded-md border border-input`}
                   showClear
                 />
@@ -523,7 +554,7 @@ export function ApplicationStep({
                       onMouseDown={(e) => {
                         e.preventDefault();
                         setIsCustomSchool(true);
-                        set("school_name", schoolQuery.trim());
+                        set("school_name", schoolQuery.replace(/[()]/g, "").trim());
                         set("school_address", "");
                       }}
                       className="w-full py-1.5 px-3 rounded-md bg-amber-50 hover:bg-amber-100/80 border border-amber-200 text-amber-800 text-xs font-semibold text-center transition-colors cursor-pointer"
@@ -568,7 +599,12 @@ export function ApplicationStep({
                     id="app-custom-school"
                     placeholder="Type your school name (e.g. St. Mary's College)"
                     value={values.school_name}
-                    onChange={(e) => set("school_name", e.target.value)}
+                    onChange={(e) => set("school_name", e.target.value.replace(/[()]/g, ""))}
+                    onKeyDown={(e) => {
+                      if (e.key === "(" || e.key === ")") {
+                        e.preventDefault();
+                      }
+                    }}
                     className={FIELD_INPUT}
                     autoFocus
                   />

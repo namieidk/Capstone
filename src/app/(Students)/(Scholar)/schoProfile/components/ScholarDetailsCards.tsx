@@ -1,9 +1,9 @@
 "use client";
 
-import { Building2, GraduationCap, Mail, MapPin, Phone, School, UserCheck } from "lucide-react";
+import { Building2, GraduationCap, Mail, MapPin, Phone, School, UserCheck, User as UserIcon } from "lucide-react";
 import type React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import type { User } from "@/lib/api/auth";
+import { formatPersonName, type User } from "@/lib/api/auth";
 
 function InfoRow({
   icon: Icon,
@@ -34,6 +34,29 @@ export function ScholarDetailsCards({ user }: ScholarDetailsCardsProps) {
 
   return (
     <div className="space-y-4">
+      {/* Personal Information Card */}
+      <Card className="rounded-xl border border-line bg-white shadow-xs">
+        <CardContent className="p-5 space-y-3">
+          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Personal Information</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1">
+            <InfoRow
+              icon={UserIcon}
+              label="Full Name"
+              value={formatPersonName(
+                {
+                  first_name: scholar?.first_name ?? user.first_name,
+                  middle_name: scholar?.middle_name ?? user.middle_name,
+                  last_name: scholar?.last_name ?? user.last_name,
+                  suffix: scholar?.suffix ?? user.suffix,
+                },
+                "Scholar",
+              )}
+            />
+            <InfoRow icon={UserCheck} label="Sex" value={scholar?.sex || user.sex || "Not specified"} />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Academic Information Card */}
       <Card className="rounded-xl border border-line bg-white shadow-xs">
         <CardContent className="p-5 space-y-3">

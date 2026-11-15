@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSocketEvent } from "@/contexts/SocketContext";
 import { ApiError } from "@/lib/api";
 import { type Application, getMyApplication } from "@/lib/api/applications";
-import { updateMe, uploadAvatar, uploadBanner } from "@/lib/api/auth";
+import { formatPersonName, updateMe, uploadAvatar, uploadBanner } from "@/lib/api/auth";
 import { getMyDocuments, type ScholarDocument } from "@/lib/api/documents";
 import { EditApplicantProfileDrawer, type EditApplicantProfileValues } from "../components/EditApplicantProfileDrawer";
 import { ProfileBanner } from "./components/ProfileBanner";
@@ -149,9 +149,17 @@ export default function ApplicantsProfilePage() {
     );
   }
 
-  const displayName = `${user.first_name} ${user.last_name}`;
-  const displayInitials = ((user.first_name?.[0] ?? "") + (user.last_name?.[0] ?? "")).toUpperCase() || "?";
   const scholarProfile = user.scholar_profile;
+  const displayName = formatPersonName(
+    {
+      first_name: scholarProfile?.first_name ?? user.first_name,
+      middle_name: scholarProfile?.middle_name ?? user.middle_name,
+      last_name: scholarProfile?.last_name ?? user.last_name,
+      suffix: scholarProfile?.suffix ?? user.suffix,
+    },
+    "Applicant",
+  );
+  const displayInitials = ((user.first_name?.[0] ?? "") + (user.last_name?.[0] ?? "")).toUpperCase() || "?";
   const courseAndYear = scholarProfile?.course_of_study
     ? `${scholarProfile.course_of_study}${scholarProfile.current_year_level ? ` · Year ${scholarProfile.current_year_level}` : ""}`
     : "Applicant";
@@ -199,7 +207,10 @@ export default function ApplicantsProfilePage() {
           onClose={() => setDrawerOpen(false)}
           initialValues={{
             first_name: user.first_name,
+            middle_name: scholarProfile?.middle_name ?? user.middle_name ?? "",
             last_name: user.last_name,
+            suffix: scholarProfile?.suffix ?? user.suffix ?? "",
+            sex: scholarProfile?.sex ?? user.sex ?? "",
             phone_number: scholarProfile?.phone_number ?? "",
             student_address: scholarProfile?.student_address ?? "",
             bio: user.bio ?? "",

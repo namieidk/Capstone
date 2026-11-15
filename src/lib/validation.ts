@@ -22,6 +22,9 @@ export function getPasswordError(value: string): string | null {
   return result.error.issues[0]?.message ?? "Password does not meet the requirements.";
 }
 
+export const SUFFIX_OPTIONS = ["Jr.", "Sr.", "II", "III", "IV", "V"] as const;
+export const SEX_OPTIONS = ["Male", "Female", "Prefer not to say"] as const;
+
 // Add employee schema (provisioning Coordinator / Grantor / Admin accounts)
 export const addEmployeeSchema = z.object({
   first_name: z
@@ -30,12 +33,20 @@ export const addEmployeeSchema = z.object({
     .min(1, "First name is required.")
     .max(100, "First name is too long.")
     .regex(/^[a-zA-ZÀ-ÿñÑ\s]+$/, "First name cannot contain numbers or special characters."),
+  middle_name: z
+    .string()
+    .trim()
+    .max(100, "Middle name is too long.")
+    .regex(/^[a-zA-ZÀ-ÿñÑ\s.\-']*$/, "Middle name contains invalid characters.")
+    .optional(),
   last_name: z
     .string()
     .trim()
     .min(1, "Last name is required.")
     .max(100, "Last name is too long.")
     .regex(/^[a-zA-ZÀ-ÿñÑ\s]+$/, "Last name cannot contain numbers or special characters."),
+  suffix: z.string().trim().max(30, "Suffix is too long.").optional(),
+  sex: z.string().trim().max(30, "Sex selection is invalid.").optional(),
   email: z
     .string()
     .trim()
@@ -60,7 +71,12 @@ export const thresholdSchema = z
 
 // School grading system form (mirrors CreateSchoolGradingDto on the backend).
 export const schoolGradingSchema = z.object({
-  school_name: z.string().trim().min(1, "School name is required.").max(150, "School name is too long."),
+  school_name: z
+    .string()
+    .trim()
+    .min(1, "School name is required.")
+    .max(150, "School name is too long.")
+    .regex(/^[^()]*$/, "School name must not contain parentheses or abbreviations."),
   grading_scale: z.string().trim().min(1, "Grading scale is required.").max(50, "Grading scale is too long."),
   passing_grade: z.number({ error: "Passing grade must be a number." }).finite("Passing grade must be a number."),
   highest_grade: z.number({ error: "Highest grade must be a number." }).finite("Highest grade must be a number."),
@@ -87,7 +103,12 @@ export type AcademicProgramFormValues = z.infer<typeof academicProgramSchema>;
 
 // School institution schema (mirrors CreateSchoolDto on backend)
 export const schoolSchema = z.object({
-  school_name: z.string().trim().min(1, "School name is required.").max(150, "School name is too long."),
+  school_name: z
+    .string()
+    .trim()
+    .min(1, "School name is required.")
+    .max(150, "School name is too long.")
+    .regex(/^[^()]*$/, "School name must not contain parentheses or abbreviations."),
   school_code: z
     .string()
     .trim()
@@ -130,7 +151,12 @@ export const applicationSchema = z.object({
   student_address: z.string().trim().min(1, "Home address is required.").max(500, "Home address is too long."),
   course_of_study: z.string().trim().min(1, "Program is required.").max(150, "Program name is too long."),
   current_year_level: z.string().trim().min(1, "Please select your current year level."),
-  school_name: z.string().trim().min(1, "School name is required.").max(150, "School name is too long."),
+  school_name: z
+    .string()
+    .trim()
+    .min(1, "School name is required.")
+    .max(150, "School name is too long.")
+    .regex(/^[^()]*$/, "School name must not contain parentheses or abbreviations."),
   school_address: z.string().trim().min(1, "School address is required.").max(500, "School address is too long."),
   phone_number: z.string().trim().max(30, "Phone number is too long.").optional(),
   relative_employee: z
@@ -178,12 +204,20 @@ export const signUpSchema = z
       .min(1, "First name is required.")
       .max(100, "First name is too long.")
       .regex(/^[a-zA-ZÀ-ÿñÑ\s]+$/, "First name cannot contain numbers or special characters."),
+    middleName: z
+      .string()
+      .trim()
+      .max(100, "Middle name is too long.")
+      .regex(/^[a-zA-ZÀ-ÿñÑ\s.\-']*$/, "Middle name contains invalid characters.")
+      .optional(),
     lastName: z
       .string()
       .trim()
       .min(1, "Last name is required.")
       .max(100, "Last name is too long.")
       .regex(/^[a-zA-ZÀ-ÿñÑ\s]+$/, "Last name cannot contain numbers or special characters."),
+    suffix: z.string().trim().max(30, "Suffix is too long.").optional(),
+    sex: z.string().trim().max(30, "Sex selection is invalid.").optional(),
     email: z
       .string()
       .trim()

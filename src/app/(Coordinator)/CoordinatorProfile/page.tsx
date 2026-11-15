@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/components/ToastContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { ApiError } from "@/lib/api";
-import { updateMe, uploadAvatar, uploadBanner } from "@/lib/api/auth";
+import { formatPersonName, updateMe, uploadAvatar, uploadBanner } from "@/lib/api/auth";
 import { CoordinatorBanner } from "./components/CoordinatorBanner";
 import { CoordinatorBioCard } from "./components/CoordinatorBioCard";
 import { CoordinatorDetailsCards } from "./components/CoordinatorDetailsCards";
@@ -26,7 +26,17 @@ export default function CoordinatorProfilePage() {
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  const displayName = user ? `${user.first_name} ${user.last_name}`.trim() : "";
+  const displayName = user
+    ? formatPersonName(
+        {
+          first_name: user.employee?.first_name ?? user.first_name,
+          middle_name: user.employee?.middle_name ?? user.middle_name,
+          last_name: user.employee?.last_name ?? user.last_name,
+          suffix: user.employee?.suffix ?? user.suffix,
+        },
+        "Coordinator",
+      )
+    : "";
   const displayInitials = user
     ? ((user.first_name?.[0] ?? "") + (user.last_name?.[0] ?? "")).toUpperCase() || "CO"
     : "CO";
@@ -71,7 +81,16 @@ export default function CoordinatorProfilePage() {
   );
 
   const handleSaveProfile = useCallback(
-    async (values: { first_name: string; last_name: string; title: string; department: string; bio: string }) => {
+    async (values: {
+      first_name: string;
+      middle_name: string;
+      last_name: string;
+      suffix: string;
+      sex: string;
+      title: string;
+      department: string;
+      bio: string;
+    }) => {
       setSavingProfile(true);
       setSaveError("");
       try {
@@ -128,7 +147,10 @@ export default function CoordinatorProfilePage() {
         onClose={() => setDrawerOpen(false)}
         initialValues={{
           first_name: user.first_name,
+          middle_name: user.employee?.middle_name ?? user.middle_name ?? "",
           last_name: user.last_name,
+          suffix: user.employee?.suffix ?? user.suffix ?? "",
+          sex: user.employee?.sex ?? user.sex ?? "",
           title: user.employee?.title ?? "",
           department: user.employee?.department ?? "",
           bio: user.bio ?? "",

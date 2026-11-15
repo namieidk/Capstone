@@ -5,10 +5,12 @@ import { ArrowRight, Loader2, Lock, Mail, Phone, User } from "lucide-react";
 import Link from "next/link";
 import { type ClipboardEvent, type FormEvent, type KeyboardEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { type MfaChallengeResponse, MfaRequiredError } from "@/lib/api/auth";
-import { formatPhilippinePhoneNumber, signUpSchema } from "@/lib/validation";
+import { formatPhilippinePhoneNumber, SEX_OPTIONS, SUFFIX_OPTIONS, signUpSchema } from "@/lib/validation";
 import { AuthShell } from "../components/AuthShell";
 import { CheckboxField } from "../components/CheckboxField";
 import { InputField } from "../components/InputField";
@@ -21,7 +23,10 @@ import { SuccessPanel } from "../components/SuccessPanel";
 function SignUpForm({ onMfaRequired }: { onMfaRequired: (challenge: MfaChallengeResponse) => void }) {
   const { register } = useAuth();
   const [firstName, setFirstName] = useState("");
+  const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [suffix, setSuffix] = useState("");
+  const [sex, setSex] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -52,6 +57,12 @@ function SignUpForm({ onMfaRequired }: { onMfaRequired: (challenge: MfaChallenge
     clearError("firstName");
   };
 
+  const handleMiddleNameChange = (val: string) => {
+    const clean = val.replace(/[^a-zA-ZÀ-ÿñÑ\s.\-']/g, "");
+    setMiddleName(clean);
+    clearError("middleName");
+  };
+
   const handleLastNameChange = (val: string) => {
     // Strip numerical and special characters
     const clean = val.replace(/[^a-zA-ZÀ-ÿñÑ\s]/g, "");
@@ -63,6 +74,13 @@ function SignUpForm({ onMfaRequired }: { onMfaRequired: (challenge: MfaChallenge
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     // Block numbers and special characters from key press
     if (e.key.length === 1 && !/^[a-zA-ZÀ-ÿñÑ\s]$/.test(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const handleMiddleNameKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key.length === 1 && !/^[a-zA-ZÀ-ÿñÑ\s.\-']$/.test(e.key)) {
       e.preventDefault();
     }
   };
@@ -88,7 +106,10 @@ function SignUpForm({ onMfaRequired }: { onMfaRequired: (challenge: MfaChallenge
 
     const parseResult = signUpSchema.safeParse({
       firstName,
+      middleName,
       lastName,
+      suffix,
+      sex,
       email,
       phone,
       password,
@@ -118,7 +139,10 @@ function SignUpForm({ onMfaRequired }: { onMfaRequired: (challenge: MfaChallenge
         email: parseResult.data.email,
         password: parseResult.data.password,
         first_name: parseResult.data.firstName,
+        ...(parseResult.data.middleName ? { middle_name: parseResult.data.middleName } : {}),
         last_name: parseResult.data.lastName,
+        ...(parseResult.data.suffix ? { suffix: parseResult.data.suffix } : {}),
+        ...(parseResult.data.sex ? { sex: parseResult.data.sex } : {}),
         phone_number: parseResult.data.phone,
       });
     } catch (err: unknown) {
@@ -135,31 +159,89 @@ function SignUpForm({ onMfaRequired }: { onMfaRequired: (challenge: MfaChallenge
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-3">
-        <InputField
-          id="firstName"
-          label="First name"
-          icon={User}
-          placeholder="Juan"
-          autoComplete="given-name"
-          value={firstName}
-          hasError={!!errors.firstName}
-          errorText={errors.firstName}
-          onKeyDown={handleNameKeyDown}
-          onChange={handleFirstNameChange}
-        />
-        <InputField
-          id="lastName"
-          label="Last name"
-          icon={User}
-          placeholder="Dela Cruz"
-          autoComplete="family-name"
-          value={lastName}
-          hasError={!!errors.lastName}
-          errorText={errors.lastName}
-          onKeyDown={handleNameKeyDown}
-          onChange={handleLastNameChange}
-        />
+      <InputField
+        id="firstName"
+        label="First name"
+        icon={User}
+        placeholder="Juan"
+        autoComplete="given-name"
+        value={firstName}
+        hasError={!!errors.firstName}
+        errorText={errors.firstName}
+        onKeyDown={handleNameKeyDown}
+        onChange={handleFirstNameChange}
+      />
+      <InputField
+        id="middleName"
+        label="Middle name (Optional)"
+        icon={User}
+        placeholder="Reyes"
+        autoComplete="additional-name"
+        value={middleName}
+        hasError={!!errors.middleName}
+        errorText={errors.middleName}
+        onKeyDown={handleMiddleNameKeyDown}
+        onChange={handleMiddleNameChange}
+      />
+      <InputField
+        id="lastName"
+        label="Last name"
+        icon={User}
+        placeholder="Dela Cruz"
+        autoComplete="family-name"
+        value={lastName}
+        hasError={!!errors.lastName}
+        errorText={errors.lastName}
+        onKeyDown={handleNameKeyDown}
+        onChange={handleLastNameChange}
+      />
+      <div className="grid gap-1.5">
+        <Label htmlFor="signup-suffix" className="text-[0.94rem] font-medium text-navy">
+          Suffix (Optional)
+        </Label>
+        <Select
+          value={suffix || "__NONE__"}
+          onValueChange={(v) => {
+            setSuffix(v === "__NONE__" ? "" : v);
+            clearError("suffix");
+          }}
+        >
+          <SelectTrigger id="signup-suffix" className="h-10 w-full">
+            <SelectValue placeholder="None" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__NONE__">None</SelectItem>
+            {SUFFIX_OPTIONS.map((option) => (
+              <SelectItem key={option} value={option}>
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="grid gap-1.5">
+        <Label htmlFor="signup-sex" className="text-[0.94rem] font-medium text-navy">
+          Sex (Optional)
+        </Label>
+        <Select
+          value={sex || "__NONE__"}
+          onValueChange={(v) => {
+            setSex(v === "__NONE__" ? "" : v);
+            clearError("sex");
+          }}
+        >
+          <SelectTrigger id="signup-sex" className="h-10 w-full">
+            <SelectValue placeholder="Select sex" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__NONE__">Prefer to leave blank</SelectItem>
+            {SEX_OPTIONS.map((option) => (
+              <SelectItem key={option} value={option}>
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <InputField
         id="signup-email"

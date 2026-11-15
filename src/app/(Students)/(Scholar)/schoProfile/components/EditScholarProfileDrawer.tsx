@@ -6,12 +6,17 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { SEX_OPTIONS, SUFFIX_OPTIONS } from "@/lib/validation";
 
 export interface EditScholarProfileValues {
   first_name: string;
+  middle_name: string;
   last_name: string;
+  suffix: string;
+  sex: string;
   phone_number: string;
   student_address: string;
   bio: string;
@@ -37,7 +42,10 @@ export function EditScholarProfileDrawer({
   onSave,
 }: EditScholarProfileDrawerProps) {
   const [firstName, setFirstName] = useState(initialValues?.first_name ?? "");
+  const [middleName, setMiddleName] = useState(initialValues?.middle_name ?? "");
   const [lastName, setLastName] = useState(initialValues?.last_name ?? "");
+  const [suffix, setSuffix] = useState(initialValues?.suffix ?? "");
+  const [sex, setSex] = useState(initialValues?.sex ?? "");
   const [phoneNumber, setPhoneNumber] = useState(initialValues?.phone_number ?? "");
   const [studentAddress, setStudentAddress] = useState(initialValues?.student_address ?? "");
   const [bio, setBio] = useState(initialValues?.bio ?? "");
@@ -45,7 +53,10 @@ export function EditScholarProfileDrawer({
   useEffect(() => {
     if (open) {
       setFirstName(initialValues?.first_name ?? "");
+      setMiddleName(initialValues?.middle_name ?? "");
       setLastName(initialValues?.last_name ?? "");
+      setSuffix(initialValues?.suffix ?? "");
+      setSex(initialValues?.sex ?? "");
       setPhoneNumber(initialValues?.phone_number ?? "");
       setStudentAddress(initialValues?.student_address ?? "");
       setBio(initialValues?.bio ?? "");
@@ -56,7 +67,10 @@ export function EditScholarProfileDrawer({
     e.preventDefault();
     onSave({
       first_name: firstName.trim(),
+      middle_name: middleName.trim(),
       last_name: lastName.trim(),
+      suffix: suffix.trim(),
+      sex: sex.trim(),
       phone_number: phoneNumber.trim(),
       student_address: studentAddress.trim(),
       bio: bio.trim(),
@@ -115,6 +129,58 @@ export function EditScholarProfileDrawer({
                 required
                 className={FIELD_INPUT}
               />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="scholar-middle-name" className="text-sm! font-semibold text-navy">
+              Middle name
+            </Label>
+            <Input
+              id="scholar-middle-name"
+              placeholder="Optional"
+              value={middleName}
+              onChange={(e) => setMiddleName(e.target.value.replace(/[^a-zA-ZÀ-ÿñÑ\s.\-']/g, ""))}
+              className={FIELD_INPUT}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="scholar-suffix" className="text-sm! font-semibold text-navy">
+                Suffix
+              </Label>
+              <Select value={suffix || "__NONE__"} onValueChange={(v) => setSuffix(v === "__NONE__" ? "" : v)}>
+                <SelectTrigger id="scholar-suffix" className={FIELD_INPUT}>
+                  <SelectValue placeholder="None" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__NONE__">None</SelectItem>
+                  {SUFFIX_OPTIONS.map((opt) => (
+                    <SelectItem key={opt} value={opt}>
+                      {opt}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="scholar-sex" className="text-sm! font-semibold text-navy">
+                Sex
+              </Label>
+              <Select value={sex || "__NONE__"} onValueChange={(v) => setSex(v === "__NONE__" ? "" : v)}>
+                <SelectTrigger id="scholar-sex" className={FIELD_INPUT}>
+                  <SelectValue placeholder="Not specified" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__NONE__">Not specified</SelectItem>
+                  {SEX_OPTIONS.map((opt) => (
+                    <SelectItem key={opt} value={opt}>
+                      {opt}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

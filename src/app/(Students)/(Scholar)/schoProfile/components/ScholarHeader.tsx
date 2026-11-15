@@ -5,7 +5,7 @@ import Image from "next/image";
 import type React from "react";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import type { User } from "@/lib/api/auth";
+import { formatPersonName, type User } from "@/lib/api/auth";
 
 interface ScholarHeaderProps {
   user: User;
@@ -18,7 +18,15 @@ export function ScholarHeader({ user, uploadingAvatar, onAvatarUpload, onEditCli
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const scholar = user.scholar_profile;
 
-  const displayName = `${user.first_name} ${user.last_name}`.trim() || "Scholar";
+  const displayName = formatPersonName(
+    {
+      first_name: scholar?.first_name ?? user.first_name,
+      middle_name: scholar?.middle_name ?? user.middle_name,
+      last_name: scholar?.last_name ?? user.last_name,
+      suffix: scholar?.suffix ?? user.suffix,
+    },
+    "Scholar",
+  );
   const displayInitials = ((user.first_name?.[0] ?? "") + (user.last_name?.[0] ?? "")).toUpperCase() || "SC";
   const avatarUrl = scholar?.avatar_url || user.avatar_url;
   const displayTitle =

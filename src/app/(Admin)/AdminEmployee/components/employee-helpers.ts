@@ -1,4 +1,4 @@
-import type { User } from "@/lib/api/auth";
+import { formatPersonName, type User } from "@/lib/api/auth";
 
 export const EMPLOYEE_FILTERS = ["All", "Coordinator", "Grantor"] as const;
 export type EmployeeFilter = (typeof EMPLOYEE_FILTERS)[number];
@@ -11,7 +11,10 @@ export const ROLE_LABELS: Record<string, string> = {
 
 export interface AddEmployeeFields {
   first_name: string;
+  middle_name: string;
   last_name: string;
+  suffix: string;
+  sex: string;
   email: string;
   password: string;
   role: string;
@@ -21,7 +24,10 @@ export interface AddEmployeeFields {
 
 export const INITIAL_ADD_FIELDS: AddEmployeeFields = {
   first_name: "",
+  middle_name: "",
   last_name: "",
+  suffix: "",
+  sex: "",
   email: "",
   password: "",
   role: "COORDINATOR",
@@ -33,6 +39,7 @@ export interface StaffRow {
   id: number;
   name: string;
   email: string;
+  sex?: string;
   title: string;
   department: string;
   type: string;
@@ -49,8 +56,17 @@ export function toStaffRow(user: User): StaffRow {
   const type = ROLE_LABELS[user.role] ?? user.role;
   return {
     id: user.user_id,
-    name: `${first} ${last}`.trim() || user.email,
+    name: formatPersonName(
+      {
+        first_name: emp?.first_name,
+        middle_name: emp?.middle_name,
+        last_name: emp?.last_name,
+        suffix: emp?.suffix,
+      },
+      user.email,
+    ),
     email: user.email,
+    sex: emp?.sex || user.sex || "",
     title: emp?.title ?? type,
     department: emp?.department ?? "—",
     type,

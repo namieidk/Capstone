@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { addEmployeeSchema } from "@/lib/validation";
+import { addEmployeeSchema, SEX_OPTIONS, SUFFIX_OPTIONS } from "@/lib/validation";
 import type { AddEmployeeFields } from "./employee-helpers";
 
 interface AddEmployeeSheetProps {
@@ -61,6 +61,12 @@ function AddEmployeeFormBody({
     const clean = val.replace(/[^a-zA-ZÀ-ÿñÑ\s]/g, "");
     set({ first_name: clean });
     clearFieldError("first_name");
+  };
+
+  const handleMiddleNameChange = (val: string) => {
+    const clean = val.replace(/[^a-zA-ZÀ-ÿñÑ\s.\-']/g, "");
+    set({ middle_name: clean });
+    clearFieldError("middle_name");
   };
 
   const handleLastNameChange = (val: string) => {
@@ -137,6 +143,80 @@ function AddEmployeeFormBody({
             )}
           />
           {fieldErrors.last_name && <p className="text-[11px] font-medium text-destructive">{fieldErrors.last_name}</p>}
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="add-middle-name" className="text-xs font-semibold">
+          Middle Name
+        </Label>
+        <Input
+          id="add-middle-name"
+          value={fields.middle_name}
+          onChange={(e) => handleMiddleNameChange(e.target.value)}
+          placeholder="Optional"
+          className={cn(
+            "h-10 sm:h-9 text-xs",
+            fieldErrors.middle_name && "border-destructive focus-visible:ring-destructive/30",
+          )}
+        />
+        {fieldErrors.middle_name && (
+          <p className="text-[11px] font-medium text-destructive">{fieldErrors.middle_name}</p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label htmlFor="add-suffix" className="text-xs font-semibold">
+            Suffix
+          </Label>
+          <Select
+            value={fields.suffix || "__NONE__"}
+            onValueChange={(v) => {
+              set({ suffix: v === "__NONE__" ? "" : v });
+              clearFieldError("suffix");
+            }}
+          >
+            <SelectTrigger id="add-suffix" className="h-10 sm:h-9 text-xs">
+              <SelectValue placeholder="None" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__NONE__" className="text-xs">
+                None
+              </SelectItem>
+              {SUFFIX_OPTIONS.map((opt) => (
+                <SelectItem key={opt} value={opt} className="text-xs">
+                  {opt}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="add-sex" className="text-xs font-semibold">
+            Sex
+          </Label>
+          <Select
+            value={fields.sex || "__NONE__"}
+            onValueChange={(v) => {
+              set({ sex: v === "__NONE__" ? "" : v });
+              clearFieldError("sex");
+            }}
+          >
+            <SelectTrigger id="add-sex" className="h-10 sm:h-9 text-xs">
+              <SelectValue placeholder="Not specified" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__NONE__" className="text-xs">
+                Not specified
+              </SelectItem>
+              {SEX_OPTIONS.map((opt) => (
+                <SelectItem key={opt} value={opt} className="text-xs">
+                  {opt}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

@@ -6,15 +6,20 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { SEX_OPTIONS, SUFFIX_OPTIONS } from "@/lib/validation";
 
 export interface EditProfileDrawerProps {
   open: boolean;
   onClose: () => void;
   initialValues?: {
     first_name?: string;
+    middle_name?: string;
     last_name?: string;
+    suffix?: string;
+    sex?: string;
     title?: string;
     department?: string;
     bio?: string;
@@ -22,7 +27,16 @@ export interface EditProfileDrawerProps {
   };
   saving?: boolean;
   error?: string;
-  onSave: (values: { first_name: string; last_name: string; title: string; department: string; bio: string }) => void;
+  onSave: (values: {
+    first_name: string;
+    middle_name: string;
+    last_name: string;
+    suffix: string;
+    sex: string;
+    title: string;
+    department: string;
+    bio: string;
+  }) => void;
 }
 
 const FIELD_INPUT = "mt-1.5 h-11! border-line bg-[#f7f9fb]! text-sm! md:text-sm!";
@@ -36,7 +50,10 @@ export default function EditProfileDrawer({
   onSave,
 }: EditProfileDrawerProps) {
   const [firstName, setFirstName] = useState(initialValues?.first_name ?? "");
+  const [middleName, setMiddleName] = useState(initialValues?.middle_name ?? "");
   const [lastName, setLastName] = useState(initialValues?.last_name ?? "");
+  const [suffix, setSuffix] = useState(initialValues?.suffix ?? "");
+  const [sex, setSex] = useState(initialValues?.sex ?? "");
   const [title, setTitle] = useState(initialValues?.title ?? "");
   const [department, setDepartment] = useState(initialValues?.department ?? "");
   const [bio, setBio] = useState(initialValues?.bio ?? "");
@@ -44,7 +61,10 @@ export default function EditProfileDrawer({
   useEffect(() => {
     if (open) {
       setFirstName(initialValues?.first_name ?? "");
+      setMiddleName(initialValues?.middle_name ?? "");
       setLastName(initialValues?.last_name ?? "");
+      setSuffix(initialValues?.suffix ?? "");
+      setSex(initialValues?.sex ?? "");
       setTitle(initialValues?.title ?? "");
       setDepartment(initialValues?.department ?? "");
       setBio(initialValues?.bio ?? "");
@@ -54,6 +74,11 @@ export default function EditProfileDrawer({
   const handleFirstNameChange = (val: string) => {
     const clean = val.replace(/[^a-zA-ZÀ-ÿñÑ\s]/g, "");
     setFirstName(clean);
+  };
+
+  const handleMiddleNameChange = (val: string) => {
+    const clean = val.replace(/[^a-zA-ZÀ-ÿñÑ\s.\-']/g, "");
+    setMiddleName(clean);
   };
 
   const handleLastNameChange = (val: string) => {
@@ -71,11 +96,14 @@ export default function EditProfileDrawer({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
-      first_name: firstName,
-      last_name: lastName,
-      title,
-      department,
-      bio,
+      first_name: firstName.trim(),
+      middle_name: middleName.trim(),
+      last_name: lastName.trim(),
+      suffix: suffix.trim(),
+      sex: sex.trim(),
+      title: title.trim(),
+      department: department.trim(),
+      bio: bio.trim(),
     });
   };
 
@@ -133,6 +161,58 @@ export default function EditProfileDrawer({
                 required
                 className={FIELD_INPUT}
               />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="edit-middle-name" className="text-sm! font-semibold text-navy">
+              Middle name
+            </Label>
+            <Input
+              id="edit-middle-name"
+              placeholder="Optional"
+              value={middleName}
+              onChange={(e) => handleMiddleNameChange(e.target.value)}
+              className={FIELD_INPUT}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="edit-suffix" className="text-sm! font-semibold text-navy">
+                Suffix
+              </Label>
+              <Select value={suffix || "__NONE__"} onValueChange={(v) => setSuffix(v === "__NONE__" ? "" : v)}>
+                <SelectTrigger id="edit-suffix" className={FIELD_INPUT}>
+                  <SelectValue placeholder="None" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__NONE__">None</SelectItem>
+                  {SUFFIX_OPTIONS.map((opt) => (
+                    <SelectItem key={opt} value={opt}>
+                      {opt}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="edit-sex" className="text-sm! font-semibold text-navy">
+                Sex
+              </Label>
+              <Select value={sex || "__NONE__"} onValueChange={(v) => setSex(v === "__NONE__" ? "" : v)}>
+                <SelectTrigger id="edit-sex" className={FIELD_INPUT}>
+                  <SelectValue placeholder="Not specified" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__NONE__">Not specified</SelectItem>
+                  {SEX_OPTIONS.map((opt) => (
+                    <SelectItem key={opt} value={opt}>
+                      {opt}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
